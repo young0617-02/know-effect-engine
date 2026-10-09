@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+
+# 本地依赖与模型缓存
+models/
+*.gguf
+*.onnx
+*.safetensors
+
+# 数据与运行态（含客户资料，不入库）
+data/
+var/
+*.log
+backups/
+
+# 环境变量与密钥
+.env
+.env.*
+!.env.example
+*.pem
+
+# 构建与前端
+dist/
+build/
+node_modules/
+
+# 编辑器与系统
+.idea/
+.vscode/
+Thumbs.db
+Desktop.ini
