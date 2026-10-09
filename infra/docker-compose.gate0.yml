@@ -1,0 +1,149 @@
+# =============================================================
+# KEE · Gate 0 单机本地化存储栈基线（V1.0 方案 ⑥ 验证对象）
+# 版本锁定：milvusdb/milvus:v3.0.0 / postgres:18 / redis:8 / etcd v3.5.25 / minio
+# 端口纪律：宿主一律映射到 3xxxx，且只绑定 127.0.0.1（数据不出域的网络层落地）
+#           —— 19530/5432/6379 等由本机其他项目占用，本项目不使用
+# 启动： docker compose -f infra/docker-compose.gate0.yml up -d
+# 停止： docker compose -f infra/docker-compose.gate0.yml down
+# ⚠ 依赖端点用 container_name 而非服务名：本机 Docker Desktop 29.6.2 + Compose v5.3.1
+#    不给服务名建 DNS 别名（`getent hosts etcd` → NXDOMAIN），Milvus 会因此 panic 在
+#    「failed to create etcd client」。aliases 仍保留以便其他环境可移植。
+# =============================================================
+
+name: kee-gate0
+
+networks:
+  kee-net:
+    driver: bridge
+
+volumes:
+  kee-etcd-data:
+  kee-minio-data:
+  kee-milvus-data:
+  kee-pg-data:
+  kee-redis-data:
+
+services:
+
+  etcd:
+    image: quay.io/coreos/etcd:v3.5.25
+    container_name: kee-etcd
+    restart: unless-stopped
+    environment:
+      - ETCD_AUTO_COMPACTION_MODE=revision
+      - ETCD_AUTO_COMPACTION_RETENTION=1000
+      - ETCD_QUOTA_BACKEND_BYTES=4294967296
+      - ETCD_SNAPSHOT_COUNT=50000
+    command: etcd -advertise-client-urls=http://kee-etcd:2379 -listen-client-urls http://0.0.0.0:2379 --data-dir /etcd
+    volumes:
+      - kee-etcd-data:/etcd
+    networks:
+      kee-net:
+        aliases: ["etcd"]
+    healthcheck:
+      test: ["CMD", "etcdctl", "endpoint", "health"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
+  minio:
+    image: minio/minio:RELEASE.2024-12-18T13-15-44Z
+    container_name: kee-minio
+    restart: unless-stopped
+    environment:
+      - MINIO_ROOT_USER=keeadmin
+      - MINIO_ROOT_PASSWORD=待填_KEE_MINIO_ROOT_PASSWORD
+    command: minio server /minio_data --console-address ":9001"
+    volumes:
+      - kee-minio-data:/minio_data
+    networks:
+      kee-net:
+        aliases: ["minio"]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
+  milvus:
+    image: milvusdb/milvus:v3.0.0
+    container_name: kee-milvus
+    restart: unless-stopped
+    command: ["milvus", "run", "standalone"]
+    security_opt:
+      - seccomp:unconfined
+    environment:
+      - ETCD_ENDPOINTS=kee-etcd:2379
+      - MINIO_ADDRESS=kee-minio:9000
+      - COMMON_STORAGETYPE=local
+    volumes:
+      - kee-milvus-data:/var/lib/milvus
+    ports:
+      - "127.0.0.1:39530:19530"   # gRPC / REST
+      - "127.0.0.1:39091:9091"    # metrics / healthz
+    networks:
+      kee-net:
+        aliases: ["milvus"]
+    depends_on:
+      etcd:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9091/healthz"]
+      interval: 30s
+      start_period: 90s
+      timeout: 20s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 4g
+
+  postgres:
+    image: postgres:18
+    container_name: kee-postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=kee
+      - POSTGRES_PASSWORD=待填_KEE_PG_SUPERUSER_PASSWORD
+      - POSTGRES_DB=kee
+    volumes:
+      # PG18 镜像要求挂载点为 /var/lib/postgresql（非 /var/lib/postgresql/data）
+      - kee-pg-data:/var/lib/postgresql
+    ports:
+      - "127.0.0.1:35432:5432"
+    networks:
+      kee-net:
+        aliases: ["postgres"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kee"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 2g
+
+  redis:
+    image: redis:8
+    container_name: kee-redis
+    restart: unless-stopped
+    command: ["redis-server", "--maxmemory", "512mb", "--maxmemory-policy", "allkeys-lru", "--appendonly", "no"]
+    volumes:
+      - kee-redis-data:/data
+    ports:
+      - "127.0.0.1:36379:6379"
+    networks:
+      kee-net:
+        aliases: ["redis"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 1g

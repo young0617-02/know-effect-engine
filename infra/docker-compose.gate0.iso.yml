@@ -1,0 +1,11 @@
+# =============================================================
+# Gate 0 ⑥ 断网/无外呼验证用的覆盖文件：把 kee-net 变成 internal 网络
+# 用法（在主栈已停的前提下）：
+#   docker compose -f infra/docker-compose.gate0.yml -f infra/docker-compose.gate0.iso.yml up -d
+# internal 网络禁止容器出网（无 NAT / 无外部 DNS），用于证明核心链路不依赖外网。
+# =============================================================
+
+networks:
+  kee-net:
+    driver: bridge
+    internal: true
