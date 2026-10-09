@@ -7,10 +7,14 @@ import re
 from dataclasses import dataclass, field
 from typing import Any
 
-ALLOWED_INDUSTRIES = {"金融", "能源", "化工"}
+# 行业域对齐 V1.1 第一节：聚焦金融/能源/化工，兼顾高科技/互联网/制造/农业。
+# Gate 0 的模拟语料只覆盖前三类，真实文档接入时若仍按三类收，会把制造业文档误杀。
+ALLOWED_INDUSTRIES = {"金融", "能源", "化工", "高科技", "互联网", "制造", "农业"}
 ALLOWED_DOC_TYPES = {"结项报告", "售前方案", "接口规范", "运维手册", "复盘记录", "合规要求"}
 ALLOWED_SOURCE_LEVELS = {"A", "B", "C"}
-_ID_RE = re.compile(r"^[a-z0-9][a-z0-9\-.]*$")
+# doc_id 允许中文（中文优先产品的溯源 ID 要有语义），但不允许引号/括号等能改写
+# Milvus 表达式的字符——与 rbac._SAFE 同一套白名单思路。
+_ID_RE = re.compile(r"^[0-9A-Za-z一-鿿][0-9A-Za-z一-鿿._\-]*$")
 
 # 来源分级 → 是否允许入库（C 级外部摘录需人工复核标记，Gate 0 里按通过处理并记录）
 SOURCE_MIN_CONFIDENCE = {"A": 0.95, "B": 0.80, "C": 0.60}
