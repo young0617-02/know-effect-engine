@@ -1,0 +1,38 @@
+[project]
+name = "know-effect-engine"
+version = "0.1.0"
+description = "知效引擎（KEE）· 数字技术服务企业交付知识服务引擎 —— 当前推进 Gate 0 可行性验证"
+requires-python = ">=3.12,<3.13"
+
+# 说明：torch / transformers 等大件不在这里声明，由本机 D:\py312-torch 的 CUDA 环境
+# 通过 scripts/bootstrap_env.py 写入的 .pth 挂载提供（避免重复下载 GB 级轮子）。
+dependencies = [
+    "pymilvus==3.0.2",
+    "psycopg[binary]>=3.2",
+    "redis>=5.0",
+    "httpx>=0.27",
+    "pydantic>=2.8",
+    "pydantic-settings>=2.4",
+    "numpy==2.5.3",
+    "jieba==0.42.1",
+    "PyYAML>=6.0",
+    "fastapi>=0.115",
+    "uvicorn>=0.30",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8",
+    "pytest-timeout>=2.3",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/kee"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
