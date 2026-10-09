@@ -32,7 +32,7 @@ CARD = {
 
 
 def test_parent_and_child_ids_and_order():
-    rows = chunk_document(CARD, "v1")
+    rows = chunk_document(CARD, "fin-test-doc@v1")
     parents = [r for r in rows if r["is_parent"]]
     children = [r for r in rows if not r["is_parent"]]
     assert len(parents) == 2
@@ -42,13 +42,13 @@ def test_parent_and_child_ids_and_order():
 
 
 def test_child_ids_follow_naming():
-    children = [r for r in chunk_document(CARD, "v1") if not r["is_parent"]]
+    children = [r for r in chunk_document(CARD, "fin-test-doc@v1") if not r["is_parent"]]
     assert all(c["id"].startswith("fin-test-doc@v1#") for c in children)
     assert all("#c" in c["id"] for c in children)
 
 
 def test_child_never_crosses_section():
-    children = [r for r in chunk_document(CARD, "v1") if not r["is_parent"]]
+    children = [r for r in chunk_document(CARD, "fin-test-doc@v1") if not r["is_parent"]]
     for c in children:
         assert c["section_no"] in c["id"]
 
@@ -59,7 +59,7 @@ def test_long_paragraph_is_split_with_overlap():
     card["sections"] = [
         {"section_no": "2.1", "page": 9, "heading": "长段落", "paragraphs": [long_para, "补充说明段落内容。"]}
     ]
-    children = [r for r in chunk_document(card, "v1") if not r["is_parent"]]
+    children = [r for r in chunk_document(card, "fin-test-doc@v1") if not r["is_parent"]]
     assert len(children) > 2
     assert all(len(c["content"]) <= 280 * 3 for c in children)
     # 重叠：相邻子块尾部/首部存在共享片段
@@ -71,5 +71,5 @@ def test_parent_respects_max_length():
     card["sections"] = [
         {"section_no": "3.1", "page": 1, "heading": "超长章节", "paragraphs": ["甲方验收意见记录如下，" * 200, "乙方回复。"]}
     ]
-    parents = [r for r in chunk_document(card, "v1", parent_max=600) if r["is_parent"]]
+    parents = [r for r in chunk_document(card, "fin-test-doc@v1", parent_max=600) if r["is_parent"]]
     assert len(parents[0]["content"]) <= 600

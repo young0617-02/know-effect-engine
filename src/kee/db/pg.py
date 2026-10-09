@@ -8,6 +8,7 @@
 from __future__ import annotations
 
 import json
+from datetime import datetime, timezone
 from typing import Any, Iterable
 
 import psycopg
@@ -99,6 +100,13 @@ CREATE TABLE IF NOT EXISTS reconciliation_diff (
     fixed_at    timestamptz
 );
 CREATE INDEX IF NOT EXISTS recon_run_idx ON reconciliation_diff(run_id);
+
+CREATE TABLE IF NOT EXISTS idempotency_key (
+    key        text PRIMARY KEY,
+    scope      text NOT NULL,
+    response   jsonb,
+    created_at timestamptz NOT NULL DEFAULT now()
+);
 """
 
 IMMUTABLE_SQL = """
@@ -210,7 +218,136 @@ class AuthoritativeStore:
                 )
         return len(rows)
 
+    # ---- 幂等（方案 7.3）----
+    def reserve_idempotency(self, key: str, scope: str) -> dict[str, Any] | None:
+        """占位成功返回 None；已存在则返回上次响应（重放）。"""
+        with self.connect() as conn:
+            cur = conn.execute(
+                "INSERT INTO idempotency_key (key, scope) VALUES (%s,%s) "
+                "ON CONFLICT (key) DO NOTHING RETURNING key",
+                (key, scope),
+            )
+            if cur.fetchone():
+                return None
+            row = conn.execute("SELECT response FROM idempotency_key WHERE key=%s", (key,)).fetchone()
+            return row["response"] if row else {}
+
+    def store_idempotency(self, key: str, response: dict[str, Any]) -> None:
+        with self.connect() as conn:
+            conn.execute(
+                "UPDATE idempotency_key SET response=%s::jsonb WHERE key=%s",
+                (json.dumps(response, ensure_ascii=False, default=str), key),
+            )
+
+    # ---- 版本管理 ----
+    def next_version(self, doc_id: str) -> int:
+        with self.connect() as conn:
+            row = conn.execute(
+                "SELECT coalesce(max(version),0)+1 AS v FROM document_version WHERE doc_id=%s",
+                (doc_id,),
+            ).fetchone()
+        return int(row["v"])
+
+    def bump_version(
+        self, doc_id: str, chunk_scheme: str, checksum: str, effective_at: datetime | None = None
+    ) -> str:
+        """升版并把其它版本置 superseded：任一时刻每份文档只有一个 effective 版本。"""
+        with self.connect() as conn:
+            v = self.next_version(doc_id)
+            conn.execute("UPDATE document_version SET status='superseded' WHERE doc_id=%s", (doc_id,))
+            version_id = f"{doc_id}@v{v}"
+            conn.execute(
+                "INSERT INTO document_version (id, doc_id, version, chunk_scheme, checksum, status, effective_at) "
+                "VALUES (%s,%s,%s,%s,%s,'effective',%s) ON CONFLICT (id) DO UPDATE SET status='effective'",
+                (
+                    version_id,
+                    doc_id,
+                    v,
+                    chunk_scheme,
+                    checksum,
+                    effective_at or datetime.now(timezone.utc),
+                ),
+            )
+            conn.execute("UPDATE document SET checksum=%s, updated_at=now() WHERE id=%s", (checksum, doc_id))
+        return version_id
+
+    def set_version_status(self, version_id: str, status: str) -> None:
+        if status not in ("effective", "superseded", "draft"):
+            raise ValueError(f"非法版本状态：{status}")
+        with self.connect() as conn:
+            row = conn.execute("SELECT doc_id FROM document_version WHERE id=%s", (version_id,)).fetchone()
+            if not row:
+                raise KeyError(f"版本不存在：{version_id}")
+            if status == "effective":
+                conn.execute(
+                    "UPDATE document_version SET status='superseded' WHERE doc_id=%s", (row["doc_id"],)
+                )
+            conn.execute("UPDATE document_version SET status=%s WHERE id=%s", (status, version_id))
+
+    def versions_of(self, doc_id: str) -> list[dict[str, Any]]:
+        with self.connect() as conn:
+            return conn.execute(
+                "SELECT id, version, chunk_scheme, checksum, status, effective_at "
+                "FROM document_version WHERE doc_id=%s ORDER BY version DESC",
+                (doc_id,),
+            ).fetchall()
+
+    def set_document_status(self, doc_id: str, status: str) -> None:
+        if status not in ("active", "offline", "rejected"):
+            raise ValueError(f"非法文档状态：{status}")
+        with self.connect() as conn:
+            conn.execute(
+                "UPDATE document SET status=%s, updated_at=now() WHERE id=%s", (status, doc_id)
+            )
+
     # ---- 读 ----
+    def get_document(self, doc_id: str) -> dict[str, Any] | None:
+        with self.connect() as conn:
+            return conn.execute("SELECT * FROM document WHERE id=%s", (doc_id,)).fetchone()
+
+    def list_documents(
+        self,
+        *,
+        max_security_level: int = 3,
+        industries: list[str] | None = None,
+        projects: list[str] | None = None,
+        status: str | None = "active",
+        limit: int = 20,
+        offset: int = 0,
+    ) -> dict[str, Any]:
+        """知识管理查询：权限过滤在这里就做，返回的每条都是调用者看得见的。"""
+        where = ["d.security_level <= %(max_level)s"]
+        params: dict[str, Any] = {"max_level": max_security_level, "limit": limit, "offset": offset}
+        if status:
+            where.append("d.status = %(status)s")
+            params["status"] = status
+        if industries:
+            where.append("d.industry = ANY(%(industries)s)")
+            params["industries"] = industries
+        if projects:
+            where.append("d.project = ANY(%(projects)s)")
+            params["projects"] = projects
+        clause = " AND ".join(where)
+        with self.connect() as conn:
+            total = conn.execute(
+                f"SELECT count(*) AS c FROM document d WHERE {clause}",
+                {k: v for k, v in params.items() if k not in ("limit", "offset")},
+            ).fetchone()["c"]
+            rows = conn.execute(
+                f"""
+                SELECT d.id, d.title, d.industry, d.customer, d.project, d.doc_type,
+                       d.source_level, d.security_level, d.status, d.created_at, d.updated_at,
+                       v.id AS effective_version, v.version AS version_no,
+                       (SELECT count(*) FROM chunk c WHERE c.version_id = v.id AND c.is_parent = false) AS child_chunks
+                FROM document d
+                LEFT JOIN document_version v ON v.doc_id = d.id AND v.status = 'effective'
+                WHERE {clause}
+                ORDER BY d.updated_at DESC LIMIT %(limit)s OFFSET %(offset)s
+                """,
+                params,
+            ).fetchall()
+        return {"total": int(total), "limit": limit, "offset": offset, "items": rows}
+
     def chunks_of(self, version_id: str) -> list[dict[str, Any]]:
         with self.connect() as conn:
             return conn.execute(

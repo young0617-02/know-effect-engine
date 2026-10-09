@@ -37,12 +37,14 @@ def chunk_document(
     rows: list[dict[str, Any]] = []
     order = 0
     doc_id = card["doc_id"]
+    # version_id 已含文档前缀（形如 doc-id@v1），不能再拼一次 doc_id，
+    # 否则分块 ID 变成「doc@doc@v1#1.1#c1」，溯源时读起来是自相矛盾的
     for sec in card["sections"]:
         section_no = str(sec["section_no"])
         page = int(sec["page"])
         paras = [str(p) for p in sec.get("paragraphs", []) or []]
         parent_text = f"【{card['title']} / {section_no} {sec.get('heading','')}】\n" + "\n".join(paras)
-        parent_id = f"{doc_id}@{version_id}#{section_no}#parent"
+        parent_id = f"{version_id}#{section_no}#parent"
         if len(parent_text) > parent_max:
             parent_text = parent_text[:parent_max]
         order += 1
@@ -82,7 +84,7 @@ def chunk_document(
             order += 1
             rows.append(
                 {
-                    "id": f"{doc_id}@{version_id}#{section_no}#c{child_idx}",
+                    "id": f"{version_id}#{section_no}#c{child_idx}",
                     "version_id": version_id,
                     "doc_id": doc_id,
                     "parent_id": parent_id,
