@@ -30,6 +30,13 @@ class Settings(BaseSettings):
     embed_max_length: int = 512
     device: str = "cuda"
 
+    # ---- 文档解析后端（MinerU 4.x pipeline 的本地 ONNX 权重） ----
+    mineru_model_dir: str = "D:/modelscope/hub/models/MinerU-4_models_onnx"
+    # auto=pypdf 文本层优先、薄则转 OCR；pypdf=只用文本层；mineru_onnx=强制版面+OCR
+    pdf_parse_backend: str = "auto"
+    ocr_dpi: int = 150
+    pdf_min_chars_per_page: int = 40
+
     # ---- 存储栈 ----
     milvus_uri: str = "http://127.0.0.1:39530"
     milvus_db: str = "default"

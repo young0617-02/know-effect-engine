@@ -89,12 +89,21 @@ docker compose -f infra/docker-compose.gate0.yml up -d      # 全部 healthy 即
 .venv/Scripts/python.exe scripts/reconcile_job.py --dry-run
 ```
 
-已知边界（详见 `reports/m1/M1_验证记录.md` 第四节）：**MinerU 未接入**（本机只有 onnx 权重、无包），所以扫描件与版面表格还原不可用；PDF 页码粒度受章节识别影响；角色/身份目前来自请求头，属占位鉴权。
+已知边界（详见 `reports/m1/M1_验证记录.md` 第四节）：PDF 走**本地 MinerU-ONNX 自建后端**
+（PP-DocLayoutV2 版面 + PP-OCRv6 det/rec，onnxruntime CPU 推理，模型用本机 `D:\modelscope` 已有权重；
+不装 `mineru` 包——它 3.5MB 但依赖树带 lmdeploy/gradio/mineru-llama-cpp，会和本 venv 经 `.pth` 挂载的
+CUDA torch 底座互顶版本；**也不用 mineru.net 云 API**，那属于数据出域）。
+未接：表格行列结构与公式识别（模型在本地，M2 按需接）；鉴权仍是请求头占位。
+
+后端选择：`KEE_PDF_PARSE_BACKEND=auto|pypdf|mineru_onnx` —— auto 下文本层够厚就走 pypdf（0.8s/文档），
+薄了才转版面+OCR（约 18s/页），不为能抽字的 PDF 白烧算力。
 
 ## 目录（M1 新增）
 
 ```
 src/kee/ingest/parsers.py     多格式解析适配层（字节流入，MinerU 留注册位）
+src/kee/ingest/docimg.py      pypdfium2 页面渲染（BGR 位图给版面/OCR）
+src/kee/ingest/mineru_onnx.py 本地 MinerU-ONNX 后端：PP-DocLayoutV2 版面 + PP-OCRv6 det/rec
 src/kee/ingest/metadata.py    元数据三级取值：表单 > front-matter > 推断，逐级告警
 src/kee/ingest/service.py     单文档摄取编排 + 升版/回滚/复核
 src/kee/api/app.py            对内 REST API 与统一错误码契约

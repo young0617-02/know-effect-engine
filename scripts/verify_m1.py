@@ -286,7 +286,40 @@ def main() -> int:
         },
     )
 
-    # ---- 6. 升版 / 回滚 ----
+    # ---- 7.5 扫描件 OCR：无文本层的 PDF 也必须能进知识库并被检索到 ----
+    scan_pdf = FIXTURES / "扫描件_产品安全手册第1页.pdf"
+    if not scan_pdf.exists() and REAL_PDF.exists():
+        import pypdfium2 as pdfium
+        from PIL import Image
+
+        page_img = Image.fromarray(
+            pdfium.PdfDocument(REAL_PDF.read_bytes())[0].render(scale=150 / 72).to_numpy()[:, :, :3]
+        )
+        page_img.save(scan_pdf, "PDF")
+    up_scan = upload(client, scan_pdf, {
+        "doc_id": "m1-saomiao-prj-mfg-2024-003", "industry": "制造", "customer": "某印刷设备客户",
+        "project": "PRJ-MFG-2024-003", "doc_type": "合规要求", "source_level": "C", "security_level": "1",
+    }, ENG)
+    scan_ok = up_scan["status_code"] == 201 and up_scan["body"]["indexed"] > 0 and any(
+        "MinerU-ONNX" in n for n in up_scan["body"]["parse_notes"]
+    )
+    scan_hit = retriever.retrieve("塑料袋并不是玩具 避免窒息 危险", ctx, top_k=3)
+    step(
+        "扫描件 OCR 入库并可检索（pypdf 无文本层 → 自动转 MinerU-ONNX 后端）",
+        scan_ok and "m1-saomiao-prj-mfg-2024-003" in [c.fields.get("doc_id") for c in scan_hit.chunks],
+        {
+            "分块": up_scan["body"].get("chunks"),
+            "索引条数": up_scan["body"].get("indexed"),
+            "解析痕迹": [n[:56] for n in up_scan["body"].get("parse_notes", [])],
+            "耗时s": up_scan["body"].get("timings_sec", {}).get("total"),
+            "检索命中": [
+                {"doc": c.fields.get("doc_id"), "page": c.fields.get("page"), "text": c.text[:34]}
+                for c in scan_hit.chunks[:2]
+            ],
+        },
+    )
+
+    # ---- 8. 升版 / 回滚 ----
     p = FIXTURES / "交付复盘.md"
     modified = p.read_text(encoding="utf-8").replace("线损率从 6.8% 降至 4.9%", "线损率从 6.8% 降至 4.1%，并追加季度复测要求")
     tmp = FIXTURES / "交付复盘_v2.md"

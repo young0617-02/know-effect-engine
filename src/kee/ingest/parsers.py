@@ -345,7 +345,7 @@ def parse_docx(data: bytes, filename: str) -> ParsedDocument:
     return doc.normalize()
 
 
-def parse_pdf(data: bytes, filename: str) -> ParsedDocument:
+def _parse_pdf_pypdf(data: bytes, filename: str) -> ParsedDocument:
     try:
         from pypdf import PdfReader
     except ImportError as e:  # pragma: no cover
@@ -417,6 +417,51 @@ def parse_pdf(data: bytes, filename: str) -> ParsedDocument:
         + ["PDF 页码为真实页序，可直接用于引用溯源；标题层级按编号行启发式识别"],
     )
     return doc.normalize()
+
+
+def _text_layer_is_thin(doc: ParsedDocument, pages: int) -> bool:
+    """文本层薄到不值得信任：多半是扫描件或以图片排版的规范文件。"""
+    from kee.config import get_settings
+
+    chars = sum(len(x) for s in doc.sections for x in s.paragraphs)
+    return chars < max(1, pages) * get_settings().pdf_min_chars_per_page
+
+
+def parse_pdf(data: bytes, filename: str) -> ParsedDocument:
+    """PDF 解析双后端：pypdf 文本层优先，文本层薄或显式要求时转 MinerU-ONNX（版面+OCR）。
+
+    后端失败必须回退并留痕，不能因为版面模型出问题时整份文档解析不了。
+    """
+    from kee.config import get_settings
+
+    s = get_settings()
+    doc = _parse_pdf_pypdf(data, filename)
+    backend = (s.pdf_parse_backend or "auto").lower()
+    if backend == "pypdf":
+        return doc
+    try:
+        import pypdf
+
+        pages = len(pypdf.PdfReader(io.BytesIO(data)).pages)
+    except Exception:  # noqa: BLE001
+        pages = max(1, len(doc.sections))
+    need = backend == "mineru_onnx" or (backend == "auto" and _text_layer_is_thin(doc, pages))
+    if not need:
+        return doc
+    try:
+        from kee.ingest.mineru_onnx import MinerUPdfParser
+
+        ocr_doc = MinerUPdfParser().parse(data, filename)
+    except Exception as e:  # noqa: BLE001
+        doc.notes.append(
+            f"MinerU-ONNX 后端不可用（{type(e).__name__}: {str(e)[:120]}），已回退 pypdf 文本层"
+        )
+        return doc
+    if not ocr_doc.sections:
+        doc.notes.append("MinerU-ONNX 未产出版面文本，保留 pypdf 结果")
+        return doc
+    ocr_doc.notes.append(f"触发原因：{'显式指定后端' if backend == 'mineru_onnx' else f'文本层过薄（{pages} 页）'}")
+    return ocr_doc
 
 
 PARSERS: dict[str, Callable[[bytes, str], ParsedDocument]] = {
