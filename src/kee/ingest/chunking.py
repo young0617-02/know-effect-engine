@@ -1,0 +1,97 @@
+"""Parent-Child 分块：父块=章节（上下文补全），子块=检索单元（精准命中）。
+
+子块只入向量库；父块留在权威源，答案组装时按 parent_id 回捞上下文。
+"""
+
+from __future__ import annotations
+
+from typing import Any
+
+DEFAULT_CHILD_MAX = 280
+DEFAULT_PARENT_MAX = 1600
+DEFAULT_OVERLAP = 40
+
+
+def _split_paragraph(text: str, child_max: int, overlap: int) -> list[str]:
+    if len(text) <= child_max:
+        return [text]
+    stride = max(child_max - overlap, 1)
+    out = []
+    for start in range(0, len(text), stride):
+        piece = text[start : start + child_max]
+        if piece.strip():
+            out.append(piece)
+        if start + child_max >= len(text):
+            break
+    return out
+
+
+def chunk_document(
+    card: dict[str, Any],
+    version_id: str,
+    child_max: int = DEFAULT_CHILD_MAX,
+    parent_max: int = DEFAULT_PARENT_MAX,
+    overlap: int = DEFAULT_OVERLAP,
+) -> list[dict[str, Any]]:
+    """返回 PG chunk 行（含父块与子块），order_no 在版本内全局递增。"""
+    rows: list[dict[str, Any]] = []
+    order = 0
+    doc_id = card["doc_id"]
+    for sec in card["sections"]:
+        section_no = str(sec["section_no"])
+        page = int(sec["page"])
+        paras = [str(p) for p in sec.get("paragraphs", []) or []]
+        parent_text = f"【{card['title']} / {section_no} {sec.get('heading','')}】\n" + "\n".join(paras)
+        parent_id = f"{doc_id}@{version_id}#{section_no}#parent"
+        if len(parent_text) > parent_max:
+            parent_text = parent_text[:parent_max]
+        order += 1
+        rows.append(
+            {
+                "id": parent_id,
+                "version_id": version_id,
+                "doc_id": doc_id,
+                "parent_id": None,
+                "section_no": section_no,
+                "page": page,
+                "order_no": order,
+                "content": parent_text,
+                "char_count": len(parent_text),
+                "is_parent": True,
+            }
+        )
+        # 子块：按段落聚合，超长段落再切片，保证子块不跨章节
+        buf = ""
+        child_idx = 0
+        pieces: list[str] = []
+        for p in paras:
+            for seg in _split_paragraph(p, child_max, overlap):
+                if buf and len(buf) + 1 + len(seg) > child_max:
+                    pieces.append(buf)
+                    buf = seg
+                else:
+                    buf = f"{buf} {seg}".strip()
+            if len(buf) >= child_max:
+                pieces.append(buf)
+                buf = ""
+        if buf:
+            pieces.append(buf)
+        for i, piece in enumerate(pieces, start=1):
+            child_idx = i
+            text = f"{sec.get('heading','')}｜{piece}"
+            order += 1
+            rows.append(
+                {
+                    "id": f"{doc_id}@{version_id}#{section_no}#c{child_idx}",
+                    "version_id": version_id,
+                    "doc_id": doc_id,
+                    "parent_id": parent_id,
+                    "section_no": section_no,
+                    "page": page,
+                    "order_no": order,
+                    "content": text[:child_max * 3],
+                    "char_count": len(text),
+                    "is_parent": False,
+                }
+            )
+    return rows
