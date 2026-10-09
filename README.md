@@ -69,7 +69,40 @@ docker compose -f infra/docker-compose.gate0.yml up -d      # 全部 healthy 即
 只能作为**独立的一键部署验证**跑，跑完必须重跑 `g02` 建库；默认的 `--rebuild` 只重建容器、保留数据卷。
 `g01` 已加前置校验：collection 不存在或为空时直接判失败退出，不会拿「全部提前拒答 → 延迟 0ms」冒充达标。
 
-单测：`.venv/Scripts/python.exe -m pytest -q`。
+单测：`.venv/Scripts/python.exe -m pytest -q`（42 → 现 59 项，纯逻辑，不需要 GPU/容器）。
+
+## M1 知识构建链路（Gate 0 放行后开工）
+
+真实文档接入的端到端链路：上传 → 准入 → 解析 → Parent-Child 分块 → PostgreSQL 权威源 → Outbox → Milvus 索引 → 审计/对账。
+
+| 入口 | 说明 |
+|---|---|
+| `POST /api/v1/documents/upload` | multipart 上传（md/txt/docx/pdf）+ 元表单 + `Idempotency-Key` |
+| `GET /api/v1/documents` | 分页 + **检索层权限过滤**（按角色密级上限、行业、项目） |
+| `POST /api/v1/documents/{id}/review` | pass/reject；**上传者不能自审**；reject 会撤下该版本索引 |
+| `POST /api/v1/documents/{id}/rollback` | 切生效版本，并用权威源 + 向量物料重建索引（不需 GPU） |
+| `POST /api/v1/reconcile/run`、`scripts/reconcile_job.py` | 每日对账：diff → Outbox 补偿 → 复检；CLI 的退出码 2 供编排告警 |
+| `scripts/verify_m1.py` | 14 步端到端验证（含真实 PDF），跑完自动还原生产索引到基线 |
+
+```bash
+.venv/Scripts/python.exe scripts/verify_m1.py        # 全链路取证，任一步不过即非零退出
+.venv/Scripts/python.exe scripts/reconcile_job.py --dry-run
+```
+
+已知边界（详见 `reports/m1/M1_验证记录.md` 第四节）：**MinerU 未接入**（本机只有 onnx 权重、无包），所以扫描件与版面表格还原不可用；PDF 页码粒度受章节识别影响；角色/身份目前来自请求头，属占位鉴权。
+
+## 目录（M1 新增）
+
+```
+src/kee/ingest/parsers.py     多格式解析适配层（字节流入，MinerU 留注册位）
+src/kee/ingest/metadata.py    元数据三级取值：表单 > front-matter > 推断，逐级告警
+src/kee/ingest/service.py     单文档摄取编排 + 升版/回滚/复核
+src/kee/api/app.py            对内 REST API 与统一错误码契约
+scripts/reconcile_job.py      对账作业 CLI
+scripts/verify_m1.py            M1 端到端验证（14 步）
+reports/m1/M1_验证记录.md      M1 实测结论、步骤表与已知限制
+```
+
 
 ## 口径与边界
 
