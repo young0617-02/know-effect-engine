@@ -9,7 +9,8 @@ venv/
 *.egg-info/
 
 # 本地依赖与模型缓存
-models/
+# 注意用 /models/ 而非 models/：后者会连 src/kee/models 这个源码包一起忽略掉
+/models/
 *.gguf
 *.onnx
 *.safetensors
