@@ -172,6 +172,37 @@ def split_table_block(text: str, limit: int) -> list[str]:
     return ["\n".join(g) for g in groups]
 
 
+def _md_cells(line: str) -> list[str]:
+    return [c.strip() for c in line.strip().strip("|").split("|")]
+
+
+def split_table_block_rows(text: str) -> list[str]:
+    """一行一个检索单元，渲染成「列名=值」而不是重复 Markdown 表头。
+
+    为什么不是整张表一个子块：实测「试运行阶段要交付什么」这类单元格级问题，
+    整表子块**进不了 Top-5**（12 题 Top1 命中 gold 率 0.0）——BM25 按长度归一化，
+    200 字的表块被 20 字的旁注块压过，嵌入又把 8 行平均成一个向量。
+
+    为什么也不是「表头 + 一行」的 Markdown 残块：那样每行都带同一段表头和同一个章节前缀，
+    共享部分占块内 60%+ 文本，行与行几乎无法区分，实测 Top-5 在同表各行之间随机排列。
+    渲染成 key=value 后共享文本只剩列名，区分度回到行本身。整张表仍保留在父块里供答案组装。
+    """
+    lines = [ln for ln in text.split("\n") if ln.strip()]
+    if len(lines) < 3:
+        return ["\n".join(lines)]
+    names = _md_cells(lines[0])
+    names = [n if n else f"列{i + 1}" for i, n in enumerate(names)]
+    out: list[str] = []
+    for row in lines[2:]:
+        if _TABLE_SEP.match(row.strip()):
+            continue
+        vals = _md_cells(row)
+        pairs = "；".join(f"{names[i]}={v}" for i, v in enumerate(vals) if i < len(names) and v)
+        if pairs:
+            out.append(pairs)
+    return out or ["\n".join(lines)]
+
+
 def _split_long(p: str) -> list[str]:
     if is_table_block(p):
         return split_table_block(p, PARA_MAX)

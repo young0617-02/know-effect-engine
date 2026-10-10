@@ -109,6 +109,7 @@ CUDA torch 底座互顶版本；**也不用 mineru.net 云 API**，那属于数�
 | `scripts/m2_eval.py` | 评测作业：预声明基线跑全样本出门禁判定，OFAT 网格只跑 dev 半区做诊断，与 `m2_eval_prev.json` 比对报回归 |
 | `scripts/m2_rebuild_baseline.py` | 基线索引重建 + 四项自证校验（正文逐块不变 / 命名统一 / gold 等价 / 索引=权威源） |
 | `scripts/m2_rewrite_probe.py` | 查询改写真机探针：触发率、单次延迟、JSON 失败率 |
+| `scripts/m2_table_probe.py` | 表格检索专项：单元格级问题能否检索到对应行（独立集合，跑完清库） |
 
 ```bash
 .venv/Scripts/python.exe scripts/m2_eval.py            # 全量（基线 + 9 格网格），约 3 分钟

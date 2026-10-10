@@ -13,7 +13,7 @@ from kee.ingest.mineru_onnx import (
     table_span_boxes,
     table_to_markdown,
 )
-from kee.ingest.parsers import _clean, is_table_block, split_table_block
+from kee.ingest.parsers import _clean, is_table_block, split_table_block, split_table_block_rows
 
 
 def cell(x1, y1, x2, y2, label="cell"):
@@ -146,12 +146,13 @@ def test_table_block_detection_and_split_repeat_header():
         assert is_table_block(piece)
 
 
-def test_chunking_keeps_table_in_its_own_child_with_header():
+def test_chunking_gives_each_table_row_its_own_child_as_key_value():
+    """整表一个子块时，单元格级问题实测进不了 Top-5（Top1 命中 gold 率 0.0）；
+    而「表头+一行」的残块又因每行共享同一段表头而无法互相区分。所以行级 + key=value。"""
     md = "\n".join(
         ["| 部件 | 铅含量判定 |", "|---|---|"]
         + [f"| 组件框架单元{i} | 超出限值{i} 微克 |" for i in range(12)]
     )
-    assert len(md) > 280  # 必须超过子块长度，否则测不到切分
     card = {
         "doc_id": "d1",
         "title": "测试文档",
@@ -159,12 +160,22 @@ def test_chunking_keeps_table_in_its_own_child_with_header():
     }
     rows = chunk_document(card, "d1@v1")
     children = [r for r in rows if not r["is_parent"]]
-    assert len(children) > 1
-    for c in children:
-        head = c["content"].split("\n")
-        assert head[0] == "有害物质表"  # 章节标题独占一行，不能把表头行挤下去
-        assert head[1] == "| 部件 | 铅含量判定 |"
-        assert c["char_count"] <= 280 * 2
+    assert len(children) == 12  # 一行一块
+    for i, c in enumerate(children):
+        assert c["content"] == f"有害物质表（表行）｜部件=组件框架单元{i}；铅含量判定=超出限值{i} 微克"
+    parent = next(r for r in rows if r["is_parent"])
+    assert "| 部件 | 铅含量判定 |" in parent["content"]  # 整张表仍在父块里供答案组装
+    assert parent["content"].count("\n|") >= 12
+
+
+def test_split_table_rows_names_empty_columns_positionally():
+    """合并表头会留下空列名，必须给位置名而不是让 key 消失。"""
+    md = "\n".join(
+        ["| 型号 | 有害物质 |  |", "|---|---|---|", "| HAK180 | 铅 | 汞 |", "| 主板 | 超 | 未超 |"]
+    )
+    out = split_table_block_rows(md)
+    assert out == ["型号=HAK180；有害物质=铅；列3=汞", "型号=主板；有害物质=超；列3=未超"]
+    # 多行表头的真实列名（铅/汞）落在数据行里，这种表按列名检索会失真——已记入 M2 限制
 
 
 def test_table_structure_model_reports_missing_weight(tmp_path, monkeypatch):

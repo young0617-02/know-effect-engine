@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from kee.ingest.parsers import is_table_block, split_table_block
+from kee.ingest.parsers import is_table_block, split_table_block_rows
 
 DEFAULT_CHILD_MAX = 280
 DEFAULT_PARENT_MAX = 1600
@@ -17,9 +17,6 @@ DEFAULT_OVERLAP = 40
 def _split_paragraph(text: str, child_max: int, overlap: int) -> list[str]:
     if len(text) <= child_max:
         return [text]
-    if is_table_block(text):
-        # 表格按字符窗口切会把行切断、列名丢掉，必须按行组切并重复表头
-        return split_table_block(text, child_max)
     stride = max(child_max - overlap, 1)
     out = []
     for start in range(0, len(text), stride):
@@ -68,33 +65,34 @@ def chunk_document(
                 "is_parent": True,
             }
         )
-        # 子块：按段落聚合，超长段落再切片，保证子块不跨章节
+        # 子块：按段落聚合，超长段落再切片，保证子块不跨章节。
+        # 表格单独走行级展开，pieces 里带 is_row 标记而不是事后靠正则认——
+        # 行块渲染成「列名=值」后已经不是 Markdown 了，事后认不回来。
         buf = ""
         child_idx = 0
-        pieces: list[str] = []
+        pieces: list[tuple[str, bool]] = []
         for p in paras:
+            if is_table_block(p):
+                if buf:
+                    pieces.append((buf, False))
+                    buf = ""
+                pieces.extend((row, True) for row in split_table_block_rows(p))
+                continue
             for seg in _split_paragraph(p, child_max, overlap):
-                if is_table_block(seg):
-                    # 表格块不与其他文本共用子块：拼接会把表头挤到同一行，Markdown 解析不出来
-                    if buf:
-                        pieces.append(buf)
-                        buf = ""
-                    pieces.append(seg)
-                    continue
                 if buf and len(buf) + 1 + len(seg) > child_max:
-                    pieces.append(buf)
+                    pieces.append((buf, False))
                     buf = seg
                 else:
                     buf = f"{buf} {seg}".strip()
             if len(buf) >= child_max:
-                pieces.append(buf)
+                pieces.append((buf, False))
                 buf = ""
         if buf:
-            pieces.append(buf)
-        for i, piece in enumerate(pieces, start=1):
+            pieces.append((buf, False))
+        for i, (piece, is_row) in enumerate(pieces, start=1):
             child_idx = i
-            # 表格块不能拼「标题｜| 列1 |」：那会把表头行挤出第一行，Markdown 解析不出来
-            text = f"{heading}\n{piece}" if is_table_block(piece) else f"{heading}｜{piece}"
+            # 行块加「表行」前缀，让答案层知道这段是表格的一行而不是正文
+            text = f"{heading}｜{piece}" if not is_row else f"{heading}（表行）｜{piece}"
             order += 1
             rows.append(
                 {
