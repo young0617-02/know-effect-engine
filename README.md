@@ -116,11 +116,15 @@ CUDA torch 底座互顶版本；**也不用 mineru.net 云 API**，那属于数�
 .venv/Scripts/python.exe scripts/m2_eval.py --skip-grid  # 只跑基线（回归比对）
 ```
 
-实测结论（详见 `reports/m2/M2_检索评测基线.md`）：检索层 strict gold Recall@5 **0.965**、Hit@5 **0.9828**、
+实测结论（详见 `reports/m2/M2_检索评测基线.md`）：检索层 **Hit@5 0.9828**、strict gold Recall@5 **0.965**、
 P95 **338ms**；section gold Recall@5 **0.822** —— 缺口全部来自「章节内所有子块都算 gold」的定义
-（6 道 gold>5 的题 Hit@5=1.0），不是排序失败。**参数不是瓶颈，样本量才是**：n=58 时 Recall@5 的
+（6 道 gold>5 的题 Hit@5=1.0），不是排序失败。**参数不是瓶颈、样本量才是**：n=58 时 Recall@5 的
 95% CI 宽 0.13，网格最大增益都在噪声地板内。查询改写已接入但默认 `off`（单次 P95 843ms，
-一步就吃满 800ms 检索门禁）。
+一步就吃满 800ms 检索门禁）。表格单元格级检索：行级「列名=值」+ 行块守住融合名次，
+专项 Hit@5 由 0.667 做到 **1.0**（n=12）。
+
+**检索质量门禁口径已于 V1.3 / V1.0.3 修订**：主判定 `Hit@5 ≥ 95%` + `strict gold Recall@5 ≥ 85%`，
+section gold 降为报告值，Recall 类数字必须附 n 与 95% CI（阈值数值未下调，只是写清了它测什么）。
 
 `KEE_REWRITE_MODE=off|sparse|both|extra_leg` 控制改写形态。
 
