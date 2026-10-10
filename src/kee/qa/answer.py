@@ -127,6 +127,7 @@ class AnswerEngine:
         retriever: HybridRetriever,
         llm: OllamaClient | None = None,
         min_retrieval_score: float = 0.20,
+        strong_evidence_floor: float = 0.90,
         temperature: float = 0.0,
         max_tokens: int = 700,
     ) -> None:
@@ -134,6 +135,10 @@ class AnswerEngine:
         self.retriever = retriever
         self.llm = llm or OllamaClient()
         self.min_retrieval_score = min_retrieval_score
+        # 0.90 不是精调出来的：Gate 0 ⑤ 里该转人工的 q-070 是 0.9683、该拒答的 q-059 是 0.8745，
+        # 中间只有 0.09 的间隔且负类仅 7 个样本。取 0.90 是「贴着观测到的间隔上沿」而非「已验证的分离点」，
+        # 所以这条阈值必须随 M3-01c 的答案链复测重新标定，不能当定论引用。
+        self.strong_evidence_floor = strong_evidence_floor
         self.temperature = temperature
         self.max_tokens = max_tokens
         self.calibration_temperature: float = 1.0
@@ -269,9 +274,26 @@ class AnswerEngine:
             return base
 
         if obj.get("no_evidence") is True:
-            base.status = "refuse"
+            # 反向兜底（Gate 0 ⑤ 唯一未闭环项的形态是「该答不答」，不是幻觉）：
+            # 模型声明无依据时，系统此前只是拒答，既不复核也不承认自己可能判错。
+            # 分两层，第一层不需要任何阈值：
+            #   1) 声明无依据一律挂人工复核标记——知识服务里「查不出来」恰恰是最该被人看见的出口；
+            #   2) 只有当检索层的证据强度也不同意「无依据」时，才把状态从 refuse 改成 escalate，
+            #      因为此时 refuse 是在**断言一件检索层反对的事**（没有依据），不能这么报。
+            base.needs_human = True
             base.notes.append("model_declared_no_evidence")
-            base.confidence = {"retrieval": round(top_score, 4), "composite": 0.0, "calibrated": 0.0}
+            strong = top_score >= self.strong_evidence_floor
+            base.status = "escalate" if strong else "refuse"
+            if strong:
+                base.notes.append(
+                    f"strong_evidence_but_no_basis_claimed:{top_score:.4f}>={self.strong_evidence_floor}"
+                )
+            base.confidence = {
+                "retrieval": round(top_score, 4),
+                "composite": 0.0,
+                "calibrated": 0.0,
+                "rule": "declared_no_evidence",
+            }
             return base
 
         points, cites, dropped = self._enforce_citations(obj, evidence_index)

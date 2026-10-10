@@ -107,8 +107,10 @@ def test_conclusion_without_any_citation_is_refused():
 
 
 def test_model_declared_no_evidence_leads_to_refuse():
+    """弱证据下声明无依据 → 仍是 refuse（「没有可用依据」这个断言成立）。
+    强证据下的分支已变，见 M3-02 的 test_strong_evidence_with_declared_no_basis_escalates...。"""
     payload = {"conclusion": "", "key_points": [], "no_evidence": True, "self_assessed_confidence": 0.1}
-    eng = AnswerEngine(FakeRetriever([chunk("c1")]), FakeLlm(payload))
+    eng = AnswerEngine(FakeRetriever([chunk("c1", score=0.42)]), FakeLlm(payload))
     res = eng.answer("RTO 是多少", ctx())
     assert res.status == "refuse"
     assert "model_declared_no_evidence" in res.notes
@@ -235,3 +237,43 @@ def test_valid_conclusion_still_produces_calibratable_answer():
     assert res.status in ("answer", "tentative")
     assert res.needs_human is False
     assert "logit" in res.confidence and res.conclusion
+
+
+# ---- M3-02 反向兜底：强证据却声明无依据 ----
+# 复现的是 Gate 0 ⑤ 唯一未闭环项 q-070：检索分 0.9683、模型声明无依据、
+# 系统只是 refuse 且 needs_human=False，既没复核也没承认自己判错。
+
+
+def no_basis_payload():
+    return {"conclusion": "", "key_points": [], "citations": [], "no_evidence": True,
+            "self_assessed_confidence": 0.0}
+
+
+def test_strong_evidence_with_declared_no_basis_escalates_instead_of_refusing():
+    eng = AnswerEngine(FakeRetriever([chunk("c1", score=0.9683)]), FakeLlm(no_basis_payload()))
+    res = eng.answer("电子记录那个项目的应急储备金比例是多少", ctx())
+    assert res.status == "escalate"
+    assert res.needs_human is True
+    assert any(n.startswith("strong_evidence_but_no_basis_claimed") for n in res.notes)
+    assert "model_declared_no_evidence" in res.notes
+
+
+def test_weak_evidence_with_declared_no_basis_still_refuses_but_flags_review():
+    """第一层不需要阈值：知识服务里「查不出来」恰恰是最该被人看见的出口。"""
+    eng = AnswerEngine(FakeRetriever([chunk("c1", score=0.55)]), FakeLlm(no_basis_payload()))
+    res = eng.answer("今年食堂供应商的中标名单", ctx())
+    assert res.status == "refuse"
+    assert res.needs_human is True
+    assert not any(n.startswith("strong_evidence_but_no_basis_claimed") for n in res.notes)
+
+
+def test_below_the_floor_is_not_called_strong():
+    eng = AnswerEngine(FakeRetriever([chunk("c1", score=0.8745)]), FakeLlm(no_basis_payload()))
+    res = eng.answer("某项内部指标是多少", ctx())
+    assert res.status == "refuse" and res.needs_human is True
+
+
+def test_no_basis_answer_stays_out_of_calibration_set():
+    eng = AnswerEngine(FakeRetriever([chunk("c1", score=0.9683)]), FakeLlm(no_basis_payload()))
+    res = eng.answer("电子记录那个项目的应急储备金比例是多少", ctx())
+    assert "logit" not in res.confidence and res.confidence["composite"] == 0.0
