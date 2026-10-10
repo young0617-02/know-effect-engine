@@ -1,0 +1,1301 @@
+{
+  "collection": "kb_chunks",
+  "n_answerable": 58,
+  "status_dist": {
+    "answer": 14,
+    "refuse": 5,
+    "degraded": 39
+  },
+  "needs_human": 44,
+  "契约拦下的空结论": 39,
+  "行级引用落gold": "53/53 = 1.0",
+  "仍被判answer/tentative且结论为空": 0,
+  "可判校准集(有logit)": 14,
+  "e2e_ms": {
+    "p50": 4484.6,
+    "max": 11331.9
+  },
+  "rows": [
+    {
+      "qid": "q-001",
+      "category": "术语",
+      "status": "answer",
+      "needs_human": false,
+      "conclusion_len": 12,
+      "n_points": 1,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "confidence": {
+        "retrieval": 0.9932,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7969,
+        "logit": 1.367,
+        "calibrated": 0.7969,
+        "temperature": 1.0
+      },
+      "notes": [],
+      "e2e_ms": 4388.7
+    },
+    {
+      "qid": "q-002",
+      "category": "术语",
+      "status": "answer",
+      "needs_human": false,
+      "conclusion_len": 32,
+      "n_points": 1,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "confidence": {
+        "retrieval": 0.9946,
+        "citation_consistency": 1.0,
+        "self_assessed": 1.0,
+        "composite": 0.9976,
+        "logit": 6.0299,
+        "calibrated": 0.9976,
+        "temperature": 1.0
+      },
+      "notes": [],
+      "e2e_ms": 4626.9
+    },
+    {
+      "qid": "q-003",
+      "category": "术语",
+      "status": "refuse",
+      "needs_human": false,
+      "conclusion_len": 0,
+      "n_points": 0,
+      "n_citations": 0,
+      "citation_hits_gold": 0,
+      "confidence": {
+        "retrieval": 0.9697,
+        "composite": 0.0,
+        "calibrated": 0.0
+      },
+      "notes": [
+        "model_declared_no_evidence"
+      ],
+      "e2e_ms": 4165.0
+    },
+    {
+      "qid": "q-004",
+      "category": "术语",
+      "status": "answer",
+      "needs_human": true,
+      "conclusion_len": 34,
+      "n_points": 1,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "confidence": {
+        "retrieval": 0.9956,
+        "citation_consistency": 1.0,
+        "self_assessed": 1.0,
+        "composite": 0.998,
+        "logit": 6.2126,
+        "calibrated": 0.998,
+        "temperature": 1.0
+      },
+      "notes": [
+        "secret_level_cited:1 条需人工复核"
+      ],
+      "e2e_ms": 5431.9
+    },
+    {
+      "qid": "q-005",
+      "category": "术语",
+      "status": "degraded",
+      "needs_human": true,
+      "conclusion_len": 0,
+      "n_points": 1,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "confidence": {
+        "retrieval": 0.9966,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.0,
+        "calibrated": 0.0,
+        "rule": "contract_empty_conclusion"
+      },
+      "notes": [
+        "contract_violation:empty_conclusion"
+      ],
+      "e2e_ms": 3670.4
+    },
+    {
+      "qid": "q-006",
+      "category": "术语",
+      "status": "answer",
+      "needs_human": true,
+      "conclusion_len": 24,
+      "n_points": 1,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "confidence": {
+        "retrieval": 0.9829,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7923,
+        "logit": 1.3388,
+        "calibrated": 0.7923,
+        "temperature": 1.0
+      },
+      "notes": [
+        "secret_level_cited:1 条需人工复核"
+      ],
+      "e2e_ms": 5351.6
+    },
+    {
+      "qid": "q-007",
+      "category": "术语",
+      "status": "answer",
+      "needs_human": true,
+      "conclusion_len": 3,
+      "n_points": 1,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "confidence": {
+        "retrieval": 0.9956,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.798,
+        "logit": 1.3738,
+        "calibrated": 0.798,
+        "temperature": 1.0
+      },
+      "notes": [
+        "secret_level_cited:1 条需人工复核"
+      ],
+      "e2e_ms": 4873.3
+    },
+    {
+      "qid": "q-008",
+      "category": "术语",
+      "status": "answer",
+      "needs_human": false,
+      "conclusion_len": 12,
+      "n_points": 1,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "confidence": {
+        "retrieval": 0.9907,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7958,
+        "logit": 1.3602,
+        "calibrated": 0.7958,
+        "temperature": 1.0
+      },
+      "notes": [],
+      "e2e_ms": 4669.8
+    },
+    {
+      "qid": "q-009",
+      "category": "术语",
+      "status": "answer",
+      "needs_human": false,
+      "conclusion_len": 2,
+      "n_points": 1,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "confidence": {
+        "retrieval": 0.9922,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7965,
+        "logit": 1.3646,
+        "calibrated": 0.7965,
+        "temperature": 1.0
+      },
+      "notes": [],
+      "e2e_ms": 4448.8
+    },
+    {
+      "qid": "q-010",
+      "category": "术语",
+      "status": "degraded",
+      "needs_human": true,
+      "conclusion_len": 0,
+      "n_points": 1,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "confidence": {
+        "retrieval": 0.9839,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.0,
+        "calibrated": 0.0,
+        "rule": "contract_empty_conclusion"
+      },
+      "notes": [
+        "contract_violation:empty_conclusion"
+      ],
+      "e2e_ms": 5317.3
+    },
+    {
+      "qid": "q-011",
+      "category": "术语",
+      "status": "degraded",
+      "needs_human": true,
+      "conclusion_len": 0,
+      "n_points": 1,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "confidence": {
+        "retrieval": 0.9907,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.0,
+        "calibrated": 0.0,
+        "rule": "contract_empty_conclusion"
+      },
+      "notes": [
+        "contract_violation:empty_conclusion"
+      ],
+      "e2e_ms": 3859.1
+    },
+    {
+      "qid": "q-012",
+      "category": "术语",
+      "status": "degraded",
+      "needs_human": true,
+      "conclusion_len": 0,
+      "n_points": 1,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "confidence": {
+        "retrieval": 0.9795,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.0,
+        "calibrated": 0.0,
+        "rule": "contract_empty_conclusion"
+      },
+      "notes": [
+        "contract_violation:empty_conclusion"
+      ],
+      "e2e_ms": 3712.8
+    },
+    {
+      "qid": "q-013",
+      "category": "术语",
+      "status": "degraded",
+      "needs_human": true,
+      "conclusion_len": 0,
+      "n_points": 1,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "confidence": {
+        "retrieval": 0.9517,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.0,
+        "calibrated": 0.0,
+        "rule": "contract_empty_conclusion"
+      },
+      "notes": [
+        "contract_violation:empty_conclusion"
+      ],
+      "e2e_ms": 4484.6
+    },
+    {
+      "qid": "q-014",
+      "category": "术语",
+      "status": "degraded",
+      "needs_human": true,
+      "conclusion_len": 0,
+      "n_points": 1,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "confidence": {
+        "retrieval": 0.9722,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.0,
+        "calibrated": 0.0,
+        "rule": "contract_empty_conclusion"
+      },
+      "notes": [
+        "contract_violation:empty_conclusion"
+      ],
+      "e2e_ms": 3929.4
+    },
+    {
+      "qid": "q-015",
+      "category": "编号",
+      "status": "degraded",
+      "needs_human": true,
+      "conclusion_len": 0,
+      "n_points": 1,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "confidence": {
+        "retrieval": 0.9937,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.0,
+        "calibrated": 0.0,
+        "rule": "contract_empty_conclusion"
+      },
+      "notes": [
+        "contract_violation:empty_conclusion"
+      ],
+      "e2e_ms": 3889.2
+    },
+    {
+      "qid": "q-016",
+      "category": "编号",
+      "status": "degraded",
+      "needs_human": true,
+      "conclusion_len": 0,
+      "n_points": 1,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "confidence": {
+        "retrieval": 0.9912,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.0,
+        "calibrated": 0.0,
+        "rule": "contract_empty_conclusion"
+      },
+      "notes": [
+        "contract_violation:empty_conclusion"
+      ],
+      "e2e_ms": 4286.2
+    },
+    {
+      "qid": "q-017",
+      "category": "编号",
+      "status": "degraded",
+      "needs_human": true,
+      "conclusion_len": 0,
+      "n_points": 2,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "confidence": {
+        "retrieval": 0.9141,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.0,
+        "calibrated": 0.0,
+        "rule": "contract_empty_conclusion"
+      },
+      "notes": [
+        "contract_violation:empty_conclusion"
+      ],
+      "e2e_ms": 4690.3
+    },
+    {
+      "qid": "q-018",
+      "category": "编号",
+      "status": "answer",
+      "needs_human": false,
+      "conclusion_len": 16,
+      "n_points": 1,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "confidence": {
+        "retrieval": 0.9912,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.796,
+        "logit": 1.3615,
+        "calibrated": 0.796,
+        "temperature": 1.0
+      },
+      "notes": [],
+      "e2e_ms": 4251.3
+    },
+    {
+      "qid": "q-019",
+      "category": "编号",
+      "status": "degraded",
+      "needs_human": true,
+      "conclusion_len": 0,
+      "n_points": 1,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "confidence": {
+        "retrieval": 0.9844,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.0,
+        "calibrated": 0.0,
+        "rule": "contract_empty_conclusion"
+      },
+      "notes": [
+        "contract_violation:empty_conclusion"
+      ],
+      "e2e_ms": 4224.5
+    },
+    {
+      "qid": "q-020",
+      "category": "编号",
+      "status": "degraded",
+      "needs_human": true,
+      "conclusion_len": 0,
+      "n_points": 1,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "confidence": {
+        "retrieval": 0.9839,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.0,
+        "calibrated": 0.0,
+        "rule": "contract_empty_conclusion"
+      },
+      "notes": [
+        "contract_violation:empty_conclusion"
+      ],
+      "e2e_ms": 3923.8
+    },
+    {
+      "qid": "q-021",
+      "category": "编号",
+      "status": "degraded",
+      "needs_human": true,
+      "conclusion_len": 0,
+      "n_points": 2,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "confidence": {
+        "retrieval": 0.9507,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.0,
+        "calibrated": 0.0,
+        "rule": "contract_empty_conclusion"
+      },
+      "notes": [
+        "contract_violation:empty_conclusion"
+      ],
+      "e2e_ms": 4458.5
+    },
+    {
+      "qid": "q-022",
+      "category": "编号",
+      "status": "degraded",
+      "needs_human": true,
+      "conclusion_len": 0,
+      "n_points": 1,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "confidence": {
+        "retrieval": 0.9575,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.0,
+        "calibrated": 0.0,
+        "rule": "contract_empty_conclusion"
+      },
+      "notes": [
+        "contract_violation:empty_conclusion"
+      ],
+      "e2e_ms": 4416.9
+    },
+    {
+      "qid": "q-023",
+      "category": "编号",
+      "status": "answer",
+      "needs_human": false,
+      "conclusion_len": 35,
+      "n_points": 1,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "confidence": {
+        "retrieval": 0.9971,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7987,
+        "logit": 1.3782,
+        "calibrated": 0.7987,
+        "temperature": 1.0
+      },
+      "notes": [],
+      "e2e_ms": 5548.6
+    },
+    {
+      "qid": "q-024",
+      "category": "编号",
+      "status": "degraded",
+      "needs_human": true,
+      "conclusion_len": 0,
+      "n_points": 1,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "confidence": {
+        "retrieval": 0.9976,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.0,
+        "calibrated": 0.0,
+        "rule": "contract_empty_conclusion"
+      },
+      "notes": [
+        "contract_violation:empty_conclusion"
+      ],
+      "e2e_ms": 4792.8
+    },
+    {
+      "qid": "q-025",
+      "category": "编号",
+      "status": "degraded",
+      "needs_human": true,
+      "conclusion_len": 0,
+      "n_points": 2,
+      "n_citations": 2,
+      "citation_hits_gold": 1,
+      "confidence": {
+        "retrieval": 0.9624,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.0,
+        "calibrated": 0.0,
+        "rule": "contract_empty_conclusion"
+      },
+      "notes": [
+        "contract_violation:empty_conclusion"
+      ],
+      "e2e_ms": 6359.8
+    },
+    {
+      "qid": "q-026",
+      "category": "编号",
+      "status": "degraded",
+      "needs_human": true,
+      "conclusion_len": 0,
+      "n_points": 2,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "confidence": {
+        "retrieval": 0.9697,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.0,
+        "calibrated": 0.0,
+        "rule": "contract_empty_conclusion"
+      },
+      "notes": [
+        "contract_violation:empty_conclusion"
+      ],
+      "e2e_ms": 6763.8
+    },
+    {
+      "qid": "q-027",
+      "category": "方案名",
+      "status": "answer",
+      "needs_human": false,
+      "conclusion_len": 22,
+      "n_points": 1,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "confidence": {
+        "retrieval": 0.9971,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7987,
+        "logit": 1.3782,
+        "calibrated": 0.7987,
+        "temperature": 1.0
+      },
+      "notes": [],
+      "e2e_ms": 4811.8
+    },
+    {
+      "qid": "q-028",
+      "category": "方案名",
+      "status": "answer",
+      "needs_human": false,
+      "conclusion_len": 23,
+      "n_points": 1,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "confidence": {
+        "retrieval": 0.9927,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7967,
+        "logit": 1.3658,
+        "calibrated": 0.7967,
+        "temperature": 1.0
+      },
+      "notes": [],
+      "e2e_ms": 4718.8
+    },
+    {
+      "qid": "q-029",
+      "category": "方案名",
+      "status": "degraded",
+      "needs_human": true,
+      "conclusion_len": 0,
+      "n_points": 3,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "confidence": {
+        "retrieval": 0.9971,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.0,
+        "calibrated": 0.0,
+        "rule": "contract_empty_conclusion"
+      },
+      "notes": [
+        "contract_violation:empty_conclusion"
+      ],
+      "e2e_ms": 4714.8
+    },
+    {
+      "qid": "q-030",
+      "category": "方案名",
+      "status": "degraded",
+      "needs_human": true,
+      "conclusion_len": 0,
+      "n_points": 1,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "confidence": {
+        "retrieval": 0.9863,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.0,
+        "calibrated": 0.0,
+        "rule": "contract_empty_conclusion"
+      },
+      "notes": [
+        "contract_violation:empty_conclusion"
+      ],
+      "e2e_ms": 4085.6
+    },
+    {
+      "qid": "q-031",
+      "category": "方案名",
+      "status": "degraded",
+      "needs_human": true,
+      "conclusion_len": 0,
+      "n_points": 1,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "confidence": {
+        "retrieval": 0.9575,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.0,
+        "calibrated": 0.0,
+        "rule": "contract_empty_conclusion"
+      },
+      "notes": [
+        "contract_violation:empty_conclusion"
+      ],
+      "e2e_ms": 4498.6
+    },
+    {
+      "qid": "q-032",
+      "category": "方案名",
+      "status": "answer",
+      "needs_human": false,
+      "conclusion_len": 6,
+      "n_points": 1,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "confidence": {
+        "retrieval": 0.9839,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.9,
+        "composite": 0.9727,
+        "logit": 3.5732,
+        "calibrated": 0.9727,
+        "temperature": 1.0
+      },
+      "notes": [],
+      "e2e_ms": 4323.7
+    },
+    {
+      "qid": "q-033",
+      "category": "方案名",
+      "status": "degraded",
+      "needs_human": true,
+      "conclusion_len": 0,
+      "n_points": 1,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "confidence": {
+        "retrieval": 0.9829,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.0,
+        "calibrated": 0.0,
+        "rule": "contract_empty_conclusion"
+      },
+      "notes": [
+        "contract_violation:empty_conclusion"
+      ],
+      "e2e_ms": 5267.4
+    },
+    {
+      "qid": "q-034",
+      "category": "方案名",
+      "status": "answer",
+      "needs_human": true,
+      "conclusion_len": 5,
+      "n_points": 1,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "confidence": {
+        "retrieval": 0.9966,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7985,
+        "logit": 1.3769,
+        "calibrated": 0.7985,
+        "temperature": 1.0
+      },
+      "notes": [
+        "secret_level_cited:1 条需人工复核"
+      ],
+      "e2e_ms": 4137.7
+    },
+    {
+      "qid": "q-035",
+      "category": "方案名",
+      "status": "degraded",
+      "needs_human": true,
+      "conclusion_len": 0,
+      "n_points": 1,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "confidence": {
+        "retrieval": 0.9829,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.0,
+        "calibrated": 0.0,
+        "rule": "contract_empty_conclusion"
+      },
+      "notes": [
+        "contract_violation:empty_conclusion"
+      ],
+      "e2e_ms": 4258.8
+    },
+    {
+      "qid": "q-036",
+      "category": "方案名",
+      "status": "answer",
+      "needs_human": true,
+      "conclusion_len": 18,
+      "n_points": 1,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "confidence": {
+        "retrieval": 0.9985,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7993,
+        "logit": 1.3819,
+        "calibrated": 0.7993,
+        "temperature": 1.0
+      },
+      "notes": [
+        "secret_level_cited:1 条需人工复核"
+      ],
+      "e2e_ms": 4143.0
+    },
+    {
+      "qid": "q-037",
+      "category": "方案名",
+      "status": "degraded",
+      "needs_human": true,
+      "conclusion_len": 0,
+      "n_points": 1,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "confidence": {
+        "retrieval": 0.9668,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.0,
+        "calibrated": 0.0,
+        "rule": "contract_empty_conclusion"
+      },
+      "notes": [
+        "contract_violation:empty_conclusion"
+      ],
+      "e2e_ms": 4508.8
+    },
+    {
+      "qid": "q-038",
+      "category": "方案名",
+      "status": "degraded",
+      "needs_human": true,
+      "conclusion_len": 0,
+      "n_points": 2,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "confidence": {
+        "retrieval": 0.9839,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.0,
+        "calibrated": 0.0,
+        "rule": "contract_empty_conclusion"
+      },
+      "notes": [
+        "contract_violation:empty_conclusion"
+      ],
+      "e2e_ms": 4871.6
+    },
+    {
+      "qid": "q-039",
+      "category": "口语化",
+      "status": "degraded",
+      "needs_human": true,
+      "conclusion_len": 0,
+      "n_points": 1,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "confidence": {
+        "retrieval": 0.5073,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.0,
+        "calibrated": 0.0,
+        "rule": "contract_empty_conclusion"
+      },
+      "notes": [
+        "contract_violation:empty_conclusion"
+      ],
+      "e2e_ms": 4367.2
+    },
+    {
+      "qid": "q-040",
+      "category": "口语化",
+      "status": "degraded",
+      "needs_human": true,
+      "conclusion_len": 0,
+      "n_points": 2,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "confidence": {
+        "retrieval": 0.561,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.0,
+        "calibrated": 0.0,
+        "rule": "contract_empty_conclusion"
+      },
+      "notes": [
+        "contract_violation:empty_conclusion"
+      ],
+      "e2e_ms": 4463.9
+    },
+    {
+      "qid": "q-041",
+      "category": "口语化",
+      "status": "degraded",
+      "needs_human": true,
+      "conclusion_len": 0,
+      "n_points": 1,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "confidence": {
+        "retrieval": 0.4519,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.0,
+        "calibrated": 0.0,
+        "rule": "contract_empty_conclusion"
+      },
+      "notes": [
+        "contract_violation:empty_conclusion"
+      ],
+      "e2e_ms": 4877.8
+    },
+    {
+      "qid": "q-042",
+      "category": "口语化",
+      "status": "degraded",
+      "needs_human": true,
+      "conclusion_len": 0,
+      "n_points": 1,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "confidence": {
+        "retrieval": 0.271,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.0,
+        "calibrated": 0.0,
+        "rule": "contract_empty_conclusion"
+      },
+      "notes": [
+        "contract_violation:empty_conclusion"
+      ],
+      "e2e_ms": 4537.7
+    },
+    {
+      "qid": "q-043",
+      "category": "口语化",
+      "status": "degraded",
+      "needs_human": true,
+      "conclusion_len": 0,
+      "n_points": 1,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "confidence": {
+        "retrieval": 0.5889,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.0,
+        "calibrated": 0.0,
+        "rule": "contract_empty_conclusion"
+      },
+      "notes": [
+        "contract_violation:empty_conclusion"
+      ],
+      "e2e_ms": 5365.7
+    },
+    {
+      "qid": "q-044",
+      "category": "口语化",
+      "status": "refuse",
+      "needs_human": false,
+      "conclusion_len": 0,
+      "n_points": 0,
+      "n_citations": 0,
+      "citation_hits_gold": 0,
+      "confidence": {
+        "retrieval": 0.0046,
+        "composite": 0.0,
+        "calibrated": 0.0,
+        "rule": "retrieval_gate"
+      },
+      "notes": [
+        "no_sufficient_evidence"
+      ],
+      "e2e_ms": 341.2
+    },
+    {
+      "qid": "q-045",
+      "category": "口语化",
+      "status": "degraded",
+      "needs_human": true,
+      "conclusion_len": 0,
+      "n_points": 1,
+      "n_citations": 2,
+      "citation_hits_gold": 1,
+      "confidence": {
+        "retrieval": 0.8628,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.0,
+        "calibrated": 0.0,
+        "rule": "contract_empty_conclusion"
+      },
+      "notes": [
+        "contract_violation:empty_conclusion"
+      ],
+      "e2e_ms": 5452.7
+    },
+    {
+      "qid": "q-046",
+      "category": "口语化",
+      "status": "degraded",
+      "needs_human": true,
+      "conclusion_len": 0,
+      "n_points": 1,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "confidence": {
+        "retrieval": 0.2417,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.0,
+        "calibrated": 0.0,
+        "rule": "contract_empty_conclusion"
+      },
+      "notes": [
+        "contract_violation:empty_conclusion"
+      ],
+      "e2e_ms": 4949.0
+    },
+    {
+      "qid": "q-047",
+      "category": "口语化",
+      "status": "refuse",
+      "needs_human": false,
+      "conclusion_len": 0,
+      "n_points": 0,
+      "n_citations": 0,
+      "citation_hits_gold": 0,
+      "confidence": {
+        "retrieval": 0.1387,
+        "composite": 0.0,
+        "calibrated": 0.0,
+        "rule": "retrieval_gate"
+      },
+      "notes": [
+        "no_sufficient_evidence"
+      ],
+      "e2e_ms": 346.8
+    },
+    {
+      "qid": "q-048",
+      "category": "口语化",
+      "status": "degraded",
+      "needs_human": true,
+      "conclusion_len": 0,
+      "n_points": 1,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "confidence": {
+        "retrieval": 0.8105,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.0,
+        "calibrated": 0.0,
+        "rule": "contract_empty_conclusion"
+      },
+      "notes": [
+        "contract_violation:empty_conclusion"
+      ],
+      "e2e_ms": 3820.8
+    },
+    {
+      "qid": "q-049",
+      "category": "口语化",
+      "status": "degraded",
+      "needs_human": true,
+      "conclusion_len": 0,
+      "n_points": 1,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "confidence": {
+        "retrieval": 0.5757,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.0,
+        "calibrated": 0.0,
+        "rule": "contract_empty_conclusion"
+      },
+      "notes": [
+        "contract_violation:empty_conclusion"
+      ],
+      "e2e_ms": 4146.3
+    },
+    {
+      "qid": "q-050",
+      "category": "口语化",
+      "status": "degraded",
+      "needs_human": true,
+      "conclusion_len": 0,
+      "n_points": 1,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "confidence": {
+        "retrieval": 0.9028,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.0,
+        "calibrated": 0.0,
+        "rule": "contract_empty_conclusion"
+      },
+      "notes": [
+        "contract_violation:empty_conclusion"
+      ],
+      "e2e_ms": 4146.3
+    },
+    {
+      "qid": "q-051",
+      "category": "口语化",
+      "status": "refuse",
+      "needs_human": false,
+      "conclusion_len": 0,
+      "n_points": 0,
+      "n_citations": 0,
+      "citation_hits_gold": 0,
+      "confidence": {
+        "retrieval": 0.1234,
+        "composite": 0.0,
+        "calibrated": 0.0,
+        "rule": "retrieval_gate"
+      },
+      "notes": [
+        "no_sufficient_evidence"
+      ],
+      "e2e_ms": 373.0
+    },
+    {
+      "qid": "q-052",
+      "category": "口语化",
+      "status": "refuse",
+      "needs_human": false,
+      "conclusion_len": 0,
+      "n_points": 0,
+      "n_citations": 0,
+      "citation_hits_gold": 0,
+      "confidence": {
+        "retrieval": 0.1184,
+        "composite": 0.0,
+        "calibrated": 0.0,
+        "rule": "retrieval_gate"
+      },
+      "notes": [
+        "no_sufficient_evidence"
+      ],
+      "e2e_ms": 324.8
+    },
+    {
+      "qid": "q-053",
+      "category": "跨文档",
+      "status": "degraded",
+      "needs_human": true,
+      "conclusion_len": 0,
+      "n_points": 1,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "confidence": {
+        "retrieval": 0.4736,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.0,
+        "calibrated": 0.0,
+        "rule": "contract_empty_conclusion"
+      },
+      "notes": [
+        "contract_violation:empty_conclusion"
+      ],
+      "e2e_ms": 3237.1
+    },
+    {
+      "qid": "q-054",
+      "category": "跨文档",
+      "status": "degraded",
+      "needs_human": true,
+      "conclusion_len": 0,
+      "n_points": 1,
+      "n_citations": 5,
+      "citation_hits_gold": 1,
+      "confidence": {
+        "retrieval": 0.9536,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.0,
+        "calibrated": 0.0,
+        "rule": "contract_empty_conclusion"
+      },
+      "notes": [
+        "contract_violation:empty_conclusion"
+      ],
+      "e2e_ms": 8675.2
+    },
+    {
+      "qid": "q-055",
+      "category": "跨文档",
+      "status": "degraded",
+      "needs_human": true,
+      "conclusion_len": 0,
+      "n_points": 3,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "confidence": {
+        "retrieval": 0.9546,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.0,
+        "calibrated": 0.0,
+        "rule": "contract_empty_conclusion"
+      },
+      "notes": [
+        "contract_violation:empty_conclusion"
+      ],
+      "e2e_ms": 6253.6
+    },
+    {
+      "qid": "q-056",
+      "category": "跨文档",
+      "status": "degraded",
+      "needs_human": true,
+      "conclusion_len": 0,
+      "n_points": 5,
+      "n_citations": 5,
+      "citation_hits_gold": 1,
+      "confidence": {
+        "retrieval": 0.9907,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.0,
+        "calibrated": 0.0,
+        "rule": "contract_empty_conclusion"
+      },
+      "notes": [
+        "contract_violation:empty_conclusion"
+      ],
+      "e2e_ms": 11331.9
+    },
+    {
+      "qid": "q-057",
+      "category": "跨文档",
+      "status": "degraded",
+      "needs_human": true,
+      "conclusion_len": 0,
+      "n_points": 4,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "confidence": {
+        "retrieval": 0.98,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.0,
+        "calibrated": 0.0,
+        "rule": "contract_empty_conclusion"
+      },
+      "notes": [
+        "contract_violation:empty_conclusion"
+      ],
+      "e2e_ms": 9605.8
+    },
+    {
+      "qid": "q-058",
+      "category": "跨文档",
+      "status": "degraded",
+      "needs_human": true,
+      "conclusion_len": 0,
+      "n_points": 1,
+      "n_citations": 2,
+      "citation_hits_gold": 1,
+      "confidence": {
+        "retrieval": 0.7617,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.0,
+        "calibrated": 0.0,
+        "rule": "contract_empty_conclusion"
+      },
+      "notes": [
+        "contract_violation:empty_conclusion"
+      ],
+      "e2e_ms": 5017.1
+    }
+  ],
+  "calibration_on_gradable": {
+    "ece": 0.1617,
+    "n": 14,
+    "mean_conf": 0.8383,
+    "accuracy": 1.0,
+    "bins": [
+      {
+        "bin": 7,
+        "n": 11,
+        "conf": 0.797,
+        "acc": 1.0
+      },
+      {
+        "bin": 9,
+        "n": 3,
+        "conf": 0.9894,
+        "acc": 1.0
+      }
+    ]
+  }
+}

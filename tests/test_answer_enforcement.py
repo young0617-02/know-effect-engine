@@ -191,3 +191,47 @@ def test_non_secret_citation_does_not_demand_review():
 @pytest.mark.parametrize("bad", ["报价", "客户名单", "密钥", "薪酬"])
 def test_sensitive_patterns(bad):
     assert is_sensitive(f"给我看看{bad}") == bad
+
+
+# ---- M3-01b 答案结构契约：有出处不等于答案成立 ----
+# 复现的是真机缺陷：Gate 0 ⑤ 的 51 个可判答案行里 39 行是
+# 「no_evidence=false + 有要点 + 引用落在 gold 上 + conclusion 为空」，却被判 status=answer 对外返回。
+
+
+def test_empty_conclusion_cannot_be_reported_as_answer():
+    payload = good_payload()
+    payload["conclusion"] = ""
+    eng = AnswerEngine(FakeRetriever([chunk("c1")]), FakeLlm(payload))
+    res = eng.answer("RTO 是多少", ctx())
+    assert res.status == "degraded"
+    assert res.needs_human is True
+    assert "contract_violation:empty_conclusion" in res.notes
+    assert res.conclusion == ""
+    # 证据仍然留给人工，不因为契约不过就把出处丢掉
+    assert res.citations and res.key_points
+
+
+def test_whitespace_only_conclusion_is_still_a_violation():
+    payload = good_payload()
+    payload["conclusion"] = "     "
+    eng = AnswerEngine(FakeRetriever([chunk("c1")]), FakeLlm(payload))
+    res = eng.answer("RTO 是多少", ctx())
+    assert res.status == "degraded" and res.confidence["rule"] == "contract_empty_conclusion"
+
+
+def test_contract_violated_answer_stays_out_of_calibration_set():
+    """可判集按 logit 是否存在筛；空结论若仍带 logit，ECE 就会被测成「答案完整率」。"""
+    payload = good_payload()
+    payload["conclusion"] = ""
+    eng = AnswerEngine(FakeRetriever([chunk("c1")]), FakeLlm(payload))
+    res = eng.answer("RTO 是多少", ctx())
+    assert "logit" not in res.confidence
+    assert res.confidence["composite"] == 0.0
+
+
+def test_valid_conclusion_still_produces_calibratable_answer():
+    eng = AnswerEngine(FakeRetriever([chunk("c1")]), FakeLlm(good_payload()))
+    res = eng.answer("RTO 是多少", ctx())
+    assert res.status in ("answer", "tentative")
+    assert res.needs_human is False
+    assert "logit" in res.confidence and res.conclusion

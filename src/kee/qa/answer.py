@@ -275,15 +275,46 @@ class AnswerEngine:
             return base
 
         points, cites, dropped = self._enforce_citations(obj, evidence_index)
+        conclusion = str(obj.get("conclusion", "") or "").strip()
         citation_consistency = 1.0 if not dropped else round(len(points) / max(len(points) + len(dropped), 1), 4)
         self_assessed = _clamp(float(obj.get("self_assessed_confidence", 0.0) or 0.0))
         composite = round(0.45 * _clamp(top_score) + 0.35 * citation_consistency + 0.20 * self_assessed, 4)
         calibrated = round(1.0 / (1.0 + math.exp(-(_logit(composite) / self.calibration_temperature))), 4)
 
-        base.conclusion = str(obj.get("conclusion", ""))
         base.key_points = points
         base.citations = cites
         base.dropped_points = dropped
+
+        # 出口契约：证据齐不等于答案成立。空结论必须走人工，不能以 answer 状态对外返回。
+        # 这里刻意**不写 logit**：置信度校准的可判集按 logit 是否存在来筛，
+        # 一条没有结论的输出参与校准只会把 ECE 测成「答案完整率」。
+        if not points or not cites:
+            base.status = "refuse"
+            base.notes.append("citation_enforcement_rejected")
+            base.confidence = {
+                "retrieval": round(top_score, 4),
+                "citation_consistency": round(citation_consistency, 4),
+                "self_assessed": round(self_assessed, 4),
+                "composite": 0.0,
+                "calibrated": 0.0,
+                "rule": "contract_no_citation",
+            }
+            return base
+        if not conclusion:
+            base.status = "degraded"
+            base.needs_human = True
+            base.notes.append("contract_violation:empty_conclusion")
+            base.confidence = {
+                "retrieval": round(top_score, 4),
+                "citation_consistency": round(citation_consistency, 4),
+                "self_assessed": round(self_assessed, 4),
+                "composite": 0.0,
+                "calibrated": 0.0,
+                "rule": "contract_empty_conclusion",
+            }
+            return base
+
+        base.conclusion = conclusion
         base.confidence = {
             "retrieval": round(top_score, 4),
             "citation_consistency": round(citation_consistency, 4),
@@ -293,11 +324,6 @@ class AnswerEngine:
             "calibrated": calibrated,
             "temperature": self.calibration_temperature,
         }
-
-        if not points or not cites:
-            base.status = "refuse"
-            base.notes.append("citation_enforcement_rejected")
-            return base
         # 引用落在密级 3 的证据上 → 答案可给（用户有权限）但强制挂人工复核标记。
         # 注意触发点是「实际被引用的证据」而不是「候选证据集」：后者会让有权限的用户几乎问不出答案。
         secret_cited = [c for c in cites if int(c.get("security_level") or 0) >= ESCORT_SECURITY_LEVEL]
