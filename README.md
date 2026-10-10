@@ -102,6 +102,27 @@ CUDA torch 底座互顶版本；**也不用 mineru.net 云 API**，那属于数�
 后端选择：`KEE_PDF_PARSE_BACKEND=auto|pypdf|mineru_onnx` —— auto 下文本层够厚就走 pypdf（0.8s/文档），
 薄了才转版面+OCR（约 18s/页），不为能抽字的 PDF 白烧算力。
 
+## M2 检索评测基线
+
+| 入口 | 作用 |
+|---|---|
+| `scripts/m2_eval.py` | 评测作业：预声明基线跑全样本出门禁判定，OFAT 网格只跑 dev 半区做诊断，与 `m2_eval_prev.json` 比对报回归 |
+| `scripts/m2_rebuild_baseline.py` | 基线索引重建 + 四项自证校验（正文逐块不变 / 命名统一 / gold 等价 / 索引=权威源） |
+| `scripts/m2_rewrite_probe.py` | 查询改写真机探针：触发率、单次延迟、JSON 失败率 |
+
+```bash
+.venv/Scripts/python.exe scripts/m2_eval.py            # 全量（基线 + 9 格网格），约 3 分钟
+.venv/Scripts/python.exe scripts/m2_eval.py --skip-grid  # 只跑基线（回归比对）
+```
+
+实测结论（详见 `reports/m2/M2_检索评测基线.md`）：检索层 strict gold Recall@5 **0.965**、Hit@5 **0.9828**、
+P95 **338ms**；section gold Recall@5 **0.822** —— 缺口全部来自「章节内所有子块都算 gold」的定义
+（6 道 gold>5 的题 Hit@5=1.0），不是排序失败。**参数不是瓶颈，样本量才是**：n=58 时 Recall@5 的
+95% CI 宽 0.13，网格最大增益都在噪声地板内。查询改写已接入但默认 `off`（单次 P95 843ms，
+一步就吃满 800ms 检索门禁）。
+
+`KEE_REWRITE_MODE=off|sparse|both|extra_leg` 控制改写形态。
+
 ## 目录（M1 新增）
 
 ```
@@ -110,11 +131,14 @@ src/kee/ingest/docimg.py      pypdfium2 页面渲染（BGR 位图给版面/OCR�
 src/kee/ingest/mineru_onnx.py 本地 MinerU-ONNX 后端：PP-DocLayoutV2 版面 + PP-OCRv6 det/rec + SLANet-plus 表格结构
 src/kee/ingest/metadata.py    元数据三级取值：表单 > front-matter > 推断，逐级告警
 src/kee/ingest/service.py     单文档摄取编排 + 升版/回滚/复核
+src/kee/retrieval/rewrite.py  查询改写：启发式触发 + 准入校验（禁引入原查询没有的数字）+ 截断打捞
 src/kee/api/app.py            对内 REST API 与统一错误码契约
 scripts/reconcile_job.py      对账作业 CLI
 scripts/table_fixtures.py     合成表格 PDF 生成器（表格结构的逐格真值来源）
+scripts/m2_eval.py            M2 评测作业（基线 + dev 网格 + 回归比对）
 scripts/verify_m1.py            M1 端到端验证（16 步）
 reports/m1/M1_验证记录.md      M1 实测结论、步骤表与已知限制
+reports/m2/M2_检索评测基线.md  M2 基线数字、gold 口径拆解与待裁决项
 ```
 
 

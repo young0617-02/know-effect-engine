@@ -57,6 +57,11 @@ class Settings(BaseSettings):
     dense_top_k: int = 20
     sparse_top_k: int = 20
     rerank_top_n: int = 5
+    # 查询改写：off=不启用；sparse=改写只喂 BM25 腿；both=两腿都用改写后查询；
+    # extra_leg=原查询与改写查询各算一路再 RRF（召回覆盖最大，代价是多一次嵌入）
+    rewrite_mode: str = "off"
+    rewrite_budget_ms: float = 900.0
+    rewrite_max_tokens: int = 96
 
     # ---- 置信度与降级阈值（Gate 0 ⑤ 结论回填） ----
     confidence_high: float = 0.75

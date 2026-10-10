@@ -13,6 +13,7 @@ from kee.retrieval.milvus_store import Hit, KbStore
 from kee.retrieval.rbac import AccessContext, build_filter_expr
 
 MODES = ("dense", "sparse", "hybrid")
+REWRITE_MODES = ("off", "sparse", "both", "extra_leg")
 
 
 @dataclass
@@ -35,6 +36,9 @@ class RetrievalResult:
     expr: str
     degraded: list[str] = field(default_factory=list)
     cache_hit: bool = False
+    rewritten: str = ""
+    rewrite_ms: float = 0.0
+    rewrite_mode: str = "off"
 
     @property
     def top_score(self) -> float:
@@ -57,6 +61,11 @@ class HybridRetriever:
         use_rerank: bool = True,
         rerank_candidates: int = 20,
         dense_budget_ms: float = 2500.0,
+        rewriter=None,
+        rewrite_mode: str | None = None,
+        rrf_k: int | None = None,
+        dense_top_k: int | None = None,
+        sparse_top_k: int | None = None,
     ) -> None:
         if mode not in MODES:
             raise ValueError(f"mode 必须是 {MODES}")
@@ -69,6 +78,22 @@ class HybridRetriever:
         self.rerank_candidates = rerank_candidates
         self.dense_budget_ms = dense_budget_ms
         self.settings = s
+        # 消融要逐格换参数，所以给成实例字段而不是改全局 settings：
+        # 改 settings 会在下一格没显式赋值时把上一格的值带过去，网格数字就成了互相污染的产物
+        self.rrf_k = s.rrf_k if rrf_k is None else rrf_k
+        self.dense_top_k = s.dense_top_k if dense_top_k is None else dense_top_k
+        self.sparse_top_k = s.sparse_top_k if sparse_top_k is None else sparse_top_k
+        self.rewrite_mode = rewrite_mode or s.rewrite_mode
+        if self.rewrite_mode not in REWRITE_MODES:
+            raise ValueError(f"rewrite_mode 必须是 {REWRITE_MODES}")
+        if self.rewrite_mode == "off":
+            self.rewriter = None
+        else:
+            if rewriter is None:
+                from kee.retrieval.rewrite import QueryRewriter
+
+                rewriter = QueryRewriter(cache=cache)
+            self.rewriter = rewriter
 
     def _dense_hits(self, query: str, expr: str, top_k: int, t: dict, degraded: list[str]):
         t0 = time.perf_counter()
@@ -84,17 +109,22 @@ class HybridRetriever:
             return []
         return hits
 
-    def _sparse_hits(self, query: str, expr: str, top_k: int, t: dict):
+    def _sparse_hits(self, query: str, expr: str, top_k: int, t: dict, key: str = "sparse_ms"):
         t0 = time.perf_counter()
         hits = self.store.search_sparse(query, limit=top_k, expr=expr)
-        t["sparse_ms"] = round((time.perf_counter() - t0) * 1000, 1)
+        t[key] = round((time.perf_counter() - t0) * 1000, 1)
         return hits
 
     def retrieve(self, query: str, ctx: AccessContext, top_k: int | None = None) -> RetrievalResult:
         s = self.settings
         top_k = top_k or s.rerank_top_n
         expr = build_filter_expr(ctx)
-        key = self.cache.make_key(query, self.mode, expr, top_k) if self.cache else None
+        # 缓存键带上改写模式：否则「off」跑出来的结果会被「sparse」直接命中，消融数字全废
+        key = (
+            self.cache.make_key(query, f"{self.mode}+rw:{self.rewrite_mode}", expr, top_k)
+            if self.cache
+            else None
+        )
         timings: dict[str, float] = {}
         t_all = time.perf_counter()
 
@@ -111,10 +141,19 @@ class HybridRetriever:
                 )
 
         degraded: list[str] = []
+        rw = None
+        if self.rewriter is not None:
+            rw = self.rewriter.rewrite(query)
+            degraded += rw.degraded
+            timings["rewrite_ms"] = rw.ms
+        # 重排一律用**原查询**打分：改写是为召回服务的，判「这段是否回答了用户问的话」
+        # 不能拿改写后的字面去判，否则改写得越激进、重排越容易被带偏
+        q_dense = rw.effective if rw and self.rewrite_mode == "both" else query
+        q_sparse = rw.effective if rw and self.rewrite_mode in ("sparse", "both") else query
         rankings: list[list[Hit]] = []
         if self.mode in ("dense", "hybrid"):
             try:
-                d = self._dense_hits(query, expr, s.dense_top_k, timings, degraded)
+                d = self._dense_hits(q_dense, expr, self.dense_top_k, timings, degraded)
                 if d:
                     rankings.append(d)
             except Exception as e:  # noqa: BLE001 - 依赖故障必须显式降级而非抛错
@@ -123,9 +162,20 @@ class HybridRetriever:
                 degraded.append("dense_empty")
         if self.mode in ("sparse", "hybrid"):
             try:
-                rankings.append(self._sparse_hits(query, expr, s.sparse_top_k, timings))
+                rankings.append(self._sparse_hits(q_sparse, expr, self.sparse_top_k, timings))
             except Exception as e:  # noqa: BLE001
                 degraded.append(f"sparse_error:{type(e).__name__}")
+        if (
+            rw is not None
+            and rw.changed
+            and self.rewrite_mode == "extra_leg"
+            and self.mode in ("sparse", "hybrid")
+        ):
+            # 原查询与改写查询各算一路：召回覆盖最大，代价是多一次 BM25 与更宽的候选
+            try:
+                rankings.append(self._sparse_hits(rw.effective, expr, self.sparse_top_k, timings, key="sparse_rw_ms"))
+            except Exception as e:  # noqa: BLE001
+                degraded.append(f"sparse_rw_error:{type(e).__name__}")
 
         if not rankings:
             return RetrievalResult(
@@ -135,12 +185,15 @@ class HybridRetriever:
                 timings_ms=timings,
                 expr=expr,
                 degraded=degraded + ["retrieval_total_failure"],
+                rewritten=rw.effective if rw else "",
+                rewrite_ms=rw.ms if rw else 0.0,
+                rewrite_mode=self.rewrite_mode,
             )
 
         if len(rankings) == 1:
             fused = [(h, h.score) for h in rankings[0]]
         else:
-            fused = rrf_fuse(rankings, k=s.rrf_k)
+            fused = rrf_fuse(rankings, k=self.rrf_k)
             timings["fuse_ms"] = 0.0
 
         candidates = [h for h, _ in fused[: self.rerank_candidates]]
@@ -174,4 +227,7 @@ class HybridRetriever:
             timings_ms=timings,
             expr=expr,
             degraded=degraded,
+            rewritten=rw.effective if rw else "",
+            rewrite_ms=rw.ms if rw else 0.0,
+            rewrite_mode=self.rewrite_mode,
         )
