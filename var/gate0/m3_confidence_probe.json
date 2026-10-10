@@ -1,0 +1,1941 @@
+{
+  "n_run": 58,
+  "n_gradable": 53,
+  "n_l4_assessable": 44,
+  "l4_positives": 21,
+  "temperature_used": 6.655,
+  "label_variance": {
+    "L1_section_any": {
+      "n": 53,
+      "ones": 53,
+      "zeros": 0,
+      "mean": 1.0,
+      "degenerate": true
+    },
+    "L2_strict_any": {
+      "n": 53,
+      "ones": 53,
+      "zeros": 0,
+      "mean": 1.0,
+      "degenerate": true
+    },
+    "L3_strict_precision": {
+      "n": 53,
+      "mean": 0.9906,
+      "std": 0.068,
+      "distinct": 2,
+      "degenerate": false
+    },
+    "L4_ref_number_recall": {
+      "n": 44,
+      "mean": 0.681,
+      "std": 0.3414,
+      "distinct": 10,
+      "degenerate": false
+    }
+  },
+  "component_distribution": {
+    "retrieval": {
+      "distinct": 40,
+      "min": 0.2417,
+      "max": 0.9985,
+      "mean": 0.8911,
+      "constant": false
+    },
+    "citation_consistency": {
+      "distinct": 1,
+      "min": 1.0,
+      "max": 1.0,
+      "mean": 1.0,
+      "constant": true
+    },
+    "self_assessed": {
+      "distinct": 2,
+      "min": 0.0,
+      "max": 0.9,
+      "mean": 0.034,
+      "constant": false
+    },
+    "composite": {
+      "distinct": 42,
+      "min": 0.4588,
+      "max": 0.978,
+      "mean": 0.7578,
+      "constant": false
+    },
+    "calibrated": {
+      "distinct": 38,
+      "min": 0.4938,
+      "max": 0.6388,
+      "mean": 0.5459,
+      "constant": false
+    }
+  },
+  "auc_vs_L4": {
+    "retrieval": 0.3106,
+    "citation_consistency": null,
+    "self_assessed": 0.5238,
+    "composite": 0.3385,
+    "calibrated": 0.3364,
+    "number_groundedness": null,
+    "n_citations": 0.5259,
+    "evidence_number_count": 0.501
+  },
+  "ece_and_fit": {
+    "L1_current_label": {
+      "ece": 0.4541,
+      "n": 53,
+      "mean_conf": 0.5459,
+      "accuracy": 1.0,
+      "bins": [
+        {
+          "bin": 4,
+          "n": 2,
+          "conf": 0.4948,
+          "acc": 1.0
+        },
+        {
+          "bin": 5,
+          "n": 49,
+          "conf": 0.5443,
+          "acc": 1.0
+        },
+        {
+          "bin": 6,
+          "n": 2,
+          "conf": 0.635,
+          "acc": 1.0
+        }
+      ],
+      "note": "现在报告里那条 0.24 的口径：标签全 1"
+    },
+    "L4_answer_correct": {
+      "ece": 0.1294,
+      "n": 44,
+      "mean_conf": 0.544,
+      "accuracy": 0.4773,
+      "bins": [
+        {
+          "bin": 4,
+          "n": 2,
+          "conf": 0.4948,
+          "acc": 1.0
+        },
+        {
+          "bin": 5,
+          "n": 41,
+          "conf": 0.5443,
+          "acc": 0.439
+        },
+        {
+          "bin": 6,
+          "n": 1,
+          "conf": 0.6311,
+          "acc": 1.0
+        }
+      ],
+      "ci95_gap": [
+        0.4898,
+        0.517
+      ],
+      "fit": {
+        "temperature": 6.655,
+        "nll_before_1.0": 0.9378,
+        "nll_at_best": 0.7062,
+        "n": 44
+      }
+    }
+  },
+  "invented_number_rows": [
+    {
+      "qid": "q-001",
+      "nums": [
+        "3.2"
+      ]
+    },
+    {
+      "qid": "q-017",
+      "nums": [
+        "017",
+        "2024"
+      ]
+    },
+    {
+      "qid": "q-019",
+      "nums": [
+        "0013"
+      ]
+    },
+    {
+      "qid": "q-023",
+      "nums": [
+        "0007"
+      ]
+    },
+    {
+      "qid": "q-024",
+      "nums": [
+        "0011",
+        "4",
+        "95"
+      ]
+    },
+    {
+      "qid": "q-025",
+      "nums": [
+        "1",
+        "8"
+      ]
+    },
+    {
+      "qid": "q-026",
+      "nums": [
+        "118",
+        "2024",
+        "90"
+      ]
+    },
+    {
+      "qid": "q-031",
+      "nums": [
+        "15"
+      ]
+    },
+    {
+      "qid": "q-033",
+      "nums": [
+        "12",
+        "90"
+      ]
+    },
+    {
+      "qid": "q-035",
+      "nums": [
+        "1.1"
+      ]
+    },
+    {
+      "qid": "q-038",
+      "nums": [
+        "0007"
+      ]
+    },
+    {
+      "qid": "q-043",
+      "nums": [
+        "214",
+        "96"
+      ]
+    },
+    {
+      "qid": "q-049",
+      "nums": [
+        "0012"
+      ]
+    }
+  ],
+  "rows": [
+    {
+      "qid": "q-001",
+      "category": "术语",
+      "status": "tentative",
+      "question": "银企直联实时清算方案 V3.2 的灾备切换目标里，RTO 要求是多少？",
+      "conclusion": "银企直联实时清算方案 V3.2 的灾备切换目标按 RTO 小于 15 分钟设定",
+      "reference_answer": "RTO 小于 15 分钟，同时要求 RPO 等于 0。",
+      "confidence": {
+        "retrieval": 0.9932,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7969,
+        "logit": 1.367,
+        "calibrated": 0.5512,
+        "temperature": 6.655
+      },
+      "cited_ids": [
+        "fin-closeout-prj-fin-2024-017@v1#2.1#c1"
+      ],
+      "n_citations": 1,
+      "section_any": 1,
+      "strict_any": 1,
+      "strict_precision": 1.0,
+      "ref_number_recall": 0.5,
+      "invented_numbers": [
+        "3.2"
+      ],
+      "assessable_by_numbers": true,
+      "number_groundedness": 1.0,
+      "evidence_number_count": 6
+    },
+    {
+      "qid": "q-002",
+      "category": "术语",
+      "status": "tentative",
+      "question": "头寸管理上线后，法人账户日间头寸预测偏差收敛到多少？",
+      "conclusion": "头寸管理模块上线后，法人账户日间头寸预测偏差绝对值由改造前的 3.7% 收敛至 1.2%",
+      "reference_answer": "预测偏差绝对值由改造前的 3.7% 收敛至 1.2%。",
+      "confidence": {
+        "retrieval": 0.9946,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7976,
+        "logit": 1.3714,
+        "calibrated": 0.5513,
+        "temperature": 6.655
+      },
+      "cited_ids": [
+        "fin-closeout-prj-fin-2024-017@v1#2.2#c1"
+      ],
+      "n_citations": 1,
+      "section_any": 1,
+      "strict_any": 1,
+      "strict_precision": 1.0,
+      "ref_number_recall": 1.0,
+      "invented_numbers": [],
+      "assessable_by_numbers": true,
+      "number_groundedness": 1.0,
+      "evidence_number_count": 12
+    },
+    {
+      "qid": "q-003",
+      "category": "术语",
+      "status": "escalate",
+      "question": "监管口径对拨备覆盖率的最低要求是多少？",
+      "conclusion": "",
+      "reference_answer": "拨备覆盖率不低于 150%，同时不良贷款率不高于 1.8%。",
+      "confidence": {
+        "retrieval": 0.9697,
+        "composite": 0.0,
+        "calibrated": 0.0,
+        "rule": "declared_no_evidence"
+      },
+      "cited_ids": [],
+      "n_citations": 0,
+      "section_any": 0,
+      "strict_any": 0,
+      "strict_precision": 0.0,
+      "ref_number_recall": 0.0,
+      "invented_numbers": [],
+      "assessable_by_numbers": true,
+      "number_groundedness": null,
+      "evidence_number_count": 0
+    },
+    {
+      "qid": "q-004",
+      "category": "术语",
+      "status": "tentative",
+      "question": "信贷资产风险分类结果按几级类别落库，分别是什么？",
+      "conclusion": "信贷资产风险分类结果按五级类别落库，即正常、关注、次级、可疑与损失。",
+      "reference_answer": "按五级类别落库，即正常、关注、次级、可疑与损失。",
+      "confidence": {
+        "retrieval": 0.9956,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.9,
+        "composite": 0.978,
+        "logit": 3.7945,
+        "calibrated": 0.6388,
+        "temperature": 6.655
+      },
+      "cited_ids": [
+        "fin-presale-prj-fin-2023-041@v1#2.1#c1"
+      ],
+      "n_citations": 1,
+      "section_any": 1,
+      "strict_any": 1,
+      "strict_precision": 1.0,
+      "ref_number_recall": null,
+      "invented_numbers": [],
+      "assessable_by_numbers": false,
+      "number_groundedness": null,
+      "evidence_number_count": 1
+    },
+    {
+      "qid": "q-005",
+      "category": "术语",
+      "status": "tentative",
+      "question": "银企直联改造中，人行支付报文一共改造了多少项字段映射？",
+      "conclusion": "人行支付报文共改造报文字段映射 214 项",
+      "reference_answer": "共改造报文字段映射 214 项，其中金额类 38 项、账号与户名类 57 项、业务标识类 119 项。",
+      "confidence": {
+        "retrieval": 0.9966,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7985,
+        "logit": 1.3769,
+        "calibrated": 0.5515,
+        "temperature": 6.655
+      },
+      "cited_ids": [
+        "fin-closeout-prj-fin-2024-017@v1#3.1#c1"
+      ],
+      "n_citations": 1,
+      "section_any": 1,
+      "strict_any": 1,
+      "strict_precision": 1.0,
+      "ref_number_recall": 0.25,
+      "invented_numbers": [],
+      "assessable_by_numbers": true,
+      "number_groundedness": 1.0,
+      "evidence_number_count": 8
+    },
+    {
+      "qid": "q-006",
+      "category": "术语",
+      "status": "tentative",
+      "question": "双活数据中心同城链路的同步延迟正常水位控制在多少？",
+      "conclusion": "双活数据中心同城链路正常水位不超过 800 毫秒",
+      "reference_answer": "正常水位不超过 800 毫秒，达 2000 毫秒黄色告警、达 5000 毫秒红色告警。",
+      "confidence": {
+        "retrieval": 0.9829,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7923,
+        "logit": 1.3388,
+        "calibrated": 0.5501,
+        "temperature": 6.655
+      },
+      "cited_ids": [
+        "fin-ifspec-prj-fin-2024-033@v1#2.1#c1"
+      ],
+      "n_citations": 1,
+      "section_any": 1,
+      "strict_any": 1,
+      "strict_precision": 1.0,
+      "ref_number_recall": 0.3333,
+      "invented_numbers": [],
+      "assessable_by_numbers": true,
+      "number_groundedness": 1.0,
+      "evidence_number_count": 7
+    },
+    {
+      "qid": "q-007",
+      "category": "术语",
+      "status": "tentative",
+      "question": "客户现有一阶段引擎在反洗钱可疑交易监测上的误报率大概是多少？",
+      "conclusion": "92%",
+      "reference_answer": "误报率长期高于 92%，人工甄别团队 74 人仍无法消化预警积压。",
+      "confidence": {
+        "retrieval": 0.9956,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.798,
+        "logit": 1.3738,
+        "calibrated": 0.5514,
+        "temperature": 6.655
+      },
+      "cited_ids": [
+        "fin-presale-prj-fin-2025-008@v1#1.1#c1"
+      ],
+      "n_citations": 1,
+      "section_any": 1,
+      "strict_any": 1,
+      "strict_precision": 1.0,
+      "ref_number_recall": 0.5,
+      "invented_numbers": [],
+      "assessable_by_numbers": true,
+      "number_groundedness": 1.0,
+      "evidence_number_count": 7
+    },
+    {
+      "qid": "q-008",
+      "category": "术语",
+      "status": "tentative",
+      "question": "按 ITSS 事件分级，清算平台的 P1 级故障多久必须启动应急响应？",
+      "conclusion": "15 分钟内启动应急响应",
+      "reference_answer": "P1 级故障须在 15 分钟内启动应急响应。",
+      "confidence": {
+        "retrieval": 0.9907,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7958,
+        "logit": 1.3602,
+        "calibrated": 0.5509,
+        "temperature": 6.655
+      },
+      "cited_ids": [
+        "fin-runbook-prj-fin-2024-017@v1#2.1#c1"
+      ],
+      "n_citations": 1,
+      "section_any": 1,
+      "strict_any": 1,
+      "strict_precision": 1.0,
+      "ref_number_recall": 0.5,
+      "invented_numbers": [],
+      "assessable_by_numbers": true,
+      "number_groundedness": 1.0,
+      "evidence_number_count": 5
+    },
+    {
+      "qid": "q-009",
+      "category": "术语",
+      "status": "tentative",
+      "question": "SCADA 主站的实时数据刷新周期是多少秒？",
+      "conclusion": "2秒",
+      "reference_answer": "实时数据刷新周期为 2 秒，人机界面画面刷新不超过 3 秒。",
+      "confidence": {
+        "retrieval": 0.9922,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7965,
+        "logit": 1.3646,
+        "calibrated": 0.5511,
+        "temperature": 6.655
+      },
+      "cited_ids": [
+        "ene-runbook-prj-ene-2023-019@v1#2.2#c1"
+      ],
+      "n_citations": 1,
+      "section_any": 1,
+      "strict_any": 1,
+      "strict_precision": 1.0,
+      "ref_number_recall": 0.5,
+      "invented_numbers": [],
+      "assessable_by_numbers": true,
+      "number_groundedness": 1.0,
+      "evidence_number_count": 6
+    },
+    {
+      "qid": "q-010",
+      "category": "术语",
+      "status": "tentative",
+      "question": "台区遥测上送接口里，配电自动化终端一共上送多少个测点？",
+      "conclusion": "配电自动化终端的遥测数据上送覆盖三相电流、三相电压、有功与无功功率及功率因数共 14 个测点",
+      "reference_answer": "共 14 个测点，覆盖三相电流、三相电压、有功与无功功率及功率因数。",
+      "confidence": {
+        "retrieval": 0.9839,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7927,
+        "logit": 1.3413,
+        "calibrated": 0.5502,
+        "temperature": 6.655
+      },
+      "cited_ids": [
+        "ene-ifspec-prj-ene-2024-006@v1#1.2#c1"
+      ],
+      "n_citations": 1,
+      "section_any": 1,
+      "strict_any": 1,
+      "strict_precision": 1.0,
+      "ref_number_recall": 1.0,
+      "invented_numbers": [],
+      "assessable_by_numbers": true,
+      "number_groundedness": 1.0,
+      "evidence_number_count": 7
+    },
+    {
+      "qid": "q-011",
+      "category": "术语",
+      "status": "tentative",
+      "question": "用电信息采集治理后的采集成功率提升到多少？",
+      "conclusion": "采集数据质量与计量异常｜用电信息采集成功率由治理前的 91.6% 提升至 99.3%。",
+      "reference_answer": "由治理前的 91.6% 提升至 99.3%。",
+      "confidence": {
+        "retrieval": 0.9907,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7958,
+        "logit": 1.3602,
+        "calibrated": 0.5509,
+        "temperature": 6.655
+      },
+      "cited_ids": [
+        "ene-closeout-prj-ene-2024-006@v1#3.1#c1"
+      ],
+      "n_citations": 1,
+      "section_any": 1,
+      "strict_any": 1,
+      "strict_precision": 1.0,
+      "ref_number_recall": 1.0,
+      "invented_numbers": [],
+      "assessable_by_numbers": true,
+      "number_groundedness": 1.0,
+      "evidence_number_count": 7
+    },
+    {
+      "qid": "q-012",
+      "category": "术语",
+      "status": "tentative",
+      "question": "按电力监控系统安全防护口径，终端与信息管理大区之间的数据交换必须经过什么装置？",
+      "conclusion": "配电自动化终端与信息管理大区之间的数据交换必须经正反向隔离装置单向传输。",
+      "reference_answer": "必须经正反向隔离装置以单向方式传输，禁止任何形式的反向直连。",
+      "confidence": {
+        "retrieval": 0.9795,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7908,
+        "logit": 1.3298,
+        "calibrated": 0.5498,
+        "temperature": 6.655
+      },
+      "cited_ids": [
+        "ene-ifspec-prj-ene-2024-006@v1#3.1#c1"
+      ],
+      "n_citations": 1,
+      "section_any": 1,
+      "strict_any": 1,
+      "strict_precision": 1.0,
+      "ref_number_recall": null,
+      "invented_numbers": [],
+      "assessable_by_numbers": false,
+      "number_groundedness": null,
+      "evidence_number_count": 0
+    },
+    {
+      "qid": "q-013",
+      "category": "术语",
+      "status": "tentative",
+      "question": "SIS 安全仪表系统采用的表决逻辑是什么，优化平台能不能改它的整定值？",
+      "conclusion": "SIS 安全仪表系统独立于优化平台部署，其 2oo3 表决逻辑与整定值不随优化目标调整。",
+      "reference_answer": "采用 2oo3 表决逻辑，独立于优化平台部署，其整定值不随优化目标调整。",
+      "confidence": {
+        "retrieval": 0.9517,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7782,
+        "logit": 1.2552,
+        "calibrated": 0.547,
+        "temperature": 6.655
+      },
+      "cited_ids": [
+        "chm-closeout-prj-chm-2024-003@v1#2.2#c1"
+      ],
+      "n_citations": 1,
+      "section_any": 1,
+      "strict_any": 1,
+      "strict_precision": 1.0,
+      "ref_number_recall": 1.0,
+      "invented_numbers": [],
+      "assessable_by_numbers": true,
+      "number_groundedness": 1.0,
+      "evidence_number_count": 6
+    },
+    {
+      "qid": "q-014",
+      "category": "术语",
+      "status": "tentative",
+      "question": "优化平台上涉及 DCS 联锁逻辑的点位是什么读写权限？",
+      "conclusion": "涉及 DCS 联锁逻辑的点位一律设为只读",
+      "reference_answer": "一律设为只读，联锁值修改权限保留在客户工艺与仪表两个部门。",
+      "confidence": {
+        "retrieval": 0.9722,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7875,
+        "logit": 1.3099,
+        "calibrated": 0.549,
+        "temperature": 6.655
+      },
+      "cited_ids": [
+        "chm-closeout-prj-chm-2024-003@v1#2.2#c1"
+      ],
+      "n_citations": 1,
+      "section_any": 1,
+      "strict_any": 1,
+      "strict_precision": 1.0,
+      "ref_number_recall": null,
+      "invented_numbers": [],
+      "assessable_by_numbers": false,
+      "number_groundedness": null,
+      "evidence_number_count": 6
+    },
+    {
+      "qid": "q-015",
+      "category": "编号",
+      "status": "tentative",
+      "question": "结项文档连同验收原始记录要归档保留多久，依据哪个内部流程文件？",
+      "conclusion": "结项文档连同验收原始记录须完整归档并保留 3 年。",
+      "reference_answer": "依据 Q/KEE-SOP-032 归档并保留 3 年，不得以摘要件替代原件。",
+      "confidence": {
+        "retrieval": 0.9937,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7971,
+        "logit": 1.3683,
+        "calibrated": 0.5512,
+        "temperature": 6.655
+      },
+      "cited_ids": [
+        "fin-closeout-prj-fin-2024-017@v1#4.2#c1"
+      ],
+      "n_citations": 1,
+      "section_any": 1,
+      "strict_any": 1,
+      "strict_precision": 1.0,
+      "ref_number_recall": 0.5,
+      "invented_numbers": [],
+      "assessable_by_numbers": true,
+      "number_groundedness": 1.0,
+      "evidence_number_count": 7
+    },
+    {
+      "qid": "q-016",
+      "category": "编号",
+      "status": "tentative",
+      "question": "第三级安全计算环境的身份鉴别与会话锁定要求出自哪个标准条款，落地参数是什么？",
+      "conclusion": "第三级安全计算环境的身份鉴别与会话锁定要求出自 GB/T 22239-2019 第 8.1.4 条",
+      "reference_answer": "出自 GB/T 22239-2019 第 8.1.4 条，落地为登录失败 5 次锁定 30 分钟、会话空闲 15 分钟强制注销。",
+      "confidence": {
+        "retrieval": 0.9912,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.796,
+        "logit": 1.3615,
+        "calibrated": 0.551,
+        "temperature": 6.655
+      },
+      "cited_ids": [
+        "fin-compliance-prj-fin-2025-008@v1#2.1#c1"
+      ],
+      "n_citations": 1,
+      "section_any": 1,
+      "strict_any": 1,
+      "strict_precision": 1.0,
+      "ref_number_recall": 0.5714,
+      "invented_numbers": [],
+      "assessable_by_numbers": true,
+      "number_groundedness": 1.0,
+      "evidence_number_count": 10
+    },
+    {
+      "qid": "q-017",
+      "category": "编号",
+      "status": "tentative",
+      "question": "SLA-A1 对应的是哪个平台的服务级别协议，质保期多长？",
+      "conclusion": "SLA-A1 对应 PRJ-FIN-2024-017 项目",
+      "reference_answer": "对应银企直联清算平台，质保期 12 个月，含工作日 8:00 至 20:00 一阶段支持与 7×24 小时 P1 级响应。",
+      "confidence": {
+        "retrieval": 0.9141,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7613,
+        "logit": 1.1598,
+        "calibrated": 0.5435,
+        "temperature": 6.655
+      },
+      "cited_ids": [
+        "fin-closeout-prj-fin-2024-017@v1#1.1#c2"
+      ],
+      "n_citations": 1,
+      "section_any": 1,
+      "strict_any": 1,
+      "strict_precision": 1.0,
+      "ref_number_recall": 0.1429,
+      "invented_numbers": [
+        "017",
+        "2024"
+      ],
+      "assessable_by_numbers": true,
+      "number_groundedness": 1.0,
+      "evidence_number_count": 17
+    },
+    {
+      "qid": "q-018",
+      "category": "编号",
+      "status": "tentative",
+      "question": "接口编号 IF-FIN-0012 的单笔汇款金额上限是多少？",
+      "conclusion": "单笔汇款金额上限为 500 万元",
+      "reference_answer": "单笔汇款金额上限为 500 万元，超限须走人工复核通道并附授权影像件。",
+      "confidence": {
+        "retrieval": 0.9912,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.796,
+        "logit": 1.3615,
+        "calibrated": 0.551,
+        "temperature": 6.655
+      },
+      "cited_ids": [
+        "fin-ifspec-prj-fin-2024-017@v1#1.2#c1"
+      ],
+      "n_citations": 1,
+      "section_any": 1,
+      "strict_any": 1,
+      "strict_precision": 1.0,
+      "ref_number_recall": 1.0,
+      "invented_numbers": [],
+      "assessable_by_numbers": true,
+      "number_groundedness": 1.0,
+      "evidence_number_count": 5
+    },
+    {
+      "qid": "q-019",
+      "category": "编号",
+      "status": "tentative",
+      "question": "接口编号 IF-FIN-0013 的单次响应报文体积上限是多少？",
+      "conclusion": "接口编号 IF-FIN-0013 单次响应报文体积不得超过 2 MB",
+      "reference_answer": "单次响应报文体积不得超过 2 MB。",
+      "confidence": {
+        "retrieval": 0.9844,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.793,
+        "logit": 1.3431,
+        "calibrated": 0.5503,
+        "temperature": 6.655
+      },
+      "cited_ids": [
+        "fin-ifspec-prj-fin-2024-017@v1#1.3#c1"
+      ],
+      "n_citations": 1,
+      "section_any": 1,
+      "strict_any": 1,
+      "strict_precision": 1.0,
+      "ref_number_recall": 1.0,
+      "invented_numbers": [
+        "0013"
+      ],
+      "assessable_by_numbers": true,
+      "number_groundedness": 1.0,
+      "evidence_number_count": 8
+    },
+    {
+      "qid": "q-020",
+      "category": "编号",
+      "status": "tentative",
+      "question": "IF-ENE-0021 遥测上送接口的信息体地址段从哪里开始？",
+      "conclusion": "信息体地址段从16385开始",
+      "reference_answer": "信息体地址段规划为 16385 至 18000。",
+      "confidence": {
+        "retrieval": 0.9839,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7927,
+        "logit": 1.3413,
+        "calibrated": 0.5502,
+        "temperature": 6.655
+      },
+      "cited_ids": [
+        "ene-ifspec-prj-ene-2024-006@v1#1.2#c1"
+      ],
+      "n_citations": 1,
+      "section_any": 1,
+      "strict_any": 1,
+      "strict_precision": 1.0,
+      "ref_number_recall": 0.5,
+      "invented_numbers": [],
+      "assessable_by_numbers": true,
+      "number_groundedness": 1.0,
+      "evidence_number_count": 7
+    },
+    {
+      "qid": "q-021",
+      "category": "编号",
+      "status": "tentative",
+      "question": "IEC 60870-5-104 规约下的心跳试验帧叫什么，链路中断等效判定超时是多少？",
+      "conclusion": "心跳试验帧机制为TESTFH；链路中断等效判定超时为60秒",
+      "reference_answer": "采用 IEC 60870-5-104 的 TESTFH 试验帧，主站 20 秒发起、连续 2 次无应答判定中断，等效超时 60 秒。",
+      "confidence": {
+        "retrieval": 0.9507,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7778,
+        "logit": 1.2529,
+        "calibrated": 0.5469,
+        "temperature": 6.655
+      },
+      "cited_ids": [
+        "ene-ifspec-prj-ene-2024-006@v1#2.2#c1"
+      ],
+      "n_citations": 1,
+      "section_any": 1,
+      "strict_any": 1,
+      "strict_precision": 1.0,
+      "ref_number_recall": 0.1667,
+      "invented_numbers": [],
+      "assessable_by_numbers": true,
+      "number_groundedness": 1.0,
+      "evidence_number_count": 12
+    },
+    {
+      "qid": "q-022",
+      "category": "编号",
+      "status": "tentative",
+      "question": "DL/T 645-2007 规约下电能量抄读的表计地址怎么编排？",
+      "conclusion": "表计通信规约遵循 DL/T 645-2007 多功能电能表通信协议，地址采用 12 位表号。",
+      "reference_answer": "遵循 DL/T 645-2007，地址采用 12 位表号，抄读为半双工主从方式，单次会话时长上限 3 秒。",
+      "confidence": {
+        "retrieval": 0.9575,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7809,
+        "logit": 1.2709,
+        "calibrated": 0.5476,
+        "temperature": 6.655
+      },
+      "cited_ids": [
+        "ene-ifspec-prj-ene-2025-011@v1#2.1#c1"
+      ],
+      "n_citations": 1,
+      "section_any": 1,
+      "strict_any": 1,
+      "strict_precision": 1.0,
+      "ref_number_recall": 0.75,
+      "invented_numbers": [],
+      "assessable_by_numbers": true,
+      "number_groundedness": 1.0,
+      "evidence_number_count": 10
+    },
+    {
+      "qid": "q-023",
+      "category": "编号",
+      "status": "tentative",
+      "question": "IF-CHM-0007 实时点位读取接口的订阅点位规模上限是多少？",
+      "conclusion": "接口编号 IF-CHM-0007 定义的订阅点位规模上限为 8000 个。",
+      "reference_answer": "订阅点位规模上限 8000 个，最小发布间隔 500 毫秒。",
+      "confidence": {
+        "retrieval": 0.9971,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7987,
+        "logit": 1.3782,
+        "calibrated": 0.5516,
+        "temperature": 6.655
+      },
+      "cited_ids": [
+        "chm-ifspec-prj-chm-2024-003@v1#1.2#c1"
+      ],
+      "n_citations": 1,
+      "section_any": 1,
+      "strict_any": 1,
+      "strict_precision": 1.0,
+      "ref_number_recall": 0.5,
+      "invented_numbers": [
+        "0007"
+      ],
+      "assessable_by_numbers": true,
+      "number_groundedness": 1.0,
+      "evidence_number_count": 4
+    },
+    {
+      "qid": "q-024",
+      "category": "编号",
+      "status": "tentative",
+      "question": "IF-CHM-0011 历史回溯接口单次返回的时间序列点数上限是多少？",
+      "conclusion": "IF-CHM-0011 的查询响应时延目标为 P95 不高于 4 秒，单次返回时间序列点数上限 86400 点，超限须分片。",
+      "reference_answer": "单次返回上限 86400 点，超限须分片并保持帧序号连续。",
+      "confidence": {
+        "retrieval": 0.9976,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7989,
+        "logit": 1.3794,
+        "calibrated": 0.5516,
+        "temperature": 6.655
+      },
+      "cited_ids": [
+        "chm-ifspec-prj-chm-2024-003@v1#2.2#c1"
+      ],
+      "n_citations": 1,
+      "section_any": 1,
+      "strict_any": 1,
+      "strict_precision": 1.0,
+      "ref_number_recall": 1.0,
+      "invented_numbers": [
+        "0011",
+        "4",
+        "95"
+      ],
+      "assessable_by_numbers": true,
+      "number_groundedness": 1.0,
+      "evidence_number_count": 9
+    },
+    {
+      "qid": "q-025",
+      "category": "编号",
+      "status": "tentative",
+      "question": "防爆区域划分依据哪个国标执行，区域内的作业票怎么签发？",
+      "conclusion": "防爆区域划分依据 GB 50058-2014 的分区原则；进入 1 区作业须办理受限空间与动火两项作业票，有效期不超过当班 8 小时且须每日重新确认气体检测合格",
+      "reference_answer": "按 GB 50058-2014 的分区原则执行；设备新增或替换须提交区域等级证明与选型核对表，两项缺一不得签发作业票。",
+      "confidence": {
+        "retrieval": 0.9624,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7831,
+        "logit": 1.2838,
+        "calibrated": 0.5481,
+        "temperature": 6.655
+      },
+      "cited_ids": [
+        "chm-compliance-prj-chm-2023-021@v1#2.2#c1",
+        "chm-runbook-prj-chm-2023-021@v1#4.1#c1"
+      ],
+      "n_citations": 2,
+      "section_any": 1,
+      "strict_any": 1,
+      "strict_precision": 0.5,
+      "ref_number_recall": 1.0,
+      "invented_numbers": [
+        "1",
+        "8"
+      ],
+      "assessable_by_numbers": true,
+      "number_groundedness": 1.0,
+      "evidence_number_count": 10
+    },
+    {
+      "qid": "q-026",
+      "category": "编号",
+      "status": "tentative",
+      "question": "变更单号 CR-CHM-2024-118 为什么要补做联锁功能验证，总共耗时多久？",
+      "conclusion": "变更单号 CR-CHM-2024-118 涉及气化单元一路模拟量量程调整，可能间接影响 DCS 联锁逻辑的判定输入，因此需要补做联锁功能验证。；从发起到关闭共耗时 4 小时，其中功能验证 90 分钟。",
+      "reference_answer": "因该量程调整可能间接影响 DCS 联锁逻辑的判定输入，须补做验证后方可实施，从发起到关闭共耗时 4 小时。",
+      "confidence": {
+        "retrieval": 0.9697,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7864,
+        "logit": 1.3034,
+        "calibrated": 0.5488,
+        "temperature": 6.655
+      },
+      "cited_ids": [
+        "chm-runbook-prj-chm-2023-021@v1#5.1#c1"
+      ],
+      "n_citations": 1,
+      "section_any": 1,
+      "strict_any": 1,
+      "strict_precision": 1.0,
+      "ref_number_recall": 1.0,
+      "invented_numbers": [
+        "118",
+        "2024",
+        "90"
+      ],
+      "assessable_by_numbers": true,
+      "number_groundedness": 1.0,
+      "evidence_number_count": 7
+    },
+    {
+      "qid": "q-027",
+      "category": "方案名",
+      "status": "tentative",
+      "question": "银企直联实时清算方案 V3.2 对日间清算高峰的处理能力要求是多少？",
+      "conclusion": "日间清算高峰3200笔每秒持续60分钟无积压",
+      "reference_answer": "要求 3200 笔每秒持续 60 分钟无积压，实测达到 3760 笔每秒。",
+      "confidence": {
+        "retrieval": 0.9971,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7987,
+        "logit": 1.3782,
+        "calibrated": 0.5516,
+        "temperature": 6.655
+      },
+      "cited_ids": [
+        "fin-closeout-prj-fin-2024-017@v1#2.1#c2"
+      ],
+      "n_citations": 1,
+      "section_any": 1,
+      "strict_any": 1,
+      "strict_precision": 1.0,
+      "ref_number_recall": 0.6667,
+      "invented_numbers": [],
+      "assessable_by_numbers": true,
+      "number_groundedness": 1.0,
+      "evidence_number_count": 7
+    },
+    {
+      "qid": "q-028",
+      "category": "方案名",
+      "status": "tentative",
+      "question": "银企直联实时清算方案 V3.2 的核心通道年度可用性目标是多少？",
+      "conclusion": "核心清算通道年度可用性目标不低于 99.99%",
+      "reference_answer": "年度可用性目标不低于 99.99%，全年非计划中断时长控制在 53 分钟以内。",
+      "confidence": {
+        "retrieval": 0.9927,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7967,
+        "logit": 1.3658,
+        "calibrated": 0.5511,
+        "temperature": 6.655
+      },
+      "cited_ids": [
+        "fin-closeout-prj-fin-2024-017@v1#2.1#c1"
+      ],
+      "n_citations": 1,
+      "section_any": 1,
+      "strict_any": 1,
+      "strict_precision": 1.0,
+      "ref_number_recall": 0.5,
+      "invented_numbers": [],
+      "assessable_by_numbers": true,
+      "number_groundedness": 1.0,
+      "evidence_number_count": 6
+    },
+    {
+      "qid": "q-029",
+      "category": "方案名",
+      "status": "tentative",
+      "question": "配网线损治理方案 V2.1 的验收核心口径包含哪几项指标？",
+      "conclusion": "同期线损率指标；采集数据完整率；台区档案一致率",
+      "reference_answer": "以同期线损率指标、采集数据完整率与台区档案一致率三项为验收核心口径。",
+      "confidence": {
+        "retrieval": 0.9971,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7987,
+        "logit": 1.3782,
+        "calibrated": 0.5516,
+        "temperature": 6.655
+      },
+      "cited_ids": [
+        "ene-closeout-prj-ene-2024-006@v1#1.1#c2"
+      ],
+      "n_citations": 1,
+      "section_any": 1,
+      "strict_any": 1,
+      "strict_precision": 1.0,
+      "ref_number_recall": null,
+      "invented_numbers": [],
+      "assessable_by_numbers": false,
+      "number_groundedness": null,
+      "evidence_number_count": 3
+    },
+    {
+      "qid": "q-030",
+      "category": "方案名",
+      "status": "tentative",
+      "question": "连续重整装置智能优化方案 V1.4 的验收指标里收率类目标是什么？",
+      "conclusion": "验收以装置收率、能耗与平稳率三类指标为核心",
+      "reference_answer": "以装置收率、能耗与平稳率三类指标为核心，汽油收率实测由 82.4% 提升至 83.2%。",
+      "confidence": {
+        "retrieval": 0.9863,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7938,
+        "logit": 1.348,
+        "calibrated": 0.5505,
+        "temperature": 6.655
+      },
+      "cited_ids": [
+        "chm-closeout-prj-chm-2024-003@v1#1.1#c1"
+      ],
+      "n_citations": 1,
+      "section_any": 1,
+      "strict_any": 1,
+      "strict_precision": 1.0,
+      "ref_number_recall": 0.0,
+      "invented_numbers": [],
+      "assessable_by_numbers": true,
+      "number_groundedness": null,
+      "evidence_number_count": 7
+    },
+    {
+      "qid": "q-031",
+      "category": "方案名",
+      "status": "tentative",
+      "question": "信贷资产风险分类模型方案 V1.0 拆分作业后达成了哪个周期目标？",
+      "conclusion": "增量作业每 15 分钟一次、全量校准作业每周一次，改造后增量作业 P95 时长稳定在 8 分 20 秒，达成 5 个工作日以内作业周期的验收目标。",
+      "reference_answer": "达成 5 个工作日以内作业周期的验收目标，增量作业 P95 时长稳定在 8 分 20 秒。",
+      "confidence": {
+        "retrieval": 0.9575,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7809,
+        "logit": 1.2709,
+        "calibrated": 0.5476,
+        "temperature": 6.655
+      },
+      "cited_ids": [
+        "fin-retro-prj-fin-2023-041@v1#3.1#c1"
+      ],
+      "n_citations": 1,
+      "section_any": 1,
+      "strict_any": 1,
+      "strict_precision": 1.0,
+      "ref_number_recall": 1.0,
+      "invented_numbers": [
+        "15"
+      ],
+      "assessable_by_numbers": true,
+      "number_groundedness": 1.0,
+      "evidence_number_count": 12
+    },
+    {
+      "qid": "q-032",
+      "category": "方案名",
+      "status": "tentative",
+      "question": "调度自动化系统运维支撑方案 V4.0 给主站定的年度可用率基线是多少？",
+      "conclusion": "99.99%",
+      "reference_answer": "主站年度可用率目标不低于 99.99%。",
+      "confidence": {
+        "retrieval": 0.9839,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.9,
+        "composite": 0.9727,
+        "logit": 3.5732,
+        "calibrated": 0.6311,
+        "temperature": 6.655
+      },
+      "cited_ids": [
+        "ene-runbook-prj-ene-2023-019@v1#1.1#c1"
+      ],
+      "n_citations": 1,
+      "section_any": 1,
+      "strict_any": 1,
+      "strict_precision": 1.0,
+      "ref_number_recall": 1.0,
+      "invented_numbers": [],
+      "assessable_by_numbers": true,
+      "number_groundedness": 1.0,
+      "evidence_number_count": 7
+    },
+    {
+      "qid": "q-033",
+      "category": "方案名",
+      "status": "tentative",
+      "question": "用电信息采集运维支持方案 V2.3 里归档口径调阅的响应时限是多久？",
+      "conclusion": "配置与指标口径版本每日备份一次，备份保留 90 天在线、12 个月近线；口径版本变更须保留前后对照表，可支持任意历史时点按当期口径重算，归档调阅响应时限为 4 小时以内。",
+      "reference_answer": "归档调阅响应时限为 4 小时以内，且口径版本变更须保留前后对照表。",
+      "confidence": {
+        "retrieval": 0.9829,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7923,
+        "logit": 1.3388,
+        "calibrated": 0.5501,
+        "temperature": 6.655
+      },
+      "cited_ids": [
+        "ene-runbook-prj-ene-2025-011@v1#4.1#c1"
+      ],
+      "n_citations": 1,
+      "section_any": 1,
+      "strict_any": 1,
+      "strict_precision": 1.0,
+      "ref_number_recall": 1.0,
+      "invented_numbers": [
+        "12",
+        "90"
+      ],
+      "assessable_by_numbers": true,
+      "number_groundedness": 1.0,
+      "evidence_number_count": 14
+    },
+    {
+      "qid": "q-034",
+      "category": "方案名",
+      "status": "tentative",
+      "question": "反洗钱可疑交易监测规则体系方案 V1.2 规划了多少项规则？",
+      "conclusion": "312 项",
+      "reference_answer": "规则总量规划为 312 项，含阈值类 168 项、关系网络类 96 项、行为序列类 48 项。",
+      "confidence": {
+        "retrieval": 0.9966,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7985,
+        "logit": 1.3769,
+        "calibrated": 0.5515,
+        "temperature": 6.655
+      },
+      "cited_ids": [
+        "fin-presale-prj-fin-2025-008@v1#2.1#c1"
+      ],
+      "n_citations": 1,
+      "section_any": 1,
+      "strict_any": 1,
+      "strict_precision": 1.0,
+      "ref_number_recall": 0.25,
+      "invented_numbers": [],
+      "assessable_by_numbers": true,
+      "number_groundedness": 1.0,
+      "evidence_number_count": 7
+    },
+    {
+      "qid": "q-035",
+      "category": "方案名",
+      "status": "tentative",
+      "question": "SIS 回路改造实施方案 V1.1 对单批停车切换窗口的上限是多少？",
+      "conclusion": "SIS 回路改造实施方案 V1.1 对单批停车切换窗口的上限是 36 小时",
+      "reference_answer": "每批切换窗口不超过 36 小时，实际最长一次为 33 小时 40 分钟。",
+      "confidence": {
+        "retrieval": 0.9829,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7923,
+        "logit": 1.3388,
+        "calibrated": 0.5501,
+        "temperature": 6.655
+      },
+      "cited_ids": [
+        "chm-closeout-prj-chm-2023-021@v1#1.1#c1"
+      ],
+      "n_citations": 1,
+      "section_any": 1,
+      "strict_any": 1,
+      "strict_precision": 1.0,
+      "ref_number_recall": 0.3333,
+      "invented_numbers": [
+        "1.1"
+      ],
+      "assessable_by_numbers": true,
+      "number_groundedness": 1.0,
+      "evidence_number_count": 12
+    },
+    {
+      "qid": "q-036",
+      "category": "方案名",
+      "status": "tentative",
+      "question": "电子记录与数据完整性提升方案 V1.0 对批生产记录电子化覆盖率的要求是多少？",
+      "conclusion": "批生产记录电子化覆盖率不低于 95%",
+      "reference_answer": "批生产记录电子化覆盖率不低于 95%，记录及时率不低于 99%，批放行周期压缩至 2 天以内。",
+      "confidence": {
+        "retrieval": 0.9985,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7993,
+        "logit": 1.3819,
+        "calibrated": 0.5517,
+        "temperature": 6.655
+      },
+      "cited_ids": [
+        "chm-presale-prj-chm-2025-014@v1#1.1#c2"
+      ],
+      "n_citations": 1,
+      "section_any": 1,
+      "strict_any": 1,
+      "strict_precision": 1.0,
+      "ref_number_recall": 0.3333,
+      "invented_numbers": [],
+      "assessable_by_numbers": true,
+      "number_groundedness": 1.0,
+      "evidence_number_count": 4
+    },
+    {
+      "qid": "q-037",
+      "category": "方案名",
+      "status": "tentative",
+      "question": "灾备切换编排方案 V2.0 里非计划应急切换需要什么确认条件？",
+      "conclusion": "非计划应急切换须双人确认，两名确认人员须分属运维岗与业务岗。",
+      "reference_answer": "须双人确认，两名确认人员分别属于运维岗与业务岗。",
+      "confidence": {
+        "retrieval": 0.9668,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7851,
+        "logit": 1.2956,
+        "calibrated": 0.5485,
+        "temperature": 6.655
+      },
+      "cited_ids": [
+        "fin-ifspec-prj-fin-2024-033@v1#2.2#c1"
+      ],
+      "n_citations": 1,
+      "section_any": 1,
+      "strict_any": 1,
+      "strict_precision": 1.0,
+      "ref_number_recall": null,
+      "invented_numbers": [],
+      "assessable_by_numbers": false,
+      "number_groundedness": null,
+      "evidence_number_count": 5
+    },
+    {
+      "qid": "q-038",
+      "category": "方案名",
+      "status": "tentative",
+      "question": "装置优化数据接口规范 V2.0 里 IF-CHM-0007 采用什么订阅方式与发布间隔？",
+      "conclusion": "接口编号 IF-CHM-0007 采用 OPC UA 订阅模式；最小发布间隔为 500 毫秒",
+      "reference_answer": "采用 OPC UA 订阅模式，最小发布间隔 500 毫秒。",
+      "confidence": {
+        "retrieval": 0.9839,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7927,
+        "logit": 1.3413,
+        "calibrated": 0.5502,
+        "temperature": 6.655
+      },
+      "cited_ids": [
+        "chm-ifspec-prj-chm-2024-003@v1#1.2#c1"
+      ],
+      "n_citations": 1,
+      "section_any": 1,
+      "strict_any": 1,
+      "strict_precision": 1.0,
+      "ref_number_recall": 1.0,
+      "invented_numbers": [
+        "0007"
+      ],
+      "assessable_by_numbers": true,
+      "number_groundedness": 1.0,
+      "evidence_number_count": 4
+    },
+    {
+      "qid": "q-039",
+      "category": "口语化",
+      "status": "tentative",
+      "question": "半夜清算链路挂了，客户追问我们多久之内必须把应急拉起来，还得挂哪个流程？",
+      "conclusion": "P1级故障须在15分钟内启动应急响应，并同时按ITIL P1流程成立事件指挥组",
+      "reference_answer": "P1 级故障须在 15 分钟内启动应急响应，并按 ITIL P1 流程成立事件指挥组。",
+      "confidence": {
+        "retrieval": 0.5073,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.5783,
+        "logit": 0.3158,
+        "calibrated": 0.5119,
+        "temperature": 6.655
+      },
+      "cited_ids": [
+        "fin-runbook-prj-fin-2024-017@v1#2.1#c1"
+      ],
+      "n_citations": 1,
+      "section_any": 1,
+      "strict_any": 1,
+      "strict_precision": 1.0,
+      "ref_number_recall": 1.0,
+      "invented_numbers": [],
+      "assessable_by_numbers": true,
+      "number_groundedness": 1.0,
+      "evidence_number_count": 5
+    },
+    {
+      "qid": "q-040",
+      "category": "口语化",
+      "status": "tentative",
+      "question": "厂里一路联锁失去保护了，值班经理问这算几级事故、人最晚多久得到现场？",
+      "conclusion": "联锁失去保护属于P1事件；P1事件要求2小时内到场",
+      "reference_answer": "按 ITSS 事件分级属 P1，须在 30 分钟内启动应急响应并在 2 小时内到场。",
+      "confidence": {
+        "retrieval": 0.561,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.6025,
+        "logit": 0.4159,
+        "calibrated": 0.5156,
+        "temperature": 6.655
+      },
+      "cited_ids": [
+        "chm-runbook-prj-chm-2023-021@v1#2.1#c1"
+      ],
+      "n_citations": 1,
+      "section_any": 1,
+      "strict_any": 1,
+      "strict_precision": 1.0,
+      "ref_number_recall": 0.6667,
+      "invented_numbers": [],
+      "assessable_by_numbers": true,
+      "number_groundedness": 1.0,
+      "evidence_number_count": 6
+    },
+    {
+      "qid": "q-041",
+      "category": "口语化",
+      "status": "tentative",
+      "question": "客户问我们那个心跳多久算超时，这个数在哪儿有依据？",
+      "conclusion": "心跳超时的判定口径为：探活报文发送间隔 5 秒，连续 3 次未收到应答即判定链路中断，等效超时阈值为 15 秒；",
+      "reference_answer": "探活报文发送间隔 5 秒、连续 3 次无应答判定链路中断，等效超时阈值 15 秒。",
+      "confidence": {
+        "retrieval": 0.4519,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.5534,
+        "logit": 0.2144,
+        "calibrated": 0.5081,
+        "temperature": 6.655
+      },
+      "cited_ids": [
+        "fin-runbook-prj-fin-2024-017@v1#2.2#c1"
+      ],
+      "n_citations": 1,
+      "section_any": 1,
+      "strict_any": 1,
+      "strict_precision": 1.0,
+      "ref_number_recall": 1.0,
+      "invented_numbers": [],
+      "assessable_by_numbers": true,
+      "number_groundedness": 1.0,
+      "evidence_number_count": 5
+    },
+    {
+      "qid": "q-042",
+      "category": "口语化",
+      "status": "tentative",
+      "question": "台区电量老对不上，怀疑是抄表不同期，系统看的是哪个窗口、多长算合格？",
+      "conclusion": "抄表同期性约束为全台区采集时间窗不超过15分钟，同期率低于95%的台区其线损结果标记为不可信",
+      "reference_answer": "全台区采集时间窗不超过 15 分钟，同期率低于 95% 时该台区线损结果标记为不可信。",
+      "confidence": {
+        "retrieval": 0.271,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.4719,
+        "logit": -0.1125,
+        "calibrated": 0.4958,
+        "temperature": 6.655
+      },
+      "cited_ids": [
+        "ene-closeout-prj-ene-2024-006@v1#3.1#c2"
+      ],
+      "n_citations": 1,
+      "section_any": 1,
+      "strict_any": 1,
+      "strict_precision": 1.0,
+      "ref_number_recall": 1.0,
+      "invented_numbers": [],
+      "assessable_by_numbers": true,
+      "number_groundedness": 1.0,
+      "evidence_number_count": 4
+    },
+    {
+      "qid": "q-043",
+      "category": "口语化",
+      "status": "tentative",
+      "question": "厂里验收是不是真去碰联锁啊？现场那套故障是怎么试出来的？",
+      "conclusion": "现场阶段在停车窗口内完成联锁功能验证 96 项、报警联动验证 214 项，现场阶段全部通过且无一项以跳过方式关闭。现场验证采用注错方式覆盖传感器断线、通道短路与会话超时三类故障注入，每类不少于 30 次。",
+      "reference_answer": "现场阶段以注错方式覆盖传感器断线、通道短路与会话超时三类故障注入，每类不少于 30 次。",
+      "confidence": {
+        "retrieval": 0.5889,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.615,
+        "logit": 0.4684,
+        "calibrated": 0.5176,
+        "temperature": 6.655
+      },
+      "cited_ids": [
+        "chm-closeout-prj-chm-2023-021@v1#3.1#c1"
+      ],
+      "n_citations": 1,
+      "section_any": 1,
+      "strict_any": 1,
+      "strict_precision": 1.0,
+      "ref_number_recall": 1.0,
+      "invented_numbers": [
+        "214",
+        "96"
+      ],
+      "assessable_by_numbers": true,
+      "number_groundedness": 1.0,
+      "evidence_number_count": 6
+    },
+    {
+      "qid": "q-044",
+      "category": "口语化",
+      "status": "refuse",
+      "question": "运维图省事想直接进库里把那个字段改回来，规范里哪句话把这条路堵死了？",
+      "conclusion": "",
+      "reference_answer": "审计追踪写入是唯一允许的变更方式，运维人员不得以数据库直连方式修正记录字段，错误须以追加更正记录处理。",
+      "confidence": {
+        "retrieval": 0.0046,
+        "composite": 0.0,
+        "calibrated": 0.0,
+        "rule": "retrieval_gate"
+      },
+      "cited_ids": [],
+      "n_citations": 0,
+      "section_any": 0,
+      "strict_any": 0,
+      "strict_precision": 0.0,
+      "ref_number_recall": null,
+      "invented_numbers": [],
+      "assessable_by_numbers": false,
+      "number_groundedness": null,
+      "evidence_number_count": 0
+    },
+    {
+      "qid": "q-045",
+      "category": "口语化",
+      "status": "tentative",
+      "question": "检修要临时摘一个联锁，最多能摘多久，超时了咋办？",
+      "conclusion": "联锁摘除有效期不超过24小时",
+      "reference_answer": "联锁摘除单有效期不超过 24 小时，超时须重新审批并在操作台账挂牌提醒。",
+      "confidence": {
+        "retrieval": 0.8628,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7383,
+        "logit": 1.0372,
+        "calibrated": 0.5389,
+        "temperature": 6.655
+      },
+      "cited_ids": [
+        "chm-compliance-prj-chm-2023-021@v1#3.1#c1",
+        "chm-runbook-prj-chm-2023-021@v1#5.1#c1"
+      ],
+      "n_citations": 2,
+      "section_any": 1,
+      "strict_any": 1,
+      "strict_precision": 1.0,
+      "ref_number_recall": 1.0,
+      "invented_numbers": [],
+      "assessable_by_numbers": true,
+      "number_groundedness": 1.0,
+      "evidence_number_count": 10
+    },
+    {
+      "qid": "q-046",
+      "category": "口语化",
+      "status": "tentative",
+      "question": "车间电压一闪，采集那边咋保证记录不断，能自己顶多久？",
+      "conclusion": "采集网关须在断电后5分钟内以本地缓存方式续录，缓存容量支持4小时连续记录；供电恢复后自动补传并按发生时间重排。",
+      "reference_answer": "采集网关在断电后 5 分钟内起以本地缓存续录，缓存容量支持 4 小时连续记录，恢复后自动补传并按发生时间重排。",
+      "confidence": {
+        "retrieval": 0.2417,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.4588,
+        "logit": -0.1652,
+        "calibrated": 0.4938,
+        "temperature": 6.655
+      },
+      "cited_ids": [
+        "chm-runbook-prj-chm-2025-014@v1#4.1#c1"
+      ],
+      "n_citations": 1,
+      "section_any": 1,
+      "strict_any": 1,
+      "strict_precision": 1.0,
+      "ref_number_recall": 1.0,
+      "invented_numbers": [],
+      "assessable_by_numbers": true,
+      "number_groundedness": 1.0,
+      "evidence_number_count": 8
+    },
+    {
+      "qid": "q-047",
+      "category": "口语化",
+      "status": "refuse",
+      "question": "想切之前先确认两地数据跟没跟上，超过多少就不能发起切换了？",
+      "conclusion": "",
+      "reference_answer": "同步延迟达 5000 毫秒触发红色告警并禁止发起任何计划内切换。",
+      "confidence": {
+        "retrieval": 0.1387,
+        "composite": 0.0,
+        "calibrated": 0.0,
+        "rule": "retrieval_gate"
+      },
+      "cited_ids": [],
+      "n_citations": 0,
+      "section_any": 0,
+      "strict_any": 0,
+      "strict_precision": 0.0,
+      "ref_number_recall": 0.0,
+      "invented_numbers": [],
+      "assessable_by_numbers": true,
+      "number_groundedness": null,
+      "evidence_number_count": 0
+    },
+    {
+      "qid": "q-048",
+      "category": "口语化",
+      "status": "tentative",
+      "question": "客户想知道自己拨备现在到底在什么水平，文档里给的实际区间是啥？",
+      "conclusion": "客户当前拨备覆盖率稳定在 182% 至 196% 区间",
+      "reference_answer": "当前拨备覆盖率稳定在 182% 至 196% 区间。",
+      "confidence": {
+        "retrieval": 0.8105,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7147,
+        "logit": 0.9183,
+        "calibrated": 0.5344,
+        "temperature": 6.655
+      },
+      "cited_ids": [
+        "fin-presale-prj-fin-2023-041@v1#1.1#c1"
+      ],
+      "n_citations": 1,
+      "section_any": 1,
+      "strict_any": 1,
+      "strict_precision": 1.0,
+      "ref_number_recall": 1.0,
+      "invented_numbers": [],
+      "assessable_by_numbers": true,
+      "number_groundedness": 1.0,
+      "evidence_number_count": 9
+    },
+    {
+      "qid": "q-049",
+      "category": "口语化",
+      "status": "tentative",
+      "question": "企业那边怕重复打款，我们靠什么字段判重、判多久？",
+      "conclusion": "接口编号 IF-FIN-0012 使用业务日期加企业流水号双字段联合判重",
+      "reference_answer": "幂等控制以业务日期加企业流水号双字段联合判重，判重窗口保留 7 个自然日。",
+      "confidence": {
+        "retrieval": 0.5757,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.6091,
+        "logit": 0.4435,
+        "calibrated": 0.5167,
+        "temperature": 6.655
+      },
+      "cited_ids": [
+        "fin-ifspec-prj-fin-2024-017@v1#1.2#c1"
+      ],
+      "n_citations": 1,
+      "section_any": 1,
+      "strict_any": 1,
+      "strict_precision": 1.0,
+      "ref_number_recall": 0.0,
+      "invented_numbers": [
+        "0012"
+      ],
+      "assessable_by_numbers": true,
+      "number_groundedness": 1.0,
+      "evidence_number_count": 5
+    },
+    {
+      "qid": "q-050",
+      "category": "口语化",
+      "status": "tentative",
+      "question": "操作员连着拒了几条系统建议，平台会把它这条回路晾多久？",
+      "conclusion": "操作员连续拒绝三条建议后，平台会暂停该回路建议30分钟",
+      "reference_answer": "同一回路连续 3 条建议被操作员拒绝后，平台暂停该回路建议 30 分钟并回传拒绝原因。",
+      "confidence": {
+        "retrieval": 0.9028,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7563,
+        "logit": 1.1325,
+        "calibrated": 0.5424,
+        "temperature": 6.655
+      },
+      "cited_ids": [
+        "chm-ifspec-prj-chm-2024-003@v1#2.1#c1"
+      ],
+      "n_citations": 1,
+      "section_any": 1,
+      "strict_any": 1,
+      "strict_precision": 1.0,
+      "ref_number_recall": 0.5,
+      "invented_numbers": [],
+      "assessable_by_numbers": true,
+      "number_groundedness": 1.0,
+      "evidence_number_count": 6
+    },
+    {
+      "qid": "q-051",
+      "category": "口语化",
+      "status": "refuse",
+      "question": "值班想知道哪块表没抄上来就得开工单，这条规矩写在哪儿？",
+      "conclusion": "",
+      "reference_answer": "连续 2 次抄读失败的表计自动生成核查工单，要求 3 个工作日内定位原因。",
+      "confidence": {
+        "retrieval": 0.1234,
+        "composite": 0.0,
+        "calibrated": 0.0,
+        "rule": "retrieval_gate"
+      },
+      "cited_ids": [],
+      "n_citations": 0,
+      "section_any": 0,
+      "strict_any": 0,
+      "strict_precision": 0.0,
+      "ref_number_recall": 0.0,
+      "invented_numbers": [],
+      "assessable_by_numbers": true,
+      "number_groundedness": null,
+      "evidence_number_count": 0
+    },
+    {
+      "qid": "q-052",
+      "category": "口语化",
+      "status": "refuse",
+      "question": "客户说远程调试可以但数据一个字节都不能出去，那我们远程到底能干啥？",
+      "conclusion": "",
+      "reference_answer": "远程支持仅允许观看屏幕共享而不允许数据传递，该约束已写入交付作业指导书。",
+      "confidence": {
+        "retrieval": 0.1184,
+        "composite": 0.0,
+        "calibrated": 0.0,
+        "rule": "retrieval_gate"
+      },
+      "cited_ids": [],
+      "n_citations": 0,
+      "section_any": 0,
+      "strict_any": 0,
+      "strict_precision": 0.0,
+      "ref_number_recall": null,
+      "invented_numbers": [],
+      "assessable_by_numbers": false,
+      "number_groundedness": null,
+      "evidence_number_count": 0
+    },
+    {
+      "qid": "q-053",
+      "category": "跨文档",
+      "status": "tentative",
+      "question": "两地三中心这套灾备架构在哪些项目文档里被引用过？",
+      "conclusion": "客户灾备架构为两地三中心",
+      "reference_answer": "在银企直联清算项目与两地三中心灾备切换接口规范中均有引用，前者为交付范围、后者为架构与切换约束。",
+      "confidence": {
+        "retrieval": 0.4736,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.5631,
+        "logit": 0.2538,
+        "calibrated": 0.5095,
+        "temperature": 6.655
+      },
+      "cited_ids": [
+        "fin-ifspec-prj-fin-2024-033@v1#1.1#c1"
+      ],
+      "n_citations": 1,
+      "section_any": 1,
+      "strict_any": 1,
+      "strict_precision": 1.0,
+      "ref_number_recall": null,
+      "invented_numbers": [],
+      "assessable_by_numbers": false,
+      "number_groundedness": null,
+      "evidence_number_count": 0
+    },
+    {
+      "qid": "q-054",
+      "category": "跨文档",
+      "status": "tentative",
+      "question": "公司的五步交付法是哪五个阶段，各项目是怎么用的？",
+      "conclusion": "五步交付法包括现状诊断、方案定型、试点验证、规模推广与成效固化五个阶段。",
+      "reference_answer": "依次为现状诊断、方案定型、试点验证、规模推广与成效固化五个阶段，每阶段设闸口评审并强制输出签字件。",
+      "confidence": {
+        "retrieval": 0.9536,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7791,
+        "logit": 1.2604,
+        "calibrated": 0.5472,
+        "temperature": 6.655
+      },
+      "cited_ids": [
+        "fin-closeout-prj-fin-2024-017@v1#4.1#c1",
+        "fin-presale-prj-fin-2025-008@v1#3.1#c1",
+        "chm-presale-prj-chm-2025-014@v1#2.2#c1",
+        "fin-presale-prj-fin-2023-041@v1#2.2#c1",
+        "chm-closeout-prj-chm-2024-003@v1#5.1#c1"
+      ],
+      "n_citations": 5,
+      "section_any": 1,
+      "strict_any": 1,
+      "strict_precision": 1.0,
+      "ref_number_recall": null,
+      "invented_numbers": [],
+      "assessable_by_numbers": false,
+      "number_groundedness": null,
+      "evidence_number_count": 18
+    },
+    {
+      "qid": "q-055",
+      "category": "跨文档",
+      "status": "tentative",
+      "question": "ITSS 事件分级在金融、能源、化工三条线上是怎么各自细化门限的？",
+      "conclusion": "金融线P1判定含资金差错外溢；能源线P1判定含厂站失联数量；化工线P1判定含联锁动作与人员暴露风险",
+      "reference_answer": "三线共用 ITSS 事件分级框架，但 P1 判定门限不同：金融看资金差错外溢、电力看厂站失联数量、化工看联锁失效与人员暴露风险。",
+      "confidence": {
+        "retrieval": 0.9546,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7796,
+        "logit": 1.2633,
+        "calibrated": 0.5473,
+        "temperature": 6.655
+      },
+      "cited_ids": [
+        "ene-runbook-prj-ene-2023-019@v1#2.1#c2"
+      ],
+      "n_citations": 1,
+      "section_any": 1,
+      "strict_any": 1,
+      "strict_precision": 1.0,
+      "ref_number_recall": 1.0,
+      "invented_numbers": [],
+      "assessable_by_numbers": true,
+      "number_groundedness": 1.0,
+      "evidence_number_count": 1
+    },
+    {
+      "qid": "q-056",
+      "category": "跨文档",
+      "status": "tentative",
+      "question": "CMMI 3 级过程域映射在项目上具体登记哪些过程域和度量项？",
+      "conclusion": "本项目登记了需求管理、项目计划、配置管理与决策分析四个过程域的度量项。；按 CMMI 3 级过程域映射要求登记度量项 9 类。；补充了需求变更管理与配置管理两个过程域的度量口径。；完成需求管理、配置管理与验证三个过程域的度量归档。；归档度量样本 2410 条，需求变更条目 388 条。",
+      "reference_answer": "按项目登记需求管理、项目计划、配置管理、验证与决策分析等过程域的度量项，并把结论回灌组织过程资产库。",
+      "confidence": {
+        "retrieval": 0.9907,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7958,
+        "logit": 1.3602,
+        "calibrated": 0.5509,
+        "temperature": 6.655
+      },
+      "cited_ids": [
+        "fin-closeout-prj-fin-2024-017@v1#4.1#c1",
+        "ene-closeout-prj-ene-2024-006@v1#4.1#c1",
+        "ene-retro-prj-ene-2024-006@v1#3.1#c1",
+        "chm-closeout-prj-chm-2024-003@v1#5.1#c1",
+        "chm-closeout-prj-chm-2023-021@v1#4.1#c1"
+      ],
+      "n_citations": 5,
+      "section_any": 1,
+      "strict_any": 1,
+      "strict_precision": 1.0,
+      "ref_number_recall": null,
+      "invented_numbers": [],
+      "assessable_by_numbers": false,
+      "number_groundedness": 1.0,
+      "evidence_number_count": 24
+    },
+    {
+      "qid": "q-057",
+      "category": "跨文档",
+      "status": "tentative",
+      "question": "客户提的数据不出域，公司那四道防线分别是什么？",
+      "conclusion": "第一道防线为环境隔离，开发测试数据一律使用造数或脱敏数据。；第二道防线为出口管控，任何跨域传输须经审批工单并留存审批链。；第三道防线为内容识别，出口通道部署敏感字段自动识别与阻断。；第四道防线为审计追溯，所有访问与出口行为日志集中留存3年。",
+      "reference_answer": "四道防线为环境隔离、出口管控（审批）、内容识别与审计追溯，任一道未闭环即暂停相关作业。",
+      "confidence": {
+        "retrieval": 0.98,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.791,
+        "logit": 1.331,
+        "calibrated": 0.5498,
+        "temperature": 6.655
+      },
+      "cited_ids": [
+        "fin-compliance-prj-fin-2025-008@v1#2.2#c1"
+      ],
+      "n_citations": 1,
+      "section_any": 1,
+      "strict_any": 1,
+      "strict_precision": 1.0,
+      "ref_number_recall": null,
+      "invented_numbers": [],
+      "assessable_by_numbers": false,
+      "number_groundedness": 1.0,
+      "evidence_number_count": 4
+    },
+    {
+      "qid": "q-058",
+      "category": "跨文档",
+      "status": "tentative",
+      "question": "防爆区域划分在运维手册和合规摘录里的口径一致吗？",
+      "conclusion": "防爆区域划分原则一致",
+      "reference_answer": "一致，均按 1 区与 2 区划分并逐单元对应设备防爆标志，合规摘录另给出 GB 50058-2014 的配线与密封要求。",
+      "confidence": {
+        "retrieval": 0.7617,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.6928,
+        "logit": 0.8132,
+        "calibrated": 0.5305,
+        "temperature": 6.655
+      },
+      "cited_ids": [
+        "chm-runbook-prj-chm-2023-021@v1#4.1#c1",
+        "chm-compliance-prj-chm-2023-021@v1#2.2#c1"
+      ],
+      "n_citations": 2,
+      "section_any": 1,
+      "strict_any": 1,
+      "strict_precision": 1.0,
+      "ref_number_recall": 0.0,
+      "invented_numbers": [],
+      "assessable_by_numbers": true,
+      "number_groundedness": null,
+      "evidence_number_count": 10
+    }
+  ]
+}

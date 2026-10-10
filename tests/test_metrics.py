@@ -1,5 +1,7 @@
 import math
 
+import pytest
+
 from kee.eval.metrics import (
     aggregate_qa_metrics,
     apply_temperature,
@@ -54,3 +56,27 @@ def test_ece_uses_bins_and_ignores_nan():
     out = expected_calibration_error([0.5, float("nan"), 0.5], [1, 0, 0])
     assert out["n"] == 2
     assert abs(out["ece"] - 0.0) < 1e-9  # 两样本 conf=acc=0.5
+
+
+def test_temperature_refuses_to_fit_a_zero_variance_label():
+    """标签零方差时温度不可辨识——网格上必然选极端 T，那是缩放不是校准。
+
+    钉的是 M3 真实踩过的坑：n=7 全对的集合拟合出 T=0.05，看着是「校准过了」，
+    实际把置信度整体推向过度自信。拒绝必须返回恒等 T=1.0 且带 refused 说明，
+    让调用方拿不到一个可以冒充拟合成果的数字。
+    """
+    logits = [math.log(0.9 / 0.1)] * 7
+    all_pos = fit_temperature(logits, [1] * 7)
+    assert all_pos["temperature"] == 1.0
+    assert "零方差" in all_pos["refused"]
+    assert all_pos["n"] == 7
+    # 全负类同样拒
+    assert "refused" in fit_temperature(logits, [0] * 7)
+    # 有方差时不受影响，仍然正常拟合
+    mixed = fit_temperature(logits, [1] * 3 + [0] * 4)
+    assert "refused" not in mixed and mixed["temperature"] != 1.0
+
+
+def test_temperature_rejects_mismatched_lengths():
+    with pytest.raises(ValueError):
+        fit_temperature([0.1, 0.2, 0.3], [1, 0])

@@ -133,9 +133,25 @@ def nll_with_temperature(logits: list[float], labels: list[int], t: float) -> fl
 
 
 def fit_temperature(logits: list[float], labels: list[int], grid: list[float] | None = None) -> dict:
-    """一维网格 + 局部细化求 T*（最小化 NLL）。透明优先于花哨。"""
+    """一维网格 + 局部细化求 T*（最小化 NLL）。透明优先于花哨。
+
+    **零方差标签直接拒绝拟合**：标签全 1 时 NLL 的单调解是「越自信越好」，网格上必然选中最小 T；
+    全 0 时同理选中最大 T。那不是校准，是把温度当成缩放常数用。
+    M3 那次 n=7 全对拟合出 T=0.05 就是这个坑——返回值看着正常，实际把置信度整体推向过度自信。
+    拒绝时返回 T=1.0（恒等）并带 `refused`，让调用方无法把结果当拟合成果拿去用。
+    """
     if not logits:
         return {"temperature": 1.0, "n": 0}
+    if len(labels) != len(logits):
+        raise ValueError("logits 与 labels 长度必须一致")
+    ones = sum(labels)
+    if ones == 0 or ones == len(labels):
+        return {
+            "temperature": 1.0,
+            "n": len(labels),
+            "refused": f"标签零方差（{ones}/{len(labels)} 为正类），温度不可辨识",
+            "nll_before_1.0": round(nll_with_temperature(logits, labels, 1.0), 4),
+        }
     coarse = grid or [round(0.05 * i, 2) for i in range(1, 101)]  # 0.05 ~ 5.0
     best_t, best_loss = 1.0, float("inf")
     for t in coarse:
