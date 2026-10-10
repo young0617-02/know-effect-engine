@@ -69,7 +69,7 @@ docker compose -f infra/docker-compose.gate0.yml up -d      # 全部 healthy 即
 只能作为**独立的一键部署验证**跑，跑完必须重跑 `g02` 建库；默认的 `--rebuild` 只重建容器、保留数据卷。
 `g01` 已加前置校验：collection 不存在或为空时直接判失败退出，不会拿「全部提前拒答 → 延迟 0ms」冒充达标。
 
-单测：`.venv/Scripts/python.exe -m pytest -q`（42 → 现 59 项，纯逻辑，不需要 GPU/容器）。
+单测：`.venv/Scripts/python.exe -m pytest -q`（42 → 59 → 现 121 项，纯逻辑，不需要 GPU/容器）。
 
 ## M1 知识构建链路（Gate 0 放行后开工）
 
@@ -135,16 +135,37 @@ section gold 降为报告值，Recall 类数字必须附 n 与 95% CI（阈值�
 | `scripts/verify_m3.py` | 问答链路端到端 10 步（答案契约 / 会话轮次 / 幂等 / RBAC 非空转对照 / SSE / 审计） |
 | `scripts/m3_answer_probe.py` | 答案链实测：状态分布、空结论、引用落 gold、人工队列 |
 | `scripts/m3_conclusion_probe.py` | 结论缺失分型（截断 / 解析失败 / 缺字段 / 主动留空），带 `done_reason` 取证 |
+| `scripts/m3_refusal_guard.py` | ⑤ 出口守门，**按类别两把尺**：refuse 类结论必须为空、escalate 类允许答但必须转人工 |
+| `scripts/m3_graph_ab_live.py` | **同机 A/B**：重构前实现 vs 图，同一模型同一批题比对；不一致时用「同一实现能否复现」分清模型抖动与真回归 |
+| `scripts/m3_multiturn_probe.py` | 多轮消解的收益与代价：机械构造追问整批跑，benefit/harm 一起报，答案层面与检索层面分开报 |
+| `scripts/m3_graph_equivalence.py` | **图化重构的差分回归网**：把重构前的实现按 commit sha 从 git 抽出当 oracle，17 个出口场景逐字段比对，不依赖 GPU/容器 |
 
 ```bash
-.venv/Scripts/python.exe scripts/verify_m3.py
+.venv/Scripts/python.exe scripts/verify_m3.py          # 需先起存储栈与 Ollama
+.venv/Scripts/python.exe scripts/m3_graph_equivalence.py   # 不需要任何服务
 ```
 
 已落地：`POST /api/v1/answers`（结构化答案 + 会话轮次 + 幂等）、`/answers/stream`（阶段级 SSE）、
 `GET /api/v1/sessions/{id}`；答案出口加确定性契约校验（空结论不得判成功）；
 强证据却声明无依据时转人工；答案完成率 24% → **91%**（根因是答案被写进 `key_points` 的字段错位，
 用逐字搬运修，**不用**「要求结论非空」的提示词改法——那会把「该答不答」换成「不该答也答」）。
-详见 `reports/m3/M3_编排引用与置信度.md`。
+
+M3-05 已落地：在线链路搬进 `src/kee/qa/graph.py` 的 LangGraph 状态机（7 个显式出口，敏感闸前置——
+原实现先检索再判敏感，是顺序缺陷）；多轮指代消解在检索**之前**生效，补全后的查询同时进检索与生成提示词，
+而对外的 `question` 仍是用户原话；SSE 改成真的阶段级（此前文档承诺「检索即出事件」而实现只发一个事件），
+并补上流式路径缺的落轮次与审计。**Checkpointer 本轮不接**，多轮状态以 PG `session_turn` 为唯一权威源，
+代价是无断点续跑（裁决记在《技术方案》V1.0.5 / 《项目定义》V1.5）。
+
+真机已复跑（服务在线）：完成率 **53/58 = 91% 分毫不差**、⑤ 转人工 **5/5**、端到端 **11 步全绿**；
+`scripts/m3_graph_ab_live.py` 同机 A/B **12/12 一致、真回归 0**——q-061 那道漏拒在重构前就存在，
+不是编排引入的（它属于 ⑤ 未闭环的「无依据必拒 6/7」）。
+
+⚠ 两条如实记账：① 旧报告里「泄漏 **0/12**」的口径把 refuse 与 escalate 混成一把尺，
+分开口径后的真实读数是 **refuse 类 6/7、escalate 类 5/5 转人工**（旧尺子反而会把 q-070 那种
+「有权限 + 已转人工的正确答案」报成泄漏）；② 多轮消解机制成立（追问被补全成上一轮主题并进检索），
+但 14 道**机械构造**追问的答案层面净收益是 **0**（构造只删主题词、保留谓语区分度，本就测不出），
+检索层面救回 1 道 / 丢掉 0 道——**这不足以支撑「多轮有收益」的一般性主张**。
+详见 `reports/m3/M3_编排引用与置信度.md` 第八节。
 
 ## 目录（M1 新增）
 

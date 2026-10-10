@@ -1,0 +1,405 @@
+"""LangGraph 类型化状态机：把在线链路从「一个大方法」拆成可单测、可回归的节点。
+
+方案 6.3 要求「确定性优先，不做开放式自治 Agent」，所以这是一张**固定拓扑**的图，
+不是让模型自己决定下一步：
+
+    START → sensitive_gate → rewrite → retrieve → retrieval_gate
+              → generate → enforce → confidence → END
+
+三条纪律决定了这么拆：
+  1. **节点纯函数化**：每个节点只读 state、只返回要更新的键，可以单独构造 state 断言。
+  2. **早退显式成边**：拒答/降级/转人工是图上的分支，由 `gated` 字段驱动，
+     而不是散落在方法各处的 return——否则「这条链路一共有几个出口」只能靠读代码确认。
+  3. **敏感闸门放在最前**：被拦的问题不该再花一次检索与一次生成。原实现是先检索再判敏感，
+     那是顺序缺陷，顺手在这张图里修正（RBAC 已在检索层过滤，所以不是泄漏，只是白烧算力）。
+
+多轮历史由调用方从 `session_turn` 读出来注入 `state.history`。
+**没有接 PostgresSaver**：当前不需要中断-恢复，而 session_turn 已经是可查的权威历史，
+再加一套 checkpointer 等于同一份状态存两处。等人工复核闭环（中断-恢复）落地时再接，
+这条偏差记在 M3 报告里。
+"""
+
+from __future__ import annotations
+
+import math
+import time
+from typing import Any, TypedDict
+
+from langgraph.graph import END, START, StateGraph
+
+from kee.qa.answer import (
+    ESCORT_SECURITY_LEVEL,
+    SYSTEM_PROMPT,
+    USER_TEMPLATE,
+    AnswerResult,
+    _clamp,
+    _logit,
+    format_evidence,
+    is_sensitive,
+)
+
+
+class QAState(TypedDict, total=False):
+    """图上的类型化状态。缺键即「该节点还没跑到」，所以 total=False。"""
+
+    question: str
+    ctx: Any
+    top_k: int | None
+    history: list[dict[str, Any]]
+    trace_id: str
+    t_start: float
+
+    effective_question: str
+    resolved: bool  # 图上真的产出了一条与原文不同的查询；被拒的改写不算
+    rewrite_ms: float
+
+    retrieval_res: Any
+    retrieval: dict[str, Any]
+    top_score: float
+    evidence_text: str
+    evidence_index: dict[str, dict]
+    timings_ms: dict[str, float]
+
+    gen_obj: dict[str, Any] | None
+    gen_ok: bool
+    gen_error: str
+    llm_meta: dict[str, Any]
+
+    conclusion: str
+    key_points: list[dict[str, Any]]
+    citations: list[dict[str, Any]]
+    dropped_points: list[str]
+
+    status: str
+    needs_human: bool
+    confidence: dict[str, Any]
+    notes: list[str]
+    gated: str  # 非空表示已被某个闸门终结，路由据此决定是否继续
+
+
+def _components(obj: dict, top_score: float, points: list, dropped: list) -> dict[str, float]:
+    """复合置信度的三个分量。enforce 与 confidence 两处都要用，必须同一份算法。
+
+    enforce 的两个契约出口也要吐 citation_consistency / self_assessed：
+    原实现在那里就记录了它们，漏掉会让「拒答的原因构成」在审计里看不全。
+    """
+    citation_consistency = 1.0 if not dropped else round(len(points) / max(len(points) + len(dropped), 1), 4)
+    self_assessed = _clamp(float(obj.get("self_assessed_confidence", 0.0) or 0.0))
+    return {
+        "retrieval": round(top_score, 4),
+        "citation_consistency": round(citation_consistency, 4),
+        "self_assessed": round(self_assessed, 4),
+    }
+
+
+def build_qa_graph(engine):
+    """把节点闭包绑到具体引擎上（引擎持有 retriever / llm / 阈值）。"""
+
+    def _n(state: QAState, *items: str) -> list[str]:
+        return list(state.get("notes") or []) + list(items)
+
+    # ---------- 闸门 ----------
+    def sensitive_gate(state: QAState) -> dict[str, Any]:
+        hit = is_sensitive(state["question"])
+        if not hit:
+            return {}
+        return {
+            "gated": "sensitive",
+            "status": "escalate",
+            "needs_human": True,
+            "notes": _n(state, f"sensitive_pattern:{hit}"),
+            "confidence": {"composite": 0.0, "calibrated": 0.0, "rule": "sensitive_block"},
+        }
+
+    def rewrite(state: QAState) -> dict[str, Any]:
+        """多轮指代消解：有历史且引擎开了改写器时，把「那汞呢」补全成自足查询。
+
+        改写作用在**检索之前**，所以补全出来的词真的能进 BM25 与稠密向量；
+        原实现把改写塞在 retriever 内部，拿不到历史，等于只能做单查询扩展。
+        """
+        rw = getattr(engine.retriever, "rewriter", None)
+        if rw is None or not state.get("history"):
+            return {}
+        context = "\n".join(
+            f"第{h.get('turn_no')}轮 问：{h.get('question')}\n第{h.get('turn_no')}轮 答：{h.get('conclusion', '')}"
+            for h in state["history"][-3:]
+        )
+        res = rw.rewrite(state["question"], context=context)
+        return {
+            "effective_question": res.effective,
+            # 只有真的补全出不同查询才算「已改写」。被校验门拒掉时 effective 就是原话，
+            # 此时若也报 True，检索层会跟着跳过自己的单查询扩展——追问反而比单轮召回更差。
+            "resolved": res.changed,
+            "rewrite_ms": res.ms,
+            "notes": _n(state, *[d for d in res.degraded]),
+        }
+
+    def retrieve(state: QAState) -> dict[str, Any]:
+        timings = dict(state.get("timings_ms") or {})
+        query = state.get("effective_question") or state["question"]
+        # 图已经用多轮上文消解出一条**不同的**查询时，就别让检索层再改写一次：
+        # 同一件事付两趟 LLM 是纯浪费。
+        resolved = bool(state.get("resolved"))
+        res = engine.retriever.retrieve(
+            query, state["ctx"], top_k=state.get("top_k"), already_rewritten=resolved
+        )
+        timings["retrieval_ms"] = res.timings_ms.get("retrieval_total_ms", 0.0)
+        timings.update({f"stage_{k}": v for k, v in res.timings_ms.items() if k != "retrieval_total_ms"})
+        return {
+            "retrieval_res": res,
+            "timings_ms": timings,
+            "retrieval": {
+                "mode": res.mode,
+                "cache_hit": res.cache_hit,
+                "degraded": res.degraded,
+                "expr": res.expr,
+                "n_chunks": len(res.chunks),
+                "top_chunk_ids": [c.chunk_id for c in res.chunks],
+                "query_used": query,
+            },
+            "top_score": max((c.score for c in res.chunks), default=0.0),
+        }
+
+    def retrieval_gate(state: QAState) -> dict[str, Any]:
+        res = state["retrieval_res"]
+        top_score = float(state["top_score"])
+        if res.chunks and top_score >= engine.min_retrieval_score:
+            return {}
+        return {
+            "gated": "weak_retrieval",
+            "status": "refuse",
+            "needs_human": top_score >= engine.min_retrieval_score,
+            "notes": _n(state, "no_sufficient_evidence"),
+            "confidence": {
+                "retrieval": round(top_score, 4),
+                "composite": 0.0,
+                "calibrated": 0.0,
+                "rule": "retrieval_gate",
+            },
+        }
+
+    # ---------- 生成与出口 ----------
+    def generate(state: QAState) -> dict[str, Any]:
+        ev_text, ev_index = format_evidence(state["retrieval_res"])
+        # 用补全后的查询喂生成：多轮里原文是「那个月结的呢？」，模型只看这句无法定指。
+        # 补全后的查询已在检索之前生效，原文仍留在 state["question"] 里对外返回与审计。
+        # 单轮时 effective_question 不设置，这里回落到原文——所以与重构前等价。
+        query = state.get("effective_question") or state["question"]
+        prompt = USER_TEMPLATE.format(evidence=ev_text, question=query)
+        timings = dict(state.get("timings_ms") or {})
+        t1 = time.perf_counter()
+        llm_res = engine.llm.chat(
+            [{"role": "system", "content": SYSTEM_PROMPT}, {"role": "user", "content": prompt}],
+            json_mode=True,
+            temperature=engine.temperature,
+            max_tokens=engine.max_tokens,
+        )
+        timings["generate_ms"] = round((time.perf_counter() - t1) * 1000, 1)
+        timings["e2e_ms"] = round((time.perf_counter() - state["t_start"]) * 1000, 1)
+        return {
+            "evidence_text": ev_text,
+            "evidence_index": ev_index,
+            "timings_ms": timings,
+            "llm_meta": {
+                "ok": llm_res.ok,
+                "first_attempt_json_valid": llm_res.json_valid,
+                "metrics": llm_res.metrics,
+                "error": llm_res.error,
+                "prompt_chars": len(prompt),
+            },
+            "gen_ok": llm_res.ok,
+            "gen_error": llm_res.error,
+            "gen_obj": engine._extract_json(llm_res.text) if llm_res.ok else None,
+        }
+
+    def enforce(state: QAState) -> dict[str, Any]:
+        """引用强制 → 出口契约 → 逐字搬运。三者都是确定性规则，不请模型复核。"""
+        top_score = float(state.get("top_score") or 0.0)
+        if not state["gen_ok"]:
+            res = state["retrieval_res"]
+            ev_index = state["evidence_index"]
+            return {
+                "gated": "generation_failed",
+                "status": "degraded",
+                "needs_human": True,
+                "notes": _n(state, f"generation_failed:{state['gen_error'][:60]}"),
+                "key_points": [
+                    {"point": c.text[:120], "evidence_ids": [f"E{i}"]} for i, c in enumerate(res.chunks, start=1)
+                ],
+                "citations": [
+                    {**ev_index[f"E{i}"], "evidence_id": f"E{i}"} for i in range(1, len(res.chunks) + 1)
+                ],
+            }
+        obj = state["gen_obj"]
+        if obj is None:
+            return {
+                "gated": "unparseable",
+                "status": "degraded",
+                "needs_human": True,
+                "notes": _n(state, "unparseable_output"),
+            }
+        if obj.get("no_evidence") is True:
+            # 反向兜底：模型声明无依据时，① 一律挂人工；② 只有检索层也不同意「无依据」时
+            # 才把 refuse 改成 escalate——此时 refuse 是在断言一件检索层反对的事。
+            strong = top_score >= engine.strong_evidence_floor
+            notes = ["model_declared_no_evidence"]
+            if strong:
+                notes.append(
+                    f"strong_evidence_but_no_basis_claimed:{top_score:.4f}>={engine.strong_evidence_floor}"
+                )
+            return {
+                "gated": "declared_no_evidence",
+                "status": "escalate" if strong else "refuse",
+                "needs_human": True,
+                "notes": _n(state, *notes),
+                "confidence": {
+                    "retrieval": round(top_score, 4),
+                    "composite": 0.0,
+                    "calibrated": 0.0,
+                    "rule": "declared_no_evidence",
+                },
+            }
+
+        points, cites, dropped = engine._enforce_citations(obj, state["evidence_index"])
+        comp = _components(obj, top_score, points, dropped)
+        base_gate = {**comp, "composite": 0.0, "calibrated": 0.0}
+        out: dict[str, Any] = {"key_points": points, "citations": cites, "dropped_points": dropped}
+        if not points or not cites:
+            return {
+                **out,
+                "gated": "no_citation",
+                "status": "refuse",
+                "notes": _n(state, "citation_enforcement_rejected"),
+                "confidence": {**base_gate, "rule": "contract_no_citation"},
+            }
+        conclusion = str(obj.get("conclusion", "") or "").strip()
+        carried: list[str] = []
+        if not conclusion and points:
+            # 实测 45/58 是「答案写在要点里、结论留空」的字段错位：逐字搬运而不是判死。
+            # 不用「要求结论非空」的提示词修法——那会把 7 道无答案题从 0 道出结论变成 2 道。
+            derived = "；".join(
+                str(p.get("point", "")).strip() for p in points if str(p.get("point", "")).strip()
+            )
+            if derived:
+                conclusion = derived
+                carried.append(f"conclusion_derived_from_points:{len(points)}")
+        if not conclusion:
+            return {
+                **out,
+                "gated": "empty_conclusion",
+                "status": "degraded",
+                "needs_human": True,
+                "notes": _n(state, *carried, "contract_violation:empty_conclusion"),
+                "confidence": {**base_gate, "rule": "contract_empty_conclusion"},
+            }
+        out["conclusion"] = conclusion
+        if carried:
+            out["notes"] = _n(state, *carried)
+        return out
+
+    def confidence(state: QAState) -> dict[str, Any]:
+        obj = state.get("gen_obj") or {}
+        top_score = float(state.get("top_score") or 0.0)
+        comp = _components(obj, top_score, state.get("key_points") or [], state.get("dropped_points") or [])
+        citation_consistency = comp["citation_consistency"]
+        self_assessed = comp["self_assessed"]
+        composite = round(0.45 * _clamp(top_score) + 0.35 * citation_consistency + 0.20 * self_assessed, 4)
+        calibrated = round(
+            1.0 / (1.0 + math.exp(-(_logit(composite) / engine.calibration_temperature))), 4
+        )
+        notes = list(state.get("notes") or [])
+        # 引用落在密级 3 的证据上 → 答案可给（用户有权限）但强制挂人工复核。
+        # 触发点是「实际被引用的证据」而不是「候选证据集」：后者让有权限的用户几乎问不出答案。
+        secret = [c for c in state.get("citations") or [] if int(c.get("security_level") or 0) >= ESCORT_SECURITY_LEVEL]
+        if secret:
+            notes.append(f"secret_level_cited:{len(secret)} 条需人工复核")
+        if calibrated < engine.settings.confidence_low:
+            status, needs = "escalate", True
+            notes.append("low_confidence_route_to_human")
+        elif calibrated < engine.settings.confidence_high:
+            status, needs = "tentative", False
+            notes.append("初步判断（低置信度显式降级）")
+        else:
+            status, needs = "answer", False
+        return {
+            "status": status,
+            "needs_human": bool(needs or secret),
+            "notes": notes,
+            "confidence": {
+                **comp,
+                "composite": composite,
+                "logit": round(_logit(composite), 4),
+                "calibrated": calibrated,
+                "temperature": engine.calibration_temperature,
+            },
+        }
+
+    # ---------- 路由：只看 gated，不看散落的字段组合 ----------
+    def route(state: QAState) -> str:
+        return END if state.get("gated") else "continue"
+
+    g = StateGraph(QAState)
+    for name, fn in {
+        "sensitive_gate": sensitive_gate,
+        "rewrite": rewrite,
+        "retrieve": retrieve,
+        "retrieval_gate": retrieval_gate,
+        "generate": generate,
+        "enforce": enforce,
+        "confidence": confidence,
+    }.items():
+        g.add_node(name, fn)
+
+    g.add_edge(START, "sensitive_gate")
+    g.add_conditional_edges("sensitive_gate", route, {END: END, "continue": "rewrite"})
+    g.add_edge("rewrite", "retrieve")
+    g.add_edge("retrieve", "retrieval_gate")
+    g.add_conditional_edges("retrieval_gate", route, {END: END, "continue": "generate"})
+    g.add_edge("generate", "enforce")
+    g.add_conditional_edges("enforce", route, {END: END, "continue": "confidence"})
+    g.add_edge("confidence", END)
+    return g.compile()
+
+
+def initial_state(question: str, ctx, top_k=None, history=None) -> QAState:
+    """组装图的初始状态。SSE 端点要用同一份，不能让两条入口各写一套默认值。"""
+    return {
+        "question": question,
+        "ctx": ctx,
+        "top_k": top_k,
+        "history": list(history or []),
+        "trace_id": f"qa-{int(time.time() * 1000) % 10**12}",
+        "t_start": time.perf_counter(),
+        "notes": [],
+        "timings_ms": {},
+        "status": "refuse",
+        "needs_human": False,
+        "confidence": {},
+    }
+
+
+def result_from_state(state: QAState) -> AnswerResult:
+    """把（可能是中途结束的）状态收回对外的 AnswerResult。"""
+    timings = dict(state.get("timings_ms") or {})
+    if state.get("rewrite_ms"):
+        timings["rewrite_ms"] = state["rewrite_ms"]
+    return AnswerResult(
+        question=state["question"],
+        status=state.get("status", "refuse"),
+        conclusion=state.get("conclusion", ""),
+        key_points=state.get("key_points", []),
+        citations=state.get("citations", []),
+        dropped_points=state.get("dropped_points", []),
+        needs_human=bool(state.get("needs_human")),
+        confidence=state.get("confidence", {}),
+        retrieval=state.get("retrieval", {}),
+        llm=state.get("llm_meta", {}),
+        timings_ms=timings,
+        trace_id=state.get("trace_id", ""),
+        notes=list(state.get("notes") or []),
+    )
+
+
+def run_qa(engine, question: str, ctx, top_k=None, history=None) -> AnswerResult:
+    """图的唯一入口：组装初始状态、跑图、把结果收回 AnswerResult。"""
+    return result_from_state(engine.graph.invoke(initial_state(question, ctx, top_k, history)))

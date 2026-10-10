@@ -13,8 +13,8 @@
   "仍被判answer/tentative且结论为空": 0,
   "可判校准集(有logit)": 53,
   "e2e_ms": {
-    "p50": 4603.9,
-    "max": 14177.4
+    "p50": 4823.2,
+    "max": 12191.9
   },
   "rows": [
     {
@@ -38,7 +38,7 @@
       "notes": [
         "conclusion_derived_from_points:1"
       ],
-      "e2e_ms": 4398.2
+      "e2e_ms": 4510.9
     },
     {
       "qid": "q-002",
@@ -59,7 +59,7 @@
         "temperature": 1.0
       },
       "notes": [],
-      "e2e_ms": 5536.7
+      "e2e_ms": 5448.5
     },
     {
       "qid": "q-003",
@@ -80,7 +80,7 @@
         "model_declared_no_evidence",
         "strong_evidence_but_no_basis_claimed:0.9697>=0.9"
       ],
-      "e2e_ms": 4254.9
+      "e2e_ms": 5623.6
     },
     {
       "qid": "q-004",
@@ -103,7 +103,7 @@
       "notes": [
         "secret_level_cited:1 条需人工复核"
       ],
-      "e2e_ms": 5547.0
+      "e2e_ms": 5296.2
     },
     {
       "qid": "q-005",
@@ -126,7 +126,7 @@
       "notes": [
         "conclusion_derived_from_points:1"
       ],
-      "e2e_ms": 4091.1
+      "e2e_ms": 5382.6
     },
     {
       "qid": "q-006",
@@ -149,7 +149,7 @@
       "notes": [
         "secret_level_cited:1 条需人工复核"
       ],
-      "e2e_ms": 3932.7
+      "e2e_ms": 4746.0
     },
     {
       "qid": "q-007",
@@ -172,14 +172,14 @@
       "notes": [
         "secret_level_cited:1 条需人工复核"
       ],
-      "e2e_ms": 4123.1
+      "e2e_ms": 5614.5
     },
     {
       "qid": "q-008",
       "category": "术语",
       "status": "answer",
       "needs_human": false,
-      "conclusion_len": 35,
+      "conclusion_len": 12,
       "n_points": 1,
       "n_citations": 1,
       "citation_hits_gold": 1,
@@ -192,10 +192,8 @@
         "calibrated": 0.7958,
         "temperature": 1.0
       },
-      "notes": [
-        "conclusion_derived_from_points:1"
-      ],
-      "e2e_ms": 4514.5
+      "notes": [],
+      "e2e_ms": 4702.7
     },
     {
       "qid": "q-009",
@@ -216,7 +214,7 @@
         "temperature": 1.0
       },
       "notes": [],
-      "e2e_ms": 4075.1
+      "e2e_ms": 5415.1
     },
     {
       "qid": "q-010",
@@ -239,14 +237,14 @@
       "notes": [
         "conclusion_derived_from_points:1"
       ],
-      "e2e_ms": 4702.3
+      "e2e_ms": 4632.5
     },
     {
       "qid": "q-011",
       "category": "术语",
       "status": "answer",
       "needs_human": false,
-      "conclusion_len": 43,
+      "conclusion_len": 5,
       "n_points": 1,
       "n_citations": 1,
       "citation_hits_gold": 1,
@@ -259,10 +257,8 @@
         "calibrated": 0.7958,
         "temperature": 1.0
       },
-      "notes": [
-        "conclusion_derived_from_points:1"
-      ],
-      "e2e_ms": 4562.4
+      "notes": [],
+      "e2e_ms": 5758.6
     },
     {
       "qid": "q-012",
@@ -285,7 +281,7 @@
       "notes": [
         "conclusion_derived_from_points:1"
       ],
-      "e2e_ms": 4402.5
+      "e2e_ms": 4425.0
     },
     {
       "qid": "q-013",
@@ -308,7 +304,7 @@
       "notes": [
         "conclusion_derived_from_points:1"
       ],
-      "e2e_ms": 4783.9
+      "e2e_ms": 4775.7
     },
     {
       "qid": "q-014",
@@ -331,7 +327,7 @@
       "notes": [
         "conclusion_derived_from_points:1"
       ],
-      "e2e_ms": 4152.2
+      "e2e_ms": 4356.9
     },
     {
       "qid": "q-015",
@@ -354,7 +350,7 @@
       "notes": [
         "conclusion_derived_from_points:1"
       ],
-      "e2e_ms": 4105.7
+      "e2e_ms": 4383.4
     },
     {
       "qid": "q-016",
@@ -377,7 +373,7 @@
       "notes": [
         "conclusion_derived_from_points:1"
       ],
-      "e2e_ms": 4686.7
+      "e2e_ms": 4648.4
     },
     {
       "qid": "q-017",
@@ -400,7 +396,7 @@
       "notes": [
         "conclusion_derived_from_points:1"
       ],
-      "e2e_ms": 4670.2
+      "e2e_ms": 5904.1
     },
     {
       "qid": "q-018",
@@ -421,7 +417,7 @@
         "temperature": 1.0
       },
       "notes": [],
-      "e2e_ms": 4668.6
+      "e2e_ms": 4564.9
     },
     {
       "qid": "q-019",
@@ -444,7 +440,7 @@
       "notes": [
         "conclusion_derived_from_points:1"
       ],
-      "e2e_ms": 5555.8
+      "e2e_ms": 5852.9
     },
     {
       "qid": "q-020",
@@ -467,7 +463,7 @@
       "notes": [
         "conclusion_derived_from_points:1"
       ],
-      "e2e_ms": 4465.6
+      "e2e_ms": 4010.4
     },
     {
       "qid": "q-021",
@@ -490,7 +486,7 @@
       "notes": [
         "conclusion_derived_from_points:2"
       ],
-      "e2e_ms": 5000.4
+      "e2e_ms": 4794.4
     },
     {
       "qid": "q-022",
@@ -513,7 +509,7 @@
       "notes": [
         "conclusion_derived_from_points:1"
       ],
-      "e2e_ms": 4667.8
+      "e2e_ms": 4735.3
     },
     {
       "qid": "q-023",
@@ -534,7 +530,7 @@
         "temperature": 1.0
       },
       "notes": [],
-      "e2e_ms": 5892.5
+      "e2e_ms": 5366.2
     },
     {
       "qid": "q-024",
@@ -557,7 +553,7 @@
       "notes": [
         "conclusion_derived_from_points:1"
       ],
-      "e2e_ms": 4725.4
+      "e2e_ms": 5036.2
     },
     {
       "qid": "q-025",
@@ -581,7 +577,7 @@
         "conclusion_derived_from_points:2",
         "secret_level_cited:1 条需人工复核"
       ],
-      "e2e_ms": 7455.4
+      "e2e_ms": 6629.3
     },
     {
       "qid": "q-026",
@@ -604,7 +600,7 @@
       "notes": [
         "conclusion_derived_from_points:2"
       ],
-      "e2e_ms": 6611.7
+      "e2e_ms": 7075.3
     },
     {
       "qid": "q-027",
@@ -625,7 +621,7 @@
         "temperature": 1.0
       },
       "notes": [],
-      "e2e_ms": 5070.2
+      "e2e_ms": 4984.3
     },
     {
       "qid": "q-028",
@@ -646,7 +642,7 @@
         "temperature": 1.0
       },
       "notes": [],
-      "e2e_ms": 4279.4
+      "e2e_ms": 4941.0
     },
     {
       "qid": "q-029",
@@ -669,7 +665,7 @@
       "notes": [
         "conclusion_derived_from_points:3"
       ],
-      "e2e_ms": 4375.1
+      "e2e_ms": 4877.9
     },
     {
       "qid": "q-030",
@@ -692,7 +688,7 @@
       "notes": [
         "conclusion_derived_from_points:1"
       ],
-      "e2e_ms": 4169.7
+      "e2e_ms": 4251.1
     },
     {
       "qid": "q-031",
@@ -715,7 +711,7 @@
       "notes": [
         "conclusion_derived_from_points:1"
       ],
-      "e2e_ms": 5214.0
+      "e2e_ms": 5134.8
     },
     {
       "qid": "q-032",
@@ -736,7 +732,7 @@
         "temperature": 1.0
       },
       "notes": [],
-      "e2e_ms": 4562.1
+      "e2e_ms": 4651.1
     },
     {
       "qid": "q-033",
@@ -759,7 +755,7 @@
       "notes": [
         "conclusion_derived_from_points:1"
       ],
-      "e2e_ms": 5672.4
+      "e2e_ms": 5447.5
     },
     {
       "qid": "q-034",
@@ -782,7 +778,7 @@
       "notes": [
         "secret_level_cited:1 条需人工复核"
       ],
-      "e2e_ms": 4112.9
+      "e2e_ms": 4308.8
     },
     {
       "qid": "q-035",
@@ -805,7 +801,7 @@
       "notes": [
         "conclusion_derived_from_points:1"
       ],
-      "e2e_ms": 4603.9
+      "e2e_ms": 4527.7
     },
     {
       "qid": "q-036",
@@ -828,7 +824,7 @@
       "notes": [
         "secret_level_cited:1 条需人工复核"
       ],
-      "e2e_ms": 4437.4
+      "e2e_ms": 4448.0
     },
     {
       "qid": "q-037",
@@ -852,7 +848,7 @@
         "conclusion_derived_from_points:1",
         "secret_level_cited:1 条需人工复核"
       ],
-      "e2e_ms": 4302.6
+      "e2e_ms": 4373.0
     },
     {
       "qid": "q-038",
@@ -875,7 +871,7 @@
       "notes": [
         "conclusion_derived_from_points:2"
       ],
-      "e2e_ms": 4856.6
+      "e2e_ms": 4822.8
     },
     {
       "qid": "q-039",
@@ -899,7 +895,7 @@
         "conclusion_derived_from_points:1",
         "初步判断（低置信度显式降级）"
       ],
-      "e2e_ms": 4432.2
+      "e2e_ms": 4602.2
     },
     {
       "qid": "q-040",
@@ -923,7 +919,7 @@
         "conclusion_derived_from_points:2",
         "初步判断（低置信度显式降级）"
       ],
-      "e2e_ms": 4595.3
+      "e2e_ms": 4621.3
     },
     {
       "qid": "q-041",
@@ -947,7 +943,7 @@
         "conclusion_derived_from_points:1",
         "初步判断（低置信度显式降级）"
       ],
-      "e2e_ms": 5096.6
+      "e2e_ms": 5095.3
     },
     {
       "qid": "q-042",
@@ -971,7 +967,7 @@
         "conclusion_derived_from_points:1",
         "初步判断（低置信度显式降级）"
       ],
-      "e2e_ms": 4685.2
+      "e2e_ms": 6364.8
     },
     {
       "qid": "q-043",
@@ -995,7 +991,7 @@
         "conclusion_derived_from_points:1",
         "初步判断（低置信度显式降级）"
       ],
-      "e2e_ms": 5981.7
+      "e2e_ms": 6347.8
     },
     {
       "qid": "q-044",
@@ -1015,7 +1011,7 @@
       "notes": [
         "no_sufficient_evidence"
       ],
-      "e2e_ms": 330.6
+      "e2e_ms": 407.9
     },
     {
       "qid": "q-045",
@@ -1040,7 +1036,7 @@
         "secret_level_cited:1 条需人工复核",
         "初步判断（低置信度显式降级）"
       ],
-      "e2e_ms": 5495.9
+      "e2e_ms": 5272.7
     },
     {
       "qid": "q-046",
@@ -1064,7 +1060,7 @@
         "conclusion_derived_from_points:1",
         "初步判断（低置信度显式降级）"
       ],
-      "e2e_ms": 5027.4
+      "e2e_ms": 5035.7
     },
     {
       "qid": "q-047",
@@ -1084,7 +1080,7 @@
       "notes": [
         "no_sufficient_evidence"
       ],
-      "e2e_ms": 314.2
+      "e2e_ms": 404.3
     },
     {
       "qid": "q-048",
@@ -1109,7 +1105,7 @@
         "secret_level_cited:1 条需人工复核",
         "初步判断（低置信度显式降级）"
       ],
-      "e2e_ms": 4310.5
+      "e2e_ms": 4081.8
     },
     {
       "qid": "q-049",
@@ -1133,7 +1129,7 @@
         "conclusion_derived_from_points:1",
         "初步判断（低置信度显式降级）"
       ],
-      "e2e_ms": 4199.1
+      "e2e_ms": 4670.3
     },
     {
       "qid": "q-050",
@@ -1156,7 +1152,7 @@
       "notes": [
         "conclusion_derived_from_points:1"
       ],
-      "e2e_ms": 4246.1
+      "e2e_ms": 4823.2
     },
     {
       "qid": "q-051",
@@ -1176,7 +1172,7 @@
       "notes": [
         "no_sufficient_evidence"
       ],
-      "e2e_ms": 320.9
+      "e2e_ms": 391.3
     },
     {
       "qid": "q-052",
@@ -1196,7 +1192,7 @@
       "notes": [
         "no_sufficient_evidence"
       ],
-      "e2e_ms": 326.7
+      "e2e_ms": 331.7
     },
     {
       "qid": "q-053",
@@ -1221,7 +1217,7 @@
         "secret_level_cited:1 条需人工复核",
         "初步判断（低置信度显式降级）"
       ],
-      "e2e_ms": 3206.6
+      "e2e_ms": 3747.8
     },
     {
       "qid": "q-054",
@@ -1245,7 +1241,7 @@
         "conclusion_derived_from_points:1",
         "secret_level_cited:3 条需人工复核"
       ],
-      "e2e_ms": 9503.9
+      "e2e_ms": 9655.7
     },
     {
       "qid": "q-055",
@@ -1268,7 +1264,7 @@
       "notes": [
         "conclusion_derived_from_points:3"
       ],
-      "e2e_ms": 7020.8
+      "e2e_ms": 6463.8
     },
     {
       "qid": "q-056",
@@ -1291,7 +1287,7 @@
       "notes": [
         "conclusion_derived_from_points:5"
       ],
-      "e2e_ms": 14177.4
+      "e2e_ms": 12191.9
     },
     {
       "qid": "q-057",
@@ -1314,7 +1310,7 @@
       "notes": [
         "conclusion_derived_from_points:4"
       ],
-      "e2e_ms": 9030.2
+      "e2e_ms": 9963.3
     },
     {
       "qid": "q-058",
@@ -1339,7 +1335,7 @@
         "secret_level_cited:1 条需人工复核",
         "初步判断（低置信度显式降级）"
       ],
-      "e2e_ms": 5497.6
+      "e2e_ms": 5254.3
     }
   ],
   "calibration_on_gradable": {

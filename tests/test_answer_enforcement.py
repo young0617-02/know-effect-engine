@@ -13,7 +13,7 @@ class FakeRetriever:
         self._chunks = chunks
         self.degraded = degraded or []
 
-    def retrieve(self, query, ctx, top_k=None):
+    def retrieve(self, query, ctx, top_k=None, already_rewritten=False):
         return RetrievalResult(
             query=query,
             mode="hybrid",

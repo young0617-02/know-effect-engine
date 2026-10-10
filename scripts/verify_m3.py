@@ -1,11 +1,13 @@
-"""M3 端到端验证：问答端点、会话轮次、幂等重放、RBAC、审计与流式。
+"""M3 端到端验证：问答端点、会话轮次、幂等重放、RBAC、审计、流式与多轮指代消解。
 
 跑在生产集合上（与 M1 验证同一口径：对账是「一份权威源 ↔ 一个索引」），
 但只读不写文档，所以不需要 purge/还原。
 
-**这一版刻意不测「多轮指代消解」**：当前 answer() 不吃历史，改写器也只看着当轮问题，
-所以「那汞呢」这种追问不会被解析成上一轮的主题。那是 M3-05 接 LangGraph Checkpointer
-之后才存在的能力，在这里断言等于用一个假通过把它记成已完成。
+**第 9 步测的就是「多轮指代消解」**：M3-05 之前 `answer()` 不吃历史，那时断言它等于用假通过
+把活记成已完成；现在图里有 `rewrite` 节点，历史从 `session_turn` 读，所以这一步做实了。
+它的判据是**对照**而不是单向断言：同一句追问，在没有上文的会话里应当定位不到，
+在有上文的会话里必须被补全成自足查询并真的答出来。
+两边都拒答不能算通过——那什么也没证明（RBAC 那步栽过同型错误）。
 """
 
 from __future__ import annotations
@@ -135,17 +137,60 @@ def main() -> int:
          {"status": rd["status"], "needs_human": rd["needs_human"], "notes": rd["notes"],
           "结论长度": len(rd["conclusion"].strip())})
 
-    # ---- 8. 流式端点出 SSE 事件 ----
+    # ---- 8. 流式端点：阶段级事件必须**按序**到位，而不是只拿到一个 answer ----
     with client.stream("POST", "/api/v1/answers/stream",
                        json={"question": "银企直联接口编号规则是什么？", "session_id": sid}, headers=OWNER) as st:
         ctype = st.headers.get("content-type", "")
-        lines = [ln for ln in st.iter_text() if ln.strip()]
-    got_event = any("event: answer" in ln for ln in lines)
-    step("流式端点以 SSE 返回 answer 事件（阶段级，非 token 级；理由见代码注释）",
-         "text/event-stream" in ctype and got_event,
-         {"content-type": ctype, "事件数": len([l for l in lines if l.startswith('event:')])})
+        raw = "".join(st.iter_text())
+    # SSE 的分帧是「空行」而不是换行：iter_text() 给的是任意切分的文本块，
+    # 早先用 startswith('event:') 数「事件数」数到的其实是**分块数**，2 个事件可能被切进同一块里而报成 1。
+    frames = [f for f in raw.replace("\r\n", "\n").split("\n\n") if f.strip()]
+    names = [ln.split(":", 1)[1].strip() for f in frames for ln in f.split("\n") if ln.startswith("event:")]
+    step("流式端点按序给出 retrieval 与 answer 两个阶段事件（阶段级，非 token 级）",
+         "text/event-stream" in ctype and names[:2] == ["retrieval", "answer"],
+         {"content-type": ctype, "事件序列": names})
 
-    # ---- 9. 审计留痕 ----
+    # ---- 9. 多轮指代消解：补全必须真的进检索，且对外仍是用户原话 ----
+    # 这一步只断言**机制**（消解发生 + 进了检索 + 原话保留），不断言「补全一定让答案更好」：
+    # 首轮真机对照就撞到反例——同一句追问，无上文时 tentative 答得出，
+    # 有上文被补全成「采集成功率目标是多少？」反而掉到 escalate 空结论（补全把区分度弄丢了）。
+    # 收益与代价的整批统计在 scripts/m3_multiturn_probe.py，那里 benefit / harm 一起报。
+    anaphora = "那个的遥测数据上送覆盖哪些测点？"
+    mt_sid = f"s-mt-{int(time.time()) % 100000}"
+    client.post("/api/v1/answers", json={"question": q1, "session_id": mt_sid}, headers=OWNER)
+    bare = client.post("/api/v1/answers", json={"question": anaphora, "rewrite": False}, headers=OWNER).json()
+    follow = client.post(
+        "/api/v1/answers", json={"question": anaphora, "session_id": mt_sid, "rewrite": True}, headers=OWNER
+    ).json()
+    resolved = follow.get("retrieval", {}).get("query_used", "")
+    # 三条都必须成立，缺一条这一步就没有内容可证：
+    #   ① 有历史时用于检索的查询与追问原文不同（消解真的发生了，不是原话直送）；
+    #   ② 补全结果里不再有「那个」——指代必须真被消解掉。刻意**不**断言「落点词必须保住」：
+    #      改写器实测两跑给出不同结果（14/14 与 13/14），把具体落点词写进断言
+    #      会让这一步退化成随机失败。落点是否跑偏看随附字段，不看门禁。
+    #   ③ 无历史的对照组必须原样直送——否则两边都在改写，这组对照就废了。
+    step("多轮追问：历史驱动的补全进了检索（机制；无历史对照须原样直送）",
+         resolved != anaphora
+         and "那个" not in resolved
+         and bare.get("retrieval", {}).get("query_used") == anaphora
+         and follow.get("question") == anaphora,
+         {
+             "构造追问": anaphora,
+             "无历史时用于检索": bare.get("retrieval", {}).get("query_used"),
+             "有历史时用于检索": resolved,
+             "落点词是否保住(仅随附报告)": "遥测" in resolved,
+             "对外 question 保持原话": follow.get("question") == anaphora,
+             "两边状态": {"无历史": bare.get("status"), "有历史": follow.get("status")},
+         })
+
+    # ---- 10. 流式路径也必须落轮次与审计（多轮的上文就从这张表读）----
+    turns_after_stream = client.get(f"/api/v1/sessions/{sid}", headers=OWNER).json()["turns"]
+    stream_turn = [t for t in turns_after_stream if t["question"] == "银企直联接口编号规则是什么？"]
+    step("流式问答落了 session_turn（不落则聊天界面永远读不到上文）",
+         len(stream_turn) == 1 and stream_turn[0]["trace_id"],
+         {"会话轮数": len(turns_after_stream), "流式那轮的耗时ms": stream_turn[0]["total_ms"]})
+
+    # ---- 11. 审计留痕 ----
     with pg.connect() as conn:
         audits = conn.execute(
             "SELECT action, count(*) n FROM audit_log WHERE actor IN ('m3-owner-01','m3-new-01') GROUP BY action"
@@ -159,7 +204,6 @@ def main() -> int:
     art = Path(s.resolved_artifact_dir()) / "m3_verify.json"
     art.write_text(json.dumps(evidence, ensure_ascii=False, indent=2, default=str), encoding="utf-8")
     print("\n全部步骤通过。原始证据：", art)
-    print("未覆盖（如实记账）：多轮指代消解——当前 answer() 不吃历史，需 M3-05 的 Checkpointer 才成立。")
     return 0
 
 

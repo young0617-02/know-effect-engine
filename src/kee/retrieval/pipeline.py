@@ -161,7 +161,12 @@ class HybridRetriever:
             out.append(c)
         return out[:top_k]
 
-    def retrieve(self, query: str, ctx: AccessContext, top_k: int | None = None) -> RetrievalResult:
+    def retrieve(
+        self, query: str, ctx: AccessContext, top_k: int | None = None, already_rewritten: bool = False
+    ) -> RetrievalResult:
+        """`already_rewritten=True` 表示这条 query 已经过同一个改写器按多轮上文消解过，
+        本次不要再自己改写一次——追问因此不会为同一件事付两趟 0.6s 的 LLM 调用。
+        """
         s = self.settings
         top_k = top_k or s.rerank_top_n
         expr = build_filter_expr(ctx)
@@ -188,7 +193,7 @@ class HybridRetriever:
 
         degraded: list[str] = []
         rw = None
-        if self.rewriter is not None:
+        if self.rewriter is not None and not already_rewritten:
             rw = self.rewriter.rewrite(query)
             degraded += rw.degraded
             timings["rewrite_ms"] = rw.ms

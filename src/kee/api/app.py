@@ -372,6 +372,22 @@ def create_app(*, skip_embedding: bool = False, scheduler: Any | None = None, co
         except psycopg.Error:
             pass
 
+    def _history(session_id: str, rewrite: bool) -> list[dict[str, Any]]:
+        """取本会话已有的轮次作为多轮指代消解的上文。
+
+        只在 rewrite=true 时读库：图里 history 唯一的消费者就是改写节点，
+        改写关掉时它传进去也不会发生任何事，不该为一次不会用到的读取花一个连接。
+        取 5 条而不是图上实际用的 3 条——窗口大小归图管，端点多给一点余量，
+        以后图把窗口调大不用回来改这里。
+        """
+        if not rewrite:
+            return []
+        try:
+            return pg.turns_of(session_id, limit=5)
+        except psycopg.Error:
+            # 上文缺失只等于退化成单轮，不值得为此把整次问答打挂。
+            return []
+
     @app.post("/api/v1/answers")
     def answers(
         body: AnswerRequest,
@@ -397,7 +413,9 @@ def create_app(*, skip_embedding: bool = False, scheduler: Any | None = None, co
         session_id = body.session_id or f"s-{uuid.uuid4().hex[:12]}"
         fresh = pg.open_session(session_id, actor, {"role": ctx.role, "industries": ctx.industries,
                                                    "projects": ctx.projects})
-        res = _answer_engine(body.rewrite).answer(body.question, ctx, top_k=body.top_k)
+        res = _answer_engine(body.rewrite).answer(
+            body.question, ctx, top_k=body.top_k, history=_history(session_id, body.rewrite)
+        )
         turn_no = pg.append_turn(
             session_id,
             {
@@ -405,7 +423,9 @@ def create_app(*, skip_embedding: bool = False, scheduler: Any | None = None, co
                 "status": res.status,
                 "conclusion": res.conclusion,
                 "answer": res.as_dict(),
-                "retrieval_ms": res.timings_ms.get("retrieval_total_ms"),
+                # 引擎记的键叫 retrieval_ms；这里原来查的是 retrieval_total_ms，
+                # 恒为 None——会话历史里的耗时列一直是空的。
+                "retrieval_ms": res.timings_ms.get("retrieval_ms"),
                 "total_ms": res.timings_ms.get("e2e_ms"),
                 "trace_id": trace,
             },
@@ -423,6 +443,7 @@ def create_app(*, skip_embedding: bool = False, scheduler: Any | None = None, co
                 "confidence": res.confidence,
                 "rewrite": body.rewrite,
                 "new_session": fresh,
+                "stream": False,
             },
         )
         out = {**res.as_dict(), "session_id": session_id, "turn_no": turn_no, "new_session": fresh}
@@ -439,15 +460,20 @@ def create_app(*, skip_embedding: bool = False, scheduler: Any | None = None, co
         x_kee_industries: str | None = Header(None),
         x_kee_projects: str | None = Header(None),
     ):
-        """阶段级 SSE：retrieval → answer。
+        """阶段级 SSE：`retrieval`（命中概况）→ `answer`（最终答案）。
 
         刻意**不是** token 级流式。答案链走的是 JSON 模式（结构化输出首次成功率是 ⑤ 门禁项），
         而未闭合的 JSON 片段前端无法渲染，所以「首 token < 1.2s」与「只输出 JSON」这两条要求
         本身冲突。要做 token 级流式必须改成两趟（先流式自由文本、再结构化），
         那会牺牲结构化门禁，需要单独裁决。这里先把可交付的部分做实：
-        检索约 350ms 就出事件，前端可立即展示证据与骨架。
+        M3-05 图化之后，检索节点一跑完就能拿到它的状态增量，前端因此可以在生成之前
+        先拿到「用了哪条查询、命中几条、是否降级」，不用等整条链路结束。
+        `retrieval` 事件只带 chunk id 与概况、不带正文：正文要展示仍应走 answer 事件的引用，
+        免得同一个文本从两个事件里各出一遍。
         """
         import json as _json
+
+        from kee.qa.graph import initial_state, result_from_state
 
         ctx, actor = context_of(x_kee_role, x_kee_actor, x_kee_industries, x_kee_projects)
         if app.state.skip_embedding:
@@ -455,12 +481,63 @@ def create_app(*, skip_embedding: bool = False, scheduler: Any | None = None, co
         _ensure_schema_once()
         trace = request.state.trace_id
         session_id = body.session_id or f"s-{uuid.uuid4().hex[:12]}"
-        pg.open_session(session_id, actor, {"role": ctx.role})
+        # role_ctx 与非流式端点存同一套形状：会话身份是检索层 RBAC 的输入，
+        # 少存 industries/projects 会让「先看会话记录再复现权限」这条路断掉。
+        pg.open_session(
+            session_id, actor, {"role": ctx.role, "industries": ctx.industries, "projects": ctx.projects}
+        )
         engine = _answer_engine(body.rewrite)
 
         def events():
-            payload = engine.answer(body.question, ctx, top_k=body.top_k)
-            yield f"event: answer\ndata: {_json.dumps(payload.as_dict(), ensure_ascii=False)}\n\n"
+            state = initial_state(
+                body.question, ctx, top_k=body.top_k, history=_history(session_id, body.rewrite)
+            )
+            try:
+                for update in engine.graph.stream(state, stream_mode="updates"):
+                    for node, delta in update.items():
+                        state.update(delta or {})
+                        if node == "retrieve":
+                            yield (
+                                "event: retrieval\ndata: "
+                                f"{_json.dumps(state['retrieval'], ensure_ascii=False, default=str)}\n\n"
+                            )
+                payload = result_from_state(state)
+                # 流式路径也要落 session_turn：多轮的上文是从这张表读的，
+                # 不落轮次等于「用流式的客户端永远没有上文」——而聊天界面恰恰只会用流式。
+                turn_no = pg.append_turn(
+                    session_id,
+                    {
+                        "question": body.question,
+                        "status": payload.status,
+                        "conclusion": payload.conclusion,
+                        "answer": payload.as_dict(),
+                        "retrieval_ms": payload.timings_ms.get("retrieval_ms"),
+                        "total_ms": payload.timings_ms.get("e2e_ms"),
+                        "trace_id": trace,
+                    },
+                )
+                # 流式与非流式必须留同一条审计：答案对外给出去了就得有记录，
+                # 不然「走哪条链路」变成了「要不要被审计」的选择。
+                pg.append_audit(
+                    actor,
+                    "answer_generated",
+                    session_id,
+                    trace,
+                    {
+                        "turn_no": turn_no,
+                        "status": payload.status,
+                        "needs_human": payload.needs_human,
+                        "n_citations": len(payload.citations),
+                        "confidence": payload.confidence,
+                        "rewrite": body.rewrite,
+                        "stream": True,
+                    },
+                )
+            except Exception as exc:  # noqa: BLE001 - 流里必须以事件收尾，不能让前端猜
+                yield f"event: error\ndata: {_json.dumps({'code': 'E500', 'message': str(exc)[:200]})}\n\n"
+                return
+            out = {**payload.as_dict(), "session_id": session_id, "turn_no": turn_no}
+            yield f"event: answer\ndata: {_json.dumps(out, ensure_ascii=False)}\n\n"
 
         return StreamingResponse(events(), media_type="text/event-stream")
 

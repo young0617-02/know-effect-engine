@@ -1,4 +1,4 @@
-# 企业级知识库 RAG Agent · 技术方案与 MVP 设计（V1.0.4）
+# 企业级知识库 RAG Agent · 技术方案与 MVP 设计（V1.0.5）
 
 > **基准行业**：数字技术服务 / IT 服务与数字化运营（面向多行业的咨询、解决方案与交付服务）。
 > **文档用途**：在**系统设计与方案定型阶段**，为个人自研项目给出可对外展示的技术方案全景、五维选型决策、可行性验证门禁（Gate 0）与 MVP 交付定义。
@@ -6,7 +6,8 @@
 > **执行主体**：个人独立设计与开发。
 > **日期**：2026-10-09。
 > **与 V1.1 的关系**：本文以《企业级知识库 RAG Agent · 项目定义（数字技术服务企业版 V1.1）》为**唯一基准**，是其第十节「技术方案概览」与第十一节「关键能力设计」的**工程化展开与 MVP 定型**；凡本文与 V1.1 冲突，以 V1.1 口径为准。约束继承 V1.1 第八节（数据不出域、行业/项目/密级隔离、单机部署、GPU 显存 8GB 硬瓶颈、本地优先云端兜底、Windows 11 + WSL2 + Docker Desktop、合规对标 CMMI/ISO/CCRC/ITSS）。
-> **版本**：V1.0.4（M3 证据复核更正版；在 V1.0.3 基础上**不新增门禁口径，只撤回一条错误归因**：Gate 0 ⑤ 的「引用落 gold 仅 23.5%」系指标误读，实测引用落点 100%，真问题是 39 行空结论被判成功答案。详见文末 V1.0.4。历史版本口径均在对应位置保留对照，不抹除。）
+> **版本**：V1.0.5（M3-05 编排落地版；在 V1.0.4 基础上**不动任何门禁口径**，只把在线链路的实际形态、多轮状态的存放位置与端点契约写实：LangGraph 状态机 7 出口、敏感闸前置、Checkpointer 本轮不接、流式为阶段级非 token 级。行为等价性由 17 场景差分回归网证明。详见文末 V1.0.5。历史版本口径均在对应位置保留对照，不抹除。）
+> **上一版**：V1.0.4（M3 证据复核更正版；在 V1.0.3 基础上**不新增门禁口径，只撤回一条错误归因**：Gate 0 ⑤ 的「引用落 gold 仅 23.5%」系指标误读，实测引用落点 100%，真问题是 39 行空结论被判成功答案。详见文末 V1.0.4。历史版本口径均在对应位置保留对照，不抹除。）
 
 ---
 
@@ -379,9 +380,24 @@ flowchart TB
               └──────── 多轮追问（Checkpointer 状态恢复）──────┘
 ```
 
-- **类型化状态**：Pydantic 定义 State；节点纯函数化，便于单测与回归。
-- **Checkpointer**：多轮状态持久化 + 中断-恢复。
-- **降级分支**：检索失败 → 澄清追问或明确"未找到依据"；生成失败 → 仅返回片段 + 标注。
+**V1.0.5 落地形态**（原草图保留在上，作为口径对照；差异与理由见文末 V1.0.5）：
+
+```
+START → sensitive_gate → rewrite → retrieve → retrieval_gate → generate → enforce → confidence → END
+            └ gated ────────┴─ gated ────────────┴─ gated ────────────────────────────┘
+```
+
+- **类型化状态**：V1.0.5 裁决改用 `TypedDict(total=False)` 而非 Pydantic——状态要携带
+  `RetrievalResult` / `AccessContext` 等运行时对象，且「节点只返回要更新的键」与 TypedDict 的
+  增量合并语义同构；Pydantic 需开 `arbitrary_types_allowed` 并在每个节点增量上重校验。
+  节点仍纯函数化（只读 state、只返回更新），便于单测与回归。
+- **多轮状态**：V1.0.5 裁决**本轮不接 Checkpointer**，上文由 PostgreSQL `session_turn` 提供
+  （与「PG 为唯一权威源、其余存储皆可丢」一致；Checkpointer 会把同一份会话状态存两处）。
+  代价明确：**无中断-恢复**，链路中途失败只能整条重来。待人工复核闭环需要断点续跑时再接，
+  且届时要落到同一张权威表而不是另一套表。
+- **降级分支**：检索不足 → 拒答（`refuse`）；生成失败 / 输出不可解析 / 结论为空 → `degraded` 并转人工；
+  敏感命中 / 低置信 / 强证据却声明无依据 / 引用落在密级 3 → `escalate` 转人工。
+  7 个出口在图上以 `gated` 驱动，可从拓扑直接数出，不靠读散落 return 确认。
 
 ### 6.4 引用强制与置信度
 
@@ -435,6 +451,14 @@ flowchart TB
 | POST | `/api/v1/qa/ask` | 单轮问答 | req: question, role_ctx, idempotency_key；resp: answer, citations[], confidence, trace_id |
 | POST | `/api/v1/qa/ask/stream` | 流式问答（SSE/Socket.IO） | 同上，增量推送 token + 引用高亮 |
 | POST | `/api/v1/qa/followup` | 多轮追问 | req: session_id, question；基于 Checkpointer 恢复状态 |
+
+**V1.0.5 落地对照**（原三行路径为设计草图，实际契约如下）：
+
+| 方法 | 实际路径 | 与草图的差异 |
+|---|---|---|
+| POST | `/api/v1/answers` | 对应 `/qa/ask`，`question` + `session_id` + `Idempotency-Key` + `rewrite` 开关。响应即草图所列 `answer / citations / confidence / trace_id`，另加 `session_id / turn_no / new_session` |
+| POST | `/api/v1/answers/stream` | 对应 `/qa/ask/stream`，**阶段级 SSE**（`retrieval` → `answer`，异常以 `error` 事件收尾），**不是草图写的 token 增量 + 引用高亮**：答案链走 JSON 模式，未闭合的 JSON 片段前端无法渲染，与 ⑤「只输出 JSON」的结构化门禁互斥。token 级须改两趟（先流式自由文本、再结构化），**列为待裁决** |
+| — | （未开端点） | 草图的 `/qa/followup` **不单独开**：`POST /api/v1/answers` 带 `session_id` 即追问，上文从 `session_turn` 读。单开端点会让同一条链路有两个入口、两套审计，而多轮与单轮走的图是同一张 |
 | POST | `/api/v1/documents/upload` | 文档上传 | req: file, meta(industry/project/security_level)；resp: doc_id, admission_status |
 | GET | `/api/v1/documents` | 知识管理查询 | 分页 + 权限过滤 |
 | POST | `/api/v1/documents/{id}/review` | 答案/文档复核 | pass/reject → 版本升版 |
@@ -569,7 +593,8 @@ flowchart TB
 | 推理框架 | torch 2.14.0+cu130 / transformers 5.19.0 / CPython 3.12.8（venv 内经 .pth 挂载本机 CUDA 底座） | **已确认** |
 | 中文分析器 | `analyzer_params={"tokenizer": "jieba"}`（备选 `{"type": "chinese"}`） | **已确认（Gate 0 ②）** |
 | 云端兜底模型 | 经 LiteLLM 路由，具体模型待定 | 待定（Gate 0 期间恒关，数据不出域验证要求） |
-| 编排框架 LangGraph | 待锁定 | 待定（Gate 0 未引入；本轮用确定性函数式流水线验证，M3 引入后锁定） |
+| 编排框架 LangGraph | `langgraph 1.2.14` + `langchain-core 1.6.9`（`pyproject` 钉 `>=1.2,<2`；依赖树全为新增，底座零改动） | **已确认（M3-05 状态机落地）** |
+| Checkpointer | `langgraph-checkpoint-postgres 3.1.2` 已安装、**当前未使用** | **V1.0.5 裁决：本轮不接**，多轮状态以 PG `session_turn` 为唯一权威源；摘除依赖声明待裁决（见文末 V1.0.5） |
 | 网关 LiteLLM | 待锁定 | 待定（M3/M4 引入） |
 
 ### 11.3 与 V1.1 的映射对照表
@@ -603,6 +628,45 @@ flowchart TB
 ---
 
 ## 十二、修订记录
+
+### V1.0.5（2026-10-10，M3-05 编排落地版）
+
+修订依据：在线链路已由 LangGraph 状态机承载（`src/kee/qa/graph.py`），行为等价性由差分回归网证明
+（`scripts/m3_graph_equivalence.py`，17 个出口场景 vs 重构前实现，字段级差异 0；单测 121 项）。
+**本版改的是编排形态与多轮状态的存放位置，不动任何门禁口径。** 裁决人：执行者本人。
+
+| # | 位置 | 原口径（V1.0） | 修订后口径（V1.0.5） | 依据 |
+|---|---|---|---|---|
+| 1 | 6.3 拓扑草图 | `[START] → 查询改写 → 混合检索 → 重排 → 生成 → 引用校验 → [END]`，无敏感闸 | `START → sensitive_gate → rewrite → retrieve → retrieval_gate → generate → enforce → confidence → END`，7 个出口由 `gated` 驱动。三处差异：① 敏感闸**前置**（原实现先检索再判敏感，被拦的问题白付一次检索+嵌入；RBAC 已在检索层过滤，故这是顺序缺陷而非泄漏）；② **重排不单独成节点**（它在检索器内部与 RRF 一体完成，拆开会变成两处状态传递、只增加漂移面）；③ 「检索不足」与「答案不成立」分成两道门（`retrieval_gate` / `enforce`），因为它们的出口状态与是否转人工不同 | 图上出口逐一枚举 + `m3_graph_equivalence.py` 的 17 场景矩阵 |
+| 2 | 6.3 / V1.1 第十节「StateGraph + Checkpointer」 | 多轮状态与中断-恢复由 Checkpointer 支撑 | **本轮不接 Checkpointer**，多轮上文的权威源是 PostgreSQL `session_turn`。理由：本文自己定「PG 为唯一权威源、其余存储皆可从权威源重建」，Checkpointer 会把同一份会话状态存到两处且落的不是那张表，漂移时没有可信答案；而 Checkpointer 的独有价值是**中断-恢复**，中断点（人工复核闭环）尚未实现，接了没有消费者。**代价写明：链路中途失败只能整条重来。** `langgraph-checkpoint-postgres 3.1.2` 当前已安装未使用，是否摘除依赖声明待裁决——「版本锁定清单」是 M6 交付物，留一条无人使用的依赖会让它不准 | 11.2 表已同步；M3 报告第八节 |
+| 3 | 6.3「类型化状态：Pydantic 定义 State」 | Pydantic | `TypedDict(total=False)`。状态要携带 `RetrievalResult` / `AccessContext` 这类运行时对象，Pydantic 须开 `arbitrary_types_allowed` 且每个节点增量都重校验一遍；而「节点只返回要更新的键」这条纪律与 TypedDict 的增量合并语义本来就是同一件事 | `graph.py:QAState` |
+| 4 | 7.2 端点草图 `/qa/ask`、`/qa/ask/stream`、`/qa/followup` | 三个端点，followup 基于 Checkpointer 恢复 | 实际是 `POST /api/v1/answers` + `POST /api/v1/answers/stream` + `GET /api/v1/sessions/{id}`；**followup 不单开端点**——带 `session_id` 即追问，上文从 `session_turn` 读。单开会让同一条链路有两个入口、两套审计，而多轮与单轮跑的是同一张图 | `api/app.py`；M3 报告第六节 |
+| 5 | 7.2「流式：增量推送 token + 引用高亮」 | token 级流式 | **阶段级 SSE**（`retrieval` → `answer`，异常以 `error` 事件收尾）。结构化门禁要求「只输出 JSON」，而未闭合的 JSON 片段前端无法渲染，两条要求互斥。改 token 级须走两趟（先流式自由文本、再结构化），会牺牲结构化门禁，**列为待裁决**。2.2 节「流式首 token < 1.2s（待 M4 补测）」口径不变 | M3 报告第六节；`api/app.py` 端点文档 |
+| 6 | 11.2 版本锁定「编排框架 LangGraph：待锁定」 | 待定 | **已确认**：`langgraph 1.2.14` + `langchain-core 1.6.9`（钉 `>=1.2,<2`）。依赖树全为新增、无升级无卸载，Gate 0 ① 建立的 8GB 显存调度基线未被触及 | M3 报告第一节 |
+
+**为什么值得单独开一版**：②③④ 都是「方案写的和代码做的不是同一个东西」。留着不改，M6 的版本锁定清单
+和 Must 链验收会照着一份没实现的草图去核，而这些偏差单靠读代码看不出是决定还是失误。
+本版的判据是差分回归而非「单测过了」：189 行控制流搬家最常见的事故是某个出口的返回形状少一个字段，
+那恰好是单测覆盖不到的地方（详见 M3 报告第八节所列被抓到的 3 处）。
+
+**本版的真机验证结果**（服务在线后补跑，全部可复跑）：
+
+| 项 | 结果 |
+|---|---|
+| 三项守门数字 | 答案完成率 **53/58 = 91% 分毫不差**（状态分布 42/11/1/4、需人工 13、可判校准集 53、行级引用落 gold 53/53 全部逐字段一致）；⑤ 转人工 **5/5**；端到端 **11 步全绿** |
+| 是否改坏个别题 | `scripts/m3_graph_ab_live.py` 同机同模型 A/B（缓存全关、12 道守门题各跑两遍）：**12/12 一致，真回归 0**。其中 q-061 两边都是 `escalate`/8 字结论，属**重构前就存在**的 ⑤ 未闭环项（即「无依据必拒 6/7」的那个 1），不是编排带来的 |
+| 多轮指代消解 | 机制成立：追问「那个的遥测数据上送覆盖哪些测点？」在有历史会话里被补全成「配电自动化终端的遥测数据上送覆盖哪些测点？」并进检索，对外 `question` 保持原话。收益分两层报（`scripts/m3_multiturn_probe.py`，按评测集顺序机械构造 14 道、不剔除帮倒忙样本）：**答案层面净收益 0**（构造保留谓语区分度，本就测不出），**检索层面救回 1 道 / 丢掉 0 道**（q-003 无上文检索塌到 0.0391，补全后升到 0.9697，最终因密级正确地不给结论）。同时观测到改写器自身有抖动（两跑消解率 14/14 与 13/14） |
+
+**顺带更正一条口径**：此前报告写的「拒答/转人工类 12 题真泄漏 0/12」把 refuse 类与 escalate 类合成一把尺。
+分开口径后真实读数是 **refuse 类 6/7、escalate 类 5/5 转人工**；按旧尺子反而会把 q-070
+（语料确有答案、用户有权限、引用密级 3 且已转人工）报成泄漏。
+两个口径守的是同一件事但报数不同，**必须写明用的是哪一个**。判据见 `scripts/m3_refusal_guard.py`。
+
+**仍未覆盖（不当作已完成）**：多轮收益样本仅 14 道且构造偏易（只删主题词、保留谓语），
+真实追问更短更省略，收益结构可能不同；延迟 p50 有 +4.8% 的观测差，
+但单次运行不构成判定依据，要判须同配置连跑多次取分布，本轮未做。
+
+---
 
 ### V1.0.4（2026-10-10，M3 证据复核更正版）
 

@@ -36,6 +36,18 @@ PROMPT = (
     "查询：{query}\n"
 )
 
+# 多轮追问专用：给出上文摘要，把「那汞呢」补全成能独立理解的查询。
+# 刻意限定「只能沿用上文出现过的实体」，否则模型会把历史里顺带提到的数字也搬进查询。
+CONTEXT_PROMPT = (
+    "你是企业知识库检索的查询改写器。下面给出【上文】与【当前追问】，"
+    "请把追问补全成一条不依赖上文也能独立理解的查询。\n"
+    "规则：只能沿用【上文】里出现过的主题、项目、设备或编号来消解指代（那/它/这个/其中/里面）；"
+    "不得引入上文与追问里都没有的地名、人名、编号、数字或时间；"
+    "若追问本身已独立成立，expanded 就照抄追问。\n"
+    '只输出一行 JSON：{{"expanded": "..."}}\n'
+    "【上文】\n{context}\n【当前追问】{query}\n"
+)
+
 
 @dataclass
 class RewriteResult:
@@ -71,14 +83,19 @@ def tidy(expanded: str) -> str:
     return (expanded or "").strip().rstrip("。；;")
 
 
-def validate(original: str, expanded: str) -> str:
-    """改写内容的准入校验；不过就返回拒绝原因。"""
+def validate(original: str, expanded: str, allow_digits_in: str | None = None) -> str:
+    """改写内容的准入校验；不过就返回拒绝原因。
+
+    `allow_digits_in` 是多轮场景的口子：追问「那 2025 年呢」时，数字来自上文而不是本句，
+    若仍只按本句判就会把合法改写拒掉。默认仍只信原句，不给这个口子。
+    """
     e = tidy(expanded)
     if not e:
         return "空改写"
     if len(e) > 3 * max(len(original), 8):
         return f"膨胀超限({len(e)}>{3 * max(len(original), 8)})"
-    if any(d not in original for d in _DIGITS.findall(e)):
+    pool = original if allow_digits_in is None else allow_digits_in
+    if any(d not in pool for d in _DIGITS.findall(e)):
         return "引入了原查询没有的数字"
     for bad in ("。", "；", "\n"):
         if bad in e:
@@ -112,25 +129,32 @@ class QueryRewriter:
             self._client = OllamaClient()
         return self._client
 
-    def _cache_key(self, query: str) -> str:
+    def _cache_key(self, query: str, context: str | None = None) -> str:
         assert self.cache is not None
-        return self.cache.make_key(query, "rewrite", "", 0)
+        # 整段上文进键，不做「长度 + 末 60 字」这类指纹：make_key 本来就要 sha1 整个 payload，
+        # 指纹只是白白引入一次碰撞——两条上文若同长且尾部相同，就会互相顶掉改写结果。
+        return self.cache.make_key(query, f"rewrite|{context or ''}", "", 0)
 
-    def rewrite(self, query: str) -> RewriteResult:
+    def rewrite(self, query: str, context: str | None = None) -> RewriteResult:
+        """改写一条查询。给了 context 就按多轮追问处理：一定触发，且提示词带历史。
+
+        带历史时**跳过启发式触发判定**——「那汞呢」三个字确实短，但触发它的真正理由
+        是「有上文需要消解」，而不是长度阈值。
+        """
         q = (query or "").strip()
         res = RewriteResult(original=q, expanded=q)
         if not q:
             res.skipped_reason = "空查询"
             self.stats["skipped"] += 1
             return res
-        if not (self.always or needs_rewrite(q)):
+        if not context and not (self.always or needs_rewrite(q)):
             res.skipped_reason = "字面查询已自足"
             self.stats["skipped"] += 1
             return res
         res.triggered = True
 
         if self.cache is not None:
-            hit = self.cache.get(self._cache_key(q))
+            hit = self.cache.get(self._cache_key(q, context))
             if hit is not None:
                 res.expanded = hit.get("expanded", q)
                 res.changed = res.expanded != q
@@ -138,11 +162,12 @@ class QueryRewriter:
                 self.stats["cached"] += 1
                 return res
 
+        prompt = CONTEXT_PROMPT.format(context=context, query=q) if context else PROMPT.format(query=q)
         t0 = time.perf_counter()
         self.stats["calls"] += 1
         try:
             r = self.client.chat(
-                [{"role": "user", "content": PROMPT.format(query=q)}],
+                [{"role": "user", "content": prompt}],
                 json_mode=True,
                 temperature=0.0,
                 max_tokens=self.settings.rewrite_max_tokens,
@@ -172,7 +197,7 @@ class QueryRewriter:
             return res
         if salvaged:
             res.degraded.append("rewrite_json_salvaged")
-        why = validate(q, cand)
+        why = validate(q, cand, allow_digits_in=q + " " + (context or ""))
         if why:
             res.rejected_reason = why
             self.stats["rejected"] += 1
@@ -182,7 +207,7 @@ class QueryRewriter:
         if res.changed:
             self.stats["changed"] += 1
             if self.cache is not None:
-                self.cache.set(self._cache_key(q), {"expanded": cand})
+                self.cache.set(self._cache_key(q, context), {"expanded": cand})
         return res
 
     def summary(self) -> dict[str, int]:

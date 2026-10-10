@@ -1,0 +1,289 @@
+{
+  "n_questions": 12,
+  "agree": 12,
+  "disagree": [],
+  "real_regressions": [],
+  "attribution_rule": "同一实现两次不一致 = 模型抖动；两实现各自一致而彼此不一致 = 真回归",
+  "rows": [
+    {
+      "qid": "q-059",
+      "expected": "refuse",
+      "legacy": {
+        "status": "refuse",
+        "needs_human": true,
+        "conclusion_len": 0,
+        "n_citations": 0,
+        "notes": [
+          "model_declared_no_evidence"
+        ]
+      },
+      "graph": {
+        "status": "refuse",
+        "needs_human": true,
+        "conclusion_len": 0,
+        "n_citations": 0,
+        "notes": [
+          "model_declared_no_evidence"
+        ]
+      },
+      "agree": true
+    },
+    {
+      "qid": "q-060",
+      "expected": "refuse",
+      "legacy": {
+        "status": "refuse",
+        "needs_human": false,
+        "conclusion_len": 0,
+        "n_citations": 0,
+        "notes": [
+          "no_sufficient_evidence"
+        ]
+      },
+      "graph": {
+        "status": "refuse",
+        "needs_human": false,
+        "conclusion_len": 0,
+        "n_citations": 0,
+        "notes": [
+          "no_sufficient_evidence"
+        ]
+      },
+      "agree": true
+    },
+    {
+      "qid": "q-061",
+      "expected": "refuse",
+      "legacy": {
+        "status": "escalate",
+        "needs_human": true,
+        "conclusion_len": 8,
+        "n_citations": 1,
+        "notes": [
+          "conclusion_derived_from_points:1",
+          "low_confidence_route_to_human"
+        ]
+      },
+      "graph": {
+        "status": "escalate",
+        "needs_human": true,
+        "conclusion_len": 8,
+        "n_citations": 1,
+        "notes": [
+          "conclusion_derived_from_points:1",
+          "low_confidence_route_to_human"
+        ]
+      },
+      "agree": true
+    },
+    {
+      "qid": "q-062",
+      "expected": "refuse",
+      "legacy": {
+        "status": "refuse",
+        "needs_human": true,
+        "conclusion_len": 0,
+        "n_citations": 0,
+        "notes": [
+          "model_declared_no_evidence"
+        ]
+      },
+      "graph": {
+        "status": "refuse",
+        "needs_human": true,
+        "conclusion_len": 0,
+        "n_citations": 0,
+        "notes": [
+          "model_declared_no_evidence"
+        ]
+      },
+      "agree": true
+    },
+    {
+      "qid": "q-063",
+      "expected": "refuse",
+      "legacy": {
+        "status": "refuse",
+        "needs_human": true,
+        "conclusion_len": 0,
+        "n_citations": 0,
+        "notes": [
+          "model_declared_no_evidence"
+        ]
+      },
+      "graph": {
+        "status": "refuse",
+        "needs_human": true,
+        "conclusion_len": 0,
+        "n_citations": 0,
+        "notes": [
+          "model_declared_no_evidence"
+        ]
+      },
+      "agree": true
+    },
+    {
+      "qid": "q-064",
+      "expected": "refuse",
+      "legacy": {
+        "status": "refuse",
+        "needs_human": true,
+        "conclusion_len": 0,
+        "n_citations": 0,
+        "notes": [
+          "model_declared_no_evidence"
+        ]
+      },
+      "graph": {
+        "status": "refuse",
+        "needs_human": true,
+        "conclusion_len": 0,
+        "n_citations": 0,
+        "notes": [
+          "model_declared_no_evidence"
+        ]
+      },
+      "agree": true
+    },
+    {
+      "qid": "q-065",
+      "expected": "refuse",
+      "legacy": {
+        "status": "refuse",
+        "needs_human": false,
+        "conclusion_len": 0,
+        "n_citations": 0,
+        "notes": [
+          "no_sufficient_evidence"
+        ]
+      },
+      "graph": {
+        "status": "refuse",
+        "needs_human": false,
+        "conclusion_len": 0,
+        "n_citations": 0,
+        "notes": [
+          "no_sufficient_evidence"
+        ]
+      },
+      "agree": true
+    },
+    {
+      "qid": "q-066",
+      "expected": "escalate",
+      "legacy": {
+        "status": "escalate",
+        "needs_human": true,
+        "conclusion_len": 0,
+        "n_citations": 0,
+        "notes": [
+          "sensitive_pattern:合同金额"
+        ]
+      },
+      "graph": {
+        "status": "escalate",
+        "needs_human": true,
+        "conclusion_len": 0,
+        "n_citations": 0,
+        "notes": [
+          "sensitive_pattern:合同金额"
+        ]
+      },
+      "agree": true
+    },
+    {
+      "qid": "q-067",
+      "expected": "escalate",
+      "legacy": {
+        "status": "escalate",
+        "needs_human": true,
+        "conclusion_len": 0,
+        "n_citations": 0,
+        "notes": [
+          "sensitive_pattern:报价"
+        ]
+      },
+      "graph": {
+        "status": "escalate",
+        "needs_human": true,
+        "conclusion_len": 0,
+        "n_citations": 0,
+        "notes": [
+          "sensitive_pattern:报价"
+        ]
+      },
+      "agree": true
+    },
+    {
+      "qid": "q-068",
+      "expected": "escalate",
+      "legacy": {
+        "status": "escalate",
+        "needs_human": true,
+        "conclusion_len": 0,
+        "n_citations": 0,
+        "notes": [
+          "sensitive_pattern:口令"
+        ]
+      },
+      "graph": {
+        "status": "escalate",
+        "needs_human": true,
+        "conclusion_len": 0,
+        "n_citations": 0,
+        "notes": [
+          "sensitive_pattern:口令"
+        ]
+      },
+      "agree": true
+    },
+    {
+      "qid": "q-069",
+      "expected": "escalate",
+      "legacy": {
+        "status": "escalate",
+        "needs_human": true,
+        "conclusion_len": 0,
+        "n_citations": 0,
+        "notes": [
+          "sensitive_pattern:账号"
+        ]
+      },
+      "graph": {
+        "status": "escalate",
+        "needs_human": true,
+        "conclusion_len": 0,
+        "n_citations": 0,
+        "notes": [
+          "sensitive_pattern:账号"
+        ]
+      },
+      "agree": true
+    },
+    {
+      "qid": "q-070",
+      "expected": "escalate",
+      "legacy": {
+        "status": "answer",
+        "needs_human": true,
+        "conclusion_len": 17,
+        "n_citations": 1,
+        "notes": [
+          "conclusion_derived_from_points:1",
+          "secret_level_cited:1 条需人工复核"
+        ]
+      },
+      "graph": {
+        "status": "answer",
+        "needs_human": true,
+        "conclusion_len": 17,
+        "n_citations": 1,
+        "notes": [
+          "conclusion_derived_from_points:1",
+          "secret_level_cited:1 条需人工复核"
+        ]
+      },
+      "agree": true
+    }
+  ]
+}

@@ -1,4 +1,9 @@
-"""答案生成 + 引用强制 + 复合置信度（Gate 0 ⑤ 的被试机制，M3 会换成 LangGraph 编排）。
+"""答案生成的规则层：提示词契约、引用强制、复合置信度的算法与数据结构。
+
+本模块只留**被图调用的纯函数与常量**（format_evidence / _clamp / _logit / is_sensitive /
+SYSTEM_PROMPT / USER_TEMPLATE / AnswerResult）和引擎的阈值配置；
+执行顺序与出口路由在 `kee/qa/graph.py`（M3-05 起的 LangGraph 状态机）。
+拆开放是因为图要 import 本模块，反过来 import 会成环。
 
 三条硬规则（对应方案 6.4 / Must 4·5·6）：
   1. 引用强制：要点必须挂证据编号，证据编号必须在本次检索集合内；无任何有效引用 → 不出结论。
@@ -11,7 +16,6 @@ from __future__ import annotations
 import json
 import math
 import re
-import time
 from dataclasses import asdict, dataclass, field
 from typing import Any
 
@@ -191,191 +195,28 @@ class AnswerEngine:
         return kept, cites, dropped
 
     # ---- 主流程 ----
-    def answer(self, question: str, ctx: AccessContext, top_k: int | None = None) -> AnswerResult:
-        s = self.settings
-        trace_id = f"qa-{int(time.time()*1000)%10**12}"
-        timings: dict[str, float] = {}
-        t0 = time.perf_counter()
-        res = self.retriever.retrieve(question, ctx, top_k=top_k)
-        timings["retrieval_ms"] = res.timings_ms.get("retrieval_total_ms", 0.0)
-        timings.update({f"stage_{k}": v for k, v in res.timings_ms.items() if k != "retrieval_total_ms"})
+    @property
+    def graph(self):
+        """LangGraph 状态机（懒建：导入 kee.qa.graph 需要本模块，构造期建会成环）。"""
+        if getattr(self, "_graph", None) is None:
+            from kee.qa.graph import build_qa_graph
 
-        base = AnswerResult(
-            question=question,
-            status="refuse",
-            trace_id=trace_id,
-            retrieval={
-                "mode": res.mode,
-                "cache_hit": res.cache_hit,
-                "degraded": res.degraded,
-                "expr": res.expr,
-                "n_chunks": len(res.chunks),
-                "top_chunk_ids": [c.chunk_id for c in res.chunks],
-            },
-        )
+            self._graph = build_qa_graph(self)
+        return self._graph
 
-        hit = is_sensitive(question)
-        if hit:
-            base.status = "escalate"
-            base.needs_human = True
-            base.notes.append(f"sensitive_pattern:{hit}")
-            base.timings_ms = timings
-            base.confidence = {"composite": 0.0, "calibrated": 0.0, "rule": "sensitive_block"}
-            return base
+    def answer(
+        self,
+        question: str,
+        ctx: AccessContext,
+        top_k: int | None = None,
+        history: list[dict] | None = None,
+    ) -> AnswerResult:
+        """在线问答入口。链路拓扑见 `kee/qa/graph.py`。
 
-        top_score = max((c.score for c in res.chunks), default=0.0)
-        if not res.chunks or top_score < self.min_retrieval_score:
-            base.status = "refuse"
-            base.needs_human = top_score >= self.min_retrieval_score
-            base.notes.append("no_sufficient_evidence")
-            base.confidence = {
-                "retrieval": round(top_score, 4),
-                "composite": 0.0,
-                "calibrated": 0.0,
-                "rule": "retrieval_gate",
-            }
-            base.timings_ms = timings
-            return base
+        `history` 是多轮追问的上文（来自 session_turn）。不传就是单轮——
+        刻意不做「自动去查会话」，因为那会让本方法隐式依赖权威源，
+        单测与离线复跑都要连库才能跑。
+        """
+        from kee.qa.graph import run_qa
 
-        evidence_text, evidence_index = format_evidence(res)
-        prompt = USER_TEMPLATE.format(evidence=evidence_text, question=question)
-        t1 = time.perf_counter()
-        llm_res = self.llm.chat(
-            [
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": prompt},
-            ],
-            json_mode=True,
-            temperature=self.temperature,
-            max_tokens=self.max_tokens,
-        )
-        timings["generate_ms"] = round((time.perf_counter() - t1) * 1000, 1)
-        timings["e2e_ms"] = round((time.perf_counter() - t0) * 1000, 1)
-        base.llm = {
-            "ok": llm_res.ok,
-            "first_attempt_json_valid": llm_res.json_valid,
-            "metrics": llm_res.metrics,
-            "error": llm_res.error,
-            "prompt_chars": len(prompt),
-        }
-        base.timings_ms = timings
-
-        if not llm_res.ok:
-            base.status = "degraded"
-            base.notes.append(f"generation_failed:{llm_res.error[:60]}")
-            base.key_points = [{"point": c.text[:120], "evidence_ids": [f"E{i}"]} for i, c in enumerate(res.chunks, start=1)]
-            base.citations = [
-                {**evidence_index[f"E{i}"], "evidence_id": f"E{i}"} for i in range(1, len(res.chunks) + 1)
-            ]
-            base.needs_human = True
-            return base
-
-        obj = self._extract_json(llm_res.text)
-        if obj is None:
-            base.status = "degraded"
-            base.notes.append("unparseable_output")
-            base.needs_human = True
-            return base
-
-        if obj.get("no_evidence") is True:
-            # 反向兜底（Gate 0 ⑤ 唯一未闭环项的形态是「该答不答」，不是幻觉）：
-            # 模型声明无依据时，系统此前只是拒答，既不复核也不承认自己可能判错。
-            # 分两层，第一层不需要任何阈值：
-            #   1) 声明无依据一律挂人工复核标记——知识服务里「查不出来」恰恰是最该被人看见的出口；
-            #   2) 只有当检索层的证据强度也不同意「无依据」时，才把状态从 refuse 改成 escalate，
-            #      因为此时 refuse 是在**断言一件检索层反对的事**（没有依据），不能这么报。
-            base.needs_human = True
-            base.notes.append("model_declared_no_evidence")
-            strong = top_score >= self.strong_evidence_floor
-            base.status = "escalate" if strong else "refuse"
-            if strong:
-                base.notes.append(
-                    f"strong_evidence_but_no_basis_claimed:{top_score:.4f}>={self.strong_evidence_floor}"
-                )
-            base.confidence = {
-                "retrieval": round(top_score, 4),
-                "composite": 0.0,
-                "calibrated": 0.0,
-                "rule": "declared_no_evidence",
-            }
-            return base
-
-        points, cites, dropped = self._enforce_citations(obj, evidence_index)
-        conclusion = str(obj.get("conclusion", "") or "").strip()
-        citation_consistency = 1.0 if not dropped else round(len(points) / max(len(points) + len(dropped), 1), 4)
-        self_assessed = _clamp(float(obj.get("self_assessed_confidence", 0.0) or 0.0))
-        composite = round(0.45 * _clamp(top_score) + 0.35 * citation_consistency + 0.20 * self_assessed, 4)
-        calibrated = round(1.0 / (1.0 + math.exp(-(_logit(composite) / self.calibration_temperature))), 4)
-
-        base.key_points = points
-        base.citations = cites
-        base.dropped_points = dropped
-
-        # 出口契约：证据齐不等于答案成立。空结论必须走人工，不能以 answer 状态对外返回。
-        # 这里刻意**不写 logit**：置信度校准的可判集按 logit 是否存在来筛，
-        # 一条没有结论的输出参与校准只会把 ECE 测成「答案完整率」。
-        if not points or not cites:
-            base.status = "refuse"
-            base.notes.append("citation_enforcement_rejected")
-            base.confidence = {
-                "retrieval": round(top_score, 4),
-                "citation_consistency": round(citation_consistency, 4),
-                "self_assessed": round(self_assessed, 4),
-                "composite": 0.0,
-                "calibrated": 0.0,
-                "rule": "contract_no_citation",
-            }
-            return base
-        if not conclusion and points:
-            # 实测 45/58 的形态是「答案已经写在 key_points 里、conclusion 被留空」——
-            # 那是**字段错位**，不是没有答案。这里只做逐字搬运，不向模型索要任何新内容。
-            # 刻意不用「要求结论非空」的提示词修法：那样做完成率确实从 13/58 涨到 58/58，
-            # 但 7 道语料内无答案的题从 0 道出结论变成 2 道，其中 q-059 编出
-            # 「终验结论于2024年12月20日出的，一次通过率为93.7%」且 needs_human=False。
-            # 把「该答不答」换成「不该答也答」，对知识服务是更坏的方向。
-            derived = "；".join(
-                str(p.get("point", "")).strip() for p in points if str(p.get("point", "")).strip()
-            )
-            if derived:
-                conclusion = derived
-                base.notes.append(f"conclusion_derived_from_points:{len(points)}")
-        if not conclusion:
-            base.status = "degraded"
-            base.needs_human = True
-            base.notes.append("contract_violation:empty_conclusion")
-            base.confidence = {
-                "retrieval": round(top_score, 4),
-                "citation_consistency": round(citation_consistency, 4),
-                "self_assessed": round(self_assessed, 4),
-                "composite": 0.0,
-                "calibrated": 0.0,
-                "rule": "contract_empty_conclusion",
-            }
-            return base
-
-        base.conclusion = conclusion
-        base.confidence = {
-            "retrieval": round(top_score, 4),
-            "citation_consistency": round(citation_consistency, 4),
-            "self_assessed": round(self_assessed, 4),
-            "composite": composite,
-            "logit": round(_logit(composite), 4),
-            "calibrated": calibrated,
-            "temperature": self.calibration_temperature,
-        }
-        # 引用落在密级 3 的证据上 → 答案可给（用户有权限）但强制挂人工复核标记。
-        # 注意触发点是「实际被引用的证据」而不是「候选证据集」：后者会让有权限的用户几乎问不出答案。
-        secret_cited = [c for c in cites if int(c.get("security_level") or 0) >= ESCORT_SECURITY_LEVEL]
-        if secret_cited:
-            base.needs_human = True
-            base.notes.append(f"secret_level_cited:{len(secret_cited)} 条需人工复核")
-        if calibrated < s.confidence_low:
-            base.status = "escalate"
-            base.needs_human = True
-            base.notes.append("low_confidence_route_to_human")
-        elif calibrated < s.confidence_high:
-            base.status = "tentative"
-            base.notes.append("初步判断（低置信度显式降级）")
-        else:
-            base.status = "answer"
-        return base
+        return run_qa(self, question, ctx, top_k=top_k, history=history)
