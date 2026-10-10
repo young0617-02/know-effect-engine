@@ -107,6 +107,25 @@ CREATE TABLE IF NOT EXISTS idempotency_key (
     response   jsonb,
     created_at timestamptz NOT NULL DEFAULT now()
 );
+
+-- 多轮追问的轮次历史。刻意放在权威源而不是 Redis：
+-- 「其余存储皆可从权威源重建」这条口径下，会话若只能从缓存恢复就等于会丢。
+-- LangGraph 的 Checkpointer 接的也是这张表（见 M3-05），不另起一套状态。
+CREATE TABLE IF NOT EXISTS session_turn (
+    id           bigserial PRIMARY KEY,
+    session_id   text NOT NULL REFERENCES session(id) ON DELETE CASCADE,
+    turn_no      integer NOT NULL,
+    question     text NOT NULL,
+    status       text NOT NULL,
+    conclusion   text NOT NULL DEFAULT '',
+    answer       jsonb,
+    retrieval_ms double precision,
+    total_ms     double precision,
+    trace_id     text,
+    created_at   timestamptz NOT NULL DEFAULT now(),
+    UNIQUE (session_id, turn_no)
+);
+CREATE INDEX IF NOT EXISTS session_turn_idx ON session_turn(session_id, turn_no);
 """
 
 IMMUTABLE_SQL = """
@@ -238,6 +257,59 @@ class AuthoritativeStore:
                 "UPDATE idempotency_key SET response=%s::jsonb WHERE key=%s",
                 (json.dumps(response, ensure_ascii=False, default=str), key),
             )
+
+    # ---- 会话与轮次（Must#7 多轮追问的地基）----
+    def open_session(self, session_id: str, user_id: str, role_ctx: dict[str, Any]) -> bool:
+        """返回 True 表示新建。已存在时不覆盖 role_ctx——会话期间的身份不该被改。"""
+        with self.connect() as conn:
+            cur = conn.execute(
+                "INSERT INTO session (id, user_id, role_ctx) VALUES (%s,%s,%s::jsonb) "
+                "ON CONFLICT (id) DO NOTHING RETURNING id",
+                (session_id, user_id, json.dumps(role_ctx, ensure_ascii=False)),
+            )
+            return cur.fetchone() is not None
+
+    def session_ctx(self, session_id: str) -> dict[str, Any] | None:
+        with self.connect() as conn:
+            return conn.execute("SELECT * FROM session WHERE id=%s", (session_id,)).fetchone()
+
+    def append_turn(self, session_id: str, turn: dict[str, Any]) -> int:
+        """轮次号在会话内单调递增。用 RETURNING 而不是先查后插，避免并发下撞 UNIQUE。"""
+        with self.connect() as conn:
+            row = conn.execute(
+                """
+                INSERT INTO session_turn (session_id, turn_no, question, status, conclusion, answer,
+                                          retrieval_ms, total_ms, trace_id)
+                VALUES (%s,
+                        coalesce((SELECT max(turn_no) FROM session_turn WHERE session_id=%s),0)+1,
+                        %s,%s,%s,%s::jsonb,%s,%s,%s)
+                RETURNING turn_no
+                """,
+                (
+                    session_id,
+                    session_id,
+                    turn["question"],
+                    turn.get("status", ""),
+                    turn.get("conclusion", ""),
+                    json.dumps(turn.get("answer"), ensure_ascii=False, default=str)
+                    if turn.get("answer") is not None
+                    else None,
+                    turn.get("retrieval_ms"),
+                    turn.get("total_ms"),
+                    turn.get("trace_id"),
+                ),
+            ).fetchone()
+            conn.execute("UPDATE session SET updated_at=now() WHERE id=%s", (session_id,))
+        return int(row["turn_no"])
+
+    def turns_of(self, session_id: str, limit: int = 20) -> list[dict[str, Any]]:
+        with self.connect() as conn:
+            rows = conn.execute(
+                "SELECT turn_no, question, status, conclusion, retrieval_ms, total_ms, trace_id, created_at "
+                "FROM session_turn WHERE session_id=%s ORDER BY turn_no DESC LIMIT %s",
+                (session_id, limit),
+            ).fetchall()
+        return list(reversed(rows))
 
     # ---- 版本管理 ----
     def next_version(self, doc_id: str) -> int:

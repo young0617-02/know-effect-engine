@@ -14,7 +14,7 @@ from typing import Any
 import psycopg
 from fastapi import FastAPI, File, Form, Header, Request, UploadFile
 from fastapi.exceptions import RequestValidationError
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel, Field
 from pymilvus.exceptions import MilvusException
 
@@ -44,6 +44,19 @@ class ApiError(Exception):
         self.trace_id = trace_id
 
 
+def _load_calibration(settings) -> dict[str, Any]:
+    """读 Gate 0 ⑤ 落盘的温度缩放参数；缺失时退回 T=1.0（等于不缩放），不猜值。"""
+    import json
+    from pathlib import Path
+
+    p = Path(settings.resolved_artifact_dir()) / "calibration.json"
+    try:
+        data = json.loads(p.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {"temperature": 1.0}
+    return data if isinstance(data, dict) else {"temperature": 1.0}
+
+
 def _fail(code: str, status: int, message: str, trace_id: str) -> JSONResponse:
     return JSONResponse(
         status_code=status,
@@ -68,6 +81,15 @@ class RollbackRequest(BaseModel):
 class SearchRequest(BaseModel):
     query: str
     top_k: int = Field(default=5, ge=1, le=20)
+
+
+class AnswerRequest(BaseModel):
+    question: str = Field(min_length=1, max_length=500)
+    session_id: str | None = Field(default=None, max_length=64)
+    top_k: int = Field(default=5, ge=1, le=10)
+    # 查询改写默认关：实测单次 P95 843ms，一步就吃满 800ms 检索门禁（方案 V1.0.3 第 2 行）。
+    # 多轮追问时前端显式置 true——那才是字面查询不自足、值得花这一次调用的场景。
+    rewrite: bool = False
 
 
 def create_app(*, skip_embedding: bool = False, scheduler: Any | None = None, collection: str | None = None) -> FastAPI:
@@ -299,6 +321,167 @@ def create_app(*, skip_embedding: bool = False, scheduler: Any | None = None, co
             "degraded": res.degraded,
             "timings_ms": res.timings_ms,
             "hits": [c.as_dict() for c in res.chunks],
+        }
+
+    def _answer_engine(rewrite: bool):
+        """按 rewrite 开关复用两个引擎实例：改写器带 Redis 缓存，重建一次要重连。"""
+        key = "answer_engine_rw" if rewrite else "answer_engine"
+        eng = getattr(app.state, key, None)
+        if eng is not None:
+            return eng
+        from kee.llm.ollama import OllamaClient
+        from kee.qa.answer import AnswerEngine
+        from kee.retrieval.cache import SearchCache
+        from kee.retrieval.pipeline import HybridRetriever
+        from kee.retrieval.rewrite import QueryRewriter
+
+        sched = getattr(app.state, "scheduler", None)
+        if sched is None:
+            from kee.models.registry import ResidencyScheduler
+
+            sched = ResidencyScheduler(policy="co_resident")
+            app.state.scheduler = sched
+        cal = _load_calibration(settings)
+        cache = SearchCache()
+        retriever = HybridRetriever(
+            kb,
+            scheduler=sched,
+            cache=cache,
+            mode="hybrid",
+            use_rerank=True,
+            rewriter=QueryRewriter(cache=cache) if rewrite else None,
+            rewrite_mode="sparse" if rewrite else "off",
+        )
+        eng = AnswerEngine(retriever=retriever, llm=OllamaClient())
+        eng.calibration_temperature = float(cal.get("temperature", 1.0)) or 1.0
+        setattr(app.state, key, eng)
+        return eng
+
+    def _ensure_schema_once() -> None:
+        """按需建表，且只在首次问答时做一次。
+
+        为什么不在 create_app 里直接建：那样 PG 不可用时应用根本起不来，
+        /healthz 也就没法回答「依赖挂了」——启动期硬连依赖会把可观测性一起带走。
+        失败不抛，后面真正用到表的语句会自然出 E901，那才是准确的信号。
+        """
+        if getattr(app.state, "schema_ready", False):
+            return
+        try:
+            pg.init_schema()
+            app.state.schema_ready = True
+        except psycopg.Error:
+            pass
+
+    @app.post("/api/v1/answers")
+    def answers(
+        body: AnswerRequest,
+        request: Request,
+        x_kee_role: str | None = Header(None),
+        x_kee_actor: str | None = Header(None),
+        x_kee_industries: str | None = Header(None),
+        x_kee_projects: str | None = Header(None),
+        idempotency_key: str | None = Header(None, alias="Idempotency-Key"),
+    ) -> dict[str, Any]:
+        ctx, actor = context_of(x_kee_role, x_kee_actor, x_kee_industries, x_kee_projects)
+        if app.state.skip_embedding:
+            raise ApiError("E902", 503, "本实例以 skip_embedding 启动，答案链路需稠密检索", request.state.trace_id)
+        _ensure_schema_once()
+        trace = request.state.trace_id
+
+        scope = f"answers:{ctx.role}:{body.session_id or '-'}"
+        if idempotency_key:
+            prev = pg.reserve_idempotency(idempotency_key, scope)
+            if prev:
+                return {**prev, "replayed": True, "idempotency_key": idempotency_key}
+
+        session_id = body.session_id or f"s-{uuid.uuid4().hex[:12]}"
+        fresh = pg.open_session(session_id, actor, {"role": ctx.role, "industries": ctx.industries,
+                                                   "projects": ctx.projects})
+        res = _answer_engine(body.rewrite).answer(body.question, ctx, top_k=body.top_k)
+        turn_no = pg.append_turn(
+            session_id,
+            {
+                "question": body.question,
+                "status": res.status,
+                "conclusion": res.conclusion,
+                "answer": res.as_dict(),
+                "retrieval_ms": res.timings_ms.get("retrieval_total_ms"),
+                "total_ms": res.timings_ms.get("e2e_ms"),
+                "trace_id": trace,
+            },
+        )
+        pg.append_audit(
+            actor,
+            "answer_generated",
+            session_id,
+            trace,
+            {
+                "turn_no": turn_no,
+                "status": res.status,
+                "needs_human": res.needs_human,
+                "n_citations": len(res.citations),
+                "confidence": res.confidence,
+                "rewrite": body.rewrite,
+                "new_session": fresh,
+            },
+        )
+        out = {**res.as_dict(), "session_id": session_id, "turn_no": turn_no, "new_session": fresh}
+        if idempotency_key:
+            pg.store_idempotency(idempotency_key, out)
+        return out
+
+    @app.post("/api/v1/answers/stream")
+    def answers_stream(
+        body: AnswerRequest,
+        request: Request,
+        x_kee_role: str | None = Header(None),
+        x_kee_actor: str | None = Header(None),
+        x_kee_industries: str | None = Header(None),
+        x_kee_projects: str | None = Header(None),
+    ):
+        """阶段级 SSE：retrieval → answer。
+
+        刻意**不是** token 级流式。答案链走的是 JSON 模式（结构化输出首次成功率是 ⑤ 门禁项），
+        而未闭合的 JSON 片段前端无法渲染，所以「首 token < 1.2s」与「只输出 JSON」这两条要求
+        本身冲突。要做 token 级流式必须改成两趟（先流式自由文本、再结构化），
+        那会牺牲结构化门禁，需要单独裁决。这里先把可交付的部分做实：
+        检索约 350ms 就出事件，前端可立即展示证据与骨架。
+        """
+        import json as _json
+
+        ctx, actor = context_of(x_kee_role, x_kee_actor, x_kee_industries, x_kee_projects)
+        if app.state.skip_embedding:
+            raise ApiError("E902", 503, "本实例以 skip_embedding 启动，答案链路需稠密检索", request.state.trace_id)
+        _ensure_schema_once()
+        trace = request.state.trace_id
+        session_id = body.session_id or f"s-{uuid.uuid4().hex[:12]}"
+        pg.open_session(session_id, actor, {"role": ctx.role})
+        engine = _answer_engine(body.rewrite)
+
+        def events():
+            payload = engine.answer(body.question, ctx, top_k=body.top_k)
+            yield f"event: answer\ndata: {_json.dumps(payload.as_dict(), ensure_ascii=False)}\n\n"
+
+        return StreamingResponse(events(), media_type="text/event-stream")
+
+    @app.get("/api/v1/sessions/{session_id}")
+    def session_history(
+        session_id: str,
+        request: Request,
+        x_kee_role: str | None = Header(None),
+        x_kee_actor: str | None = Header(None),
+        limit: int = 20,
+    ) -> dict[str, Any]:
+        ctx, actor = context_of(x_kee_role, x_kee_actor, None, None)
+        sess = pg.session_ctx(session_id)
+        if sess is None:
+            raise ApiError("E404", 404, f"会话不存在：{session_id}", request.state.trace_id)
+        turns = pg.turns_of(session_id, limit=max(1, min(limit, 100)))
+        pg.append_audit(actor, "session_read", session_id, request.state.trace_id, {"n_turns": len(turns)})
+        return {
+            "session_id": session_id,
+            "user_id": sess["user_id"],
+            "turns": [{k: str(v) if k == "created_at" else v for k, v in t.items()} for t in turns],
         }
 
     return app

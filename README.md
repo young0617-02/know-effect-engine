@@ -128,6 +128,24 @@ section gold 降为报告值，Recall 类数字必须附 n 与 95% CI（阈值�
 
 `KEE_REWRITE_MODE=off|sparse|both|extra_leg` 控制改写形态。
 
+## M3 编排 · 引用 · 置信度（进行中）
+
+| 入口 | 作用 |
+|---|---|
+| `scripts/verify_m3.py` | 问答链路端到端 10 步（答案契约 / 会话轮次 / 幂等 / RBAC 非空转对照 / SSE / 审计） |
+| `scripts/m3_answer_probe.py` | 答案链实测：状态分布、空结论、引用落 gold、人工队列 |
+| `scripts/m3_conclusion_probe.py` | 结论缺失分型（截断 / 解析失败 / 缺字段 / 主动留空），带 `done_reason` 取证 |
+
+```bash
+.venv/Scripts/python.exe scripts/verify_m3.py
+```
+
+已落地：`POST /api/v1/answers`（结构化答案 + 会话轮次 + 幂等）、`/answers/stream`（阶段级 SSE）、
+`GET /api/v1/sessions/{id}`；答案出口加确定性契约校验（空结论不得判成功）；
+强证据却声明无依据时转人工；答案完成率 24% → **91%**（根因是答案被写进 `key_points` 的字段错位，
+用逐字搬运修，**不用**「要求结论非空」的提示词改法——那会把「该答不答」换成「不该答也答」）。
+详见 `reports/m3/M3_编排引用与置信度.md`。
+
 ## 目录（M1 新增）
 
 ```

@@ -1,0 +1,139 @@
+{
+  "steps": [
+    {
+      "name": "依赖就绪（答案链路需向量库 + 权威源）",
+      "ok": true,
+      "detail": {
+        "milvus_chunks": 193,
+        "documents": 24
+      }
+    },
+    {
+      "name": "单轮问答返回结构化答案（结论 + 要点 + 出处 + 置信度 + 免责位）",
+      "ok": true,
+      "detail": {
+        "status": "tentative",
+        "结论": "配电自动化终端的遥测数据上送覆盖三相电流、三相电压、有功与无功功率及功率因数共14个测点。",
+        "要点数": 1,
+        "引用数": 1,
+        "首个引用字段": [
+          "chunk_id",
+          "doc_id",
+          "evidence_id",
+          "page",
+          "parent_id",
+          "project",
+          "score",
+          "section_no",
+          "security_level"
+        ],
+        "置信度": {
+          "retrieval": 0.9937,
+          "citation_consistency": 1.0,
+          "self_assessed": 0.0,
+          "composite": 0.7971,
+          "logit": 1.3683
+        },
+        "session_id": "s-e81aa9ab5395",
+        "turn_no": 1,
+        "new_session": true,
+        "耗时s": 26.07
+      }
+    },
+    {
+      "name": "每条引用都带 doc_id / section_no / page（无来源不出结论的可核对面）",
+      "ok": true,
+      "detail": {
+        "引用数": 1,
+        "缺字段数": 0,
+        "样例": "ene-ifspec-prj-ene-2024-006"
+      }
+    },
+    {
+      "name": "同 session 第二轮：turn_no 递增且复用同一会话",
+      "ok": true,
+      "detail": {
+        "turn_no": 2,
+        "new_session": false,
+        "status": "tentative"
+      }
+    },
+    {
+      "name": "会话历史端点按轮次序返回两问及其状态",
+      "ok": true,
+      "detail": {
+        "轮次": [
+          [
+            1,
+            "tentative",
+            "配电自动化终端的遥测数据上送覆盖三相电流、三相电压、"
+          ],
+          [
+            2,
+            "tentative",
+            "采集成功率治理前为91.6%"
+          ]
+        ]
+      }
+    },
+    {
+      "name": "Idempotency-Key 重放返回首次结果，且不额外增加轮次",
+      "ok": true,
+      "detail": {
+        "首次turn": 3,
+        "重放turn": 3,
+        "会话轮数": 3
+      }
+    },
+    {
+      "name": "检索层 RBAC 在答案链上生效（同题 Owner 引到密级 2，新人被过滤到无据可引）",
+      "ok": true,
+      "detail": {
+        "探针有效性(Owner 侧须引到 >1)": true,
+        "owner": {
+          "status": "tentative",
+          "引用密级": [
+            2
+          ],
+          "结论": "数据交换必须经正反向隔离装置单向传输"
+        },
+        "newcomer": {
+          "status": "refuse",
+          "引用密级": [],
+          "needs_human": false
+        }
+      }
+    },
+    {
+      "name": "语料外问题被拒答且结论为空（空结论不得判成功）",
+      "ok": true,
+      "detail": {
+        "status": "refuse",
+        "needs_human": false,
+        "notes": [
+          "no_sufficient_evidence"
+        ],
+        "结论长度": 0
+      }
+    },
+    {
+      "name": "流式端点以 SSE 返回 answer 事件（阶段级，非 token 级；理由见代码注释）",
+      "ok": true,
+      "detail": {
+        "content-type": "text/event-stream; charset=utf-8",
+        "事件数": 1
+      }
+    },
+    {
+      "name": "答案链每次问答与每次会话读取都进审计",
+      "ok": true,
+      "detail": {
+        "answer_generated": 11,
+        "session_read": 4
+      }
+    }
+  ],
+  "timings_sec": {
+    "whole_run": 41.07
+  }
+}
