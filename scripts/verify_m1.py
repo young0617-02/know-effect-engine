@@ -320,30 +320,32 @@ def main() -> int:
     )
 
     # ---- 7.6 表格结构还原：扫描件里的表格必须带行列结构入库，而不是被压成一行文本 ----
+    # 结构断言放在**父块**（整张表，Markdown 行列都在），检索断言放在**子块**（行级「列名=值」）。
+    # 子块刻意不再是 Markdown：整表一块时单元格级问题实测进不了 Top-5，见 M2 报告第七节。
     scan_doc = "m1-saomiao-prj-mfg-2024-003"
     with pg.connect() as conn:
-        tbl_rows = [
-            r["content"]
-            for r in conn.execute(
-                "SELECT content FROM chunk WHERE doc_id=%s AND is_parent=false ORDER BY order_no", (scan_doc,)
-            ).fetchall()
-            if "|---|" in r["content"]
-        ]
-    tbl_text = "\n".join(tbl_rows)
-    grid = [ln for ln in tbl_text.split("\n") if ln.startswith("|") and "|---|" not in ln]
-    ncols = {len(ln.strip().strip("|").split("|")) for ln in grid}
+        rows_all = conn.execute(
+            "SELECT id, content, is_parent FROM chunk WHERE doc_id=%s ORDER BY order_no", (scan_doc,)
+        ).fetchall()
+    parents = [r["content"] for r in rows_all if r["is_parent"] and "|---|" in r["content"]]
+    row_children = [r["content"] for r in rows_all if not r["is_parent"] and "（表行）" in r["content"]]
+    parent_tbl = [ln for ln in "\n".join(parents).split("\n") if ln.startswith("|") and "|---|" not in ln]
+    ncols = {len(ln.strip().strip("|").split("|")) for ln in parent_tbl}
     tbl_hit = retriever.retrieve("框架 L 单元 铅 六价铬 含量标识", ctx, top_k=5)
+    hit_ids = [c.fields.get("doc_id") for c in tbl_hit.chunks]
     step(
-        "表格结构还原入库（SLANet-plus：17 行 × 7 列 + 合并表头，且可按单元格内容检索命中）",
-        bool(grid) and ncols == {7} and len(grid) >= 17 and "有害物质" in tbl_text and "型号" in tbl_text,
+        "表格结构还原入库（父块 17 行 × 7 列 + 合并表头；子块行级「列名=值」且可按单元格检索命中）",
+        len(parent_tbl) >= 17 and ncols == {7} and any("有害物质" in p for p in parents)
+        and len(row_children) >= 16 and "m1-saomiao-prj-mfg-2024-003" in hit_ids,
         {
-            "含表格的子块数": len(tbl_rows),
-            "表格行数(含重复表头)": len(grid),
-            "每行列数": sorted(ncols),
-            "合并表头在块内": "有害物质" in tbl_text,
+            "父块表格行数": len(parent_tbl),
+            "父块每行列数": sorted(ncols),
+            "合并表头在父块": any("有害物质" in p for p in parents),
+            "行级子块数(=数据行数，表头行转成列名)": len(row_children),
+            "子块样例": row_children[1][:58] if row_children else "",
             "单元格检索命中": [
-                {"doc": c.fields.get("doc_id"), "page": c.fields.get("page"), "text": c.text[:40]}
-                for c in tbl_hit.chunks[:2]
+                {"doc": c.fields.get("doc_id"), "rank": i + 1, "text": c.text[:40]}
+                for i, c in enumerate(tbl_hit.chunks[:3])
             ],
         },
     )
