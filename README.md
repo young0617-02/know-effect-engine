@@ -82,10 +82,13 @@ docker compose -f infra/docker-compose.gate0.yml up -d      # 全部 healthy 即
 | `POST /api/v1/documents/{id}/review` | pass/reject；**上传者不能自审**；reject 会撤下该版本索引 |
 | `POST /api/v1/documents/{id}/rollback` | 切生效版本，并用权威源 + 向量物料重建索引（不需 GPU） |
 | `POST /api/v1/reconcile/run`、`scripts/reconcile_job.py` | 每日对账：diff → Outbox 补偿 → 复检；CLI 的退出码 2 供编排告警 |
-| `scripts/verify_m1.py` | 14 步端到端验证（含真实 PDF），跑完自动还原生产索引到基线 |
+| `scripts/verify_m1.py` | 16 步端到端验证（含真实 PDF 与表格结构），跑完自动还原生产索引到基线 |
+| `scripts/verify_table_structure.py` | 表格结构还原的多样本验证：4 张合成表逐格比对真值（行列数 + 落位） |
+| `scripts/probe_slanet.py` | SLANet-plus 坐标头反推证据：本地无 HTML 词表，token id 语义靠实测标定 |
 
 ```bash
 .venv/Scripts/python.exe scripts/verify_m1.py        # 全链路取证，任一步不过即非零退出
+.venv/Scripts/python.exe scripts/verify_table_structure.py
 .venv/Scripts/python.exe scripts/reconcile_job.py --dry-run
 ```
 
@@ -93,7 +96,8 @@ docker compose -f infra/docker-compose.gate0.yml up -d      # 全部 healthy 即
 （PP-DocLayoutV2 版面 + PP-OCRv6 det/rec，onnxruntime CPU 推理，模型用本机 `D:\modelscope` 已有权重；
 不装 `mineru` 包——它 3.5MB 但依赖树带 lmdeploy/gradio/mineru-llama-cpp，会和本 venv 经 `.pth` 挂载的
 CUDA torch 底座互顶版本；**也不用 mineru.net 云 API**，那属于数据出域）。
-未接：表格行列结构与公式识别（模型在本地，M2 按需接）；鉴权仍是请求头占位。
+未接：公式识别（模型在本地，交付文档公式罕见）；鉴权仍是请求头占位。
+表格行列结构**已接**：SLANet-plus 坐标头 → 行列网格 + 合并表头 → Markdown 表格入库（5 样本实测，见验证记录三附）。
 
 后端选择：`KEE_PDF_PARSE_BACKEND=auto|pypdf|mineru_onnx` —— auto 下文本层够厚就走 pypdf（0.8s/文档），
 薄了才转版面+OCR（约 18s/页），不为能抽字的 PDF 白烧算力。
@@ -103,12 +107,13 @@ CUDA torch 底座互顶版本；**也不用 mineru.net 云 API**，那属于数�
 ```
 src/kee/ingest/parsers.py     多格式解析适配层（字节流入，MinerU 留注册位）
 src/kee/ingest/docimg.py      pypdfium2 页面渲染（BGR 位图给版面/OCR）
-src/kee/ingest/mineru_onnx.py 本地 MinerU-ONNX 后端：PP-DocLayoutV2 版面 + PP-OCRv6 det/rec
+src/kee/ingest/mineru_onnx.py 本地 MinerU-ONNX 后端：PP-DocLayoutV2 版面 + PP-OCRv6 det/rec + SLANet-plus 表格结构
 src/kee/ingest/metadata.py    元数据三级取值：表单 > front-matter > 推断，逐级告警
 src/kee/ingest/service.py     单文档摄取编排 + 升版/回滚/复核
 src/kee/api/app.py            对内 REST API 与统一错误码契约
 scripts/reconcile_job.py      对账作业 CLI
-scripts/verify_m1.py            M1 端到端验证（14 步）
+scripts/table_fixtures.py     合成表格 PDF 生成器（表格结构的逐格真值来源）
+scripts/verify_m1.py            M1 端到端验证（16 步）
 reports/m1/M1_验证记录.md      M1 实测结论、步骤表与已知限制
 ```
 

@@ -7,6 +7,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from kee.ingest.parsers import is_table_block, split_table_block
+
 DEFAULT_CHILD_MAX = 280
 DEFAULT_PARENT_MAX = 1600
 DEFAULT_OVERLAP = 40
@@ -15,6 +17,9 @@ DEFAULT_OVERLAP = 40
 def _split_paragraph(text: str, child_max: int, overlap: int) -> list[str]:
     if len(text) <= child_max:
         return [text]
+    if is_table_block(text):
+        # 表格按字符窗口切会把行切断、列名丢掉，必须按行组切并重复表头
+        return split_table_block(text, child_max)
     stride = max(child_max - overlap, 1)
     out = []
     for start in range(0, len(text), stride):
@@ -42,8 +47,9 @@ def chunk_document(
     for sec in card["sections"]:
         section_no = str(sec["section_no"])
         page = int(sec["page"])
+        heading = str(sec.get("heading", "") or "")
         paras = [str(p) for p in sec.get("paragraphs", []) or []]
-        parent_text = f"【{card['title']} / {section_no} {sec.get('heading','')}】\n" + "\n".join(paras)
+        parent_text = f"【{card['title']} / {section_no} {heading}】\n" + "\n".join(paras)
         parent_id = f"{version_id}#{section_no}#parent"
         if len(parent_text) > parent_max:
             parent_text = parent_text[:parent_max]
@@ -68,6 +74,13 @@ def chunk_document(
         pieces: list[str] = []
         for p in paras:
             for seg in _split_paragraph(p, child_max, overlap):
+                if is_table_block(seg):
+                    # 表格块不与其他文本共用子块：拼接会把表头挤到同一行，Markdown 解析不出来
+                    if buf:
+                        pieces.append(buf)
+                        buf = ""
+                    pieces.append(seg)
+                    continue
                 if buf and len(buf) + 1 + len(seg) > child_max:
                     pieces.append(buf)
                     buf = seg
@@ -80,7 +93,8 @@ def chunk_document(
             pieces.append(buf)
         for i, piece in enumerate(pieces, start=1):
             child_idx = i
-            text = f"{sec.get('heading','')}｜{piece}"
+            # 表格块不能拼「标题｜| 列1 |」：那会把表头行挤出第一行，Markdown 解析不出来
+            text = f"{heading}\n{piece}" if is_table_block(piece) else f"{heading}｜{piece}"
             order += 1
             rows.append(
                 {

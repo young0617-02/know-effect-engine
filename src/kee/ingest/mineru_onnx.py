@@ -9,8 +9,8 @@
   - 推理放在 CPU：GPU 已被 7B + 嵌入 + 重排按 Gate 0 ① 的实测占满（峰值 8098/8188 MiB），
     版面/OCR 再挤进去就是把临界通过变成 OOM。
 
-公式（PP-FormulaNet-M 564MB）与表格结构（SLANet-plus/UniNet）模型本地已有但未接：
-交付文档里公式罕见，表格先按版面框定位 + OCR 成文本行，行列结构还原留到 M2 按需接。
+公式（PP-FormulaNet-M 564MB）本地已有但未接：交付文档里公式罕见，
+行列结构还原（SLANet-plus）已接，见 TableStructureModel。
 """
 
 from __future__ import annotations
@@ -24,7 +24,7 @@ from typing import Any
 import numpy as np
 
 from kee.config import get_settings
-from kee.ingest.parsers import ParsedDocument, ParsedSection, _SectionNumbering
+from kee.ingest.parsers import ParsedDocument, ParsedSection, ParseFailure, _SectionNumbering
 
 # 版面标签里会形成阅读结构的这几类，其余（页眉页脚图片印章等）丢弃
 TEXT_LABELS = {
@@ -251,6 +251,272 @@ class OcrEngine:
         return bgr[y1:y2, x1:x2]
 
 
+# ---- 表格结构（SLANet-plus 坐标头）----
+# 本地 Table/ 目录只有 3 个 onnx、没有随附的 50 词 HTML 词表，所以 token id 的语义
+# 不靠猜，用 scripts/probe_slanet.py 从坐标头实测反推（真值：人工读 hak180 有害物质表）：
+#   id=48 的 quad 恰好铺满网格 —— 113 个 cell 切成 17 行、每行 7 列，与真值一致；
+#     且 y 中心聚类在阈值 0.005~0.02、左边界聚类在 0.02~0.05 下都稳定给出 17×7，不是调出来的。
+#   id∈{5,6} 各出现 17 次、成对跟在每行 cell 之后 —— 行终止符。
+#   其余 id 的 quad 与 cell 大面积重叠（实测重叠率 0.72~1.02），是无效坐标；
+#   只有跨列合并格那类 quad 落在所有 cell 之外（实测 id=7 的 quad 正是「有害物质」那格），
+#   故按「与所有 cell 几乎不相交」回收，重叠的候选只留面积最大的。
+TABLE_CELL_ID = 48
+TABLE_ROW_END_IDS = frozenset({5, 6})
+TABLE_PAD_ID = 1
+TABLE_INPUT = 488
+
+
+def _quad_to_box(q: np.ndarray, w: float, h: float) -> Box:
+    """SLANet 的 loc 是 4 点 ×(x,y)，点序不保证，所以取 min/max 包成轴对齐框。"""
+    xs = [float(q[i]) for i in (0, 2, 4, 6)]
+    ys = [float(q[i]) for i in (1, 3, 5, 7)]
+    return Box(min(xs) * w, min(ys) * h, max(xs) * w, max(ys) * h, 1.0, "cell")
+
+
+def _overlap_ratio(b: Box, cells: list[Box]) -> float:
+    if b.area <= 0:
+        return 1.0
+    hit = 0.0
+    for c in cells:
+        ix = max(0.0, min(b.x2, c.x2) - max(b.x1, c.x1))
+        iy = max(0.0, min(b.y2, c.y2) - max(b.y1, c.y1))
+        hit += ix * iy
+    return hit / b.area
+
+
+class TableStructureModel:
+    """表格位图 → 逐行 cell 四边形 + 合并格；只用坐标头，不依赖 HTML 词表。"""
+
+    def __init__(self, path: str | None = None) -> None:
+        import onnxruntime as ort
+
+        self.path = Path(path) if path else model_root() / "Table/slanet-plus.onnx"
+        so = ort.SessionOptions()
+        # 这个导出的 shape 推断不完整，ORRuntime 会对每个 token 打一条 shape 合并告警，
+        # 实测单张表格刷 68KB 日志；关掉，取证只看返回值。
+        so.log_severity_level = 3
+        so.log_verbosity_level = 0
+        self.sess = ort.InferenceSession(
+            str(self.path), sess_options=so, providers=["CPUExecutionProvider"]
+        )
+
+    @classmethod
+    def available(cls) -> bool:
+        return (model_root() / "Table/slanet-plus.onnx").exists()
+
+    def _infer(self, bgr: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+        from PIL import Image
+
+        if bgr.shape[0] < 8 or bgr.shape[1] < 8:
+            raise ParseFailure("表格裁剪区域过小，结构模型无法处理")
+        bgr = OcrEngine._resize(bgr, TABLE_INPUT, TABLE_INPUT)
+        x = ((bgr.astype("float32") / 255.0) - 0.5) / 0.5
+        x = np.transpose(x, (2, 0, 1))[None].astype("float32")
+        loc, tok = self.sess.run(None, {self.sess.get_inputs()[0].name: x})
+        return np.asarray(loc)[0], np.asarray(tok)[0]
+
+    def structure(self, bgr: np.ndarray) -> tuple[list[list[Box]], list[Box]]:
+        """返回 (按阅读顺序的行, 每行的 cell 框) 与 (跨列合并格框)，坐标为裁剪像素。"""
+        loc, tok = self._infer(bgr)
+        ids = tok.argmax(axis=-1)
+        H, W = float(bgr.shape[0]), float(bgr.shape[1])
+        rows: list[list[Box]] = []
+        cur: list[Box] = []
+        for i in range(len(ids)):
+            d = int(ids[i])
+            if d == TABLE_CELL_ID:
+                cur.append(_quad_to_box(loc[i], W, H))
+            elif d in TABLE_ROW_END_IDS:
+                if cur:
+                    cur.sort(key=lambda b: b.x1)
+                    rows.append(cur)
+                    cur = []
+        if cur:
+            cur.sort(key=lambda b: b.x1)
+            rows.append(cur)
+        if not rows:
+            return [], []
+        return rows, table_span_boxes(loc, ids, [b for r in rows for b in r], W, H)
+
+
+def table_span_boxes(
+    loc: np.ndarray, ids: np.ndarray, cells: list[Box], W: float, H: float
+) -> list[Box]:
+    """合并格：quad 与所有 cell 都几乎不相交、且面积够大的非 cell token。"""
+    table = Box(
+        min(c.x1 for c in cells),
+        min(c.y1 for c in cells),
+        max(c.x2 for c in cells),
+        max(c.y2 for c in cells),
+        1.0,
+        "table",
+    )
+    cands: list[Box] = []
+    for i in range(len(ids)):
+        d = int(ids[i])
+        if d == TABLE_CELL_ID or d == TABLE_PAD_ID:
+            continue
+        b = _quad_to_box(loc[i], W, H)
+        if b.area < table.area * 0.003:
+            continue
+        if _overlap_ratio(b, cells) > 0.15:
+            continue
+        b.label = "span"
+        cands.append(b)
+    cands.sort(key=lambda b: -b.area)
+    kept: list[Box] = []
+    for b in cands:
+        if any(_iou(b, k) > 0.3 for k in kept):
+            continue
+        kept.append(b)
+    return kept
+
+
+def snap_rows_to_grid(rows: list[list[Box]]) -> tuple[list[list[Box]], list[tuple[float, float]]]:
+    """把每个 cell 的框吸附到「所在行 × 所在列」的共识边界。
+
+    坐标头的单格 quad 会画歪：实测宽表首行首格右边界画到 393（该列真值 301），
+    把「区域」那格撑成跨两列、下边界还短了一截，文本行因此落到隔壁格子里。
+    行列边界是全表多格共识，所以按列取 x 中位、按行取 y 中位重画，比信单格 quad 稳。
+    """
+    if not rows:
+        return rows, []
+    ref = max(rows, key=len)
+    col_edges: list[list[tuple[float, float]]] = [[] for _ in ref]
+    bands: list[tuple[float, float]] = []
+
+    def axis_of(b: Box, axes: list[tuple[float, float]]) -> int:
+        return max(
+            range(len(axes)),
+            key=lambda k: max(0.0, min(b.x2, axes[k][1]) - max(b.x1, axes[k][0])),
+        )
+
+    for r in rows:
+        for b in r:
+            col_edges[axis_of(b, [(c.x1, c.x2) for c in ref])].append((b.x1, b.x2))
+        bands.append(
+            (float(np.median([b.y1 for b in r])), float(np.median([b.y2 for b in r])))
+        )
+    axes = [
+        (float(np.median([e[0] for e in c])), float(np.median([e[1] for e in c])))
+        for c in col_edges
+        if c
+    ]
+    out: list[list[Box]] = []
+    for r, (y1, y2) in zip(rows, bands):
+        snapped = []
+        for b in r:
+            cx1, cx2 = axes[axis_of(b, axes)]
+            snapped.append(Box(cx1, y1, cx2, y2, b.score, b.label, b.text))
+        out.append(snapped)
+    return out, axes
+
+
+def assign_lines_to_cells(cells: list[Box], lines: list[Box]) -> list[list[Box]]:
+    """把文本行**唯一**归属到格子：中心在格内优先，否则按距离兜底。
+
+    必须一次性分配而不是逐格查找，否则同一行会被相邻两格同时认领，
+    一个数字在表里出现两次是比丢字更糟的错。
+    """
+    owner: list[list[Box]] = [[] for _ in cells]
+    for ln in lines:
+        cx, cy = (ln.x1 + ln.x2) / 2, (ln.y1 + ln.y2) / 2
+        hit = [
+            i
+            for i, b in enumerate(cells)
+            if b.x1 <= cx <= b.x2 and b.y1 <= cy <= b.y2
+        ]
+        if not hit:
+            cand = min(
+                range(len(cells)),
+                key=lambda i: _dist(ln, (cells[i].x1 + cells[i].x2) / 2, (cells[i].y1 + cells[i].y2) / 2),
+                default=None,
+            )
+            if cand is None:
+                continue
+            b = cells[cand]
+            # 兜底阈值取半格：再远就说明这格本来就是空的（合并格、空白标记格），不能硬塞
+            if _dist(ln, (b.x1 + b.x2) / 2, (b.y1 + b.y2) / 2) > 0.5 * (b.x2 - b.x1) + 0.5 * (b.y2 - b.y1):
+                continue
+            hit = [cand]
+        else:
+            # 格子边界不严格互斥（合并格会覆盖邻格），取中心最近的
+            hit = [min(hit, key=lambda i: _dist(ln, (cells[i].x1 + cells[i].x2) / 2, (cells[i].y1 + cells[i].y2) / 2))]
+        owner[hit[0]].append(ln)
+    for grp in owner:
+        grp.sort(key=lambda ln: (round(ln.y1 / 8), ln.x1))
+    return owner
+
+
+def lines_text(group: list[Box]) -> str:
+    return _join_lines([ln.text.strip() for ln in group if ln.text.strip()])
+
+
+def _join_lines(parts: list[str]) -> str:
+    out = ""
+    for p in parts:
+        if out and _is_cjk(out[-1]) and _is_cjk(p[0]):
+            out += p  # 中文换行不是词边界，插空格会把「多溴联苯」变成「多溴联 苯」，jieba 分词跟着错
+        else:
+            out = f"{out} {p}" if out else p
+    return out
+
+
+def _is_cjk(ch: str) -> bool:
+    return "一" <= ch <= "鿿"
+
+
+def _dist(ln: Box, cx: float, cy: float) -> float:
+    return abs((ln.x1 + ln.x2) / 2 - cx) + abs((ln.y1 + ln.y2) / 2 - cy)
+
+
+def table_to_markdown(rows: list[list[Box]], spans: list[Box], lines: list[Box]) -> str:
+    """cell 框 + 已识别文本行 → Markdown 表格。
+
+    列轴取自「cell 最多的那一行」的横向分区，再用区间重叠把每格落到列上：
+    这样不需要行列聚类阈值这类魔数，也天然容得下合并格。
+    """
+    if not rows:
+        return ""
+    if max(len(r) for r in rows) < 2:
+        return ""
+    rows, _axes = snap_rows_to_grid(rows)
+    ref = max(rows, key=len)
+    ncols = len(ref)
+    grid: list[list[Box]] = [list(r) for r in rows]
+    for s in spans:
+        ri = max(
+            range(len(grid)),
+            key=lambda k: max((min(s.y2, c.y2) - max(s.y1, c.y1) for c in grid[k]), default=-1e9),
+        )
+        band = grid[ri][0]
+        grid[ri].append(Box(s.x1, band.y1, s.x2, band.y2, s.score, "span", s.text))
+    out: list[str] = []
+    for r in grid:
+        r.sort(key=lambda b: b.x1)
+    flat = [b for r in grid for b in r]
+    text_of = {
+        id(b): lines_text(g)
+        for b, g in zip(flat, assign_lines_to_cells(flat, lines))
+    }
+    for ri, r in enumerate(grid):
+        cells = [""] * ncols
+        for b in r:
+            ov = [max(0.0, min(b.x2, ref[k].x2) - max(b.x1, ref[k].x1)) for k in range(ncols)]
+            # 合并格锚在最左覆盖列（读起来是「有害物质」统领后面 6 列）；普通格落在重叠最多的列
+            ci = next((k for k, v in enumerate(ov) if v > 0), 0) if b.label == "span" else max(
+                range(ncols), key=lambda k: ov[k]
+            )
+            text = text_of[id(b)].replace("|", "｜").strip()
+            if text and cells[ci]:
+                text = _join_lines([cells[ci], text])
+            cells[ci] = text
+        out.append("| " + " | ".join(cells) + " |")
+        if ri == 0:
+            out.append("|" + "---|" * ncols)
+    return "\n".join(out)
+
+
 class MinerUPdfParser:
     """PDF → 整页 det 出行框 → 逐行 rec → 按版面框归属 → 带真实页码的章节结构。
 
@@ -259,7 +525,7 @@ class MinerUPdfParser:
     逐行 rec，再用版面框决定这段文字是标题、正文还是表格。
     """
 
-    def __init__(self, dpi: int | None = None, use_layout: bool = True) -> None:
+    def __init__(self, dpi: int | None = None, use_layout: bool = True, use_table: bool = True) -> None:
         s = get_settings()
         self.dpi = dpi or s.ocr_dpi
         self.ocr = OcrEngine()
@@ -267,6 +533,12 @@ class MinerUPdfParser:
         self.layout = (
             LayoutDetector()
             if use_layout and (model_root() / "Layout/PP-DocLayoutV2/inference.onnx").exists()
+            else None
+        )
+        # 表格结构模型只有 7.4MB，加载成本可忽略，但只在版面框判出 table 时才推理
+        self.table = (
+            TableStructureModel()
+            if use_table and TableStructureModel.available()
             else None
         )
 
@@ -285,14 +557,32 @@ class MinerUPdfParser:
             f"PP-DocLayoutV2 版面归属（{'开' if self.layout else '关'}）；CPU 推理"
         ]
         pages: list[list[tuple[Box, str]]] = []
+        n_table = n_table_fail = 0
         for _pno, bgr in render_pdf_pages(data, dpi=self.dpi):
             lines = self.ocr.det_boxes(bgr)
             for ln in lines:
                 ln.text = self.ocr.rec_text(self.ocr.crop(bgr, ln))
             lines = [ln for ln in lines if len(ln.text.strip()) >= 1]
             regions = self.layout.detect(bgr) if self.layout else []
+            tables = [r for r in regions if r.label == "table"] if self.table else []
+            consumed: set[int] = set()
             assigned: list[tuple[Box, str]] = []
-            for ln in lines:
+            for reg in tables:
+                idxs = [
+                    i
+                    for i, ln in enumerate(lines)
+                    if reg.x1 <= (ln.x1 + ln.x2) / 2 <= reg.x2 and reg.y1 <= (ln.y1 + ln.y2) / 2 <= reg.y2
+                ]
+                md = self._table_markdown(bgr, reg, [lines[i] for i in idxs], notes)
+                if md is None:
+                    n_table_fail += 1
+                    continue  # 结构没出来就退回文本行，不能把已经 det 到的行丢掉
+                consumed.update(idxs)
+                n_table += 1
+                assigned.append((Box(reg.x1, reg.y1, reg.x2, reg.y2, reg.score, "table", md), "table"))
+            for i, ln in enumerate(lines):
+                if i in consumed:
+                    continue
                 reg = self._region_of(ln, regions) if regions else None
                 label = reg.label if reg is not None else "text"
                 if label in {"image", "seal", "header", "footer", "figure"}:
@@ -300,7 +590,29 @@ class MinerUPdfParser:
                 assigned.append((ln, label))
             assigned.sort(key=lambda x: (round(x[0].y1 / 10), x[0].x1))
             pages.append(assigned)
-        return self._to_document(pages, filename, notes)
+        if self.table is not None:
+            notes.append(f"表格结构还原（SLANet-plus）：成功 {n_table} 张，失败回退文本行 {n_table_fail} 张")
+        doc = self._to_document(pages, filename, notes)
+        return doc
+
+    def _table_markdown(self, bgr: np.ndarray, reg: Box, page_lines: list[Box], notes: list[str]) -> str | None:
+        """版面框内的表格 → Markdown；结构不可用时返回 None，让调用方按文本行兜底。"""
+        assert self.table is not None
+        ox, oy = int(reg.x1), int(reg.y1)
+        crop = bgr[oy : min(bgr.shape[0], int(reg.y2)), ox : min(bgr.shape[1], int(reg.x2))]
+        inside = [
+            Box(ln.x1 - ox, ln.y1 - oy, ln.x2 - ox, ln.y2 - oy, ln.score, "line", ln.text)
+            for ln in page_lines
+        ]
+        try:
+            rows, spans = self.table.structure(crop)
+        except Exception as exc:  # 结构失败不能把整篇文档拖回 pypdf
+            notes.append(f"表格结构还原失败（按文本行处理）：{type(exc).__name__}: {exc}")
+            return None
+        md = table_to_markdown(rows, spans, inside)
+        if not md:
+            notes.append("表格结构还原为空网格（按文本行处理）")
+        return md or None
 
     def _to_document(self, pages: list[list[tuple[Box, str]]], filename: str, notes: list[str]) -> ParsedDocument:
         stem = Path(filename).stem
@@ -327,6 +639,14 @@ class MinerUPdfParser:
                 if not text:
                     continue
                 chars += len(text)
+                if label == "table":
+                    flush()
+                    prev_y = None
+                    if cur is None:
+                        cur = ParsedSection(num.next(1), f"第 {pno} 页", pno, [])
+                        sections.append(cur)
+                    cur.paragraphs.append(text)  # Markdown 表格整块成段，不能被行序打散
+                    continue
                 if label in HEADING_LABELS and len(text) <= 30:
                     flush()
                     prev_y = None

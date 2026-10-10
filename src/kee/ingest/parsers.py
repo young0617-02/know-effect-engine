@@ -27,6 +27,7 @@ _HEADING_NUM = re.compile(r"^\s*(\d{1,3}(?:\.\d{1,3}){0,3})[、.\s]\s*([^\n。�
 _HEADING_CN = re.compile(r"^\s*(第[一二三四五六七八九十百]+[章节部分篇])\s*(\S.{0,60}?)\s*$")
 _SENT_SPLIT = re.compile(r"(?<=[。；！？])")
 _TABLE_SEP = re.compile(r"^[\s|:\-]+$")
+_TABLE_ROW = re.compile(r"^\|.*\|$")
 
 
 class UnsupportedFormat(Exception):
@@ -121,14 +122,59 @@ class ParsedDocument:
         }
 
 
+def _fold_wraps(text: str) -> str:
+    """软换行折成空格，但 Markdown 表格行（以 | 开头）各占一行不能被折。
+
+    原规则是「单个换行=PDF 断行 → 折成空格，连续两个换行=段落分隔 → 保留」；
+    表格行如果一起被折，行列结构就白还原了，所以按行首判定豁免。
+    """
+    out: list[str] = []
+    for ln in (x.strip() for x in text.split("\n")):
+        if out and out[-1] and ln and not ln.startswith("|") and not out[-1].startswith("|"):
+            out[-1] = f"{out[-1]} {ln}"
+        else:
+            out.append(ln)
+    return "\n".join(out)
+
+
 def _clean(text: str) -> str:
     text = text.replace("　", " ").replace("\xa0", " ")
     text = re.sub(r"[ \t]+", " ", text)
-    text = re.sub(r"(?<!\n)\n(?!\n)", " ", text)
+    text = _fold_wraps(text)
     return text.strip()
 
 
+def is_table_block(text: str) -> bool:
+    """整段都是 Markdown 表格行（含分隔行）才算表格，混排的不能按行切。"""
+    lines = [ln.strip() for ln in text.split("\n") if ln.strip()]
+    return len(lines) >= 3 and all(_TABLE_ROW.match(ln) for ln in lines)
+
+
+def split_table_block(text: str, limit: int) -> list[str]:
+    """按行分组切表，每组都带上表头两行（列名 + 分隔行）。
+
+    不带上表头，子块读出来是「| 框架 L 单元 | × | ○ |」这种无列名的残片，
+    检索命中了也无法判定「×」对应哪一种有害物质——结构还原的收益就抵消掉了。
+    """
+    lines = [ln for ln in text.split("\n") if ln.strip()]
+    header, body = lines[:2], lines[2:]
+    if not body:
+        return ["\n".join(lines)]
+    base = sum(len(h) + 1 for h in header)
+    groups: list[list[str]] = []
+    cur: list[str] = list(header)
+    for row in body:
+        if len(cur) > len(header) and base + sum(len(r) + 1 for r in cur[2:]) + len(row) > limit:
+            groups.append(cur)
+            cur = list(header)
+        cur.append(row)
+    groups.append(cur)
+    return ["\n".join(g) for g in groups]
+
+
 def _split_long(p: str) -> list[str]:
+    if is_table_block(p):
+        return split_table_block(p, PARA_MAX)
     parts: list[str] = []
     buf = ""
     for seg in _SENT_SPLIT.split(p):

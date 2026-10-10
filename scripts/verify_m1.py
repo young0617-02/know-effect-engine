@@ -319,6 +319,35 @@ def main() -> int:
         },
     )
 
+    # ---- 7.6 表格结构还原：扫描件里的表格必须带行列结构入库，而不是被压成一行文本 ----
+    scan_doc = "m1-saomiao-prj-mfg-2024-003"
+    with pg.connect() as conn:
+        tbl_rows = [
+            r["content"]
+            for r in conn.execute(
+                "SELECT content FROM chunk WHERE doc_id=%s AND is_parent=false ORDER BY order_no", (scan_doc,)
+            ).fetchall()
+            if "|---|" in r["content"]
+        ]
+    tbl_text = "\n".join(tbl_rows)
+    grid = [ln for ln in tbl_text.split("\n") if ln.startswith("|") and "|---|" not in ln]
+    ncols = {len(ln.strip().strip("|").split("|")) for ln in grid}
+    tbl_hit = retriever.retrieve("框架 L 单元 铅 六价铬 含量标识", ctx, top_k=5)
+    step(
+        "表格结构还原入库（SLANet-plus：17 行 × 7 列 + 合并表头，且可按单元格内容检索命中）",
+        bool(grid) and ncols == {7} and len(grid) >= 17 and "有害物质" in tbl_text and "型号" in tbl_text,
+        {
+            "含表格的子块数": len(tbl_rows),
+            "表格行数(含重复表头)": len(grid),
+            "每行列数": sorted(ncols),
+            "合并表头在块内": "有害物质" in tbl_text,
+            "单元格检索命中": [
+                {"doc": c.fields.get("doc_id"), "page": c.fields.get("page"), "text": c.text[:40]}
+                for c in tbl_hit.chunks[:2]
+            ],
+        },
+    )
+
     # ---- 8. 升版 / 回滚 ----
     p = FIXTURES / "交付复盘.md"
     modified = p.read_text(encoding="utf-8").replace("线损率从 6.8% 降至 4.9%", "线损率从 6.8% 降至 4.1%，并追加季度复测要求")
