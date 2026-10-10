@@ -126,6 +126,10 @@ class OllamaClient:
             "eval_ms": round((j.get("eval_duration", 0) or 0) / NS_TO_MS, 1),
             "prompt_tokens": j.get("prompt_eval_count", 0),
             "completion_tokens": j.get("eval_count", 0),
+            # done_reason 是「length」还是「stop」，是区分「输出被 num_predict 截断」与
+            # 「模型自己说完就停了」的唯一硬证据。M2 的查询改写就因为没看这个字段，
+            # 把 21/70 的截断当成「模型输出无效」白白扔掉了。
+            "done_reason": j.get("done_reason", ""),
         }
         tok = metrics["completion_tokens"]
         if metrics["eval_ms"] > 0 and tok:

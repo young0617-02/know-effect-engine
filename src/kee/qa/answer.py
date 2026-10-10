@@ -58,6 +58,10 @@ USER_TEMPLATE = (
     '"citations": [{{"evidence_id": "E1", "doc_id": "...", "section_no": "...", "page": 0}}], '
     '"no_evidence": false, "self_assessed_confidence": 0.0}}'
 )
+# ↑ 刻意**没有**改成「conclusion 不得为空」。实测：加上该要求后可判答案完成率从 13/58 升到 58/58，
+#   但 7 道语料里确实无答案的题从 0 道出结论变成 2 道出结论，其中 q-059 给出
+#   「终验结论于2024年12月20日出的，一次通过率为93.7%」并带 1 条引用、needs_human=False。
+#   那是把「该答不答」换成了「不该答也答」，对知识服务是更坏的方向。见 M3-01c 与报告第四节。
 
 _JSON_BLOCK = re.compile(r"\{.*\}", re.S)
 
@@ -322,6 +326,19 @@ class AnswerEngine:
                 "rule": "contract_no_citation",
             }
             return base
+        if not conclusion and points:
+            # 实测 45/58 的形态是「答案已经写在 key_points 里、conclusion 被留空」——
+            # 那是**字段错位**，不是没有答案。这里只做逐字搬运，不向模型索要任何新内容。
+            # 刻意不用「要求结论非空」的提示词修法：那样做完成率确实从 13/58 涨到 58/58，
+            # 但 7 道语料内无答案的题从 0 道出结论变成 2 道，其中 q-059 编出
+            # 「终验结论于2024年12月20日出的，一次通过率为93.7%」且 needs_human=False。
+            # 把「该答不答」换成「不该答也答」，对知识服务是更坏的方向。
+            derived = "；".join(
+                str(p.get("point", "")).strip() for p in points if str(p.get("point", "")).strip()
+            )
+            if derived:
+                conclusion = derived
+                base.notes.append(f"conclusion_derived_from_points:{len(points)}")
         if not conclusion:
             base.status = "degraded"
             base.needs_human = True

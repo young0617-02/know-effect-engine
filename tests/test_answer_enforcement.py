@@ -196,26 +196,28 @@ def test_sensitive_patterns(bad):
 
 
 # ---- M3-01b 答案结构契约：有出处不等于答案成立 ----
-# 复现的是真机缺陷：Gate 0 ⑤ 的 51 个可判答案行里 39 行是
-# 「no_evidence=false + 有要点 + 引用落在 gold 上 + conclusion 为空」，却被判 status=answer 对外返回。
+# 契约的触发条件是「结论为空**且搬运不出结论**」。结论为空但要点可用时，
+# 走 M3-01c 的逐字搬运（那是字段错位，不是没有答案），见下方 derive 用例。
 
 
 def test_empty_conclusion_cannot_be_reported_as_answer():
     payload = good_payload()
     payload["conclusion"] = ""
+    payload["key_points"] = [{"point": "   ", "evidence_ids": ["E1"]}]
     eng = AnswerEngine(FakeRetriever([chunk("c1")]), FakeLlm(payload))
     res = eng.answer("RTO 是多少", ctx())
     assert res.status == "degraded"
     assert res.needs_human is True
     assert "contract_violation:empty_conclusion" in res.notes
     assert res.conclusion == ""
-    # 证据仍然留给人工，不因为契约不过就把出处丢掉
-    assert res.citations and res.key_points
+    # 出处仍然留给人工，不因为契约不过就把线索丢掉
+    assert res.citations
 
 
 def test_whitespace_only_conclusion_is_still_a_violation():
     payload = good_payload()
     payload["conclusion"] = "     "
+    payload["key_points"] = [{"point": "  ", "evidence_ids": ["E1"]}]
     eng = AnswerEngine(FakeRetriever([chunk("c1")]), FakeLlm(payload))
     res = eng.answer("RTO 是多少", ctx())
     assert res.status == "degraded" and res.confidence["rule"] == "contract_empty_conclusion"
@@ -225,6 +227,7 @@ def test_contract_violated_answer_stays_out_of_calibration_set():
     """可判集按 logit 是否存在筛；空结论若仍带 logit，ECE 就会被测成「答案完整率」。"""
     payload = good_payload()
     payload["conclusion"] = ""
+    payload["key_points"] = [{"point": "  ", "evidence_ids": ["E1"]}]
     eng = AnswerEngine(FakeRetriever([chunk("c1")]), FakeLlm(payload))
     res = eng.answer("RTO 是多少", ctx())
     assert "logit" not in res.confidence
@@ -237,6 +240,49 @@ def test_valid_conclusion_still_produces_calibratable_answer():
     assert res.status in ("answer", "tentative")
     assert res.needs_human is False
     assert "logit" in res.confidence and res.conclusion
+
+
+# ---- M3-01c：答案写在要点里、结论留空时，逐字搬运而不是判死 ----
+# 实测 45/58 是这个形态。不能改成「提示词要求结论非空」——那会把 7 道无答案题从
+# 0 道出结论变成 2 道出结论（q-059 编出「一次通过率93.7%」且不转人工），方向更坏。
+
+
+def test_empty_conclusion_is_derived_verbatim_from_key_points():
+    payload = good_payload()
+    payload["conclusion"] = ""
+    payload["key_points"] = [
+        {"point": "灾备切换 RTO < 15 分钟", "evidence_ids": ["E1"]},
+        {"point": "切换窗口每月两个", "evidence_ids": ["E1"]},
+    ]
+    eng = AnswerEngine(FakeRetriever([chunk("c1")]), FakeLlm(payload))
+    res = eng.answer("RTO 是多少", ctx())
+    assert res.status in ("answer", "tentative")
+    assert res.needs_human is False
+    # 逐字搬运，不生成任何新表述
+    assert res.conclusion == "灾备切换 RTO < 15 分钟；切换窗口每月两个"
+    assert "conclusion_derived_from_points:2" in res.notes
+
+
+def test_derived_conclusion_does_not_invent_text():
+    """搬运只能用要点原文：结论里出现的每个字都必须来自某个要点。"""
+    payload = good_payload()
+    payload["conclusion"] = ""
+    payload["key_points"] = [{"point": "采集成功率 99.3%", "evidence_ids": ["E1"]}]
+    eng = AnswerEngine(FakeRetriever([chunk("c1")]), FakeLlm(payload))
+    res = eng.answer("采集成功率多少", ctx())
+    assert res.conclusion == "采集成功率 99.3%"
+    assert all(ch in "采集成功率 99.3%；" for ch in res.conclusion)
+
+
+def test_all_points_blank_still_degrades_to_human():
+    """要点也空时搬运不出东西，契约仍然要兜住，不能出现空答案冒充成功。"""
+    payload = good_payload()
+    payload["conclusion"] = ""
+    payload["key_points"] = [{"point": "   ", "evidence_ids": ["E1"]}]
+    eng = AnswerEngine(FakeRetriever([chunk("c1")]), FakeLlm(payload))
+    res = eng.answer("RTO 是多少", ctx())
+    assert res.status == "degraded" and res.needs_human is True
+    assert "contract_violation:empty_conclusion" in res.notes
 
 
 # ---- M3-02 反向兜底：强证据却声明无依据 ----
