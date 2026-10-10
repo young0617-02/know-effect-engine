@@ -1,0 +1,665 @@
+{
+  "steps": [
+    {
+      "step": "健康检查（依赖就绪）",
+      "ok": true,
+      "detail": {
+        "status": "ok",
+        "deps": {
+          "milvus": {
+            "ok": true,
+            "collection": "kb_chunks",
+            "chunks": 193
+          },
+          "postgres": {
+            "ok": true,
+            "documents": 24
+          }
+        }
+      }
+    },
+    {
+      "step": "四类真实文件 + 密级件上传成功",
+      "ok": true,
+      "detail": {
+        "md": {
+          "doc_id": "m1-fupan-prj-ene-2025-008",
+          "version": "m1-fupan-prj-ene-2025-008@v1",
+          "父/子块": {
+            "parent": 4,
+            "child": 4
+          },
+          "索引条数": 4,
+          "解析告警": 1,
+          "元数据告警": 0,
+          "耗时s": 11.505
+        },
+        "txt": {
+          "doc_id": "m1-xunjian-prj-ene-2025-008",
+          "version": "m1-xunjian-prj-ene-2025-008@v1",
+          "父/子块": {
+            "parent": 3,
+            "child": 3
+          },
+          "索引条数": 3,
+          "解析告警": 1,
+          "元数据告警": 0,
+          "耗时s": 11.727
+        },
+        "docx": {
+          "doc_id": "m1-shishi-prj-fin-2024-017",
+          "version": "m1-shishi-prj-fin-2024-017@v1",
+          "父/子块": {
+            "parent": 2,
+            "child": 2
+          },
+          "索引条数": 2,
+          "解析告警": 2,
+          "元数据告警": 0,
+          "耗时s": 11.965
+        },
+        "pdf": {
+          "doc_id": "m1-anquan-prj-mfg-2024-001",
+          "version": "m1-anquan-prj-mfg-2024-001@v1",
+          "父/子块": {
+            "parent": 1,
+            "child": 21
+          },
+          "索引条数": 21,
+          "解析告警": 4,
+          "元数据告警": 0,
+          "耗时s": 9.896
+        },
+        "secret": {
+          "doc_id": "m1-mi-mfg-2024-002",
+          "version": "m1-mi-mfg-2024-002@v1",
+          "父/子块": {
+            "parent": 2,
+            "child": 2
+          },
+          "索引条数": 2,
+          "解析告警": 1,
+          "元数据告警": 0,
+          "耗时s": 11.905
+        }
+      }
+    },
+    {
+      "step": "真实 PDF 解析告警如实上报（章节未识别 / 短行碎片）",
+      "ok": true,
+      "detail": [
+        "识别到 90 个短行片段（多为规格表/参数列），已归并进段落；版面级还原需启用 MinerU 后端，本轮 pypdf 路径不保证表格结构",
+        "章节结构未被识别（全文归入单一章节），建议人工补标或启用 MinerU 版面解析",
+        "PDF 页码为真实页序，可直接用于引用溯源；标题层级按编号行启发式识别",
+        "段落超长拆分：1 → 6 段"
+      ]
+    },
+    {
+      "step": "幂等：同 Idempotency-Key 重放返回首次结果且不重复入库",
+      "ok": true,
+      "detail": {
+        "首次": "m1-xunjian-prj-ene-2025-008@v2",
+        "重放": "m1-xunjian-prj-ene-2025-008@v2",
+        "重放标记": {
+          "replayed": true,
+          "idempotency_key": "idem-m1-002"
+        }
+      }
+    },
+    {
+      "step": "错误契约：重复 409 / 格式不支持 415 / 行业越界 400 / 空文件 400，且都带 trace_id 与 retryable",
+      "ok": true,
+      "detail": {
+        "重复内容": [
+          409,
+          "E409"
+        ],
+        "不支持格式": [
+          415,
+          "E415"
+        ],
+        "行业越界": [
+          400,
+          "E400"
+        ],
+        "空文件": [
+          400,
+          "E400"
+        ]
+      }
+    },
+    {
+      "step": "混合检索命中预期文档（5 探针均落在正确来源上）",
+      "ok": true,
+      "detail": {
+        "missed": [],
+        "detail": [
+          {
+            "q": "配电自动化终端心跳超时阈值冬季怎么调整",
+            "top_doc": "m1-fupan-prj-ene-2025-008"
+          },
+          {
+            "q": "线损率从多少降到多少",
+            "top_doc": "m1-fupan-prj-ene-2025-008"
+          },
+          {
+            "q": "烫金机能不能自行拆解维修",
+            "top_doc": "m1-anquan-prj-mfg-2024-001"
+          },
+          {
+            "q": "电源插头积灰会引起什么风险",
+            "top_doc": "m1-anquan-prj-mfg-2024-001"
+          },
+          {
+            "q": "银企直联实时清算接口 IF-FIN-00",
+            "top_doc": "m1-shishi-prj-fin-2024-017"
+          }
+        ]
+      }
+    },
+    {
+      "step": "真实 PDF 命中且带页码（页码取自 PDF 页序；章节未识别时归到该章节首页，粒度见注）",
+      "ok": true,
+      "detail": {
+        "样例": {
+          "chunk_id": "m1-anquan-prj-mfg-2024-001@v1#1#c5",
+          "doc": "m1-anquan-prj-mfg-2024-001",
+          "section": "1",
+          "page": 1,
+          "score": 0.390869
+        },
+        "页码口径注记": "chunk.page = 所属章节起始页；本次 PDF 未识别出章节，全部子块落在第 1 页，属解析粒度限制而非引用造假"
+      }
+    },
+    {
+      "step": "RBAC 检索层过滤：newcomer 看得到密级 1、看不到密级 2/3，命中结果按密级收敛",
+      "ok": true,
+      "detail": {
+        "newcomer 可见": 5,
+        "owner 可见": 29,
+        "newcomer 过滤表达式": "security_level <= 1",
+        "newcomer 命中条数": 5,
+        "newcomer 命中密级": [
+          1
+        ]
+      }
+    },
+    {
+      "step": "扫描件 OCR 入库并可检索（pypdf 无文本层 → 自动转 MinerU-ONNX 后端）",
+      "ok": true,
+      "detail": {
+        "分块": {
+          "parent": 13,
+          "child": 40
+        },
+        "索引条数": 40,
+        "解析痕迹": [
+          "MinerU-ONNX 后端：PP-OCRv6(tiny det + small rec) 整页行级识别 + P",
+          "表格结构还原（SLANet-plus）：成功 1 张，失败回退文本行 0 张",
+          "丢弃 3 个无正文的标题块（多栏页面上版面归属会串行，M2 待修）",
+          "OCR 产出 4221 字符，覆盖 1 页",
+          "短段并入前段：3｜SCHN",
+          "短段并入前段：10｜安全。",
+          "短段并入前段：10｜170℃",
+          "短段并入前段：13｜面来搬运本设备",
+          "短段并入前段：15｜火灾或触电的风险。",
+          "短段并入前段：16｜经销商。",
+          "触发原因：文本层过薄（1 页）"
+        ],
+        "耗时s": 10.228,
+        "检索命中": [
+          {
+            "doc": "m1-saomiao-prj-mfg-2024-003",
+            "page": 1,
+            "text": "设备｜本设备的包装中使用了塑料袋。塑料袋并不是玩具。为避免窒息的 将"
+          },
+          {
+            "doc": "m1-anquan-prj-mfg-2024-001",
+            "page": 1,
+            "text": "正文｜万一化学品接触本设备，则存在火灾或触电的风险。 特别是有机溶剂"
+          }
+        ]
+      }
+    },
+    {
+      "step": "表格结构还原入库（父块 17 行 × 7 列 + 合并表头；子块行级「列名=值」且可按单元格检索命中）",
+      "ok": true,
+      "detail": {
+        "父块表格行数": 17,
+        "父块每行列数": [
+          7
+        ],
+        "合并表头在父块": true,
+        "行级子块数(=数据行数，表头行转成列名)": 16,
+        "子块样例": "产品中有害物质的名称及含量（表行）｜型号=部件名称；有害物质=(Pb)；列3=(Hg)；列4=(Cd)；列5=(Cr",
+        "单元格检索命中": [
+          {
+            "doc": "m1-anquan-prj-mfg-2024-001",
+            "rank": 1,
+            "text": "正文｜产品中有害物质的名称及含量 型号 有害物质 HAK180 铅 汞 镉 六价"
+          },
+          {
+            "doc": "m1-saomiao-prj-mfg-2024-003",
+            "rank": 2,
+            "text": "产品中有害物质的名称及含量（表行）｜型号=框架L单元；有害物质=X；列3=O；列"
+          },
+          {
+            "doc": "m1-saomiao-prj-mfg-2024-003",
+            "rank": 3,
+            "text": "产品中有害物质的名称及含量（表行）｜型号=HAK180；有害物质=铅；列3=汞；"
+          }
+        ]
+      }
+    },
+    {
+      "step": "同 doc_id 重传自动升版：v2 生效、v1 转 superseded，且 v1 索引被撤下（避免同文档双版同时命中）",
+      "ok": true,
+      "detail": {
+        "new_version": "m1-fupan-prj-ene-2025-008@v2",
+        "版本状态": {
+          "m1-fupan-prj-ene-2025-008@v2": "effective",
+          "m1-fupan-prj-ene-2025-008@v1": "superseded"
+        },
+        "v1 残留索引条数": 0,
+        "v2 索引条数": 4
+      }
+    },
+    {
+      "step": "回滚到 v1：生效版本切回、v2 索引撤下、v1 索引由权威源+物料仓重建",
+      "ok": true,
+      "detail": {
+        "回滚响应": {
+          "doc_id": "m1-fupan-prj-ene-2025-008",
+          "effective_version": "m1-fupan-prj-ene-2025-008@v1",
+          "reindexed": 4,
+          "seconds": 11.53
+        },
+        "v1 索引条数": 4,
+        "v2 索引条数": 0
+      }
+    },
+    {
+      "step": "复核契约：上传者自审 403、非 Owner 角色 403、他人 pass 通过、reject 后索引撤净",
+      "ok": true,
+      "detail": {
+        "自审": [
+          403,
+          "E403"
+        ],
+        "非授权角色": [
+          403,
+          "E403"
+        ],
+        "他人通过": "active",
+        "驳回后状态": "rejected",
+        "驳回后索引条数": 0
+      }
+    },
+    {
+      "step": "对账作业发现注入的缺数据并完成补偿，复检归零",
+      "ok": true,
+      "detail": {
+        "注入缺失": [
+          "m1-anquan-prj-mfg-2024-001@v1#1#c1",
+          "m1-anquan-prj-mfg-2024-001@v1#1#c2"
+        ],
+        "diff": {
+          "authoritative_children": 263,
+          "indexed": 261,
+          "missing_in_vector": 2,
+          "extra_in_vector": 0
+        },
+        "repaired": 2,
+        "recheck": {
+          "missing_in_vector": 0,
+          "extra_in_vector": 0
+        }
+      }
+    },
+    {
+      "step": "审计追加留痕且禁改（覆盖上传/复核/回滚/对账）",
+      "ok": true,
+      "detail": {
+        "动作分布": {
+          "document_admitted": 48,
+          "document_ingested": 143,
+          "document_review_pass": 8,
+          "document_review_reject": 7,
+          "document_rollback": 8,
+          "reconciliation_run": 12
+        },
+        "篡改被拒": "audit_log 为追加表，禁止 UPDATE 操作"
+      }
+    },
+    {
+      "step": "跑完还原生产集合（索引回到基线，权威源不剩 m1-* 文档）",
+      "ok": true,
+      "detail": {
+        "基线索引": 193,
+        "还原后索引": 193,
+        "权威源文档数": 24
+      }
+    }
+  ],
+  "timings_sec": {
+    "upload_5_docs": 57.11,
+    "retrieval_probes": 5.46,
+    "reconcile_run": 12.44,
+    "whole_run": 264.39
+  },
+  "baseline": {
+    "collection": "kb_chunks",
+    "chunks_before": 193,
+    "purged_docs": 0
+  },
+  "uploads": {
+    "md": {
+      "status_code": 201,
+      "body": {
+        "status": "accepted",
+        "doc_id": "m1-fupan-prj-ene-2025-008",
+        "version_id": "m1-fupan-prj-ene-2025-008@v1",
+        "title": "某省级电网配电自动化终端交付复盘",
+        "new_document": true,
+        "chunks": {
+          "parent": 4,
+          "child": 4
+        },
+        "indexed": 4,
+        "parse_notes": [
+          "Markdown 无固定分页，页码字段置 0 并标注不可得"
+        ],
+        "meta_warnings": [],
+        "outbox": {
+          "rounds": [
+            {
+              "round": 1,
+              "dispatched": 1,
+              "failed": 0
+            }
+          ],
+          "remaining_pending": 0
+        },
+        "timings_sec": {
+          "parse": 0.0,
+          "authoritative_write": 0.104,
+          "embed": 9.831,
+          "index": 1.57,
+          "total": 11.505
+        },
+        "trace_id": "api-7080fb8b6589"
+      }
+    },
+    "txt": {
+      "status_code": 201,
+      "body": {
+        "status": "accepted",
+        "doc_id": "m1-xunjian-prj-ene-2025-008",
+        "version_id": "m1-xunjian-prj-ene-2025-008@v1",
+        "title": "巡检作业",
+        "new_document": true,
+        "chunks": {
+          "parent": 3,
+          "child": 3
+        },
+        "indexed": 3,
+        "parse_notes": [
+          "纯文本无分页与标题层级，章节按编号行启发式切分"
+        ],
+        "meta_warnings": [],
+        "outbox": {
+          "rounds": [
+            {
+              "round": 1,
+              "dispatched": 1,
+              "failed": 0
+            }
+          ],
+          "remaining_pending": 0
+        },
+        "timings_sec": {
+          "parse": 0.0,
+          "authoritative_write": 0.082,
+          "embed": 0.026,
+          "index": 11.618,
+          "total": 11.727
+        },
+        "trace_id": "api-b49b599d61ae"
+      }
+    },
+    "docx": {
+      "status_code": 201,
+      "body": {
+        "status": "accepted",
+        "doc_id": "m1-shishi-prj-fin-2024-017",
+        "version_id": "m1-shishi-prj-fin-2024-017@v1",
+        "title": "银企直联实时清算项目实施手册",
+        "new_document": true,
+        "chunks": {
+          "parent": 2,
+          "child": 2
+        },
+        "indexed": 2,
+        "parse_notes": [
+          "DOCX 表格按行展平为文本（第 1 张，2 行），版面级还原待 MinerU 后端",
+          "DOCX 无固定分页（分页由渲染决定），页码置 0 并标注不可得"
+        ],
+        "meta_warnings": [],
+        "outbox": {
+          "rounds": [
+            {
+              "round": 1,
+              "dispatched": 1,
+              "failed": 0
+            }
+          ],
+          "remaining_pending": 0
+        },
+        "timings_sec": {
+          "parse": 0.064,
+          "authoritative_write": 0.144,
+          "embed": 0.117,
+          "index": 11.64,
+          "total": 11.965
+        },
+        "trace_id": "api-b5e8c95bc8e1"
+      }
+    },
+    "pdf": {
+      "status_code": 201,
+      "body": {
+        "status": "accepted",
+        "doc_id": "m1-anquan-prj-mfg-2024-001",
+        "version_id": "m1-anquan-prj-mfg-2024-001@v1",
+        "title": "D01WD7001-00",
+        "new_document": true,
+        "chunks": {
+          "parent": 1,
+          "child": 21
+        },
+        "indexed": 21,
+        "parse_notes": [
+          "识别到 90 个短行片段（多为规格表/参数列），已归并进段落；版面级还原需启用 MinerU 后端，本轮 pypdf 路径不保证表格结构",
+          "章节结构未被识别（全文归入单一章节），建议人工补标或启用 MinerU 版面解析",
+          "PDF 页码为真实页序，可直接用于引用溯源；标题层级按编号行启发式识别",
+          "段落超长拆分：1 → 6 段"
+        ],
+        "meta_warnings": [],
+        "outbox": {
+          "rounds": [
+            {
+              "round": 1,
+              "dispatched": 1,
+              "failed": 0
+            }
+          ],
+          "remaining_pending": 0
+        },
+        "timings_sec": {
+          "parse": 0.742,
+          "authoritative_write": 0.084,
+          "embed": 0.426,
+          "index": 8.644,
+          "total": 9.896
+        },
+        "trace_id": "api-f070de7ee94d"
+      }
+    },
+    "secret": {
+      "status_code": 201,
+      "body": {
+        "status": "accepted",
+        "doc_id": "m1-mi-mfg-2024-002",
+        "version_id": "m1-mi-mfg-2024-002@v1",
+        "title": "智能输送线改造项目商务附件",
+        "new_document": true,
+        "chunks": {
+          "parent": 2,
+          "child": 2
+        },
+        "indexed": 2,
+        "parse_notes": [
+          "Markdown 无固定分页，页码字段置 0 并标注不可得"
+        ],
+        "meta_warnings": [],
+        "outbox": {
+          "rounds": [
+            {
+              "round": 1,
+              "dispatched": 1,
+              "failed": 0
+            }
+          ],
+          "remaining_pending": 0
+        },
+        "timings_sec": {
+          "parse": 0.0,
+          "authoritative_write": 0.076,
+          "embed": 0.186,
+          "index": 11.642,
+          "total": 11.905
+        },
+        "trace_id": "api-26c699b7514a"
+      }
+    }
+  },
+  "retrieval": [
+    {
+      "query": "配电自动化终端心跳超时阈值冬季怎么调整",
+      "expected_doc": "m1-fupan-prj-ene-2025-008",
+      "hit_expected": true,
+      "top": [
+        {
+          "chunk_id": "m1-fupan-prj-ene-2025-008@v1#1.1#c1",
+          "doc": "m1-fupan-prj-ene-2025-008",
+          "section": "1.1",
+          "page": 0,
+          "score": 0.99707
+        },
+        {
+          "chunk_id": "m1-fupan-prj-ene-2025-008@v1#1#c1",
+          "doc": "m1-fupan-prj-ene-2025-008",
+          "section": "1",
+          "page": 0,
+          "score": 0.938477
+        }
+      ],
+      "degraded": []
+    },
+    {
+      "query": "线损率从多少降到多少",
+      "expected_doc": "m1-fupan-prj-ene-2025-008",
+      "hit_expected": true,
+      "top": [
+        {
+          "chunk_id": "m1-fupan-prj-ene-2025-008@v1#1#c1",
+          "doc": "m1-fupan-prj-ene-2025-008",
+          "section": "1",
+          "page": 0,
+          "score": 0.989746
+        },
+        {
+          "chunk_id": "ene-closeout-prj-ene-2024-006@v1#2.1#c1",
+          "doc": "ene-closeout-prj-ene-2024-006",
+          "section": "2.1",
+          "page": 5,
+          "score": 0.974121
+        }
+      ],
+      "degraded": []
+    },
+    {
+      "query": "烫金机能不能自行拆解维修",
+      "expected_doc": "m1-anquan-prj-mfg-2024-001",
+      "hit_expected": true,
+      "top": [
+        {
+          "chunk_id": "m1-anquan-prj-mfg-2024-001@v1#1#c5",
+          "doc": "m1-anquan-prj-mfg-2024-001",
+          "section": "1",
+          "page": 1,
+          "score": 0.390869
+        },
+        {
+          "chunk_id": "m1-anquan-prj-mfg-2024-001@v1#1#c17",
+          "doc": "m1-anquan-prj-mfg-2024-001",
+          "section": "1",
+          "page": 1,
+          "score": 0.059967
+        }
+      ],
+      "degraded": []
+    },
+    {
+      "query": "电源插头积灰会引起什么风险",
+      "expected_doc": "m1-anquan-prj-mfg-2024-001",
+      "hit_expected": true,
+      "top": [
+        {
+          "chunk_id": "m1-anquan-prj-mfg-2024-001@v1#1#c13",
+          "doc": "m1-anquan-prj-mfg-2024-001",
+          "section": "1",
+          "page": 1,
+          "score": 0.756348
+        },
+        {
+          "chunk_id": "m1-anquan-prj-mfg-2024-001@v1#1#c16",
+          "doc": "m1-anquan-prj-mfg-2024-001",
+          "section": "1",
+          "page": 1,
+          "score": 0.15332
+        }
+      ],
+      "degraded": []
+    },
+    {
+      "query": "银企直联实时清算接口 IF-FIN-0012 的报文标准",
+      "expected_doc": "m1-shishi-prj-fin-2024-017",
+      "hit_expected": true,
+      "top": [
+        {
+          "chunk_id": "m1-shishi-prj-fin-2024-017@v1#1#c1",
+          "doc": "m1-shishi-prj-fin-2024-017",
+          "section": "1",
+          "page": 0,
+          "score": 0.997559
+        },
+        {
+          "chunk_id": "fin-ifspec-prj-fin-2024-017@v1#1.1#c1",
+          "doc": "fin-ifspec-prj-fin-2024-017",
+          "section": "1.1",
+          "page": 1,
+          "score": 0.953125
+        }
+      ],
+      "degraded": []
+    }
+  ],
+  "totals": {
+    "collection": "kb_chunks",
+    "indexed_chunks": 193,
+    "authoritative_children_effective": 193,
+    "m1_documents": 0,
+    "note": "indexed 与 authoritative 只对「生效版本」比对；superseded 版本既不在权威口径也不在索引里"
+  }
+}

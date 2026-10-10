@@ -17,9 +17,19 @@ venv/
 
 # 数据与运行态（含客户资料，不入库）
 data/
-var/
-*.log
+var/*
 backups/
+
+# 证据产物必须入库：三份报告（Gate 0 / M1 / M2）都把 var/gate0/*.json 写成「原始证据」，
+# 若整个 var/ 被忽略，克隆仓库的人拿到的报告其引用证据一个都不在树里，"可复跑核对"就落空。
+# 只纳入判定与指标本身（JSON/JSONL/CSV，合计约 440K）：
+!var/gate0/
+var/gate0/*
+!var/gate0/*.json
+!var/gate0/*.jsonl
+!var/gate0/*.csv
+# 继续排除：向量物料与重建备份可由权威源重建；fixtures 含真实厂商 PDF 的衍生物，不入库
+*.log
 
 # 环境变量与密钥
 .env

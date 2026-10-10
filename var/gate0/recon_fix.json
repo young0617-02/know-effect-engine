@@ -1,0 +1,17 @@
+{
+  "run_id": "recon-7ccd96290f62",
+  "authoritative_children": 193,
+  "indexed": 192,
+  "missing_in_vector": 1,
+  "extra_in_vector": 0,
+  "dry_run": false,
+  "repair": {
+    "repaired": 1,
+    "extras_deleted": 0,
+    "events": 1
+  },
+  "recheck": {
+    "missing_in_vector": 0,
+    "extra_in_vector": 0
+  }
+}

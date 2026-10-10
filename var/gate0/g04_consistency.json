@@ -1,0 +1,166 @@
+{
+  "env": {
+    "ts": "2026-10-09T16:23:33+08:00",
+    "git_commit": "5bb82f0",
+    "git_dirty": true,
+    "python": "3.12.8",
+    "platform": "Windows 11",
+    "torch": "2.14.0+cu130",
+    "cuda_available": true,
+    "gpu": {
+      "name": "NVIDIA GeForce RTX 4060 Laptop GPU",
+      "total_mib": 8188,
+      "used_mib": 5826.9
+    },
+    "transformers": "5.19.0",
+    "pymilvus": "3.0.2"
+  },
+  "baseline_diff": {
+    "run_id": "g04-baseline",
+    "authoritative_children": 193,
+    "indexed": 193,
+    "missing_in_vector": 0,
+    "extra_in_vector": 0,
+    "missing_ids": [],
+    "extra_ids": [],
+    "per_version": {
+      "chm-closeout-prj-chm-2023-021@v1": 7,
+      "chm-closeout-prj-chm-2024-003@v1": 10,
+      "chm-compliance-prj-chm-2023-021@v1": 10,
+      "chm-ifspec-prj-chm-2024-003@v1": 7,
+      "chm-presale-prj-chm-2025-014@v1": 10,
+      "chm-retro-prj-chm-2024-003@v1": 7,
+      "chm-runbook-prj-chm-2023-021@v1": 8,
+      "chm-runbook-prj-chm-2025-014@v1": 7,
+      "ene-closeout-prj-ene-2024-006@v1": 9,
+      "ene-compliance-prj-ene-2023-019@v1": 9,
+      "ene-ifspec-prj-ene-2024-006@v1": 8,
+      "ene-ifspec-prj-ene-2025-011@v1": 7,
+      "ene-presale-prj-ene-2025-011@v1": 9,
+      "ene-retro-prj-ene-2024-006@v1": 5,
+      "ene-runbook-prj-ene-2023-019@v1": 8,
+      "ene-runbook-prj-ene-2025-011@v1": 5,
+      "fin-closeout-prj-fin-2024-017@v1": 10,
+      "fin-compliance-prj-fin-2025-008@v1": 7,
+      "fin-ifspec-prj-fin-2024-017@v1": 9,
+      "fin-ifspec-prj-fin-2024-033@v1": 8,
+      "fin-presale-prj-fin-2023-041@v1": 9,
+      "fin-presale-prj-fin-2025-008@v1": 8,
+      "fin-retro-prj-fin-2023-041@v1": 8,
+      "fin-runbook-prj-fin-2024-017@v1": 8
+    },
+    "seconds": 0.28
+  },
+  "inject_a": {
+    "versions": [
+      "chm-closeout-prj-chm-2023-021@v2",
+      "chm-closeout-prj-chm-2024-003@v2",
+      "chm-compliance-prj-chm-2023-021@v2"
+    ],
+    "children_total": 27,
+    "planned_missing": 14,
+    "dispatch": {
+      "rounds": [
+        {
+          "round": 1,
+          "dispatched": 3,
+          "failed": 3
+        },
+        {
+          "round": 2,
+          "dispatched": 0,
+          "failed": 3
+        },
+        {
+          "round": 3,
+          "dispatched": 0,
+          "failed": 3
+        }
+      ],
+      "remaining_pending": 3
+    },
+    "seconds": 26.04
+  },
+  "inject_b": {
+    "deleted_from_index": [
+      "chm-closeout-prj-chm-2023-021@chm-closeout-prj-chm-2023-021@v1#1.1#c1",
+      "chm-closeout-prj-chm-2023-021@chm-closeout-prj-chm-2023-021@v1#2.1#c1",
+      "chm-closeout-prj-chm-2023-021@chm-closeout-prj-chm-2023-021@v1#2.1#c2",
+      "chm-closeout-prj-chm-2023-021@chm-closeout-prj-chm-2023-021@v1#3.1#c1",
+      "chm-closeout-prj-chm-2023-021@chm-closeout-prj-chm-2023-021@v1#4.1#c1"
+    ],
+    "n": 5,
+    "version": "chm-closeout-prj-chm-2023-021@v1"
+  },
+  "inject_c": {
+    "bogus_chunk_id": "bogus#orphan#c1"
+  },
+  "detect": {
+    "expected_missing": 19,
+    "expected_by_type": {
+      "A_升版写失败": 14,
+      "B_索引被删": 5
+    },
+    "detected_missing": 19,
+    "detected_extra": 1,
+    "detection_rate": 1.0,
+    "false_positive_missing": [],
+    "extra_detected": true,
+    "sample_missing": [
+      "chm-closeout-prj-chm-2023-021@chm-closeout-prj-chm-2023-021@v1#1.1#c1",
+      "chm-closeout-prj-chm-2023-021@chm-closeout-prj-chm-2023-021@v1#2.1#c1",
+      "chm-closeout-prj-chm-2023-021@chm-closeout-prj-chm-2023-021@v1#2.1#c2",
+      "chm-closeout-prj-chm-2023-021@chm-closeout-prj-chm-2023-021@v1#3.1#c1",
+      "chm-closeout-prj-chm-2023-021@chm-closeout-prj-chm-2023-021@v1#4.1#c1"
+    ],
+    "seconds": 0.25,
+    "run_id": "g04-run1"
+  },
+  "repair": {
+    "repaired": 19,
+    "extras_deleted": 1,
+    "events": 4,
+    "dispatch": {
+      "rounds": [
+        {
+          "round": 1,
+          "dispatched": 7,
+          "failed": 0
+        }
+      ],
+      "remaining_pending": 0
+    },
+    "seconds": 92.63,
+    "recheck": {
+      "missing_in_vector": 0,
+      "extra_in_vector": 0,
+      "authoritative_children": 220,
+      "indexed": 220
+    }
+  },
+  "rollback": {
+    "rolled_back_versions": [
+      "chm-closeout-prj-chm-2023-021@v2",
+      "chm-closeout-prj-chm-2024-003@v2",
+      "chm-compliance-prj-chm-2023-021@v2"
+    ],
+    "final_diff": {
+      "authoritative_children": 193,
+      "indexed": 193,
+      "missing_in_vector": 0,
+      "extra_in_vector": 0
+    }
+  },
+  "outbox_status": {
+    "dispatched": 43
+  },
+  "audit_rows": 24,
+  "audit_immutable": {
+    "blocked": true,
+    "error": "audit_log 为追加表，禁止 UPDATE 操作\nCONTEXT:  PL/pgSQL function kee_forbid_audit_mutation() line 3 at RAISE"
+  },
+  "audit_immutable_delete": {
+    "blocked": true,
+    "error": "audit_log 为追加表，禁止 DELETE 操作\nCONTEXT:  PL/pgSQL function kee_forbid_audit_mutation() line 3 at RAISE"
+  }
+}

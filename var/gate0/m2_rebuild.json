@@ -1,0 +1,98 @@
+{
+  "before": {
+    "chunks": 333,
+    "old_double_prefix": 333,
+    "documents": 24
+  },
+  "build": {
+    "docs_indexed": 24,
+    "parent_chunks": 140,
+    "child_chunks": 193,
+    "milvus_count": 193,
+    "admission": {
+      "total": 24,
+      "accepted": 24,
+      "rejected": 0,
+      "duplicates": 0
+    }
+  },
+  "build_seconds": 289.7,
+  "timings_sec": {
+    "authoritative_write": 4.88,
+    "embed": 1.91,
+    "total": 274.48
+  },
+  "analyzer_collections": {
+    "jieba": {
+      "inserted": 193,
+      "count": 193
+    },
+    "standard": {
+      "inserted": 193,
+      "count": 193
+    },
+    "chinese": {
+      "inserted": 193,
+      "count": 193
+    },
+    "default_none": {
+      "inserted": 193,
+      "count": 193
+    }
+  },
+  "after": {
+    "chunks": 333,
+    "documents": 24
+  },
+  "checks": {
+    "正文逐块不变": {
+      "通过": true,
+      "对齐键数": 333,
+      "键集合相同": true,
+      "内容漂移块数": 0,
+      "样例": [],
+      "页码漂移块数": 0
+    },
+    "chunk-id 命名统一": {
+      "通过": true,
+      "重建前旧双前缀块数": 333,
+      "重建后旧双前缀块数": 0,
+      "不匹配新式命名的块数": 0,
+      "样例": []
+    },
+    "gold 映射等价": {
+      "通过": true,
+      "题数": 70,
+      "gold 漂移题数": 0,
+      "样例": [],
+      "重建后评测集统计": {
+        "n_questions": 70,
+        "n_children": 193,
+        "n_parents": 140,
+        "answerable": 58,
+        "refuse": 7,
+        "escalate": 5,
+        "gradeable": 63,
+        "gold_empty_but_answerable": 0,
+        "unmatched_qids": [],
+        "mean_gold_per_question": 2.6,
+        "by_category": {
+          "术语": 14,
+          "编号": 12,
+          "方案名": 12,
+          "口语化": 14,
+          "跨文档": 6,
+          "无答案": 7,
+          "敏感": 5
+        }
+      }
+    },
+    "索引与权威源一致": {
+      "通过": true,
+      "权威源子块": 193,
+      "分块表子块": 193,
+      "Milvus 条数": 193
+    }
+  },
+  "snapshot_dir": "D:\\project\\know-effect-engine\\var\\gate0\\pre_m2_rebuild"
+}

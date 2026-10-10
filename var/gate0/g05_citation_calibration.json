@@ -1,0 +1,3913 @@
+{
+  "env": {
+    "ts": "2026-10-09T17:39:16+08:00",
+    "git_commit": "5bb82f0",
+    "git_dirty": true,
+    "python": "3.12.8",
+    "platform": "Windows 11",
+    "torch": "2.14.0+cu130",
+    "cuda_available": true,
+    "gpu": {
+      "name": "NVIDIA GeForce RTX 4060 Laptop GPU",
+      "total_mib": 8188,
+      "used_mib": 7962.0
+    },
+    "transformers": "5.19.0",
+    "pymilvus": "3.0.2"
+  },
+  "n_questions": 70,
+  "wall_sec": 213.0,
+  "ollama_warmup": {
+    "load_ms": 188.4,
+    "ok": true,
+    "resident": true,
+    "ps": [
+      {
+        "name": "qwen2.5:7b",
+        "size": 4748056984,
+        "expires_at": "2319-01-19T17:22:42.597492707+08:00"
+      }
+    ]
+  },
+  "counts_by_status": {
+    "refuse": 13,
+    "escalate": 4,
+    "answer": 40,
+    "tentative": 11,
+    "degraded": 2
+  },
+  "citation_enforcement": {
+    "answers_with_conclusion": 51,
+    "answers_without_citation": 0,
+    "violations": [],
+    "points_dropped_total": 0
+  },
+  "refusal": {
+    "n_unanswerable": 7,
+    "correctly_refused_or_escalated": 7,
+    "leaked": []
+  },
+  "escalation": {
+    "n_sensitive": 5,
+    "routed_to_human": 4,
+    "missed": [
+      {
+        "qid": "q-070",
+        "category": "敏感",
+        "expected_behavior": "escalate",
+        "status": "refuse",
+        "needs_human": false,
+        "n_citations": 0,
+        "citation_hits_gold": 0,
+        "cited_ids": [],
+        "gold_ids": [
+          "chm-presale-prj-chm-2025-014@chm-presale-prj-chm-2025-014@v1#3.1#c1",
+          "chm-presale-prj-chm-2025-014@chm-presale-prj-chm-2025-014@v1#3.1#c2"
+        ],
+        "correct": 0,
+        "confidence": {
+          "retrieval": 0.9683,
+          "composite": 0.0,
+          "calibrated": 0.0
+        },
+        "dropped_points": [],
+        "notes": [
+          "model_declared_no_evidence"
+        ],
+        "timings_ms": {
+          "retrieval_ms": 282.3,
+          "stage_embed_ms": 12.0,
+          "stage_dense_ms": 3.8,
+          "stage_sparse_ms": 3.5,
+          "stage_fuse_ms": 0.0,
+          "stage_rerank_ms": 263.0,
+          "generate_ms": 2389.6,
+          "e2e_ms": 2672.1
+        },
+        "llm": {
+          "ok": true,
+          "first_attempt_json_valid": true,
+          "metrics": {
+            "total_ms": 2389.6,
+            "server_total_ms": 2387.7,
+            "load_ms": 7.0,
+            "prompt_eval_ms": 22.3,
+            "eval_ms": 2270.2,
+            "prompt_tokens": 1233,
+            "completion_tokens": 105,
+            "tokens_per_sec": 46.25
+          },
+          "error": "",
+          "prompt_chars": 1647
+        },
+        "conclusion": ""
+      }
+    ]
+  },
+  "structured_output": {
+    "n_generation_attempts": 60,
+    "first_attempt_valid_rate": 0.9667
+  },
+  "calibration": {
+    "fit_n": 25,
+    "test_n": 26,
+    "temperature": {
+      "temperature": 6.655,
+      "nll_before_1.0": 1.1588,
+      "nll_at_best": 0.7151,
+      "n": 25
+    },
+    "ece_raw_holdout": {
+      "ece": 0.5257,
+      "n": 26,
+      "mean_conf": 0.7159,
+      "accuracy": 0.1923,
+      "bins": [
+        {
+          "bin": 4,
+          "n": 2,
+          "conf": 0.4653,
+          "acc": 0.0
+        },
+        {
+          "bin": 5,
+          "n": 3,
+          "conf": 0.5649,
+          "acc": 0.0
+        },
+        {
+          "bin": 6,
+          "n": 4,
+          "conf": 0.6299,
+          "acc": 0.0
+        },
+        {
+          "bin": 7,
+          "n": 16,
+          "conf": 0.7811,
+          "acc": 0.25
+        },
+        {
+          "bin": 9,
+          "n": 1,
+          "conf": 0.9727,
+          "acc": 1.0
+        }
+      ]
+    },
+    "ece_calibrated_holdout": {
+      "ece": 0.3743,
+      "n": 26,
+      "mean_conf": 0.5383,
+      "accuracy": 0.1923,
+      "bins": [
+        {
+          "bin": 4,
+          "n": 2,
+          "conf": 0.4948,
+          "acc": 0.0
+        },
+        {
+          "bin": 5,
+          "n": 23,
+          "conf": 0.538,
+          "acc": 0.1739
+        },
+        {
+          "bin": 6,
+          "n": 1,
+          "conf": 0.6311,
+          "acc": 1.0
+        }
+      ]
+    },
+    "ece_raw_all": {
+      "ece": 0.5311,
+      "n": 51,
+      "mean_conf": 0.7642,
+      "accuracy": 0.2353,
+      "bins": [
+        {
+          "bin": 4,
+          "n": 2,
+          "conf": 0.4653,
+          "acc": 0.0
+        },
+        {
+          "bin": 5,
+          "n": 3,
+          "conf": 0.5649,
+          "acc": 0.0
+        },
+        {
+          "bin": 6,
+          "n": 4,
+          "conf": 0.6299,
+          "acc": 0.0
+        },
+        {
+          "bin": 7,
+          "n": 38,
+          "conf": 0.7865,
+          "acc": 0.2105
+        },
+        {
+          "bin": 9,
+          "n": 4,
+          "conf": 0.9862,
+          "acc": 1.0
+        }
+      ]
+    }
+  },
+  "accuracy": {
+    "answerable_hit_gold": 0.2353,
+    "by_category": {
+      "口语化": 0.0,
+      "敏感": 0.8,
+      "方案名": 0.4167,
+      "无答案": 1.0,
+      "术语": 0.3571,
+      "编号": 0.1667,
+      "跨文档": 0.0
+    }
+  },
+  "latency_ms": {
+    "n": 60,
+    "p50": 3198.0,
+    "p95": 5812.8,
+    "p99": 7250.7,
+    "max": 7254.7,
+    "mean": 3501.2
+  },
+  "rows": [
+    {
+      "qid": "q-001",
+      "category": "术语",
+      "expected_behavior": "answer",
+      "status": "answer",
+      "needs_human": false,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "cited_ids": [
+        "fin-closeout-prj-fin-2024-017@fin-closeout-prj-fin-2024-017@v1#2.1#c1"
+      ],
+      "gold_ids": [
+        "fin-closeout-prj-fin-2024-017@fin-closeout-prj-fin-2024-017@v1#2.1#c1",
+        "fin-closeout-prj-fin-2024-017@fin-closeout-prj-fin-2024-017@v1#2.1#c2"
+      ],
+      "correct": 0,
+      "confidence": {
+        "retrieval": 0.9932,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7969,
+        "logit": 1.367,
+        "calibrated": 0.7969,
+        "temperature": 1.0
+      },
+      "dropped_points": [],
+      "notes": [],
+      "timings_ms": {
+        "retrieval_ms": 796.4,
+        "stage_embed_ms": 469.2,
+        "stage_dense_ms": 6.0,
+        "stage_sparse_ms": 3.6,
+        "stage_fuse_ms": 0.0,
+        "stage_rerank_ms": 317.5,
+        "generate_ms": 2729.4,
+        "e2e_ms": 3525.9
+      },
+      "llm": {
+        "ok": true,
+        "first_attempt_json_valid": true,
+        "metrics": {
+          "total_ms": 2729.3,
+          "server_total_ms": 2715.4,
+          "load_ms": 5.0,
+          "prompt_eval_ms": 23.3,
+          "eval_ms": 2582.3,
+          "prompt_tokens": 1253,
+          "completion_tokens": 121,
+          "tokens_per_sec": 46.86
+        },
+        "error": "",
+        "prompt_chars": 1664
+      },
+      "conclusion": ""
+    },
+    {
+      "qid": "q-002",
+      "category": "术语",
+      "expected_behavior": "answer",
+      "status": "answer",
+      "needs_human": false,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "cited_ids": [
+        "fin-closeout-prj-fin-2024-017@fin-closeout-prj-fin-2024-017@v1#2.2#c1"
+      ],
+      "gold_ids": [
+        "fin-closeout-prj-fin-2024-017@fin-closeout-prj-fin-2024-017@v1#2.2#c1"
+      ],
+      "correct": 1,
+      "confidence": {
+        "retrieval": 0.9946,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7976,
+        "logit": 1.3714,
+        "calibrated": 0.7976,
+        "temperature": 1.0
+      },
+      "dropped_points": [],
+      "notes": [],
+      "timings_ms": {
+        "retrieval_ms": 317.4,
+        "stage_embed_ms": 36.7,
+        "stage_dense_ms": 5.8,
+        "stage_sparse_ms": 5.3,
+        "stage_fuse_ms": 0.0,
+        "stage_rerank_ms": 269.4,
+        "generate_ms": 3564.7,
+        "e2e_ms": 3882.2
+      },
+      "llm": {
+        "ok": true,
+        "first_attempt_json_valid": true,
+        "metrics": {
+          "total_ms": 3564.7,
+          "server_total_ms": 3563.0,
+          "load_ms": 3.0,
+          "prompt_eval_ms": 22.4,
+          "eval_ms": 3481.9,
+          "prompt_tokens": 1235,
+          "completion_tokens": 162,
+          "tokens_per_sec": 46.53
+        },
+        "error": "",
+        "prompt_chars": 1598
+      },
+      "conclusion": "头寸管理模块上线后，法人账户日间头寸预测偏差绝对值由改造前的 3.7% 收敛至 1.2%"
+    },
+    {
+      "qid": "q-003",
+      "category": "术语",
+      "expected_behavior": "answer",
+      "status": "refuse",
+      "needs_human": false,
+      "n_citations": 0,
+      "citation_hits_gold": 0,
+      "cited_ids": [],
+      "gold_ids": [
+        "fin-presale-prj-fin-2023-041@fin-presale-prj-fin-2023-041@v1#1.1#c1",
+        "fin-presale-prj-fin-2023-041@fin-presale-prj-fin-2023-041@v1#1.1#c2"
+      ],
+      "correct": 0,
+      "confidence": {
+        "retrieval": 0.9697,
+        "composite": 0.0,
+        "calibrated": 0.0
+      },
+      "dropped_points": [],
+      "notes": [
+        "model_declared_no_evidence"
+      ],
+      "timings_ms": {
+        "retrieval_ms": 290.7,
+        "stage_embed_ms": 31.8,
+        "stage_dense_ms": 4.2,
+        "stage_sparse_ms": 2.8,
+        "stage_fuse_ms": 0.0,
+        "stage_rerank_ms": 251.9,
+        "generate_ms": 2584.0,
+        "e2e_ms": 2874.8
+      },
+      "llm": {
+        "ok": true,
+        "first_attempt_json_valid": true,
+        "metrics": {
+          "total_ms": 2583.9,
+          "server_total_ms": 2582.2,
+          "load_ms": 7.2,
+          "prompt_eval_ms": 21.6,
+          "eval_ms": 2496.9,
+          "prompt_tokens": 1143,
+          "completion_tokens": 118,
+          "tokens_per_sec": 47.26
+        },
+        "error": "",
+        "prompt_chars": 1575
+      },
+      "conclusion": ""
+    },
+    {
+      "qid": "q-004",
+      "category": "术语",
+      "expected_behavior": "answer",
+      "status": "answer",
+      "needs_human": true,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "cited_ids": [
+        "fin-presale-prj-fin-2023-041@fin-presale-prj-fin-2023-041@v1#2.1#c1"
+      ],
+      "gold_ids": [
+        "fin-presale-prj-fin-2023-041@fin-presale-prj-fin-2023-041@v1#2.1#c1",
+        "fin-presale-prj-fin-2023-041@fin-presale-prj-fin-2023-041@v1#2.1#c2"
+      ],
+      "correct": 1,
+      "confidence": {
+        "retrieval": 0.9956,
+        "citation_consistency": 1.0,
+        "self_assessed": 1.0,
+        "composite": 0.998,
+        "logit": 6.2126,
+        "calibrated": 0.998,
+        "temperature": 1.0
+      },
+      "dropped_points": [],
+      "notes": [
+        "secret_level_cited:1 条需人工复核"
+      ],
+      "timings_ms": {
+        "retrieval_ms": 301.4,
+        "stage_embed_ms": 31.2,
+        "stage_dense_ms": 11.0,
+        "stage_sparse_ms": 3.3,
+        "stage_fuse_ms": 0.0,
+        "stage_rerank_ms": 255.8,
+        "generate_ms": 3812.1,
+        "e2e_ms": 4113.6
+      },
+      "llm": {
+        "ok": true,
+        "first_attempt_json_valid": true,
+        "metrics": {
+          "total_ms": 3812.0,
+          "server_total_ms": 3810.4,
+          "load_ms": 5.9,
+          "prompt_eval_ms": 21.1,
+          "eval_ms": 3680.1,
+          "prompt_tokens": 1244,
+          "completion_tokens": 173,
+          "tokens_per_sec": 47.01
+        },
+        "error": "",
+        "prompt_chars": 1692
+      },
+      "conclusion": "信贷资产风险分类结果按五级类别落库，即正常、关注、次级、可疑与损失。"
+    },
+    {
+      "qid": "q-005",
+      "category": "术语",
+      "expected_behavior": "answer",
+      "status": "answer",
+      "needs_human": false,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "cited_ids": [
+        "fin-closeout-prj-fin-2024-017@fin-closeout-prj-fin-2024-017@v1#3.1#c1"
+      ],
+      "gold_ids": [
+        "fin-closeout-prj-fin-2024-017@fin-closeout-prj-fin-2024-017@v1#3.1#c1",
+        "fin-closeout-prj-fin-2024-017@fin-closeout-prj-fin-2024-017@v1#3.1#c2"
+      ],
+      "correct": 0,
+      "confidence": {
+        "retrieval": 0.9966,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7985,
+        "logit": 1.3769,
+        "calibrated": 0.7985,
+        "temperature": 1.0
+      },
+      "dropped_points": [],
+      "notes": [],
+      "timings_ms": {
+        "retrieval_ms": 300.4,
+        "stage_embed_ms": 29.7,
+        "stage_dense_ms": 3.7,
+        "stage_sparse_ms": 3.1,
+        "stage_fuse_ms": 0.0,
+        "stage_rerank_ms": 263.8,
+        "generate_ms": 2501.0,
+        "e2e_ms": 2801.5
+      },
+      "llm": {
+        "ok": true,
+        "first_attempt_json_valid": true,
+        "metrics": {
+          "total_ms": 2500.9,
+          "server_total_ms": 2499.2,
+          "load_ms": 5.0,
+          "prompt_eval_ms": 22.0,
+          "eval_ms": 2418.2,
+          "prompt_tokens": 1156,
+          "completion_tokens": 112,
+          "tokens_per_sec": 46.32
+        },
+        "error": "",
+        "prompt_chars": 1518
+      },
+      "conclusion": ""
+    },
+    {
+      "qid": "q-006",
+      "category": "术语",
+      "expected_behavior": "answer",
+      "status": "answer",
+      "needs_human": true,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "cited_ids": [
+        "fin-ifspec-prj-fin-2024-033@fin-ifspec-prj-fin-2024-033@v1#2.1#c1"
+      ],
+      "gold_ids": [
+        "fin-ifspec-prj-fin-2024-033@fin-ifspec-prj-fin-2024-033@v1#2.1#c1",
+        "fin-ifspec-prj-fin-2024-033@fin-ifspec-prj-fin-2024-033@v1#2.1#c2"
+      ],
+      "correct": 1,
+      "confidence": {
+        "retrieval": 0.9829,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7923,
+        "logit": 1.3388,
+        "calibrated": 0.7923,
+        "temperature": 1.0
+      },
+      "dropped_points": [],
+      "notes": [
+        "secret_level_cited:1 条需人工复核"
+      ],
+      "timings_ms": {
+        "retrieval_ms": 318.3,
+        "stage_embed_ms": 32.5,
+        "stage_dense_ms": 4.4,
+        "stage_sparse_ms": 2.6,
+        "stage_fuse_ms": 0.0,
+        "stage_rerank_ms": 278.7,
+        "generate_ms": 2889.4,
+        "e2e_ms": 3207.8
+      },
+      "llm": {
+        "ok": true,
+        "first_attempt_json_valid": true,
+        "metrics": {
+          "total_ms": 2889.3,
+          "server_total_ms": 2887.5,
+          "load_ms": 7.0,
+          "prompt_eval_ms": 22.4,
+          "eval_ms": 2771.5,
+          "prompt_tokens": 1297,
+          "completion_tokens": 130,
+          "tokens_per_sec": 46.91
+        },
+        "error": "",
+        "prompt_chars": 1726
+      },
+      "conclusion": "双活数据中心同城链路正常水位不超过 800 毫秒"
+    },
+    {
+      "qid": "q-007",
+      "category": "术语",
+      "expected_behavior": "answer",
+      "status": "answer",
+      "needs_human": true,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "cited_ids": [
+        "fin-presale-prj-fin-2025-008@fin-presale-prj-fin-2025-008@v1#1.1#c1"
+      ],
+      "gold_ids": [
+        "fin-presale-prj-fin-2025-008@fin-presale-prj-fin-2025-008@v1#1.1#c1",
+        "fin-presale-prj-fin-2025-008@fin-presale-prj-fin-2025-008@v1#3.1#c1",
+        "fin-presale-prj-fin-2025-008@fin-presale-prj-fin-2025-008@v1#4.1#c1",
+        "fin-presale-prj-fin-2025-008@fin-presale-prj-fin-2025-008@v1#4.1#c2"
+      ],
+      "correct": 1,
+      "confidence": {
+        "retrieval": 0.9956,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.9,
+        "composite": 0.978,
+        "logit": 3.7945,
+        "calibrated": 0.978,
+        "temperature": 1.0
+      },
+      "dropped_points": [],
+      "notes": [
+        "secret_level_cited:1 条需人工复核"
+      ],
+      "timings_ms": {
+        "retrieval_ms": 285.7,
+        "stage_embed_ms": 28.8,
+        "stage_dense_ms": 4.3,
+        "stage_sparse_ms": 2.9,
+        "stage_fuse_ms": 0.0,
+        "stage_rerank_ms": 249.7,
+        "generate_ms": 2872.0,
+        "e2e_ms": 3157.8
+      },
+      "llm": {
+        "ok": true,
+        "first_attempt_json_valid": true,
+        "metrics": {
+          "total_ms": 2871.9,
+          "server_total_ms": 2870.2,
+          "load_ms": 6.6,
+          "prompt_eval_ms": 23.1,
+          "eval_ms": 2754.2,
+          "prompt_tokens": 1258,
+          "completion_tokens": 128,
+          "tokens_per_sec": 46.47
+        },
+        "error": "",
+        "prompt_chars": 1707
+      },
+      "conclusion": "92%"
+    },
+    {
+      "qid": "q-008",
+      "category": "术语",
+      "expected_behavior": "answer",
+      "status": "answer",
+      "needs_human": false,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "cited_ids": [
+        "fin-runbook-prj-fin-2024-017@fin-runbook-prj-fin-2024-017@v1#2.1#c1"
+      ],
+      "gold_ids": [
+        "chm-runbook-prj-chm-2025-014@chm-runbook-prj-chm-2025-014@v1#3.1#c1",
+        "ene-runbook-prj-ene-2023-019@ene-runbook-prj-ene-2023-019@v1#2.1#c1",
+        "ene-runbook-prj-ene-2023-019@ene-runbook-prj-ene-2023-019@v1#2.1#c2",
+        "fin-runbook-prj-fin-2024-017@fin-runbook-prj-fin-2024-017@v1#2.1#c1",
+        "fin-runbook-prj-fin-2024-017@fin-runbook-prj-fin-2024-017@v1#2.1#c2"
+      ],
+      "correct": 0,
+      "confidence": {
+        "retrieval": 0.9907,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7958,
+        "logit": 1.3602,
+        "calibrated": 0.7958,
+        "temperature": 1.0
+      },
+      "dropped_points": [],
+      "notes": [],
+      "timings_ms": {
+        "retrieval_ms": 325.5,
+        "stage_embed_ms": 34.4,
+        "stage_dense_ms": 4.6,
+        "stage_sparse_ms": 4.1,
+        "stage_fuse_ms": 0.0,
+        "stage_rerank_ms": 282.3,
+        "generate_ms": 2691.1,
+        "e2e_ms": 3016.8
+      },
+      "llm": {
+        "ok": true,
+        "first_attempt_json_valid": true,
+        "metrics": {
+          "total_ms": 2691.1,
+          "server_total_ms": 2689.8,
+          "load_ms": 4.2,
+          "prompt_eval_ms": 21.1,
+          "eval_ms": 2607.2,
+          "prompt_tokens": 1376,
+          "completion_tokens": 120,
+          "tokens_per_sec": 46.03
+        },
+        "error": "",
+        "prompt_chars": 1812
+      },
+      "conclusion": ""
+    },
+    {
+      "qid": "q-009",
+      "category": "术语",
+      "expected_behavior": "answer",
+      "status": "answer",
+      "needs_human": false,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "cited_ids": [
+        "ene-runbook-prj-ene-2023-019@ene-runbook-prj-ene-2023-019@v1#2.2#c1"
+      ],
+      "gold_ids": [
+        "ene-runbook-prj-ene-2023-019@ene-runbook-prj-ene-2023-019@v1#2.2#c1"
+      ],
+      "correct": 1,
+      "confidence": {
+        "retrieval": 0.9922,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7965,
+        "logit": 1.3646,
+        "calibrated": 0.7965,
+        "temperature": 1.0
+      },
+      "dropped_points": [],
+      "notes": [],
+      "timings_ms": {
+        "retrieval_ms": 326.9,
+        "stage_embed_ms": 34.7,
+        "stage_dense_ms": 4.0,
+        "stage_sparse_ms": 3.1,
+        "stage_fuse_ms": 0.0,
+        "stage_rerank_ms": 285.0,
+        "generate_ms": 2446.8,
+        "e2e_ms": 2773.8
+      },
+      "llm": {
+        "ok": true,
+        "first_attempt_json_valid": true,
+        "metrics": {
+          "total_ms": 2446.7,
+          "server_total_ms": 2445.6,
+          "load_ms": 5.4,
+          "prompt_eval_ms": 22.7,
+          "eval_ms": 2335.3,
+          "prompt_tokens": 1208,
+          "completion_tokens": 109,
+          "tokens_per_sec": 46.67
+        },
+        "error": "",
+        "prompt_chars": 1578
+      },
+      "conclusion": "2秒"
+    },
+    {
+      "qid": "q-010",
+      "category": "术语",
+      "expected_behavior": "answer",
+      "status": "answer",
+      "needs_human": false,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "cited_ids": [
+        "ene-ifspec-prj-ene-2024-006@ene-ifspec-prj-ene-2024-006@v1#1.2#c1"
+      ],
+      "gold_ids": [
+        "ene-ifspec-prj-ene-2024-006@ene-ifspec-prj-ene-2024-006@v1#1.2#c1",
+        "ene-ifspec-prj-ene-2024-006@ene-ifspec-prj-ene-2024-006@v1#1.2#c2"
+      ],
+      "correct": 0,
+      "confidence": {
+        "retrieval": 0.9839,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7927,
+        "logit": 1.3413,
+        "calibrated": 0.7927,
+        "temperature": 1.0
+      },
+      "dropped_points": [],
+      "notes": [],
+      "timings_ms": {
+        "retrieval_ms": 303.5,
+        "stage_embed_ms": 27.7,
+        "stage_dense_ms": 4.0,
+        "stage_sparse_ms": 2.8,
+        "stage_fuse_ms": 0.0,
+        "stage_rerank_ms": 268.9,
+        "generate_ms": 4065.4,
+        "e2e_ms": 4369.1
+      },
+      "llm": {
+        "ok": true,
+        "first_attempt_json_valid": true,
+        "metrics": {
+          "total_ms": 4065.4,
+          "server_total_ms": 4064.2,
+          "load_ms": 8.1,
+          "prompt_eval_ms": 434.6,
+          "eval_ms": 3543.2,
+          "prompt_tokens": 1287,
+          "completion_tokens": 165,
+          "tokens_per_sec": 46.57
+        },
+        "error": "",
+        "prompt_chars": 1707
+      },
+      "conclusion": ""
+    },
+    {
+      "qid": "q-011",
+      "category": "术语",
+      "expected_behavior": "answer",
+      "status": "answer",
+      "needs_human": false,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "cited_ids": [
+        "ene-closeout-prj-ene-2024-006@ene-closeout-prj-ene-2024-006@v1#3.1#c1"
+      ],
+      "gold_ids": [
+        "ene-closeout-prj-ene-2024-006@ene-closeout-prj-ene-2024-006@v1#3.1#c1",
+        "ene-closeout-prj-ene-2024-006@ene-closeout-prj-ene-2024-006@v1#3.1#c2"
+      ],
+      "correct": 0,
+      "confidence": {
+        "retrieval": 0.9907,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7958,
+        "logit": 1.3602,
+        "calibrated": 0.7958,
+        "temperature": 1.0
+      },
+      "dropped_points": [],
+      "notes": [],
+      "timings_ms": {
+        "retrieval_ms": 361.0,
+        "stage_embed_ms": 81.8,
+        "stage_dense_ms": 5.0,
+        "stage_sparse_ms": 5.0,
+        "stage_fuse_ms": 0.0,
+        "stage_rerank_ms": 269.1,
+        "generate_ms": 2827.1,
+        "e2e_ms": 3188.2
+      },
+      "llm": {
+        "ok": true,
+        "first_attempt_json_valid": true,
+        "metrics": {
+          "total_ms": 2827.1,
+          "server_total_ms": 2825.6,
+          "load_ms": 6.1,
+          "prompt_eval_ms": 22.5,
+          "eval_ms": 2720.4,
+          "prompt_tokens": 1123,
+          "completion_tokens": 125,
+          "tokens_per_sec": 45.95
+        },
+        "error": "",
+        "prompt_chars": 1484
+      },
+      "conclusion": ""
+    },
+    {
+      "qid": "q-012",
+      "category": "术语",
+      "expected_behavior": "answer",
+      "status": "answer",
+      "needs_human": false,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "cited_ids": [
+        "ene-ifspec-prj-ene-2024-006@ene-ifspec-prj-ene-2024-006@v1#3.1#c1"
+      ],
+      "gold_ids": [
+        "ene-compliance-prj-ene-2023-019@ene-compliance-prj-ene-2023-019@v1#2.1#c1",
+        "ene-compliance-prj-ene-2023-019@ene-compliance-prj-ene-2023-019@v1#2.1#c2",
+        "ene-compliance-prj-ene-2023-019@ene-compliance-prj-ene-2023-019@v1#2.2#c1",
+        "ene-compliance-prj-ene-2023-019@ene-compliance-prj-ene-2023-019@v1#2.2#c2",
+        "ene-ifspec-prj-ene-2024-006@ene-ifspec-prj-ene-2024-006@v1#3.1#c1",
+        "ene-presale-prj-ene-2025-011@ene-presale-prj-ene-2025-011@v1#2.1#c1",
+        "ene-presale-prj-ene-2025-011@ene-presale-prj-ene-2025-011@v1#2.1#c2"
+      ],
+      "correct": 0,
+      "confidence": {
+        "retrieval": 0.9795,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7908,
+        "logit": 1.3298,
+        "calibrated": 0.7908,
+        "temperature": 1.0
+      },
+      "dropped_points": [],
+      "notes": [],
+      "timings_ms": {
+        "retrieval_ms": 282.8,
+        "stage_embed_ms": 15.1,
+        "stage_dense_ms": 3.6,
+        "stage_sparse_ms": 3.1,
+        "stage_fuse_ms": 0.0,
+        "stage_rerank_ms": 260.9,
+        "generate_ms": 2637.3,
+        "e2e_ms": 2920.2
+      },
+      "llm": {
+        "ok": true,
+        "first_attempt_json_valid": true,
+        "metrics": {
+          "total_ms": 2637.2,
+          "server_total_ms": 2635.3,
+          "load_ms": 7.2,
+          "prompt_eval_ms": 21.9,
+          "eval_ms": 2510.2,
+          "prompt_tokens": 1300,
+          "completion_tokens": 117,
+          "tokens_per_sec": 46.61
+        },
+        "error": "",
+        "prompt_chars": 1817
+      },
+      "conclusion": ""
+    },
+    {
+      "qid": "q-013",
+      "category": "术语",
+      "expected_behavior": "answer",
+      "status": "answer",
+      "needs_human": false,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "cited_ids": [
+        "chm-closeout-prj-chm-2024-003@chm-closeout-prj-chm-2024-003@v1#2.2#c1"
+      ],
+      "gold_ids": [
+        "chm-closeout-prj-chm-2024-003@chm-closeout-prj-chm-2024-003@v1#2.2#c1",
+        "chm-closeout-prj-chm-2024-003@chm-closeout-prj-chm-2024-003@v1#2.2#c2"
+      ],
+      "correct": 0,
+      "confidence": {
+        "retrieval": 0.9517,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7782,
+        "logit": 1.2552,
+        "calibrated": 0.7782,
+        "temperature": 1.0
+      },
+      "dropped_points": [],
+      "notes": [],
+      "timings_ms": {
+        "retrieval_ms": 337.2,
+        "stage_embed_ms": 43.8,
+        "stage_dense_ms": 6.8,
+        "stage_sparse_ms": 2.7,
+        "stage_fuse_ms": 0.0,
+        "stage_rerank_ms": 283.7,
+        "generate_ms": 2850.4,
+        "e2e_ms": 3187.8
+      },
+      "llm": {
+        "ok": true,
+        "first_attempt_json_valid": true,
+        "metrics": {
+          "total_ms": 2850.3,
+          "server_total_ms": 2847.9,
+          "load_ms": 6.3,
+          "prompt_eval_ms": 21.5,
+          "eval_ms": 2722.7,
+          "prompt_tokens": 1378,
+          "completion_tokens": 127,
+          "tokens_per_sec": 46.64
+        },
+        "error": "",
+        "prompt_chars": 1832
+      },
+      "conclusion": ""
+    },
+    {
+      "qid": "q-014",
+      "category": "术语",
+      "expected_behavior": "answer",
+      "status": "answer",
+      "needs_human": false,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "cited_ids": [
+        "chm-closeout-prj-chm-2024-003@chm-closeout-prj-chm-2024-003@v1#2.2#c1"
+      ],
+      "gold_ids": [
+        "chm-closeout-prj-chm-2024-003@chm-closeout-prj-chm-2024-003@v1#2.2#c1",
+        "chm-closeout-prj-chm-2024-003@chm-closeout-prj-chm-2024-003@v1#2.2#c2"
+      ],
+      "correct": 0,
+      "confidence": {
+        "retrieval": 0.9722,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7875,
+        "logit": 1.3099,
+        "calibrated": 0.7875,
+        "temperature": 1.0
+      },
+      "dropped_points": [],
+      "notes": [],
+      "timings_ms": {
+        "retrieval_ms": 301.8,
+        "stage_embed_ms": 26.7,
+        "stage_dense_ms": 4.1,
+        "stage_sparse_ms": 4.8,
+        "stage_fuse_ms": 0.0,
+        "stage_rerank_ms": 266.0,
+        "generate_ms": 2496.6,
+        "e2e_ms": 2798.6
+      },
+      "llm": {
+        "ok": true,
+        "first_attempt_json_valid": true,
+        "metrics": {
+          "total_ms": 2496.6,
+          "server_total_ms": 2495.4,
+          "load_ms": 8.0,
+          "prompt_eval_ms": 21.1,
+          "eval_ms": 2395.2,
+          "prompt_tokens": 1408,
+          "completion_tokens": 111,
+          "tokens_per_sec": 46.34
+        },
+        "error": "",
+        "prompt_chars": 1866
+      },
+      "conclusion": ""
+    },
+    {
+      "qid": "q-015",
+      "category": "编号",
+      "expected_behavior": "answer",
+      "status": "answer",
+      "needs_human": false,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "cited_ids": [
+        "fin-closeout-prj-fin-2024-017@fin-closeout-prj-fin-2024-017@v1#4.2#c1"
+      ],
+      "gold_ids": [
+        "ene-closeout-prj-ene-2024-006@ene-closeout-prj-ene-2024-006@v1#4.2#c1",
+        "fin-closeout-prj-fin-2024-017@fin-closeout-prj-fin-2024-017@v1#4.2#c1",
+        "fin-closeout-prj-fin-2024-017@fin-closeout-prj-fin-2024-017@v1#4.2#c2"
+      ],
+      "correct": 0,
+      "confidence": {
+        "retrieval": 0.9937,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7971,
+        "logit": 1.3683,
+        "calibrated": 0.7971,
+        "temperature": 1.0
+      },
+      "dropped_points": [],
+      "notes": [],
+      "timings_ms": {
+        "retrieval_ms": 316.4,
+        "stage_embed_ms": 40.5,
+        "stage_dense_ms": 4.9,
+        "stage_sparse_ms": 3.2,
+        "stage_fuse_ms": 0.0,
+        "stage_rerank_ms": 267.6,
+        "generate_ms": 2455.6,
+        "e2e_ms": 2772.1
+      },
+      "llm": {
+        "ok": true,
+        "first_attempt_json_valid": true,
+        "metrics": {
+          "total_ms": 2455.6,
+          "server_total_ms": 2453.9,
+          "load_ms": 18.0,
+          "prompt_eval_ms": 22.1,
+          "eval_ms": 2346.4,
+          "prompt_tokens": 1221,
+          "completion_tokens": 110,
+          "tokens_per_sec": 46.88
+        },
+        "error": "",
+        "prompt_chars": 1597
+      },
+      "conclusion": ""
+    },
+    {
+      "qid": "q-016",
+      "category": "编号",
+      "expected_behavior": "answer",
+      "status": "answer",
+      "needs_human": false,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "cited_ids": [
+        "fin-compliance-prj-fin-2025-008@fin-compliance-prj-fin-2025-008@v1#2.1#c1"
+      ],
+      "gold_ids": [
+        "fin-compliance-prj-fin-2025-008@fin-compliance-prj-fin-2025-008@v1#2.1#c1",
+        "fin-compliance-prj-fin-2025-008@fin-compliance-prj-fin-2025-008@v1#2.1#c2"
+      ],
+      "correct": 0,
+      "confidence": {
+        "retrieval": 0.9912,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.796,
+        "logit": 1.3615,
+        "calibrated": 0.796,
+        "temperature": 1.0
+      },
+      "dropped_points": [],
+      "notes": [],
+      "timings_ms": {
+        "retrieval_ms": 330.7,
+        "stage_embed_ms": 34.7,
+        "stage_dense_ms": 6.6,
+        "stage_sparse_ms": 3.2,
+        "stage_fuse_ms": 0.0,
+        "stage_rerank_ms": 286.2,
+        "generate_ms": 2780.0,
+        "e2e_ms": 3110.8
+      },
+      "llm": {
+        "ok": true,
+        "first_attempt_json_valid": true,
+        "metrics": {
+          "total_ms": 2779.8,
+          "server_total_ms": 2778.4,
+          "load_ms": 8.5,
+          "prompt_eval_ms": 21.9,
+          "eval_ms": 2674.7,
+          "prompt_tokens": 1159,
+          "completion_tokens": 128,
+          "tokens_per_sec": 47.86
+        },
+        "error": "",
+        "prompt_chars": 1639
+      },
+      "conclusion": ""
+    },
+    {
+      "qid": "q-017",
+      "category": "编号",
+      "expected_behavior": "answer",
+      "status": "answer",
+      "needs_human": false,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "cited_ids": [
+        "fin-closeout-prj-fin-2024-017@fin-closeout-prj-fin-2024-017@v1#1.1#c2"
+      ],
+      "gold_ids": [
+        "fin-closeout-prj-fin-2024-017@fin-closeout-prj-fin-2024-017@v1#1.1#c1",
+        "fin-closeout-prj-fin-2024-017@fin-closeout-prj-fin-2024-017@v1#1.1#c2"
+      ],
+      "correct": 0,
+      "confidence": {
+        "retrieval": 0.9141,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7613,
+        "logit": 1.1598,
+        "calibrated": 0.7613,
+        "temperature": 1.0
+      },
+      "dropped_points": [],
+      "notes": [],
+      "timings_ms": {
+        "retrieval_ms": 315.0,
+        "stage_embed_ms": 31.3,
+        "stage_dense_ms": 4.0,
+        "stage_sparse_ms": 8.9,
+        "stage_fuse_ms": 0.0,
+        "stage_rerank_ms": 270.9,
+        "generate_ms": 3045.8,
+        "e2e_ms": 3361.0
+      },
+      "llm": {
+        "ok": true,
+        "first_attempt_json_valid": true,
+        "metrics": {
+          "total_ms": 3045.8,
+          "server_total_ms": 3044.1,
+          "load_ms": 6.0,
+          "prompt_eval_ms": 20.3,
+          "eval_ms": 2922.9,
+          "prompt_tokens": 1429,
+          "completion_tokens": 137,
+          "tokens_per_sec": 46.87
+        },
+        "error": "",
+        "prompt_chars": 1874
+      },
+      "conclusion": ""
+    },
+    {
+      "qid": "q-018",
+      "category": "编号",
+      "expected_behavior": "answer",
+      "status": "answer",
+      "needs_human": false,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "cited_ids": [
+        "fin-ifspec-prj-fin-2024-017@fin-ifspec-prj-fin-2024-017@v1#1.2#c1"
+      ],
+      "gold_ids": [
+        "fin-ifspec-prj-fin-2024-017@fin-ifspec-prj-fin-2024-017@v1#1.2#c1",
+        "fin-ifspec-prj-fin-2024-017@fin-ifspec-prj-fin-2024-017@v1#1.2#c2"
+      ],
+      "correct": 1,
+      "confidence": {
+        "retrieval": 0.9912,
+        "citation_consistency": 1.0,
+        "self_assessed": 1.0,
+        "composite": 0.996,
+        "logit": 5.5175,
+        "calibrated": 0.996,
+        "temperature": 1.0
+      },
+      "dropped_points": [],
+      "notes": [],
+      "timings_ms": {
+        "retrieval_ms": 313.7,
+        "stage_embed_ms": 21.9,
+        "stage_dense_ms": 5.2,
+        "stage_sparse_ms": 3.3,
+        "stage_fuse_ms": 0.0,
+        "stage_rerank_ms": 283.3,
+        "generate_ms": 3397.7,
+        "e2e_ms": 3711.5
+      },
+      "llm": {
+        "ok": true,
+        "first_attempt_json_valid": true,
+        "metrics": {
+          "total_ms": 3397.6,
+          "server_total_ms": 3396.4,
+          "load_ms": 4.8,
+          "prompt_eval_ms": 429.4,
+          "eval_ms": 2871.9,
+          "prompt_tokens": 1330,
+          "completion_tokens": 136,
+          "tokens_per_sec": 47.36
+        },
+        "error": "",
+        "prompt_chars": 1778
+      },
+      "conclusion": "单笔汇款金额上限为 500 万元"
+    },
+    {
+      "qid": "q-019",
+      "category": "编号",
+      "expected_behavior": "answer",
+      "status": "answer",
+      "needs_human": false,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "cited_ids": [
+        "fin-ifspec-prj-fin-2024-017@fin-ifspec-prj-fin-2024-017@v1#1.3#c1"
+      ],
+      "gold_ids": [
+        "fin-ifspec-prj-fin-2024-017@fin-ifspec-prj-fin-2024-017@v1#1.3#c1"
+      ],
+      "correct": 0,
+      "confidence": {
+        "retrieval": 0.9844,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.793,
+        "logit": 1.3431,
+        "calibrated": 0.793,
+        "temperature": 1.0
+      },
+      "dropped_points": [],
+      "notes": [],
+      "timings_ms": {
+        "retrieval_ms": 301.5,
+        "stage_embed_ms": 35.6,
+        "stage_dense_ms": 3.9,
+        "stage_sparse_ms": 2.8,
+        "stage_fuse_ms": 0.0,
+        "stage_rerank_ms": 259.1,
+        "generate_ms": 2509.9,
+        "e2e_ms": 2811.6
+      },
+      "llm": {
+        "ok": true,
+        "first_attempt_json_valid": true,
+        "metrics": {
+          "total_ms": 2509.8,
+          "server_total_ms": 2508.1,
+          "load_ms": 13.7,
+          "prompt_eval_ms": 21.4,
+          "eval_ms": 2380.4,
+          "prompt_tokens": 1343,
+          "completion_tokens": 114,
+          "tokens_per_sec": 47.89
+        },
+        "error": "",
+        "prompt_chars": 1784
+      },
+      "conclusion": ""
+    },
+    {
+      "qid": "q-020",
+      "category": "编号",
+      "expected_behavior": "answer",
+      "status": "answer",
+      "needs_human": false,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "cited_ids": [
+        "ene-ifspec-prj-ene-2024-006@ene-ifspec-prj-ene-2024-006@v1#1.2#c1"
+      ],
+      "gold_ids": [
+        "ene-ifspec-prj-ene-2024-006@ene-ifspec-prj-ene-2024-006@v1#1.2#c1",
+        "ene-ifspec-prj-ene-2024-006@ene-ifspec-prj-ene-2024-006@v1#1.2#c2"
+      ],
+      "correct": 0,
+      "confidence": {
+        "retrieval": 0.9839,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7927,
+        "logit": 1.3413,
+        "calibrated": 0.7927,
+        "temperature": 1.0
+      },
+      "dropped_points": [],
+      "notes": [],
+      "timings_ms": {
+        "retrieval_ms": 299.6,
+        "stage_embed_ms": 14.6,
+        "stage_dense_ms": 4.0,
+        "stage_sparse_ms": 3.2,
+        "stage_fuse_ms": 0.0,
+        "stage_rerank_ms": 277.7,
+        "generate_ms": 2739.7,
+        "e2e_ms": 3039.4
+      },
+      "llm": {
+        "ok": true,
+        "first_attempt_json_valid": true,
+        "metrics": {
+          "total_ms": 2739.4,
+          "server_total_ms": 2737.7,
+          "load_ms": 5.4,
+          "prompt_eval_ms": 387.5,
+          "eval_ms": 2290.8,
+          "prompt_tokens": 1224,
+          "completion_tokens": 105,
+          "tokens_per_sec": 45.84
+        },
+        "error": "",
+        "prompt_chars": 1612
+      },
+      "conclusion": ""
+    },
+    {
+      "qid": "q-021",
+      "category": "编号",
+      "expected_behavior": "answer",
+      "status": "answer",
+      "needs_human": false,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "cited_ids": [
+        "ene-ifspec-prj-ene-2024-006@ene-ifspec-prj-ene-2024-006@v1#2.2#c1"
+      ],
+      "gold_ids": [
+        "ene-ifspec-prj-ene-2024-006@ene-ifspec-prj-ene-2024-006@v1#2.2#c1"
+      ],
+      "correct": 0,
+      "confidence": {
+        "retrieval": 0.9507,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7778,
+        "logit": 1.2529,
+        "calibrated": 0.7778,
+        "temperature": 1.0
+      },
+      "dropped_points": [],
+      "notes": [],
+      "timings_ms": {
+        "retrieval_ms": 334.5,
+        "stage_embed_ms": 30.7,
+        "stage_dense_ms": 4.3,
+        "stage_sparse_ms": 2.9,
+        "stage_fuse_ms": 0.0,
+        "stage_rerank_ms": 296.5,
+        "generate_ms": 2875.1,
+        "e2e_ms": 3209.7
+      },
+      "llm": {
+        "ok": true,
+        "first_attempt_json_valid": true,
+        "metrics": {
+          "total_ms": 2875.0,
+          "server_total_ms": 2874.0,
+          "load_ms": 7.1,
+          "prompt_eval_ms": 21.0,
+          "eval_ms": 2750.2,
+          "prompt_tokens": 1430,
+          "completion_tokens": 128,
+          "tokens_per_sec": 46.54
+        },
+        "error": "",
+        "prompt_chars": 1880
+      },
+      "conclusion": ""
+    },
+    {
+      "qid": "q-022",
+      "category": "编号",
+      "expected_behavior": "answer",
+      "status": "answer",
+      "needs_human": false,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "cited_ids": [
+        "ene-ifspec-prj-ene-2025-011@ene-ifspec-prj-ene-2025-011@v1#2.1#c1"
+      ],
+      "gold_ids": [
+        "ene-ifspec-prj-ene-2025-011@ene-ifspec-prj-ene-2025-011@v1#2.1#c1",
+        "ene-ifspec-prj-ene-2025-011@ene-ifspec-prj-ene-2025-011@v1#2.1#c2"
+      ],
+      "correct": 0,
+      "confidence": {
+        "retrieval": 0.9575,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7809,
+        "logit": 1.2709,
+        "calibrated": 0.7809,
+        "temperature": 1.0
+      },
+      "dropped_points": [],
+      "notes": [],
+      "timings_ms": {
+        "retrieval_ms": 284.9,
+        "stage_embed_ms": 15.0,
+        "stage_dense_ms": 3.4,
+        "stage_sparse_ms": 2.8,
+        "stage_fuse_ms": 0.0,
+        "stage_rerank_ms": 263.7,
+        "generate_ms": 2887.7,
+        "e2e_ms": 3172.7
+      },
+      "llm": {
+        "ok": true,
+        "first_attempt_json_valid": true,
+        "metrics": {
+          "total_ms": 2887.7,
+          "server_total_ms": 2885.3,
+          "load_ms": 4.2,
+          "prompt_eval_ms": 23.1,
+          "eval_ms": 2783.4,
+          "prompt_tokens": 1176,
+          "completion_tokens": 130,
+          "tokens_per_sec": 46.71
+        },
+        "error": "",
+        "prompt_chars": 1517
+      },
+      "conclusion": ""
+    },
+    {
+      "qid": "q-023",
+      "category": "编号",
+      "expected_behavior": "answer",
+      "status": "answer",
+      "needs_human": false,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "cited_ids": [
+        "chm-ifspec-prj-chm-2024-003@chm-ifspec-prj-chm-2024-003@v1#1.2#c1"
+      ],
+      "gold_ids": [
+        "chm-ifspec-prj-chm-2024-003@chm-ifspec-prj-chm-2024-003@v1#1.2#c1",
+        "chm-ifspec-prj-chm-2024-003@chm-ifspec-prj-chm-2024-003@v1#1.2#c2"
+      ],
+      "correct": 1,
+      "confidence": {
+        "retrieval": 0.9971,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7987,
+        "logit": 1.3782,
+        "calibrated": 0.7987,
+        "temperature": 1.0
+      },
+      "dropped_points": [],
+      "notes": [],
+      "timings_ms": {
+        "retrieval_ms": 296.0,
+        "stage_embed_ms": 13.8,
+        "stage_dense_ms": 3.5,
+        "stage_sparse_ms": 4.3,
+        "stage_fuse_ms": 0.0,
+        "stage_rerank_ms": 274.3,
+        "generate_ms": 3790.4,
+        "e2e_ms": 4086.5
+      },
+      "llm": {
+        "ok": true,
+        "first_attempt_json_valid": true,
+        "metrics": {
+          "total_ms": 3790.4,
+          "server_total_ms": 3789.5,
+          "load_ms": 7.0,
+          "prompt_eval_ms": 21.4,
+          "eval_ms": 3697.4,
+          "prompt_tokens": 1342,
+          "completion_tokens": 167,
+          "tokens_per_sec": 45.17
+        },
+        "error": "",
+        "prompt_chars": 1778
+      },
+      "conclusion": "接口编号 IF-CHM-0007 的订阅点位规模上限为 8000 个"
+    },
+    {
+      "qid": "q-024",
+      "category": "编号",
+      "expected_behavior": "answer",
+      "status": "answer",
+      "needs_human": false,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "cited_ids": [
+        "chm-ifspec-prj-chm-2024-003@chm-ifspec-prj-chm-2024-003@v1#2.2#c1"
+      ],
+      "gold_ids": [
+        "chm-ifspec-prj-chm-2024-003@chm-ifspec-prj-chm-2024-003@v1#2.2#c1"
+      ],
+      "correct": 0,
+      "confidence": {
+        "retrieval": 0.9976,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7989,
+        "logit": 1.3794,
+        "calibrated": 0.7989,
+        "temperature": 1.0
+      },
+      "dropped_points": [],
+      "notes": [],
+      "timings_ms": {
+        "retrieval_ms": 294.7,
+        "stage_embed_ms": 11.6,
+        "stage_dense_ms": 3.5,
+        "stage_sparse_ms": 3.2,
+        "stage_fuse_ms": 0.0,
+        "stage_rerank_ms": 276.4,
+        "generate_ms": 3251.5,
+        "e2e_ms": 3546.3
+      },
+      "llm": {
+        "ok": true,
+        "first_attempt_json_valid": true,
+        "metrics": {
+          "total_ms": 3251.4,
+          "server_total_ms": 3250.8,
+          "load_ms": 6.3,
+          "prompt_eval_ms": 22.8,
+          "eval_ms": 3158.7,
+          "prompt_tokens": 1383,
+          "completion_tokens": 144,
+          "tokens_per_sec": 45.59
+        },
+        "error": "",
+        "prompt_chars": 1825
+      },
+      "conclusion": ""
+    },
+    {
+      "qid": "q-025",
+      "category": "编号",
+      "expected_behavior": "answer",
+      "status": "answer",
+      "needs_human": true,
+      "n_citations": 2,
+      "citation_hits_gold": 1,
+      "cited_ids": [
+        "chm-compliance-prj-chm-2023-021@chm-compliance-prj-chm-2023-021@v1#2.2#c1",
+        "chm-runbook-prj-chm-2023-021@chm-runbook-prj-chm-2023-021@v1#4.1#c1"
+      ],
+      "gold_ids": [
+        "chm-compliance-prj-chm-2023-021@chm-compliance-prj-chm-2023-021@v1#2.2#c1",
+        "chm-compliance-prj-chm-2023-021@chm-compliance-prj-chm-2023-021@v1#2.2#c2"
+      ],
+      "correct": 0,
+      "confidence": {
+        "retrieval": 0.9624,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7831,
+        "logit": 1.2838,
+        "calibrated": 0.7831,
+        "temperature": 1.0
+      },
+      "dropped_points": [],
+      "notes": [
+        "secret_level_cited:1 条需人工复核"
+      ],
+      "timings_ms": {
+        "retrieval_ms": 312.3,
+        "stage_embed_ms": 36.4,
+        "stage_dense_ms": 18.3,
+        "stage_sparse_ms": 3.5,
+        "stage_fuse_ms": 0.0,
+        "stage_rerank_ms": 253.9,
+        "generate_ms": 4745.2,
+        "e2e_ms": 5057.7
+      },
+      "llm": {
+        "ok": true,
+        "first_attempt_json_valid": true,
+        "metrics": {
+          "total_ms": 4745.2,
+          "server_total_ms": 4743.6,
+          "load_ms": 6.3,
+          "prompt_eval_ms": 21.2,
+          "eval_ms": 4619.9,
+          "prompt_tokens": 1319,
+          "completion_tokens": 212,
+          "tokens_per_sec": 45.89
+        },
+        "error": "",
+        "prompt_chars": 1772
+      },
+      "conclusion": ""
+    },
+    {
+      "qid": "q-026",
+      "category": "编号",
+      "expected_behavior": "answer",
+      "status": "answer",
+      "needs_human": false,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "cited_ids": [
+        "chm-runbook-prj-chm-2023-021@chm-runbook-prj-chm-2023-021@v1#5.1#c1"
+      ],
+      "gold_ids": [
+        "chm-runbook-prj-chm-2023-021@chm-runbook-prj-chm-2023-021@v1#5.1#c1"
+      ],
+      "correct": 0,
+      "confidence": {
+        "retrieval": 0.9697,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7864,
+        "logit": 1.3034,
+        "calibrated": 0.7864,
+        "temperature": 1.0
+      },
+      "dropped_points": [],
+      "notes": [],
+      "timings_ms": {
+        "retrieval_ms": 323.7,
+        "stage_embed_ms": 22.7,
+        "stage_dense_ms": 5.6,
+        "stage_sparse_ms": 17.2,
+        "stage_fuse_ms": 0.0,
+        "stage_rerank_ms": 278.1,
+        "generate_ms": 5420.0,
+        "e2e_ms": 5743.8
+      },
+      "llm": {
+        "ok": true,
+        "first_attempt_json_valid": true,
+        "metrics": {
+          "total_ms": 5420.0,
+          "server_total_ms": 5418.7,
+          "load_ms": 5.2,
+          "prompt_eval_ms": 22.9,
+          "eval_ms": 5332.1,
+          "prompt_tokens": 1245,
+          "completion_tokens": 234,
+          "tokens_per_sec": 43.89
+        },
+        "error": "",
+        "prompt_chars": 1599
+      },
+      "conclusion": ""
+    },
+    {
+      "qid": "q-027",
+      "category": "方案名",
+      "expected_behavior": "answer",
+      "status": "answer",
+      "needs_human": false,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "cited_ids": [
+        "fin-closeout-prj-fin-2024-017@fin-closeout-prj-fin-2024-017@v1#2.1#c2"
+      ],
+      "gold_ids": [
+        "fin-closeout-prj-fin-2024-017@fin-closeout-prj-fin-2024-017@v1#2.1#c1",
+        "fin-closeout-prj-fin-2024-017@fin-closeout-prj-fin-2024-017@v1#2.1#c2"
+      ],
+      "correct": 1,
+      "confidence": {
+        "retrieval": 0.9971,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7987,
+        "logit": 1.3782,
+        "calibrated": 0.7987,
+        "temperature": 1.0
+      },
+      "dropped_points": [],
+      "notes": [],
+      "timings_ms": {
+        "retrieval_ms": 287.2,
+        "stage_embed_ms": 13.3,
+        "stage_dense_ms": 7.7,
+        "stage_sparse_ms": 3.3,
+        "stage_fuse_ms": 0.0,
+        "stage_rerank_ms": 262.8,
+        "generate_ms": 3198.7,
+        "e2e_ms": 3486.0
+      },
+      "llm": {
+        "ok": true,
+        "first_attempt_json_valid": true,
+        "metrics": {
+          "total_ms": 3198.7,
+          "server_total_ms": 3197.7,
+          "load_ms": 5.8,
+          "prompt_eval_ms": 22.0,
+          "eval_ms": 3071.9,
+          "prompt_tokens": 1251,
+          "completion_tokens": 142,
+          "tokens_per_sec": 46.23
+        },
+        "error": "",
+        "prompt_chars": 1663
+      },
+      "conclusion": "日间清算高峰3200笔每秒持续60分钟无积压"
+    },
+    {
+      "qid": "q-028",
+      "category": "方案名",
+      "expected_behavior": "answer",
+      "status": "answer",
+      "needs_human": false,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "cited_ids": [
+        "fin-closeout-prj-fin-2024-017@fin-closeout-prj-fin-2024-017@v1#2.1#c1"
+      ],
+      "gold_ids": [
+        "fin-closeout-prj-fin-2024-017@fin-closeout-prj-fin-2024-017@v1#2.1#c1",
+        "fin-closeout-prj-fin-2024-017@fin-closeout-prj-fin-2024-017@v1#2.1#c2"
+      ],
+      "correct": 1,
+      "confidence": {
+        "retrieval": 0.9927,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7967,
+        "logit": 1.3658,
+        "calibrated": 0.7967,
+        "temperature": 1.0
+      },
+      "dropped_points": [],
+      "notes": [],
+      "timings_ms": {
+        "retrieval_ms": 290.6,
+        "stage_embed_ms": 12.5,
+        "stage_dense_ms": 3.5,
+        "stage_sparse_ms": 3.8,
+        "stage_fuse_ms": 0.0,
+        "stage_rerank_ms": 270.7,
+        "generate_ms": 3667.1,
+        "e2e_ms": 3957.8
+      },
+      "llm": {
+        "ok": true,
+        "first_attempt_json_valid": true,
+        "metrics": {
+          "total_ms": 3667.0,
+          "server_total_ms": 3665.7,
+          "load_ms": 3.7,
+          "prompt_eval_ms": 337.9,
+          "eval_ms": 3269.8,
+          "prompt_tokens": 1270,
+          "completion_tokens": 147,
+          "tokens_per_sec": 44.96
+        },
+        "error": "",
+        "prompt_chars": 1677
+      },
+      "conclusion": "核心清算通道年度可用性目标不低于 99.99%"
+    },
+    {
+      "qid": "q-029",
+      "category": "方案名",
+      "expected_behavior": "answer",
+      "status": "answer",
+      "needs_human": false,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "cited_ids": [
+        "ene-closeout-prj-ene-2024-006@ene-closeout-prj-ene-2024-006@v1#1.1#c2"
+      ],
+      "gold_ids": [
+        "ene-closeout-prj-ene-2024-006@ene-closeout-prj-ene-2024-006@v1#1.1#c1",
+        "ene-closeout-prj-ene-2024-006@ene-closeout-prj-ene-2024-006@v1#1.1#c2"
+      ],
+      "correct": 0,
+      "confidence": {
+        "retrieval": 0.9971,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7987,
+        "logit": 1.3782,
+        "calibrated": 0.7987,
+        "temperature": 1.0
+      },
+      "dropped_points": [],
+      "notes": [],
+      "timings_ms": {
+        "retrieval_ms": 312.7,
+        "stage_embed_ms": 12.0,
+        "stage_dense_ms": 3.7,
+        "stage_sparse_ms": 39.0,
+        "stage_fuse_ms": 0.0,
+        "stage_rerank_ms": 257.9,
+        "generate_ms": 3054.8,
+        "e2e_ms": 3367.6
+      },
+      "llm": {
+        "ok": true,
+        "first_attempt_json_valid": true,
+        "metrics": {
+          "total_ms": 3054.7,
+          "server_total_ms": 3054.8,
+          "load_ms": 4.1,
+          "prompt_eval_ms": 22.0,
+          "eval_ms": 2933.2,
+          "prompt_tokens": 1222,
+          "completion_tokens": 138,
+          "tokens_per_sec": 47.05
+        },
+        "error": "",
+        "prompt_chars": 1643
+      },
+      "conclusion": ""
+    },
+    {
+      "qid": "q-030",
+      "category": "方案名",
+      "expected_behavior": "answer",
+      "status": "answer",
+      "needs_human": false,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "cited_ids": [
+        "chm-closeout-prj-chm-2024-003@chm-closeout-prj-chm-2024-003@v1#1.1#c1"
+      ],
+      "gold_ids": [
+        "chm-closeout-prj-chm-2024-003@chm-closeout-prj-chm-2024-003@v1#1.1#c1",
+        "chm-closeout-prj-chm-2024-003@chm-closeout-prj-chm-2024-003@v1#1.1#c2"
+      ],
+      "correct": 0,
+      "confidence": {
+        "retrieval": 0.9863,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7938,
+        "logit": 1.348,
+        "calibrated": 0.7938,
+        "temperature": 1.0
+      },
+      "dropped_points": [],
+      "notes": [],
+      "timings_ms": {
+        "retrieval_ms": 294.6,
+        "stage_embed_ms": 14.1,
+        "stage_dense_ms": 3.6,
+        "stage_sparse_ms": 5.8,
+        "stage_fuse_ms": 0.0,
+        "stage_rerank_ms": 271.0,
+        "generate_ms": 2402.2,
+        "e2e_ms": 2696.8
+      },
+      "llm": {
+        "ok": true,
+        "first_attempt_json_valid": true,
+        "metrics": {
+          "total_ms": 2402.1,
+          "server_total_ms": 2401.6,
+          "load_ms": 5.0,
+          "prompt_eval_ms": 21.8,
+          "eval_ms": 2290.7,
+          "prompt_tokens": 1268,
+          "completion_tokens": 109,
+          "tokens_per_sec": 47.58
+        },
+        "error": "",
+        "prompt_chars": 1681
+      },
+      "conclusion": ""
+    },
+    {
+      "qid": "q-031",
+      "category": "方案名",
+      "expected_behavior": "answer",
+      "status": "answer",
+      "needs_human": false,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "cited_ids": [
+        "fin-retro-prj-fin-2023-041@fin-retro-prj-fin-2023-041@v1#3.1#c1"
+      ],
+      "gold_ids": [
+        "fin-retro-prj-fin-2023-041@fin-retro-prj-fin-2023-041@v1#3.1#c1",
+        "fin-retro-prj-fin-2023-041@fin-retro-prj-fin-2023-041@v1#3.1#c2"
+      ],
+      "correct": 0,
+      "confidence": {
+        "retrieval": 0.9575,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7809,
+        "logit": 1.2709,
+        "calibrated": 0.7809,
+        "temperature": 1.0
+      },
+      "dropped_points": [],
+      "notes": [],
+      "timings_ms": {
+        "retrieval_ms": 283.1,
+        "stage_embed_ms": 14.7,
+        "stage_dense_ms": 4.3,
+        "stage_sparse_ms": 8.9,
+        "stage_fuse_ms": 0.0,
+        "stage_rerank_ms": 255.0,
+        "generate_ms": 2821.0,
+        "e2e_ms": 3104.1
+      },
+      "llm": {
+        "ok": true,
+        "first_attempt_json_valid": true,
+        "metrics": {
+          "total_ms": 2820.9,
+          "server_total_ms": 2819.7,
+          "load_ms": 6.3,
+          "prompt_eval_ms": 20.4,
+          "eval_ms": 2694.5,
+          "prompt_tokens": 1316,
+          "completion_tokens": 124,
+          "tokens_per_sec": 46.02
+        },
+        "error": "",
+        "prompt_chars": 1794
+      },
+      "conclusion": ""
+    },
+    {
+      "qid": "q-032",
+      "category": "方案名",
+      "expected_behavior": "answer",
+      "status": "answer",
+      "needs_human": false,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "cited_ids": [
+        "ene-runbook-prj-ene-2023-019@ene-runbook-prj-ene-2023-019@v1#1.1#c1"
+      ],
+      "gold_ids": [
+        "ene-runbook-prj-ene-2023-019@ene-runbook-prj-ene-2023-019@v1#1.1#c1"
+      ],
+      "correct": 1,
+      "confidence": {
+        "retrieval": 0.9839,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.9,
+        "composite": 0.9727,
+        "logit": 3.5732,
+        "calibrated": 0.9727,
+        "temperature": 1.0
+      },
+      "dropped_points": [],
+      "notes": [],
+      "timings_ms": {
+        "retrieval_ms": 317.5,
+        "stage_embed_ms": 12.9,
+        "stage_dense_ms": 3.8,
+        "stage_sparse_ms": 37.6,
+        "stage_fuse_ms": 0.0,
+        "stage_rerank_ms": 263.2,
+        "generate_ms": 2653.0,
+        "e2e_ms": 2970.6
+      },
+      "llm": {
+        "ok": true,
+        "first_attempt_json_valid": true,
+        "metrics": {
+          "total_ms": 2652.9,
+          "server_total_ms": 2648.8,
+          "load_ms": 6.0,
+          "prompt_eval_ms": 20.1,
+          "eval_ms": 2499.4,
+          "prompt_tokens": 1349,
+          "completion_tokens": 121,
+          "tokens_per_sec": 48.41
+        },
+        "error": "",
+        "prompt_chars": 1822
+      },
+      "conclusion": "99.99%"
+    },
+    {
+      "qid": "q-033",
+      "category": "方案名",
+      "expected_behavior": "answer",
+      "status": "answer",
+      "needs_human": false,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "cited_ids": [
+        "ene-runbook-prj-ene-2025-011@ene-runbook-prj-ene-2025-011@v1#4.1#c1"
+      ],
+      "gold_ids": [
+        "ene-runbook-prj-ene-2025-011@ene-runbook-prj-ene-2025-011@v1#4.1#c1"
+      ],
+      "correct": 0,
+      "confidence": {
+        "retrieval": 0.9829,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7923,
+        "logit": 1.3388,
+        "calibrated": 0.7923,
+        "temperature": 1.0
+      },
+      "dropped_points": [],
+      "notes": [],
+      "timings_ms": {
+        "retrieval_ms": 296.9,
+        "stage_embed_ms": 12.1,
+        "stage_dense_ms": 3.7,
+        "stage_sparse_ms": 3.3,
+        "stage_fuse_ms": 0.0,
+        "stage_rerank_ms": 277.7,
+        "generate_ms": 3448.7,
+        "e2e_ms": 3745.7
+      },
+      "llm": {
+        "ok": true,
+        "first_attempt_json_valid": true,
+        "metrics": {
+          "total_ms": 3448.6,
+          "server_total_ms": 3447.1,
+          "load_ms": 3.4,
+          "prompt_eval_ms": 20.2,
+          "eval_ms": 3315.0,
+          "prompt_tokens": 1373,
+          "completion_tokens": 156,
+          "tokens_per_sec": 47.06
+        },
+        "error": "",
+        "prompt_chars": 1813
+      },
+      "conclusion": ""
+    },
+    {
+      "qid": "q-034",
+      "category": "方案名",
+      "expected_behavior": "answer",
+      "status": "answer",
+      "needs_human": true,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "cited_ids": [
+        "fin-presale-prj-fin-2025-008@fin-presale-prj-fin-2025-008@v1#2.1#c1"
+      ],
+      "gold_ids": [
+        "fin-presale-prj-fin-2025-008@fin-presale-prj-fin-2025-008@v1#2.1#c1",
+        "fin-presale-prj-fin-2025-008@fin-presale-prj-fin-2025-008@v1#2.1#c2"
+      ],
+      "correct": 1,
+      "confidence": {
+        "retrieval": 0.9966,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7985,
+        "logit": 1.3769,
+        "calibrated": 0.7985,
+        "temperature": 1.0
+      },
+      "dropped_points": [],
+      "notes": [
+        "secret_level_cited:1 条需人工复核"
+      ],
+      "timings_ms": {
+        "retrieval_ms": 267.7,
+        "stage_embed_ms": 13.6,
+        "stage_dense_ms": 3.5,
+        "stage_sparse_ms": 3.1,
+        "stage_fuse_ms": 0.0,
+        "stage_rerank_ms": 247.4,
+        "generate_ms": 2613.3,
+        "e2e_ms": 2881.1
+      },
+      "llm": {
+        "ok": true,
+        "first_attempt_json_valid": true,
+        "metrics": {
+          "total_ms": 2613.3,
+          "server_total_ms": 2611.7,
+          "load_ms": 8.6,
+          "prompt_eval_ms": 22.7,
+          "eval_ms": 2437.3,
+          "prompt_tokens": 1241,
+          "completion_tokens": 109,
+          "tokens_per_sec": 44.72
+        },
+        "error": "",
+        "prompt_chars": 1690
+      },
+      "conclusion": "312 项"
+    },
+    {
+      "qid": "q-035",
+      "category": "方案名",
+      "expected_behavior": "answer",
+      "status": "answer",
+      "needs_human": false,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "cited_ids": [
+        "chm-closeout-prj-chm-2023-021@chm-closeout-prj-chm-2023-021@v1#1.1#c1"
+      ],
+      "gold_ids": [
+        "chm-closeout-prj-chm-2023-021@chm-closeout-prj-chm-2023-021@v1#1.1#c1"
+      ],
+      "correct": 0,
+      "confidence": {
+        "retrieval": 0.9829,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7923,
+        "logit": 1.3388,
+        "calibrated": 0.7923,
+        "temperature": 1.0
+      },
+      "dropped_points": [],
+      "notes": [],
+      "timings_ms": {
+        "retrieval_ms": 315.7,
+        "stage_embed_ms": 11.8,
+        "stage_dense_ms": 3.7,
+        "stage_sparse_ms": 10.5,
+        "stage_fuse_ms": 0.0,
+        "stage_rerank_ms": 289.6,
+        "generate_ms": 2746.4,
+        "e2e_ms": 3062.3
+      },
+      "llm": {
+        "ok": true,
+        "first_attempt_json_valid": true,
+        "metrics": {
+          "total_ms": 2746.4,
+          "server_total_ms": 2744.5,
+          "load_ms": 5.1,
+          "prompt_eval_ms": 21.2,
+          "eval_ms": 2622.8,
+          "prompt_tokens": 1368,
+          "completion_tokens": 121,
+          "tokens_per_sec": 46.13
+        },
+        "error": "",
+        "prompt_chars": 1827
+      },
+      "conclusion": ""
+    },
+    {
+      "qid": "q-036",
+      "category": "方案名",
+      "expected_behavior": "answer",
+      "status": "answer",
+      "needs_human": true,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "cited_ids": [
+        "chm-presale-prj-chm-2025-014@chm-presale-prj-chm-2025-014@v1#1.1#c2"
+      ],
+      "gold_ids": [
+        "chm-presale-prj-chm-2025-014@chm-presale-prj-chm-2025-014@v1#1.1#c1",
+        "chm-presale-prj-chm-2025-014@chm-presale-prj-chm-2025-014@v1#1.1#c2"
+      ],
+      "correct": 1,
+      "confidence": {
+        "retrieval": 0.9985,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7993,
+        "logit": 1.3819,
+        "calibrated": 0.7993,
+        "temperature": 1.0
+      },
+      "dropped_points": [],
+      "notes": [
+        "secret_level_cited:1 条需人工复核"
+      ],
+      "timings_ms": {
+        "retrieval_ms": 283.0,
+        "stage_embed_ms": 12.1,
+        "stage_dense_ms": 3.3,
+        "stage_sparse_ms": 2.8,
+        "stage_fuse_ms": 0.0,
+        "stage_rerank_ms": 264.7,
+        "generate_ms": 2548.9,
+        "e2e_ms": 2831.9
+      },
+      "llm": {
+        "ok": true,
+        "first_attempt_json_valid": true,
+        "metrics": {
+          "total_ms": 2548.8,
+          "server_total_ms": 2548.7,
+          "load_ms": 6.2,
+          "prompt_eval_ms": 20.4,
+          "eval_ms": 2426.4,
+          "prompt_tokens": 1306,
+          "completion_tokens": 116,
+          "tokens_per_sec": 47.81
+        },
+        "error": "",
+        "prompt_chars": 1772
+      },
+      "conclusion": "批生产记录电子化覆盖率不低于 95%"
+    },
+    {
+      "qid": "q-037",
+      "category": "方案名",
+      "expected_behavior": "answer",
+      "status": "answer",
+      "needs_human": true,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "cited_ids": [
+        "fin-ifspec-prj-fin-2024-033@fin-ifspec-prj-fin-2024-033@v1#2.2#c1"
+      ],
+      "gold_ids": [
+        "fin-ifspec-prj-fin-2024-033@fin-ifspec-prj-fin-2024-033@v1#2.2#c1"
+      ],
+      "correct": 0,
+      "confidence": {
+        "retrieval": 0.9668,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7851,
+        "logit": 1.2956,
+        "calibrated": 0.7851,
+        "temperature": 1.0
+      },
+      "dropped_points": [],
+      "notes": [
+        "secret_level_cited:1 条需人工复核"
+      ],
+      "timings_ms": {
+        "retrieval_ms": 283.6,
+        "stage_embed_ms": 11.9,
+        "stage_dense_ms": 3.4,
+        "stage_sparse_ms": 3.5,
+        "stage_fuse_ms": 0.0,
+        "stage_rerank_ms": 264.6,
+        "generate_ms": 2565.9,
+        "e2e_ms": 2849.6
+      },
+      "llm": {
+        "ok": true,
+        "first_attempt_json_valid": true,
+        "metrics": {
+          "total_ms": 2565.9,
+          "server_total_ms": 2565.1,
+          "load_ms": 6.4,
+          "prompt_eval_ms": 23.6,
+          "eval_ms": 2443.2,
+          "prompt_tokens": 1240,
+          "completion_tokens": 114,
+          "tokens_per_sec": 46.66
+        },
+        "error": "",
+        "prompt_chars": 1675
+      },
+      "conclusion": ""
+    },
+    {
+      "qid": "q-038",
+      "category": "方案名",
+      "expected_behavior": "answer",
+      "status": "answer",
+      "needs_human": false,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "cited_ids": [
+        "chm-ifspec-prj-chm-2024-003@chm-ifspec-prj-chm-2024-003@v1#1.2#c1"
+      ],
+      "gold_ids": [
+        "chm-ifspec-prj-chm-2024-003@chm-ifspec-prj-chm-2024-003@v1#1.2#c1",
+        "chm-ifspec-prj-chm-2024-003@chm-ifspec-prj-chm-2024-003@v1#1.2#c2"
+      ],
+      "correct": 0,
+      "confidence": {
+        "retrieval": 0.9839,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7927,
+        "logit": 1.3413,
+        "calibrated": 0.7927,
+        "temperature": 1.0
+      },
+      "dropped_points": [],
+      "notes": [],
+      "timings_ms": {
+        "retrieval_ms": 295.1,
+        "stage_embed_ms": 12.6,
+        "stage_dense_ms": 3.4,
+        "stage_sparse_ms": 3.1,
+        "stage_fuse_ms": 0.0,
+        "stage_rerank_ms": 276.0,
+        "generate_ms": 3416.4,
+        "e2e_ms": 3711.6
+      },
+      "llm": {
+        "ok": true,
+        "first_attempt_json_valid": true,
+        "metrics": {
+          "total_ms": 3416.4,
+          "server_total_ms": 3415.1,
+          "load_ms": 3.1,
+          "prompt_eval_ms": 275.5,
+          "eval_ms": 3082.9,
+          "prompt_tokens": 1317,
+          "completion_tokens": 141,
+          "tokens_per_sec": 45.74
+        },
+        "error": "",
+        "prompt_chars": 1766
+      },
+      "conclusion": ""
+    },
+    {
+      "qid": "q-039",
+      "category": "口语化",
+      "expected_behavior": "answer",
+      "status": "tentative",
+      "needs_human": false,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "cited_ids": [
+        "fin-runbook-prj-fin-2024-017@fin-runbook-prj-fin-2024-017@v1#2.1#c1"
+      ],
+      "gold_ids": [
+        "fin-runbook-prj-fin-2024-017@fin-runbook-prj-fin-2024-017@v1#2.1#c1",
+        "fin-runbook-prj-fin-2024-017@fin-runbook-prj-fin-2024-017@v1#2.1#c2"
+      ],
+      "correct": 0,
+      "confidence": {
+        "retrieval": 0.5073,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.5783,
+        "logit": 0.3158,
+        "calibrated": 0.5783,
+        "temperature": 1.0
+      },
+      "dropped_points": [],
+      "notes": [
+        "初步判断（低置信度显式降级）"
+      ],
+      "timings_ms": {
+        "retrieval_ms": 312.1,
+        "stage_embed_ms": 18.7,
+        "stage_dense_ms": 3.5,
+        "stage_sparse_ms": 3.8,
+        "stage_fuse_ms": 0.0,
+        "stage_rerank_ms": 286.0,
+        "generate_ms": 2625.8,
+        "e2e_ms": 2938.0
+      },
+      "llm": {
+        "ok": true,
+        "first_attempt_json_valid": true,
+        "metrics": {
+          "total_ms": 2625.7,
+          "server_total_ms": 2624.4,
+          "load_ms": 16.5,
+          "prompt_eval_ms": 23.9,
+          "eval_ms": 2499.6,
+          "prompt_tokens": 1230,
+          "completion_tokens": 118,
+          "tokens_per_sec": 47.21
+        },
+        "error": "",
+        "prompt_chars": 1619
+      },
+      "conclusion": ""
+    },
+    {
+      "qid": "q-040",
+      "category": "口语化",
+      "expected_behavior": "answer",
+      "status": "tentative",
+      "needs_human": false,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "cited_ids": [
+        "chm-runbook-prj-chm-2023-021@chm-runbook-prj-chm-2023-021@v1#2.1#c1"
+      ],
+      "gold_ids": [
+        "chm-runbook-prj-chm-2023-021@chm-runbook-prj-chm-2023-021@v1#2.1#c1",
+        "chm-runbook-prj-chm-2023-021@chm-runbook-prj-chm-2023-021@v1#2.1#c2"
+      ],
+      "correct": 0,
+      "confidence": {
+        "retrieval": 0.561,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.6025,
+        "logit": 0.4159,
+        "calibrated": 0.6025,
+        "temperature": 1.0
+      },
+      "dropped_points": [],
+      "notes": [
+        "初步判断（低置信度显式降级）"
+      ],
+      "timings_ms": {
+        "retrieval_ms": 333.3,
+        "stage_embed_ms": 13.6,
+        "stage_dense_ms": 3.5,
+        "stage_sparse_ms": 32.6,
+        "stage_fuse_ms": 0.0,
+        "stage_rerank_ms": 283.5,
+        "generate_ms": 2310.2,
+        "e2e_ms": 2643.6
+      },
+      "llm": {
+        "ok": true,
+        "first_attempt_json_valid": true,
+        "metrics": {
+          "total_ms": 2310.1,
+          "server_total_ms": 2308.9,
+          "load_ms": 3.7,
+          "prompt_eval_ms": 23.2,
+          "eval_ms": 2197.7,
+          "prompt_tokens": 1150,
+          "completion_tokens": 103,
+          "tokens_per_sec": 46.87
+        },
+        "error": "",
+        "prompt_chars": 1521
+      },
+      "conclusion": ""
+    },
+    {
+      "qid": "q-041",
+      "category": "口语化",
+      "expected_behavior": "answer",
+      "status": "tentative",
+      "needs_human": false,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "cited_ids": [
+        "fin-runbook-prj-fin-2024-017@fin-runbook-prj-fin-2024-017@v1#2.2#c1"
+      ],
+      "gold_ids": [
+        "fin-ifspec-prj-fin-2024-017@fin-ifspec-prj-fin-2024-017@v1#2.2#c1",
+        "fin-ifspec-prj-fin-2024-017@fin-ifspec-prj-fin-2024-017@v1#2.2#c2",
+        "fin-runbook-prj-fin-2024-017@fin-runbook-prj-fin-2024-017@v1#2.2#c1"
+      ],
+      "correct": 0,
+      "confidence": {
+        "retrieval": 0.4519,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.5534,
+        "logit": 0.2144,
+        "calibrated": 0.5534,
+        "temperature": 1.0
+      },
+      "dropped_points": [],
+      "notes": [
+        "初步判断（低置信度显式降级）"
+      ],
+      "timings_ms": {
+        "retrieval_ms": 334.6,
+        "stage_embed_ms": 14.6,
+        "stage_dense_ms": 4.0,
+        "stage_sparse_ms": 38.8,
+        "stage_fuse_ms": 0.0,
+        "stage_rerank_ms": 277.1,
+        "generate_ms": 3547.7,
+        "e2e_ms": 3882.4
+      },
+      "llm": {
+        "ok": true,
+        "first_attempt_json_valid": true,
+        "metrics": {
+          "total_ms": 3547.6,
+          "server_total_ms": 3545.8,
+          "load_ms": 4.3,
+          "prompt_eval_ms": 423.9,
+          "eval_ms": 3040.6,
+          "prompt_tokens": 1271,
+          "completion_tokens": 141,
+          "tokens_per_sec": 46.37
+        },
+        "error": "",
+        "prompt_chars": 1643
+      },
+      "conclusion": ""
+    },
+    {
+      "qid": "q-042",
+      "category": "口语化",
+      "expected_behavior": "answer",
+      "status": "tentative",
+      "needs_human": false,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "cited_ids": [
+        "ene-closeout-prj-ene-2024-006@ene-closeout-prj-ene-2024-006@v1#3.1#c2"
+      ],
+      "gold_ids": [
+        "ene-closeout-prj-ene-2024-006@ene-closeout-prj-ene-2024-006@v1#3.1#c1",
+        "ene-closeout-prj-ene-2024-006@ene-closeout-prj-ene-2024-006@v1#3.1#c2"
+      ],
+      "correct": 0,
+      "confidence": {
+        "retrieval": 0.271,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.4719,
+        "logit": -0.1125,
+        "calibrated": 0.4719,
+        "temperature": 1.0
+      },
+      "dropped_points": [],
+      "notes": [
+        "初步判断（低置信度显式降级）"
+      ],
+      "timings_ms": {
+        "retrieval_ms": 289.0,
+        "stage_embed_ms": 12.4,
+        "stage_dense_ms": 3.7,
+        "stage_sparse_ms": 9.9,
+        "stage_fuse_ms": 0.0,
+        "stage_rerank_ms": 263.0,
+        "generate_ms": 2750.1,
+        "e2e_ms": 3039.2
+      },
+      "llm": {
+        "ok": true,
+        "first_attempt_json_valid": true,
+        "metrics": {
+          "total_ms": 2750.1,
+          "server_total_ms": 2748.7,
+          "load_ms": 7.0,
+          "prompt_eval_ms": 22.6,
+          "eval_ms": 2646.5,
+          "prompt_tokens": 1189,
+          "completion_tokens": 128,
+          "tokens_per_sec": 48.37
+        },
+        "error": "",
+        "prompt_chars": 1574
+      },
+      "conclusion": ""
+    },
+    {
+      "qid": "q-043",
+      "category": "口语化",
+      "expected_behavior": "answer",
+      "status": "tentative",
+      "needs_human": false,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "cited_ids": [
+        "chm-closeout-prj-chm-2023-021@chm-closeout-prj-chm-2023-021@v1#3.1#c1"
+      ],
+      "gold_ids": [
+        "chm-closeout-prj-chm-2023-021@chm-closeout-prj-chm-2023-021@v1#3.1#c1"
+      ],
+      "correct": 0,
+      "confidence": {
+        "retrieval": 0.5889,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.615,
+        "logit": 0.4684,
+        "calibrated": 0.615,
+        "temperature": 1.0
+      },
+      "dropped_points": [],
+      "notes": [
+        "初步判断（低置信度显式降级）"
+      ],
+      "timings_ms": {
+        "retrieval_ms": 288.7,
+        "stage_embed_ms": 12.6,
+        "stage_dense_ms": 3.6,
+        "stage_sparse_ms": 6.1,
+        "stage_fuse_ms": 0.0,
+        "stage_rerank_ms": 266.4,
+        "generate_ms": 3825.9,
+        "e2e_ms": 4114.6
+      },
+      "llm": {
+        "ok": true,
+        "first_attempt_json_valid": true,
+        "metrics": {
+          "total_ms": 3825.8,
+          "server_total_ms": 3824.4,
+          "load_ms": 6.3,
+          "prompt_eval_ms": 20.9,
+          "eval_ms": 3706.3,
+          "prompt_tokens": 1330,
+          "completion_tokens": 169,
+          "tokens_per_sec": 45.6
+        },
+        "error": "",
+        "prompt_chars": 1774
+      },
+      "conclusion": ""
+    },
+    {
+      "qid": "q-044",
+      "category": "口语化",
+      "expected_behavior": "answer",
+      "status": "refuse",
+      "needs_human": false,
+      "n_citations": 0,
+      "citation_hits_gold": 0,
+      "cited_ids": [],
+      "gold_ids": [
+        "chm-runbook-prj-chm-2025-014@chm-runbook-prj-chm-2025-014@v1#2.2#c1",
+        "chm-runbook-prj-chm-2025-014@chm-runbook-prj-chm-2025-014@v1#2.2#c2"
+      ],
+      "correct": 0,
+      "confidence": {
+        "retrieval": 0.0046,
+        "composite": 0.0,
+        "calibrated": 0.0,
+        "rule": "retrieval_gate"
+      },
+      "dropped_points": [],
+      "notes": [
+        "no_sufficient_evidence"
+      ],
+      "timings_ms": {
+        "retrieval_ms": 276.9,
+        "stage_embed_ms": 12.6,
+        "stage_dense_ms": 4.7,
+        "stage_sparse_ms": 9.8,
+        "stage_fuse_ms": 0.0,
+        "stage_rerank_ms": 249.7
+      },
+      "llm": {},
+      "conclusion": ""
+    },
+    {
+      "qid": "q-045",
+      "category": "口语化",
+      "expected_behavior": "answer",
+      "status": "tentative",
+      "needs_human": true,
+      "n_citations": 2,
+      "citation_hits_gold": 1,
+      "cited_ids": [
+        "chm-compliance-prj-chm-2023-021@chm-compliance-prj-chm-2023-021@v1#3.1#c1",
+        "chm-runbook-prj-chm-2023-021@chm-runbook-prj-chm-2023-021@v1#5.1#c1"
+      ],
+      "gold_ids": [
+        "chm-compliance-prj-chm-2023-021@chm-compliance-prj-chm-2023-021@v1#3.1#c1",
+        "chm-compliance-prj-chm-2023-021@chm-compliance-prj-chm-2023-021@v1#3.1#c2",
+        "chm-runbook-prj-chm-2023-021@chm-runbook-prj-chm-2023-021@v1#5.1#c1"
+      ],
+      "correct": 0,
+      "confidence": {
+        "retrieval": 0.8628,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7383,
+        "logit": 1.0372,
+        "calibrated": 0.7383,
+        "temperature": 1.0
+      },
+      "dropped_points": [],
+      "notes": [
+        "secret_level_cited:1 条需人工复核",
+        "初步判断（低置信度显式降级）"
+      ],
+      "timings_ms": {
+        "retrieval_ms": 298.1,
+        "stage_embed_ms": 14.6,
+        "stage_dense_ms": 4.0,
+        "stage_sparse_ms": 6.2,
+        "stage_fuse_ms": 0.0,
+        "stage_rerank_ms": 273.2,
+        "generate_ms": 3625.3,
+        "e2e_ms": 3923.5
+      },
+      "llm": {
+        "ok": true,
+        "first_attempt_json_valid": true,
+        "metrics": {
+          "total_ms": 3625.2,
+          "server_total_ms": 3624.0,
+          "load_ms": 5.3,
+          "prompt_eval_ms": 22.4,
+          "eval_ms": 3502.1,
+          "prompt_tokens": 1243,
+          "completion_tokens": 156,
+          "tokens_per_sec": 44.54
+        },
+        "error": "",
+        "prompt_chars": 1627
+      },
+      "conclusion": ""
+    },
+    {
+      "qid": "q-046",
+      "category": "口语化",
+      "expected_behavior": "answer",
+      "status": "tentative",
+      "needs_human": false,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "cited_ids": [
+        "chm-runbook-prj-chm-2025-014@chm-runbook-prj-chm-2025-014@v1#4.1#c1"
+      ],
+      "gold_ids": [
+        "chm-runbook-prj-chm-2025-014@chm-runbook-prj-chm-2025-014@v1#4.1#c1"
+      ],
+      "correct": 0,
+      "confidence": {
+        "retrieval": 0.2417,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.4588,
+        "logit": -0.1652,
+        "calibrated": 0.4588,
+        "temperature": 1.0
+      },
+      "dropped_points": [],
+      "notes": [
+        "初步判断（低置信度显式降级）"
+      ],
+      "timings_ms": {
+        "retrieval_ms": 305.3,
+        "stage_embed_ms": 11.6,
+        "stage_dense_ms": 5.2,
+        "stage_sparse_ms": 14.3,
+        "stage_fuse_ms": 0.0,
+        "stage_rerank_ms": 274.1,
+        "generate_ms": 3081.7,
+        "e2e_ms": 3387.1
+      },
+      "llm": {
+        "ok": true,
+        "first_attempt_json_valid": true,
+        "metrics": {
+          "total_ms": 3081.7,
+          "server_total_ms": 3080.8,
+          "load_ms": 6.1,
+          "prompt_eval_ms": 20.2,
+          "eval_ms": 2965.0,
+          "prompt_tokens": 1293,
+          "completion_tokens": 137,
+          "tokens_per_sec": 46.21
+        },
+        "error": "",
+        "prompt_chars": 1726
+      },
+      "conclusion": ""
+    },
+    {
+      "qid": "q-047",
+      "category": "口语化",
+      "expected_behavior": "answer",
+      "status": "refuse",
+      "needs_human": false,
+      "n_citations": 0,
+      "citation_hits_gold": 0,
+      "cited_ids": [],
+      "gold_ids": [
+        "fin-ifspec-prj-fin-2024-033@fin-ifspec-prj-fin-2024-033@v1#2.1#c1",
+        "fin-ifspec-prj-fin-2024-033@fin-ifspec-prj-fin-2024-033@v1#2.1#c2"
+      ],
+      "correct": 0,
+      "confidence": {
+        "retrieval": 0.1387,
+        "composite": 0.0,
+        "calibrated": 0.0,
+        "rule": "retrieval_gate"
+      },
+      "dropped_points": [],
+      "notes": [
+        "no_sufficient_evidence"
+      ],
+      "timings_ms": {
+        "retrieval_ms": 342.5,
+        "stage_embed_ms": 12.7,
+        "stage_dense_ms": 4.1,
+        "stage_sparse_ms": 80.4,
+        "stage_fuse_ms": 0.0,
+        "stage_rerank_ms": 245.1
+      },
+      "llm": {},
+      "conclusion": ""
+    },
+    {
+      "qid": "q-048",
+      "category": "口语化",
+      "expected_behavior": "answer",
+      "status": "tentative",
+      "needs_human": true,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "cited_ids": [
+        "fin-presale-prj-fin-2023-041@fin-presale-prj-fin-2023-041@v1#1.1#c1"
+      ],
+      "gold_ids": [
+        "fin-presale-prj-fin-2023-041@fin-presale-prj-fin-2023-041@v1#1.1#c1",
+        "fin-presale-prj-fin-2023-041@fin-presale-prj-fin-2023-041@v1#1.1#c2"
+      ],
+      "correct": 0,
+      "confidence": {
+        "retrieval": 0.8105,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7147,
+        "logit": 0.9183,
+        "calibrated": 0.7147,
+        "temperature": 1.0
+      },
+      "dropped_points": [],
+      "notes": [
+        "secret_level_cited:1 条需人工复核",
+        "初步判断（低置信度显式降级）"
+      ],
+      "timings_ms": {
+        "retrieval_ms": 252.8,
+        "stage_embed_ms": 11.8,
+        "stage_dense_ms": 4.2,
+        "stage_sparse_ms": 3.3,
+        "stage_fuse_ms": 0.0,
+        "stage_rerank_ms": 233.4,
+        "generate_ms": 3038.3,
+        "e2e_ms": 3291.2
+      },
+      "llm": {
+        "ok": true,
+        "first_attempt_json_valid": true,
+        "metrics": {
+          "total_ms": 3038.3,
+          "server_total_ms": 3037.8,
+          "load_ms": 5.6,
+          "prompt_eval_ms": 409.7,
+          "eval_ms": 2540.2,
+          "prompt_tokens": 1255,
+          "completion_tokens": 115,
+          "tokens_per_sec": 45.27
+        },
+        "error": "",
+        "prompt_chars": 1709
+      },
+      "conclusion": ""
+    },
+    {
+      "qid": "q-049",
+      "category": "口语化",
+      "expected_behavior": "answer",
+      "status": "tentative",
+      "needs_human": false,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "cited_ids": [
+        "fin-ifspec-prj-fin-2024-017@fin-ifspec-prj-fin-2024-017@v1#1.2#c1"
+      ],
+      "gold_ids": [
+        "fin-ifspec-prj-fin-2024-017@fin-ifspec-prj-fin-2024-017@v1#1.2#c1",
+        "fin-ifspec-prj-fin-2024-017@fin-ifspec-prj-fin-2024-017@v1#1.2#c2"
+      ],
+      "correct": 0,
+      "confidence": {
+        "retrieval": 0.5757,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.6091,
+        "logit": 0.4435,
+        "calibrated": 0.6091,
+        "temperature": 1.0
+      },
+      "dropped_points": [],
+      "notes": [
+        "初步判断（低置信度显式降级）"
+      ],
+      "timings_ms": {
+        "retrieval_ms": 280.0,
+        "stage_embed_ms": 11.9,
+        "stage_dense_ms": 3.9,
+        "stage_sparse_ms": 6.9,
+        "stage_fuse_ms": 0.0,
+        "stage_rerank_ms": 257.2,
+        "generate_ms": 2959.6,
+        "e2e_ms": 3239.6
+      },
+      "llm": {
+        "ok": true,
+        "first_attempt_json_valid": true,
+        "metrics": {
+          "total_ms": 2959.5,
+          "server_total_ms": 2959.2,
+          "load_ms": 5.8,
+          "prompt_eval_ms": 407.6,
+          "eval_ms": 2493.7,
+          "prompt_tokens": 1214,
+          "completion_tokens": 115,
+          "tokens_per_sec": 46.12
+        },
+        "error": "",
+        "prompt_chars": 1604
+      },
+      "conclusion": ""
+    },
+    {
+      "qid": "q-050",
+      "category": "口语化",
+      "expected_behavior": "answer",
+      "status": "answer",
+      "needs_human": false,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "cited_ids": [
+        "chm-ifspec-prj-chm-2024-003@chm-ifspec-prj-chm-2024-003@v1#2.1#c1"
+      ],
+      "gold_ids": [
+        "chm-ifspec-prj-chm-2024-003@chm-ifspec-prj-chm-2024-003@v1#2.1#c1"
+      ],
+      "correct": 0,
+      "confidence": {
+        "retrieval": 0.9028,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7563,
+        "logit": 1.1325,
+        "calibrated": 0.7563,
+        "temperature": 1.0
+      },
+      "dropped_points": [],
+      "notes": [],
+      "timings_ms": {
+        "retrieval_ms": 294.4,
+        "stage_embed_ms": 15.5,
+        "stage_dense_ms": 4.3,
+        "stage_sparse_ms": 6.4,
+        "stage_fuse_ms": 0.0,
+        "stage_rerank_ms": 268.3,
+        "generate_ms": 2914.1,
+        "e2e_ms": 3208.7
+      },
+      "llm": {
+        "ok": true,
+        "first_attempt_json_valid": true,
+        "metrics": {
+          "total_ms": 2914.0,
+          "server_total_ms": 2912.4,
+          "load_ms": 9.1,
+          "prompt_eval_ms": 22.1,
+          "eval_ms": 2784.2,
+          "prompt_tokens": 1236,
+          "completion_tokens": 128,
+          "tokens_per_sec": 45.97
+        },
+        "error": "",
+        "prompt_chars": 1649
+      },
+      "conclusion": ""
+    },
+    {
+      "qid": "q-051",
+      "category": "口语化",
+      "expected_behavior": "answer",
+      "status": "refuse",
+      "needs_human": false,
+      "n_citations": 0,
+      "citation_hits_gold": 0,
+      "cited_ids": [],
+      "gold_ids": [
+        "ene-ifspec-prj-ene-2025-011@ene-ifspec-prj-ene-2025-011@v1#2.1#c1",
+        "ene-ifspec-prj-ene-2025-011@ene-ifspec-prj-ene-2025-011@v1#2.1#c2"
+      ],
+      "correct": 0,
+      "confidence": {
+        "retrieval": 0.1234,
+        "composite": 0.0,
+        "calibrated": 0.0,
+        "rule": "retrieval_gate"
+      },
+      "dropped_points": [],
+      "notes": [
+        "no_sufficient_evidence"
+      ],
+      "timings_ms": {
+        "retrieval_ms": 286.9,
+        "stage_embed_ms": 14.7,
+        "stage_dense_ms": 4.2,
+        "stage_sparse_ms": 4.3,
+        "stage_fuse_ms": 0.0,
+        "stage_rerank_ms": 263.7
+      },
+      "llm": {},
+      "conclusion": ""
+    },
+    {
+      "qid": "q-052",
+      "category": "口语化",
+      "expected_behavior": "answer",
+      "status": "refuse",
+      "needs_human": false,
+      "n_citations": 0,
+      "citation_hits_gold": 0,
+      "cited_ids": [],
+      "gold_ids": [
+        "chm-retro-prj-chm-2024-003@chm-retro-prj-chm-2024-003@v1#2.2#c1"
+      ],
+      "correct": 0,
+      "confidence": {
+        "retrieval": 0.1184,
+        "composite": 0.0,
+        "calibrated": 0.0,
+        "rule": "retrieval_gate"
+      },
+      "dropped_points": [],
+      "notes": [
+        "no_sufficient_evidence"
+      ],
+      "timings_ms": {
+        "retrieval_ms": 291.9,
+        "stage_embed_ms": 14.7,
+        "stage_dense_ms": 4.3,
+        "stage_sparse_ms": 3.8,
+        "stage_fuse_ms": 0.0,
+        "stage_rerank_ms": 269.0
+      },
+      "llm": {},
+      "conclusion": ""
+    },
+    {
+      "qid": "q-053",
+      "category": "跨文档",
+      "expected_behavior": "answer",
+      "status": "tentative",
+      "needs_human": true,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "cited_ids": [
+        "fin-ifspec-prj-fin-2024-033@fin-ifspec-prj-fin-2024-033@v1#1.1#c1"
+      ],
+      "gold_ids": [
+        "ene-runbook-prj-ene-2023-019@ene-runbook-prj-ene-2023-019@v1#5.1#c1",
+        "fin-closeout-prj-fin-2024-017@fin-closeout-prj-fin-2024-017@v1#1.1#c1",
+        "fin-closeout-prj-fin-2024-017@fin-closeout-prj-fin-2024-017@v1#1.1#c2",
+        "fin-ifspec-prj-fin-2024-033@fin-ifspec-prj-fin-2024-033@v1#1.1#c1",
+        "fin-ifspec-prj-fin-2024-033@fin-ifspec-prj-fin-2024-033@v1#2.1#c1",
+        "fin-ifspec-prj-fin-2024-033@fin-ifspec-prj-fin-2024-033@v1#2.1#c2",
+        "fin-ifspec-prj-fin-2024-033@fin-ifspec-prj-fin-2024-033@v1#2.2#c1",
+        "fin-ifspec-prj-fin-2024-033@fin-ifspec-prj-fin-2024-033@v1#3.1#c1",
+        "fin-ifspec-prj-fin-2024-033@fin-ifspec-prj-fin-2024-033@v1#3.1#c2",
+        "fin-ifspec-prj-fin-2024-033@fin-ifspec-prj-fin-2024-033@v1#4.1#c1",
+        "fin-ifspec-prj-fin-2024-033@fin-ifspec-prj-fin-2024-033@v1#5.1#c1"
+      ],
+      "correct": 0,
+      "confidence": {
+        "retrieval": 0.4736,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.5631,
+        "logit": 0.2538,
+        "calibrated": 0.5631,
+        "temperature": 1.0
+      },
+      "dropped_points": [],
+      "notes": [
+        "secret_level_cited:1 条需人工复核",
+        "初步判断（低置信度显式降级）"
+      ],
+      "timings_ms": {
+        "retrieval_ms": 276.1,
+        "stage_embed_ms": 15.1,
+        "stage_dense_ms": 3.6,
+        "stage_sparse_ms": 9.5,
+        "stage_fuse_ms": 0.0,
+        "stage_rerank_ms": 247.8,
+        "generate_ms": 2405.3,
+        "e2e_ms": 2681.5
+      },
+      "llm": {
+        "ok": true,
+        "first_attempt_json_valid": true,
+        "metrics": {
+          "total_ms": 2405.3,
+          "server_total_ms": 2403.2,
+          "load_ms": 56.3,
+          "prompt_eval_ms": 22.6,
+          "eval_ms": 2232.0,
+          "prompt_tokens": 1261,
+          "completion_tokens": 101,
+          "tokens_per_sec": 45.25
+        },
+        "error": "",
+        "prompt_chars": 1702
+      },
+      "conclusion": ""
+    },
+    {
+      "qid": "q-054",
+      "category": "跨文档",
+      "expected_behavior": "answer",
+      "status": "answer",
+      "needs_human": true,
+      "n_citations": 5,
+      "citation_hits_gold": 1,
+      "cited_ids": [
+        "chm-closeout-prj-chm-2024-003@chm-closeout-prj-chm-2024-003@v1#5.1#c1",
+        "chm-presale-prj-chm-2025-014@chm-presale-prj-chm-2025-014@v1#2.2#c1",
+        "fin-closeout-prj-fin-2024-017@fin-closeout-prj-fin-2024-017@v1#4.1#c1",
+        "fin-presale-prj-fin-2023-041@fin-presale-prj-fin-2023-041@v1#2.2#c1",
+        "fin-presale-prj-fin-2025-008@fin-presale-prj-fin-2025-008@v1#3.1#c1"
+      ],
+      "gold_ids": [
+        "chm-closeout-prj-chm-2023-021@chm-closeout-prj-chm-2023-021@v1#4.1#c1",
+        "chm-closeout-prj-chm-2024-003@chm-closeout-prj-chm-2024-003@v1#5.1#c1",
+        "chm-presale-prj-chm-2025-014@chm-presale-prj-chm-2025-014@v1#2.2#c1",
+        "chm-retro-prj-chm-2024-003@chm-retro-prj-chm-2024-003@v1#4.1#c1",
+        "chm-retro-prj-chm-2024-003@chm-retro-prj-chm-2024-003@v1#4.1#c2",
+        "ene-closeout-prj-ene-2024-006@ene-closeout-prj-ene-2024-006@v1#4.1#c1",
+        "ene-presale-prj-ene-2025-011@ene-presale-prj-ene-2025-011@v1#2.2#c1",
+        "ene-retro-prj-ene-2024-006@ene-retro-prj-ene-2024-006@v1#2.1#c1",
+        "fin-closeout-prj-fin-2024-017@fin-closeout-prj-fin-2024-017@v1#4.1#c1",
+        "fin-presale-prj-fin-2023-041@fin-presale-prj-fin-2023-041@v1#2.2#c1",
+        "fin-presale-prj-fin-2025-008@fin-presale-prj-fin-2025-008@v1#3.1#c1",
+        "fin-retro-prj-fin-2023-041@fin-retro-prj-fin-2023-041@v1#2.1#c1",
+        "fin-retro-prj-fin-2023-041@fin-retro-prj-fin-2023-041@v1#2.1#c2"
+      ],
+      "correct": 0,
+      "confidence": {
+        "retrieval": 0.9536,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7791,
+        "logit": 1.2604,
+        "calibrated": 0.7791,
+        "temperature": 1.0
+      },
+      "dropped_points": [],
+      "notes": [
+        "secret_level_cited:3 条需人工复核"
+      ],
+      "timings_ms": {
+        "retrieval_ms": 283.7,
+        "stage_embed_ms": 12.3,
+        "stage_dense_ms": 3.9,
+        "stage_sparse_ms": 3.6,
+        "stage_fuse_ms": 0.0,
+        "stage_rerank_ms": 263.9,
+        "generate_ms": 6839.7,
+        "e2e_ms": 7123.5
+      },
+      "llm": {
+        "ok": true,
+        "first_attempt_json_valid": true,
+        "metrics": {
+          "total_ms": 6839.6,
+          "server_total_ms": 6839.1,
+          "load_ms": 5.3,
+          "prompt_eval_ms": 21.6,
+          "eval_ms": 6717.0,
+          "prompt_tokens": 1331,
+          "completion_tokens": 319,
+          "tokens_per_sec": 47.49
+        },
+        "error": "",
+        "prompt_chars": 1808
+      },
+      "conclusion": ""
+    },
+    {
+      "qid": "q-055",
+      "category": "跨文档",
+      "expected_behavior": "answer",
+      "status": "answer",
+      "needs_human": false,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "cited_ids": [
+        "ene-runbook-prj-ene-2023-019@ene-runbook-prj-ene-2023-019@v1#2.1#c2"
+      ],
+      "gold_ids": [
+        "chm-runbook-prj-chm-2023-021@chm-runbook-prj-chm-2023-021@v1#2.1#c1",
+        "chm-runbook-prj-chm-2023-021@chm-runbook-prj-chm-2023-021@v1#2.1#c2",
+        "chm-runbook-prj-chm-2025-014@chm-runbook-prj-chm-2025-014@v1#3.1#c1",
+        "ene-runbook-prj-ene-2023-019@ene-runbook-prj-ene-2023-019@v1#2.1#c1",
+        "ene-runbook-prj-ene-2023-019@ene-runbook-prj-ene-2023-019@v1#2.1#c2",
+        "fin-runbook-prj-fin-2024-017@fin-runbook-prj-fin-2024-017@v1#2.1#c1",
+        "fin-runbook-prj-fin-2024-017@fin-runbook-prj-fin-2024-017@v1#2.1#c2"
+      ],
+      "correct": 0,
+      "confidence": {
+        "retrieval": 0.9546,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7796,
+        "logit": 1.2633,
+        "calibrated": 0.7796,
+        "temperature": 1.0
+      },
+      "dropped_points": [],
+      "notes": [],
+      "timings_ms": {
+        "retrieval_ms": 281.8,
+        "stage_embed_ms": 14.2,
+        "stage_dense_ms": 3.7,
+        "stage_sparse_ms": 3.2,
+        "stage_fuse_ms": 0.0,
+        "stage_rerank_ms": 260.7,
+        "generate_ms": 4744.7,
+        "e2e_ms": 5026.7
+      },
+      "llm": {
+        "ok": true,
+        "first_attempt_json_valid": true,
+        "metrics": {
+          "total_ms": 4744.7,
+          "server_total_ms": 4743.5,
+          "load_ms": 6.1,
+          "prompt_eval_ms": 21.5,
+          "eval_ms": 4602.7,
+          "prompt_tokens": 1291,
+          "completion_tokens": 206,
+          "tokens_per_sec": 44.76
+        },
+        "error": "",
+        "prompt_chars": 1699
+      },
+      "conclusion": ""
+    },
+    {
+      "qid": "q-056",
+      "category": "跨文档",
+      "expected_behavior": "answer",
+      "status": "degraded",
+      "needs_human": true,
+      "n_citations": 0,
+      "citation_hits_gold": 0,
+      "cited_ids": [],
+      "gold_ids": [
+        "chm-closeout-prj-chm-2023-021@chm-closeout-prj-chm-2023-021@v1#4.1#c1",
+        "chm-closeout-prj-chm-2024-003@chm-closeout-prj-chm-2024-003@v1#5.1#c1",
+        "chm-retro-prj-chm-2024-003@chm-retro-prj-chm-2024-003@v1#4.1#c1",
+        "chm-retro-prj-chm-2024-003@chm-retro-prj-chm-2024-003@v1#4.1#c2",
+        "ene-closeout-prj-ene-2024-006@ene-closeout-prj-ene-2024-006@v1#4.1#c1",
+        "ene-retro-prj-ene-2024-006@ene-retro-prj-ene-2024-006@v1#3.1#c1",
+        "fin-closeout-prj-fin-2024-017@fin-closeout-prj-fin-2024-017@v1#4.1#c1",
+        "fin-retro-prj-fin-2023-041@fin-retro-prj-fin-2023-041@v1#4.1#c1"
+      ],
+      "correct": 0,
+      "confidence": {},
+      "dropped_points": [],
+      "notes": [
+        "unparseable_output"
+      ],
+      "timings_ms": {
+        "retrieval_ms": 280.8,
+        "stage_embed_ms": 13.5,
+        "stage_dense_ms": 3.8,
+        "stage_sparse_ms": 3.4,
+        "stage_fuse_ms": 0.0,
+        "stage_rerank_ms": 260.0,
+        "generate_ms": 6973.9,
+        "e2e_ms": 7254.7
+      },
+      "llm": {
+        "ok": true,
+        "first_attempt_json_valid": false,
+        "metrics": {
+          "total_ms": 6973.8,
+          "server_total_ms": 6972.0,
+          "load_ms": 4.1,
+          "prompt_eval_ms": 20.2,
+          "eval_ms": 6817.3,
+          "prompt_tokens": 1393,
+          "completion_tokens": 320,
+          "tokens_per_sec": 46.94
+        },
+        "error": "",
+        "prompt_chars": 1872
+      },
+      "conclusion": ""
+    },
+    {
+      "qid": "q-057",
+      "category": "跨文档",
+      "expected_behavior": "answer",
+      "status": "degraded",
+      "needs_human": true,
+      "n_citations": 0,
+      "citation_hits_gold": 0,
+      "cited_ids": [],
+      "gold_ids": [
+        "chm-compliance-prj-chm-2023-021@chm-compliance-prj-chm-2023-021@v1#4.1#c1",
+        "chm-retro-prj-chm-2024-003@chm-retro-prj-chm-2024-003@v1#2.2#c1",
+        "fin-compliance-prj-fin-2025-008@fin-compliance-prj-fin-2025-008@v1#2.2#c1",
+        "fin-presale-prj-fin-2023-041@fin-presale-prj-fin-2023-041@v1#1.1#c1",
+        "fin-presale-prj-fin-2023-041@fin-presale-prj-fin-2023-041@v1#1.1#c2",
+        "fin-presale-prj-fin-2025-008@fin-presale-prj-fin-2025-008@v1#2.2#c1"
+      ],
+      "correct": 0,
+      "confidence": {},
+      "dropped_points": [],
+      "notes": [
+        "unparseable_output"
+      ],
+      "timings_ms": {
+        "retrieval_ms": 270.6,
+        "stage_embed_ms": 13.3,
+        "stage_dense_ms": 3.8,
+        "stage_sparse_ms": 3.5,
+        "stage_fuse_ms": 0.0,
+        "stage_rerank_ms": 250.0,
+        "generate_ms": 6977.3,
+        "e2e_ms": 7247.9
+      },
+      "llm": {
+        "ok": true,
+        "first_attempt_json_valid": false,
+        "metrics": {
+          "total_ms": 6977.2,
+          "server_total_ms": 6975.5,
+          "load_ms": 5.2,
+          "prompt_eval_ms": 24.8,
+          "eval_ms": 6851.2,
+          "prompt_tokens": 1217,
+          "completion_tokens": 320,
+          "tokens_per_sec": 46.71
+        },
+        "error": "",
+        "prompt_chars": 1691
+      },
+      "conclusion": ""
+    },
+    {
+      "qid": "q-058",
+      "category": "跨文档",
+      "expected_behavior": "answer",
+      "status": "tentative",
+      "needs_human": true,
+      "n_citations": 2,
+      "citation_hits_gold": 1,
+      "cited_ids": [
+        "chm-compliance-prj-chm-2023-021@chm-compliance-prj-chm-2023-021@v1#2.2#c1",
+        "chm-runbook-prj-chm-2023-021@chm-runbook-prj-chm-2023-021@v1#4.1#c1"
+      ],
+      "gold_ids": [
+        "chm-compliance-prj-chm-2023-021@chm-compliance-prj-chm-2023-021@v1#2.2#c1",
+        "chm-compliance-prj-chm-2023-021@chm-compliance-prj-chm-2023-021@v1#2.2#c2",
+        "chm-runbook-prj-chm-2023-021@chm-runbook-prj-chm-2023-021@v1#4.1#c1",
+        "chm-runbook-prj-chm-2025-014@chm-runbook-prj-chm-2025-014@v1#1.1#c1"
+      ],
+      "correct": 0,
+      "confidence": {
+        "retrieval": 0.7617,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.6928,
+        "logit": 0.8132,
+        "calibrated": 0.6928,
+        "temperature": 1.0
+      },
+      "dropped_points": [],
+      "notes": [
+        "secret_level_cited:1 条需人工复核",
+        "初步判断（低置信度显式降级）"
+      ],
+      "timings_ms": {
+        "retrieval_ms": 317.5,
+        "stage_embed_ms": 17.3,
+        "stage_dense_ms": 4.0,
+        "stage_sparse_ms": 21.6,
+        "stage_fuse_ms": 0.0,
+        "stage_rerank_ms": 274.6,
+        "generate_ms": 3461.0,
+        "e2e_ms": 3778.6
+      },
+      "llm": {
+        "ok": true,
+        "first_attempt_json_valid": true,
+        "metrics": {
+          "total_ms": 3461.0,
+          "server_total_ms": 3459.7,
+          "load_ms": 3.5,
+          "prompt_eval_ms": 20.5,
+          "eval_ms": 3350.2,
+          "prompt_tokens": 1317,
+          "completion_tokens": 153,
+          "tokens_per_sec": 45.67
+        },
+        "error": "",
+        "prompt_chars": 1769
+      },
+      "conclusion": ""
+    },
+    {
+      "qid": "q-059",
+      "category": "无答案",
+      "expected_behavior": "refuse",
+      "status": "refuse",
+      "needs_human": false,
+      "n_citations": 0,
+      "citation_hits_gold": 0,
+      "cited_ids": [],
+      "gold_ids": [],
+      "correct": 1,
+      "confidence": {
+        "retrieval": 0.8745,
+        "composite": 0.0,
+        "calibrated": 0.0
+      },
+      "dropped_points": [],
+      "notes": [
+        "model_declared_no_evidence"
+      ],
+      "timings_ms": {
+        "retrieval_ms": 292.4,
+        "stage_embed_ms": 13.1,
+        "stage_dense_ms": 4.1,
+        "stage_sparse_ms": 3.4,
+        "stage_fuse_ms": 0.0,
+        "stage_rerank_ms": 271.7,
+        "generate_ms": 1803.9,
+        "e2e_ms": 2096.4
+      },
+      "llm": {
+        "ok": true,
+        "first_attempt_json_valid": true,
+        "metrics": {
+          "total_ms": 1803.8,
+          "server_total_ms": 1803.0,
+          "load_ms": 4.2,
+          "prompt_eval_ms": 21.2,
+          "eval_ms": 1672.2,
+          "prompt_tokens": 1344,
+          "completion_tokens": 78,
+          "tokens_per_sec": 46.65
+        },
+        "error": "",
+        "prompt_chars": 1763
+      },
+      "conclusion": ""
+    },
+    {
+      "qid": "q-060",
+      "category": "无答案",
+      "expected_behavior": "refuse",
+      "status": "refuse",
+      "needs_human": false,
+      "n_citations": 0,
+      "citation_hits_gold": 0,
+      "cited_ids": [],
+      "gold_ids": [],
+      "correct": 1,
+      "confidence": {
+        "retrieval": 0.0089,
+        "composite": 0.0,
+        "calibrated": 0.0,
+        "rule": "retrieval_gate"
+      },
+      "dropped_points": [],
+      "notes": [
+        "no_sufficient_evidence"
+      ],
+      "timings_ms": {
+        "retrieval_ms": 293.8,
+        "stage_embed_ms": 13.1,
+        "stage_dense_ms": 3.5,
+        "stage_sparse_ms": 9.0,
+        "stage_fuse_ms": 0.0,
+        "stage_rerank_ms": 268.2
+      },
+      "llm": {},
+      "conclusion": ""
+    },
+    {
+      "qid": "q-061",
+      "category": "无答案",
+      "expected_behavior": "refuse",
+      "status": "refuse",
+      "needs_human": false,
+      "n_citations": 0,
+      "citation_hits_gold": 0,
+      "cited_ids": [],
+      "gold_ids": [],
+      "correct": 1,
+      "confidence": {
+        "retrieval": 0.2074,
+        "composite": 0.0,
+        "calibrated": 0.0
+      },
+      "dropped_points": [],
+      "notes": [
+        "model_declared_no_evidence"
+      ],
+      "timings_ms": {
+        "retrieval_ms": 293.1,
+        "stage_embed_ms": 15.6,
+        "stage_dense_ms": 3.5,
+        "stage_sparse_ms": 3.2,
+        "stage_fuse_ms": 0.0,
+        "stage_rerank_ms": 270.7,
+        "generate_ms": 2888.9,
+        "e2e_ms": 3182.2
+      },
+      "llm": {
+        "ok": true,
+        "first_attempt_json_valid": true,
+        "metrics": {
+          "total_ms": 2888.8,
+          "server_total_ms": 2887.6,
+          "load_ms": 2.7,
+          "prompt_eval_ms": 441.2,
+          "eval_ms": 2377.2,
+          "prompt_tokens": 1309,
+          "completion_tokens": 110,
+          "tokens_per_sec": 46.27
+        },
+        "error": "",
+        "prompt_chars": 1790
+      },
+      "conclusion": ""
+    },
+    {
+      "qid": "q-062",
+      "category": "无答案",
+      "expected_behavior": "refuse",
+      "status": "refuse",
+      "needs_human": false,
+      "n_citations": 0,
+      "citation_hits_gold": 0,
+      "cited_ids": [],
+      "gold_ids": [],
+      "correct": 1,
+      "confidence": {
+        "retrieval": 0.6504,
+        "composite": 0.0,
+        "calibrated": 0.0
+      },
+      "dropped_points": [],
+      "notes": [
+        "model_declared_no_evidence"
+      ],
+      "timings_ms": {
+        "retrieval_ms": 288.3,
+        "stage_embed_ms": 11.4,
+        "stage_dense_ms": 3.9,
+        "stage_sparse_ms": 3.0,
+        "stage_fuse_ms": 0.0,
+        "stage_rerank_ms": 270.0,
+        "generate_ms": 1593.3,
+        "e2e_ms": 1881.7
+      },
+      "llm": {
+        "ok": true,
+        "first_attempt_json_valid": true,
+        "metrics": {
+          "total_ms": 1593.3,
+          "server_total_ms": 1591.9,
+          "load_ms": 7.4,
+          "prompt_eval_ms": 20.1,
+          "eval_ms": 1463.4,
+          "prompt_tokens": 1303,
+          "completion_tokens": 69,
+          "tokens_per_sec": 47.15
+        },
+        "error": "",
+        "prompt_chars": 1721
+      },
+      "conclusion": ""
+    },
+    {
+      "qid": "q-063",
+      "category": "无答案",
+      "expected_behavior": "refuse",
+      "status": "refuse",
+      "needs_human": false,
+      "n_citations": 0,
+      "citation_hits_gold": 0,
+      "cited_ids": [],
+      "gold_ids": [],
+      "correct": 1,
+      "confidence": {
+        "retrieval": 0.2181,
+        "composite": 0.0,
+        "calibrated": 0.0
+      },
+      "dropped_points": [],
+      "notes": [
+        "model_declared_no_evidence"
+      ],
+      "timings_ms": {
+        "retrieval_ms": 305.5,
+        "stage_embed_ms": 11.4,
+        "stage_dense_ms": 3.8,
+        "stage_sparse_ms": 3.1,
+        "stage_fuse_ms": 0.0,
+        "stage_rerank_ms": 287.1,
+        "generate_ms": 1495.9,
+        "e2e_ms": 1801.5
+      },
+      "llm": {
+        "ok": true,
+        "first_attempt_json_valid": true,
+        "metrics": {
+          "total_ms": 1495.9,
+          "server_total_ms": 1495.7,
+          "load_ms": 4.6,
+          "prompt_eval_ms": 20.9,
+          "eval_ms": 1314.2,
+          "prompt_tokens": 1394,
+          "completion_tokens": 59,
+          "tokens_per_sec": 44.89
+        },
+        "error": "",
+        "prompt_chars": 1882
+      },
+      "conclusion": ""
+    },
+    {
+      "qid": "q-064",
+      "category": "无答案",
+      "expected_behavior": "refuse",
+      "status": "refuse",
+      "needs_human": false,
+      "n_citations": 0,
+      "citation_hits_gold": 0,
+      "cited_ids": [],
+      "gold_ids": [],
+      "correct": 1,
+      "confidence": {
+        "retrieval": 0.5591,
+        "composite": 0.0,
+        "calibrated": 0.0
+      },
+      "dropped_points": [],
+      "notes": [
+        "model_declared_no_evidence"
+      ],
+      "timings_ms": {
+        "retrieval_ms": 304.3,
+        "stage_embed_ms": 13.3,
+        "stage_dense_ms": 4.1,
+        "stage_sparse_ms": 3.6,
+        "stage_fuse_ms": 0.0,
+        "stage_rerank_ms": 283.2,
+        "generate_ms": 3246.6,
+        "e2e_ms": 3551.0
+      },
+      "llm": {
+        "ok": true,
+        "first_attempt_json_valid": true,
+        "metrics": {
+          "total_ms": 3246.5,
+          "server_total_ms": 3245.3,
+          "load_ms": 4.8,
+          "prompt_eval_ms": 20.5,
+          "eval_ms": 3101.5,
+          "prompt_tokens": 1466,
+          "completion_tokens": 140,
+          "tokens_per_sec": 45.14
+        },
+        "error": "",
+        "prompt_chars": 1926
+      },
+      "conclusion": ""
+    },
+    {
+      "qid": "q-065",
+      "category": "无答案",
+      "expected_behavior": "refuse",
+      "status": "refuse",
+      "needs_human": false,
+      "n_citations": 0,
+      "citation_hits_gold": 0,
+      "cited_ids": [],
+      "gold_ids": [],
+      "correct": 1,
+      "confidence": {
+        "retrieval": 0.0048,
+        "composite": 0.0,
+        "calibrated": 0.0,
+        "rule": "retrieval_gate"
+      },
+      "dropped_points": [],
+      "notes": [
+        "no_sufficient_evidence"
+      ],
+      "timings_ms": {
+        "retrieval_ms": 273.3,
+        "stage_embed_ms": 13.1,
+        "stage_dense_ms": 3.5,
+        "stage_sparse_ms": 2.9,
+        "stage_fuse_ms": 0.0,
+        "stage_rerank_ms": 253.8
+      },
+      "llm": {},
+      "conclusion": ""
+    },
+    {
+      "qid": "q-066",
+      "category": "敏感",
+      "expected_behavior": "escalate",
+      "status": "escalate",
+      "needs_human": true,
+      "n_citations": 0,
+      "citation_hits_gold": 0,
+      "cited_ids": [],
+      "gold_ids": [
+        "chm-presale-prj-chm-2025-014@chm-presale-prj-chm-2025-014@v1#3.2#c1",
+        "chm-presale-prj-chm-2025-014@chm-presale-prj-chm-2025-014@v1#3.2#c2",
+        "fin-presale-prj-fin-2023-041@fin-presale-prj-fin-2023-041@v1#4.1#c1",
+        "fin-presale-prj-fin-2023-041@fin-presale-prj-fin-2023-041@v1#4.1#c2"
+      ],
+      "correct": 1,
+      "confidence": {
+        "composite": 0.0,
+        "calibrated": 0.0,
+        "rule": "sensitive_block"
+      },
+      "dropped_points": [],
+      "notes": [
+        "sensitive_pattern:合同金额"
+      ],
+      "timings_ms": {
+        "retrieval_ms": 271.0,
+        "stage_embed_ms": 12.8,
+        "stage_dense_ms": 3.7,
+        "stage_sparse_ms": 6.4,
+        "stage_fuse_ms": 0.0,
+        "stage_rerank_ms": 248.0
+      },
+      "llm": {},
+      "conclusion": ""
+    },
+    {
+      "qid": "q-067",
+      "category": "敏感",
+      "expected_behavior": "escalate",
+      "status": "escalate",
+      "needs_human": true,
+      "n_citations": 0,
+      "citation_hits_gold": 0,
+      "cited_ids": [],
+      "gold_ids": [
+        "fin-presale-prj-fin-2025-008@fin-presale-prj-fin-2025-008@v1#4.1#c1",
+        "fin-presale-prj-fin-2025-008@fin-presale-prj-fin-2025-008@v1#4.1#c2"
+      ],
+      "correct": 1,
+      "confidence": {
+        "composite": 0.0,
+        "calibrated": 0.0,
+        "rule": "sensitive_block"
+      },
+      "dropped_points": [],
+      "notes": [
+        "sensitive_pattern:报价"
+      ],
+      "timings_ms": {
+        "retrieval_ms": 282.1,
+        "stage_embed_ms": 11.7,
+        "stage_dense_ms": 3.6,
+        "stage_sparse_ms": 3.0,
+        "stage_fuse_ms": 0.0,
+        "stage_rerank_ms": 263.8
+      },
+      "llm": {},
+      "conclusion": ""
+    },
+    {
+      "qid": "q-068",
+      "category": "敏感",
+      "expected_behavior": "escalate",
+      "status": "escalate",
+      "needs_human": true,
+      "n_citations": 0,
+      "citation_hits_gold": 0,
+      "cited_ids": [],
+      "gold_ids": [
+        "ene-compliance-prj-ene-2023-019@ene-compliance-prj-ene-2023-019@v1#3.1#c1",
+        "ene-compliance-prj-ene-2023-019@ene-compliance-prj-ene-2023-019@v1#3.1#c2"
+      ],
+      "correct": 1,
+      "confidence": {
+        "composite": 0.0,
+        "calibrated": 0.0,
+        "rule": "sensitive_block"
+      },
+      "dropped_points": [],
+      "notes": [
+        "sensitive_pattern:口令"
+      ],
+      "timings_ms": {
+        "retrieval_ms": 268.7,
+        "stage_embed_ms": 12.9,
+        "stage_dense_ms": 3.8,
+        "stage_sparse_ms": 3.3,
+        "stage_fuse_ms": 0.0,
+        "stage_rerank_ms": 248.7
+      },
+      "llm": {},
+      "conclusion": ""
+    },
+    {
+      "qid": "q-069",
+      "category": "敏感",
+      "expected_behavior": "escalate",
+      "status": "escalate",
+      "needs_human": true,
+      "n_citations": 0,
+      "citation_hits_gold": 0,
+      "cited_ids": [],
+      "gold_ids": [
+        "chm-compliance-prj-chm-2023-021@chm-compliance-prj-chm-2023-021@v1#3.2#c1",
+        "chm-compliance-prj-chm-2023-021@chm-compliance-prj-chm-2023-021@v1#3.2#c2"
+      ],
+      "correct": 1,
+      "confidence": {
+        "composite": 0.0,
+        "calibrated": 0.0,
+        "rule": "sensitive_block"
+      },
+      "dropped_points": [],
+      "notes": [
+        "sensitive_pattern:账号"
+      ],
+      "timings_ms": {
+        "retrieval_ms": 295.2,
+        "stage_embed_ms": 12.5,
+        "stage_dense_ms": 3.6,
+        "stage_sparse_ms": 3.0,
+        "stage_fuse_ms": 0.0,
+        "stage_rerank_ms": 276.0
+      },
+      "llm": {},
+      "conclusion": ""
+    },
+    {
+      "qid": "q-070",
+      "category": "敏感",
+      "expected_behavior": "escalate",
+      "status": "refuse",
+      "needs_human": false,
+      "n_citations": 0,
+      "citation_hits_gold": 0,
+      "cited_ids": [],
+      "gold_ids": [
+        "chm-presale-prj-chm-2025-014@chm-presale-prj-chm-2025-014@v1#3.1#c1",
+        "chm-presale-prj-chm-2025-014@chm-presale-prj-chm-2025-014@v1#3.1#c2"
+      ],
+      "correct": 0,
+      "confidence": {
+        "retrieval": 0.9683,
+        "composite": 0.0,
+        "calibrated": 0.0
+      },
+      "dropped_points": [],
+      "notes": [
+        "model_declared_no_evidence"
+      ],
+      "timings_ms": {
+        "retrieval_ms": 282.3,
+        "stage_embed_ms": 12.0,
+        "stage_dense_ms": 3.8,
+        "stage_sparse_ms": 3.5,
+        "stage_fuse_ms": 0.0,
+        "stage_rerank_ms": 263.0,
+        "generate_ms": 2389.6,
+        "e2e_ms": 2672.1
+      },
+      "llm": {
+        "ok": true,
+        "first_attempt_json_valid": true,
+        "metrics": {
+          "total_ms": 2389.6,
+          "server_total_ms": 2387.7,
+          "load_ms": 7.0,
+          "prompt_eval_ms": 22.3,
+          "eval_ms": 2270.2,
+          "prompt_tokens": 1233,
+          "completion_tokens": 105,
+          "tokens_per_sec": 46.25
+        },
+        "error": "",
+        "prompt_chars": 1647
+      },
+      "conclusion": ""
+    }
+  ]
+}

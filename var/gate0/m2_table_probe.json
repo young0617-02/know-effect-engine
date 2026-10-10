@@ -1,0 +1,180 @@
+{
+  "n_graded": 12,
+  "n_total": 12,
+  "recall@5": 1.0,
+  "hit@5": 1.0,
+  "precision@5": 0.2,
+  "mrr": 0.8611,
+  "zero_recall_rate": 0.0,
+  "latency_ms": {
+    "n": 12,
+    "p50": 249.8,
+    "p95": 300.3,
+    "p99": 300.5,
+    "max": 300.5,
+    "mean": 250.2
+  },
+  "n": 12,
+  "top1_is_gold_rate": 0.75,
+  "per_question": [
+    {
+      "doc": "m2tbl-hak180",
+      "q": "HAK180 的框架 L 单元里铅的含量标识是什么",
+      "term": "框架 L 单元",
+      "hit": true,
+      "top1_is_gold": false,
+      "n_gold": 1
+    },
+    {
+      "doc": "m2tbl-hak180",
+      "q": "顶盖单元是否含有六价铬",
+      "term": "顶盖单元",
+      "hit": true,
+      "top1_is_gold": false,
+      "n_gold": 1
+    },
+    {
+      "doc": "m2tbl-hak180",
+      "q": "包装材料的多溴二苯醚标识结果",
+      "term": "包装材料",
+      "hit": true,
+      "top1_is_gold": false,
+      "n_gold": 1
+    },
+    {
+      "doc": "m2tbl-hak180",
+      "q": "主电路板在有害物质表里汞的标记",
+      "term": "主电路板",
+      "hit": true,
+      "top1_is_gold": true,
+      "n_gold": 1
+    },
+    {
+      "doc": "m2tbl-env3",
+      "q": "高温工作的要求值是多少",
+      "term": "高温工作",
+      "hit": true,
+      "top1_is_gold": true,
+      "n_gold": 1
+    },
+    {
+      "doc": "m2tbl-env3",
+      "q": "振动等级的判定结果",
+      "term": "振动等级",
+      "hit": true,
+      "top1_is_gold": true,
+      "n_gold": 1
+    },
+    {
+      "doc": "m2tbl-mat7",
+      "q": "电源模块的铅标识是什么",
+      "term": "电源模块",
+      "hit": true,
+      "top1_is_gold": true,
+      "n_gold": 1
+    },
+    {
+      "doc": "m2tbl-mat7",
+      "q": "线缆组件的汞含量标识",
+      "term": "线缆组件",
+      "hit": true,
+      "top1_is_gold": true,
+      "n_gold": 1
+    },
+    {
+      "doc": "m2tbl-ms2",
+      "q": "试运行阶段要交付什么",
+      "term": "试运行",
+      "hit": true,
+      "top1_is_gold": true,
+      "n_gold": 1
+    },
+    {
+      "doc": "m2tbl-ms2",
+      "q": "结项阶段的交付物",
+      "term": "结项",
+      "hit": true,
+      "top1_is_gold": true,
+      "n_gold": 1
+    },
+    {
+      "doc": "m2tbl-wide6",
+      "q": "华东区域的年成本是多少",
+      "term": "华东",
+      "hit": true,
+      "top1_is_gold": true,
+      "n_gold": 1
+    },
+    {
+      "doc": "m2tbl-wide6",
+      "q": "西南区域的单位能耗",
+      "term": "西南",
+      "hit": true,
+      "top1_is_gold": true,
+      "n_gold": 1
+    }
+  ],
+  "misses": [],
+  "ingest": {
+    "m2tbl-hak180": {
+      "version": "m2tbl-hak180@v1",
+      "parent": 13,
+      "child": 40,
+      "indexed": 40,
+      "sec": 37.7,
+      "table_note": [
+        "表格结构还原（SLANet-plus）：成功 1 张，失败回退文本行 0 张"
+      ]
+    },
+    "m2tbl-env3": {
+      "version": "m2tbl-env3@v1",
+      "parent": 1,
+      "child": 6,
+      "indexed": 6,
+      "sec": 11.9,
+      "table_note": [
+        "表格结构还原（SLANet-plus）：成功 1 张，失败回退文本行 0 张"
+      ]
+    },
+    "m2tbl-mat7": {
+      "version": "m2tbl-mat7@v1",
+      "parent": 1,
+      "child": 6,
+      "indexed": 6,
+      "sec": 12.4,
+      "table_note": [
+        "表格结构还原（SLANet-plus）：成功 1 张，失败回退文本行 0 张"
+      ]
+    },
+    "m2tbl-ms2": {
+      "version": "m2tbl-ms2@v1",
+      "parent": 1,
+      "child": 8,
+      "indexed": 8,
+      "sec": 12.1,
+      "table_note": [
+        "表格结构还原（SLANet-plus）：成功 1 张，失败回退文本行 0 张"
+      ]
+    },
+    "m2tbl-wide6": {
+      "version": "m2tbl-wide6@v1",
+      "parent": 1,
+      "child": 4,
+      "indexed": 4,
+      "sec": 12.4,
+      "table_note": [
+        "表格结构还原（SLANet-plus）：成功 1 张，失败回退文本行 0 张"
+      ]
+    }
+  },
+  "table_chunk_count_by_doc": {
+    "m2tbl-hak180": 16,
+    "m2tbl-env3": 5,
+    "m2tbl-mat7": 5,
+    "m2tbl-ms2": 7,
+    "m2tbl-wide6": 3
+  },
+  "collection": "kb_m2_tables",
+  "chunk_count": 64,
+  "restored_baseline_chunks": 193
+}

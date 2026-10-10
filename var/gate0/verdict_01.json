@@ -1,0 +1,11 @@
+{
+  "item": "①",
+  "title": "8GB 显存下嵌入/重排与本地生成模型的分时/降级调度可行性",
+  "blocking": true,
+  "result": "pass",
+  "mark": "通过",
+  "gate": "零 OOM 且嵌入+重排可与 7B 共存驻留；P95 检索 < 800ms；P95 完整答案（256 token 预算）< 6s；流式首 token < 1.2s 待 M4 流式实现后补测",
+  "measured": "零 OOM=True；可与 7B 共存驻留=True；P95 检索 314ms；P95 完整答案(256，合并 n=12) 5990ms（有效测量：['time_sharded', 'co_resident', 'cpu_sharded']）",
+  "note": "",
+  "ts": "2026-10-09T17:35:21+08:00"
+}

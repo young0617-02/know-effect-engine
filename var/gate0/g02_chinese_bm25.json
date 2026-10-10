@@ -1,0 +1,455 @@
+{
+  "env": {
+    "ts": "2026-10-09T16:41:16+08:00",
+    "git_commit": "5bb82f0",
+    "git_dirty": true,
+    "python": "3.12.8",
+    "platform": "Windows 11",
+    "torch": "2.14.0+cu130",
+    "cuda_available": true,
+    "gpu": {
+      "name": "NVIDIA GeForce RTX 4060 Laptop GPU",
+      "total_mib": 8188,
+      "used_mib": 5750.1
+    },
+    "transformers": "5.19.0",
+    "pymilvus": "3.0.2"
+  },
+  "analyzer_params_supported": {
+    "jieba": {
+      "max_length": 8192,
+      "enable_analyzer": "true",
+      "analyzer_params": "{\"tokenizer\":\"jieba\"}"
+    },
+    "jieba_count": 193,
+    "standard": {
+      "max_length": 8192,
+      "enable_analyzer": "true",
+      "analyzer_params": "{\"type\":\"standard\"}"
+    },
+    "standard_count": 193,
+    "chinese": {
+      "max_length": 8192,
+      "enable_analyzer": "true",
+      "analyzer_params": "{\"type\":\"chinese\"}"
+    },
+    "chinese_count": 193,
+    "default_none": {
+      "max_length": 8192,
+      "enable_analyzer": "true"
+    },
+    "default_none_count": 193
+  },
+  "build": {
+    "version_tag": "v1",
+    "collection": "kb_bm25_jieba",
+    "analyzer": "jieba",
+    "admission": {
+      "total": 24,
+      "accepted": 24,
+      "rejected": 0,
+      "duplicates": 0
+    },
+    "rejected_detail": [],
+    "duplicates": [],
+    "docs_indexed": 24,
+    "parent_chunks": 140,
+    "child_chunks": 193,
+    "pg_stats": {
+      "document": 24,
+      "document_version": 24,
+      "chunk": 333,
+      "outbox_event": 24,
+      "audit_log": 24,
+      "reconciliation_diff": 0
+    },
+    "milvus_count": 193,
+    "timings_sec": {
+      "authoritative_write": 3.86,
+      "embed": 1.76,
+      "total": 273.21
+    },
+    "dispatch": {
+      "rounds": [
+        {
+          "round": 1,
+          "dispatched": 24,
+          "failed": 0
+        }
+      ],
+      "remaining_pending": 0
+    }
+  },
+  "build_seconds": 273.2,
+  "rebuild_standard": {
+    "collection": "kb_bm25_standard",
+    "analyzer": "standard",
+    "versions": 24,
+    "inserted": 193,
+    "milvus_count": 193,
+    "seconds": 3.87
+  },
+  "rebuild_chinese": {
+    "collection": "kb_bm25_chinese",
+    "analyzer": "chinese",
+    "versions": 24,
+    "inserted": 193,
+    "milvus_count": 193,
+    "seconds": 4.03
+  },
+  "rebuild_default_none": {
+    "collection": "kb_bm25_defaultnone",
+    "analyzer": "default_none",
+    "versions": 24,
+    "inserted": 193,
+    "milvus_count": 193,
+    "seconds": 3.99
+  },
+  "rebuild_canonical": {
+    "collection": "kb_chunks",
+    "analyzer": "jieba",
+    "versions": 24,
+    "inserted": 193,
+    "milvus_count": 193,
+    "seconds": 4.06
+  },
+  "eval_set": {
+    "n_questions": 70,
+    "n_children": 193,
+    "n_parents": 140,
+    "answerable": 58,
+    "refuse": 7,
+    "escalate": 5,
+    "gradeable": 63,
+    "gold_empty_but_answerable": 0,
+    "unmatched_qids": [],
+    "mean_gold_per_question": 2.6,
+    "by_category": {
+      "术语": 14,
+      "编号": 12,
+      "方案名": 12,
+      "口语化": 14,
+      "跨文档": 6,
+      "无答案": 7,
+      "敏感": 5
+    }
+  },
+  "tokenization_probe": {
+    "银企直联": {
+      "jieba": 3,
+      "standard": 0,
+      "chinese": 3,
+      "default_none": 0
+    },
+    "企直联": {
+      "jieba": 2,
+      "standard": 0,
+      "chinese": 2,
+      "default_none": 0
+    },
+    "实时清算": {
+      "jieba": 20,
+      "standard": 0,
+      "chinese": 20,
+      "default_none": 0
+    },
+    "线损率": {
+      "jieba": 18,
+      "standard": 0,
+      "chinese": 18,
+      "default_none": 0
+    },
+    "损率": {
+      "jieba": 3,
+      "standard": 0,
+      "chinese": 3,
+      "default_none": 0
+    },
+    "SCADA 主站": {
+      "jieba": 20,
+      "standard": 6,
+      "chinese": 20,
+      "default_none": 6
+    },
+    "IEC 60870-5-104": {
+      "jieba": 20,
+      "standard": 20,
+      "chinese": 6,
+      "default_none": 20
+    },
+    "DCS 联锁": {
+      "jieba": 20,
+      "standard": 6,
+      "chinese": 20,
+      "default_none": 6
+    },
+    "P1": {
+      "jieba": 10,
+      "standard": 10,
+      "chinese": 10,
+      "default_none": 10
+    }
+  },
+  "sparse_eval": {
+    "jieba": {
+      "n_graded": 58,
+      "n_total": 58,
+      "recall@5": 0.7612,
+      "hit@5": 0.9483,
+      "precision@5": 0.3552,
+      "mrr": 0.9172,
+      "zero_recall_rate": 0.0517,
+      "latency_ms": {
+        "n": 58,
+        "p50": 3.7,
+        "p95": 5.1,
+        "p99": 7.2,
+        "max": 9.7,
+        "mean": 4.0
+      },
+      "by_category": {
+        "术语": {
+          "n_graded": 14,
+          "n_total": 14,
+          "recall@5": 0.7663,
+          "hit@5": 1.0,
+          "precision@5": 0.3571,
+          "mrr": 1.0,
+          "zero_recall_rate": 0.0
+        },
+        "编号": {
+          "n_graded": 12,
+          "n_total": 12,
+          "recall@5": 0.9306,
+          "hit@5": 1.0,
+          "precision@5": 0.3167,
+          "mrr": 1.0,
+          "zero_recall_rate": 0.0
+        },
+        "方案名": {
+          "n_graded": 12,
+          "n_total": 12,
+          "recall@5": 0.9167,
+          "hit@5": 1.0,
+          "precision@5": 0.3,
+          "mrr": 1.0,
+          "zero_recall_rate": 0.0
+        },
+        "口语化": {
+          "n_graded": 14,
+          "n_total": 14,
+          "recall@5": 0.5238,
+          "hit@5": 0.7857,
+          "precision@5": 0.1857,
+          "mrr": 0.6571,
+          "zero_recall_rate": 0.2143
+        },
+        "跨文档": {
+          "n_graded": 6,
+          "n_total": 6,
+          "recall@5": 0.6535,
+          "hit@5": 1.0,
+          "precision@5": 0.9333,
+          "mrr": 1.0,
+          "zero_recall_rate": 0.0
+        }
+      },
+      "n_eval": 58
+    },
+    "standard": {
+      "n_graded": 58,
+      "n_total": 58,
+      "recall@5": 0.399,
+      "hit@5": 0.4828,
+      "precision@5": 0.1621,
+      "mrr": 0.4244,
+      "zero_recall_rate": 0.5172,
+      "latency_ms": {
+        "n": 58,
+        "p50": 2.8,
+        "p95": 3.6,
+        "p99": 3.6,
+        "max": 3.6,
+        "mean": 2.8
+      },
+      "by_category": {
+        "术语": {
+          "n_graded": 14,
+          "n_total": 14,
+          "recall@5": 0.3071,
+          "hit@5": 0.3571,
+          "precision@5": 0.1429,
+          "mrr": 0.2464,
+          "zero_recall_rate": 0.6429
+        },
+        "编号": {
+          "n_graded": 12,
+          "n_total": 12,
+          "recall@5": 0.6667,
+          "hit@5": 0.75,
+          "precision@5": 0.2,
+          "mrr": 0.6944,
+          "zero_recall_rate": 0.25
+        },
+        "方案名": {
+          "n_graded": 12,
+          "n_total": 12,
+          "recall@5": 0.7917,
+          "hit@5": 1.0,
+          "precision@5": 0.25,
+          "mrr": 0.9028,
+          "zero_recall_rate": 0.0
+        },
+        "口语化": {
+          "n_graded": 14,
+          "n_total": 14,
+          "recall@5": 0.0,
+          "hit@5": 0.0,
+          "precision@5": 0.0,
+          "mrr": 0.0,
+          "zero_recall_rate": 1.0
+        },
+        "跨文档": {
+          "n_graded": 6,
+          "n_total": 6,
+          "recall@5": 0.2232,
+          "hit@5": 0.3333,
+          "precision@5": 0.3333,
+          "mrr": 0.3333,
+          "zero_recall_rate": 0.6667
+        }
+      },
+      "n_eval": 58
+    },
+    "chinese": {
+      "n_graded": 58,
+      "n_total": 58,
+      "recall@5": 0.7555,
+      "hit@5": 0.9483,
+      "precision@5": 0.3517,
+      "mrr": 0.9259,
+      "zero_recall_rate": 0.0517,
+      "latency_ms": {
+        "n": 58,
+        "p50": 3.4,
+        "p95": 4.1,
+        "p99": 5.0,
+        "max": 5.3,
+        "mean": 3.4
+      },
+      "by_category": {
+        "术语": {
+          "n_graded": 14,
+          "n_total": 14,
+          "recall@5": 0.7663,
+          "hit@5": 1.0,
+          "precision@5": 0.3571,
+          "mrr": 1.0,
+          "zero_recall_rate": 0.0
+        },
+        "编号": {
+          "n_graded": 12,
+          "n_total": 12,
+          "recall@5": 0.9306,
+          "hit@5": 1.0,
+          "precision@5": 0.3167,
+          "mrr": 1.0,
+          "zero_recall_rate": 0.0
+        },
+        "方案名": {
+          "n_graded": 12,
+          "n_total": 12,
+          "recall@5": 0.9167,
+          "hit@5": 1.0,
+          "precision@5": 0.3,
+          "mrr": 1.0,
+          "zero_recall_rate": 0.0
+        },
+        "口语化": {
+          "n_graded": 14,
+          "n_total": 14,
+          "recall@5": 0.5,
+          "hit@5": 0.7857,
+          "precision@5": 0.1714,
+          "mrr": 0.6929,
+          "zero_recall_rate": 0.2143
+        },
+        "跨文档": {
+          "n_graded": 6,
+          "n_total": 6,
+          "recall@5": 0.6535,
+          "hit@5": 1.0,
+          "precision@5": 0.9333,
+          "mrr": 1.0,
+          "zero_recall_rate": 0.0
+        }
+      },
+      "n_eval": 58
+    },
+    "default_none": {
+      "n_graded": 58,
+      "n_total": 58,
+      "recall@5": 0.399,
+      "hit@5": 0.4828,
+      "precision@5": 0.1621,
+      "mrr": 0.4244,
+      "zero_recall_rate": 0.5172,
+      "latency_ms": {
+        "n": 58,
+        "p50": 2.4,
+        "p95": 3.7,
+        "p99": 4.4,
+        "max": 4.5,
+        "mean": 2.6
+      },
+      "by_category": {
+        "术语": {
+          "n_graded": 14,
+          "n_total": 14,
+          "recall@5": 0.3071,
+          "hit@5": 0.3571,
+          "precision@5": 0.1429,
+          "mrr": 0.2464,
+          "zero_recall_rate": 0.6429
+        },
+        "编号": {
+          "n_graded": 12,
+          "n_total": 12,
+          "recall@5": 0.6667,
+          "hit@5": 0.75,
+          "precision@5": 0.2,
+          "mrr": 0.6944,
+          "zero_recall_rate": 0.25
+        },
+        "方案名": {
+          "n_graded": 12,
+          "n_total": 12,
+          "recall@5": 0.7917,
+          "hit@5": 1.0,
+          "precision@5": 0.25,
+          "mrr": 0.9028,
+          "zero_recall_rate": 0.0
+        },
+        "口语化": {
+          "n_graded": 14,
+          "n_total": 14,
+          "recall@5": 0.0,
+          "hit@5": 0.0,
+          "precision@5": 0.0,
+          "mrr": 0.0,
+          "zero_recall_rate": 1.0
+        },
+        "跨文档": {
+          "n_graded": 6,
+          "n_total": 6,
+          "recall@5": 0.2232,
+          "hit@5": 0.3333,
+          "precision@5": 0.3333,
+          "mrr": 0.3333,
+          "zero_recall_rate": 0.6667
+        }
+      },
+      "n_eval": 58
+    }
+  }
+}

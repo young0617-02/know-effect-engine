@@ -1,0 +1,11 @@
+{
+  "item": "④",
+  "title": "多存储一致性（Outbox + 每日对账）",
+  "blocking": false,
+  "result": "pass",
+  "mark": "通过",
+  "gate": "人为注入的不一致能被发现并修复；不出现静默缺数据",
+  "measured": "发现率 1.0（19/19）+ 脏行 1；修复后 missing/extra 归零=True",
+  "note": "Outbox 注入失败为受控故障注入，非生产行为",
+  "ts": "2026-10-09T16:26:28+08:00"
+}
