@@ -25,6 +25,12 @@ dependencies = [
     "onnxruntime>=1.19",
     "pypdfium2>=4.30",
     "pillow>=10.3",
+    # 在线链路编排（方案 6.3 类型化状态机）与多轮 Checkpointer。
+    # 装前做过冲突 spike：解析结果 21 + 2 个包全是「新增」，无升级无卸载，
+    # pydantic/fastapi/starlette/anyio/torch/numpy/httpx 版本一字未动，
+    # 装完 CUDA 仍 available、84 项单测仍绿（见 reports/m3 的 spike 记录）。
+    "langgraph>=1.2,<2",
+    "langgraph-checkpoint-postgres>=3.1,<4",
 ]
 
 [project.optional-dependencies]
