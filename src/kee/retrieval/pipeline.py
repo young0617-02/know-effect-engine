@@ -6,6 +6,7 @@ import time
 from dataclasses import dataclass, field
 
 from kee.config import get_settings
+from kee.ingest.chunking import TABLE_ROW_MARK
 from kee.models.registry import ResidencyScheduler
 from kee.retrieval.cache import SearchCache
 from kee.retrieval.fusion import rrf_fuse
@@ -66,6 +67,7 @@ class HybridRetriever:
         rrf_k: int | None = None,
         dense_top_k: int | None = None,
         sparse_top_k: int | None = None,
+        row_rank_by_fusion: bool = True,
     ) -> None:
         if mode not in MODES:
             raise ValueError(f"mode 必须是 {MODES}")
@@ -83,6 +85,8 @@ class HybridRetriever:
         self.rrf_k = s.rrf_k if rrf_k is None else rrf_k
         self.dense_top_k = s.dense_top_k if dense_top_k is None else dense_top_k
         self.sparse_top_k = s.sparse_top_k if sparse_top_k is None else sparse_top_k
+        # True：表格行块守住融合名次（同表各行重排分只差 1e-3，用它排序等于用噪声）
+        self.row_rank_by_fusion = row_rank_by_fusion
         self.rewrite_mode = rewrite_mode or s.rewrite_mode
         if self.rewrite_mode not in REWRITE_MODES:
             raise ValueError(f"rewrite_mode 必须是 {REWRITE_MODES}")
@@ -114,6 +118,48 @@ class HybridRetriever:
         hits = self.store.search_sparse(query, limit=top_k, expr=expr)
         t[key] = round((time.perf_counter() - t0) * 1000, 1)
         return hits
+
+    def _rerank(self, query: str, candidates: list[Hit], top_k: int, degraded: list[str]) -> list[RetrievedChunk]:
+        """重排**打分**照用交叉编码器，但表格行块的**名次**沿用融合结果。
+
+        实测依据（M2 报告第七节 + 打分对照）：正确表行块的重排分本身很高（0.9976），
+        问题不在「键值碎片被打分器歧视」，而在**同表各行之间的分差只有 1e-3 量级**
+        （正确行 0.9976 vs 隔壁行 0.9971 vs 旁注 0.9897）——打分器在这一档已经饱和，
+        用它的名次去区分同表两行等于用噪声排序。而 BM25/RRF 靠行内术语能把它们分开
+        （关掉重排时正确行实测排第 1）。
+        所以：分数全部保留（下游置信度与 0.20 检索闸门仍在同一量纲上），
+        名次上让行块守住自己的融合位置，只重排正文槽位。
+        """
+        texts = [c.fields.get("text", "") for c in candidates]
+        with self.sched.use("rerank"):
+            scores = self.sched.reranker.score(query, texts)
+        score_of = {id(candidates[i]): float(scores[i]) for i in range(len(candidates))}
+        is_row = [TABLE_ROW_MARK in t for t in texts] if self.row_rank_by_fusion else [False] * len(candidates)
+        if not any(is_row):
+            order = [h for h, _ in sorted(zip(candidates, scores), key=lambda x: -x[1])]
+            marks = [False] * len(order)
+        else:
+            prose_ranked = [h for h, s in sorted(
+                (zip([c for c, r in zip(candidates, is_row) if not r],
+                     [s for s, r in zip(scores, is_row) if not r])), key=lambda x: -x[1])]
+            prose_iter = iter(prose_ranked)
+            order, marks = [], []
+            for h, r in zip(candidates, is_row):
+                if r:
+                    order.append(h)
+                    marks.append(True)
+                else:
+                    picked = next(prose_iter, None)
+                    if picked is not None:
+                        order.append(picked)
+                        marks.append(False)
+        out: list[RetrievedChunk] = []
+        for h, row in zip(order, marks):
+            c = _to_chunk(h)
+            c.score = round(score_of[id(h)], 6)
+            c.fields = {**c.fields, "ranked_by": "fusion" if row else "rerank"}
+            out.append(c)
+        return out[:top_k]
 
     def retrieve(self, query: str, ctx: AccessContext, top_k: int | None = None) -> RetrievalResult:
         s = self.settings
@@ -200,16 +246,7 @@ class HybridRetriever:
         if self.use_rerank and candidates:
             t0 = time.perf_counter()
             try:
-                with self.sched.use("rerank"):
-                    scores = self.sched.reranker.score(
-                        query, [c.fields.get("text", "") for c in candidates]
-                    )
-                ranked = sorted(zip(candidates, scores), key=lambda x: -x[1])
-                chunks = []
-                for h, sc in ranked[:top_k]:
-                    c = _to_chunk(h)
-                    c.score = round(float(sc), 6)
-                    chunks.append(c)
+                chunks = self._rerank(query, candidates, top_k, degraded)
             except Exception as e:  # noqa: BLE001
                 degraded.append(f"rerank_error:{type(e).__name__}")
                 chunks = [_to_chunk(h) for h in candidates[:top_k]]

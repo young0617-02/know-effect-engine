@@ -178,6 +178,61 @@ def test_split_table_rows_names_empty_columns_positionally():
     # 多行表头的真实列名（铅/汞）落在数据行里，这种表按列名检索会失真——已记入 M2 限制
 
 
+def test_table_row_keeps_fused_rank_while_prose_slots_get_reranked():
+    """行块守住融合名次、正文槽位按重排分重排，且分数仍全部来自重排器（量纲不能变）。"""
+    from kee.ingest.chunking import TABLE_ROW_MARK
+    from kee.retrieval.milvus_store import Hit
+    from kee.retrieval.pipeline import HybridRetriever
+    from kee.retrieval.rbac import AccessContext
+
+    mark = TABLE_ROW_MARK
+    cands = [
+        Hit("low", 0.05, {"text": "正文块低相关"}),
+        Hit("row", 0.04, {"text": f"表1（{mark}｜阶段=试运行；交付物=试运行报告"}),
+        Hit("high", 0.03, {"text": "正文块高相关"}),
+    ]
+    scores = {"正文块低相关": 0.30, f"表1（{mark}｜阶段=试运行；交付物=试运行报告": 0.99, "正文块高相关": 0.90}
+
+    class Sched:
+        class _C:
+            def __enter__(self):
+                return None
+
+            def __exit__(self, *a):
+                return False
+
+        def __init__(self):
+            self.embedder = self
+            self.reranker = self
+
+        def use(self, name):
+            return self._C()
+
+        def embed_query(self, text):
+            return [0.0] * 4
+
+        def score(self, query, passages):
+            return [scores[p] for p in passages]
+
+    class Store:
+        def search_dense(self, vec, limit=20, expr=None):
+            return cands
+
+        def search_sparse(self, query, limit=20, expr=None):
+            return cands
+
+    ctx = AccessContext(role="knowledge_owner")
+    r = HybridRetriever(Store(), scheduler=Sched(), cache=None, mode="hybrid", use_rerank=True)
+    out = r.retrieve("试运行阶段要交付什么", ctx, top_k=3)
+    assert [c.chunk_id for c in out.chunks] == ["high", "row", "low"]  # 行块没被 0.99 顶到第 1
+    assert [c.score for c in out.chunks] == [0.9, 0.99, 0.3]  # 分数量纲仍是重排分，下游闸门不受影响
+    assert [c.fields["ranked_by"] for c in out.chunks] == ["rerank", "fusion", "rerank"]
+
+    off = HybridRetriever(Store(), scheduler=Sched(), cache=None, mode="hybrid",
+                          use_rerank=True, row_rank_by_fusion=False)
+    assert [c.chunk_id for c in off.retrieve("q", ctx, top_k=3).chunks] == ["row", "high", "low"]
+
+
 def test_table_structure_model_reports_missing_weight(tmp_path, monkeypatch):
     monkeypatch.setattr("kee.ingest.mineru_onnx.model_root", lambda: tmp_path)
     assert TableStructureModel.available() is False

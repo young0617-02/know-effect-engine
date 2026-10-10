@@ -12,6 +12,9 @@ from kee.ingest.parsers import is_table_block, split_table_block_rows
 DEFAULT_CHILD_MAX = 280
 DEFAULT_PARENT_MAX = 1600
 DEFAULT_OVERLAP = 40
+# 表格行块的前缀标记：检索层靠它把「行块」与正文块区分开（名次来源不同），
+# 所以常量必须与 chunking 同源，不能两处各写一份字面量
+TABLE_ROW_MARK = "（表行）"
 
 
 def _split_paragraph(text: str, child_max: int, overlap: int) -> list[str]:
@@ -92,7 +95,7 @@ def chunk_document(
         for i, (piece, is_row) in enumerate(pieces, start=1):
             child_idx = i
             # 行块加「表行」前缀，让答案层知道这段是表格的一行而不是正文
-            text = f"{heading}｜{piece}" if not is_row else f"{heading}（表行）｜{piece}"
+            text = f"{heading}｜{piece}" if not is_row else f"{heading}{TABLE_ROW_MARK}｜{piece}"
             order += 1
             rows.append(
                 {
