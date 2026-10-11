@@ -136,6 +136,7 @@ section gold 降为报告值，Recall 类数字必须附 n 与 95% CI（阈值�
 | `scripts/m3_answer_probe.py` | 答案链实测：状态分布、空结论、引用落 gold、人工队列 |
 | `scripts/m3_conclusion_probe.py` | 结论缺失分型（截断 / 解析失败 / 缺字段 / 主动留空），带 `done_reason` 取证 |
 | `scripts/m3_refusal_guard.py` | ⑤ 出口守门，**按类别两把尺**：refuse 类结论必须为空、escalate 类允许答但必须转人工 |
+| `scripts/m3_confidence_probe.py` | 置信度诊断：标签方差 → 成分分布 → AUC（含 CI）→ 温度可辨识性 |
 | `scripts/m3_graph_ab_live.py` | **同机 A/B**：重构前实现 vs 图，同一模型同一批题比对；不一致时用「同一实现能否复现」分清模型抖动与真回归 |
 | `scripts/m3_multiturn_probe.py` | 多轮消解的收益与代价：机械构造追问整批跑，benefit/harm 一起报，答案层面与检索层面分开报 |
 | `scripts/m3_graph_equivalence.py` | **图化重构的差分回归网**：把重构前的实现按 commit sha 从 git 抽出当 oracle，17 个出口场景逐字段比对，不依赖 GPU/容器 |

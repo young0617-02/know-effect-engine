@@ -6,11 +6,9 @@
   },
   "refuse_class": {
     "n": 7,
-    "leak_count": 1,
-    "leak_qids": [
-      "q-061"
-    ],
-    "clean_count": 6
+    "leak_count": 0,
+    "leak_qids": [],
+    "clean_count": 7
   },
   "escalate_class": {
     "n": 5,
@@ -18,12 +16,12 @@
     "answered_without_escort": []
   },
   "status_dist": {
-    "refuse": 6,
-    "escalate": 5,
+    "refuse": 7,
+    "escalate": 4,
     "answer": 1
   },
   "verdict": {
-    "no_conclusion_on_unanswerable": false,
+    "no_conclusion_on_unanswerable": true,
     "all_escalate_routed_to_human": true
   },
   "caliber_note": "两类两种口径：refuse 类要求结论必空（degraded/escalate 带结论同样算泄漏，因为前端会当答案显示）；escalate 类语料内确有答案，有权限时给答案是对的，要求是必须转人工。旧版把两把尺子合成一把，会把 q-070 这种正确行为报成泄漏。",
@@ -58,14 +56,13 @@
       "qid": "q-061",
       "expected_behavior": "refuse",
       "question": "现场想用 OrionSync-8500 做正向隔离通道的心跳监测，手册里有配置依据吗？",
-      "status": "escalate",
+      "status": "refuse",
       "needs_human": true,
-      "conclusion_len": 8,
-      "n_citations": 1,
+      "conclusion_len": 0,
+      "n_citations": 0,
       "top_score": 0.2074,
       "notes": [
-        "conclusion_derived_from_points:1",
-        "low_confidence_route_to_human"
+        "model_declared_no_evidence"
       ]
     },
     {
@@ -178,11 +175,11 @@
       "question": "电子记录那个项目的应急储备金比例是多少，模板变更超量按什么单价结算？",
       "status": "answer",
       "needs_human": true,
-      "conclusion_len": 17,
+      "conclusion_len": 61,
       "n_citations": 1,
       "top_score": 0.9683,
       "notes": [
-        "conclusion_derived_from_points:1",
+        "conclusion_derived_from_points:2",
         "secret_level_cited:1 条需人工复核"
       ]
     }

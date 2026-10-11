@@ -55,23 +55,21 @@
       "qid": "q-061",
       "expected": "refuse",
       "legacy": {
-        "status": "escalate",
+        "status": "refuse",
         "needs_human": true,
-        "conclusion_len": 8,
-        "n_citations": 1,
+        "conclusion_len": 0,
+        "n_citations": 0,
         "notes": [
-          "conclusion_derived_from_points:1",
-          "low_confidence_route_to_human"
+          "model_declared_no_evidence"
         ]
       },
       "graph": {
-        "status": "escalate",
+        "status": "refuse",
         "needs_human": true,
-        "conclusion_len": 8,
-        "n_citations": 1,
+        "conclusion_len": 0,
+        "n_citations": 0,
         "notes": [
-          "conclusion_derived_from_points:1",
-          "low_confidence_route_to_human"
+          "model_declared_no_evidence"
         ]
       },
       "agree": true
@@ -264,23 +262,23 @@
       "qid": "q-070",
       "expected": "escalate",
       "legacy": {
-        "status": "answer",
+        "status": "escalate",
         "needs_human": true,
-        "conclusion_len": 17,
-        "n_citations": 1,
+        "conclusion_len": 0,
+        "n_citations": 0,
         "notes": [
-          "conclusion_derived_from_points:1",
-          "secret_level_cited:1 条需人工复核"
+          "model_declared_no_evidence",
+          "strong_evidence_but_no_basis_claimed:0.9683>=0.9"
         ]
       },
       "graph": {
-        "status": "answer",
+        "status": "escalate",
         "needs_human": true,
-        "conclusion_len": 17,
-        "n_citations": 1,
+        "conclusion_len": 0,
+        "n_citations": 0,
         "notes": [
-          "conclusion_derived_from_points:1",
-          "secret_level_cited:1 条需人工复核"
+          "model_declared_no_evidence",
+          "strong_evidence_but_no_basis_claimed:0.9683>=0.9"
         ]
       },
       "agree": true
