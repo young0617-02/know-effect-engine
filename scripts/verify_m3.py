@@ -146,9 +146,16 @@ def main() -> int:
     # 早先用 startswith('event:') 数「事件数」数到的其实是**分块数**，2 个事件可能被切进同一块里而报成 1。
     frames = [f for f in raw.replace("\r\n", "\n").split("\n\n") if f.strip()]
     names = [ln.split(":", 1)[1].strip() for f in frames for ln in f.split("\n") if ln.startswith("event:")]
-    step("流式端点按序给出 retrieval 与 answer 两个阶段事件（阶段级，非 token 级）",
-         "text/event-stream" in ctype and names[:2] == ["retrieval", "answer"],
-         {"content-type": ctype, "事件序列": names})
+    # 契约：retrieval 先到、answer 最后到，中间是 delta*（token 级）。
+    # 刻意**不**断言「必须有 delta」——模型可能一个字都没写（整会话都拒答），那不该让这步失败。
+    # 但 answer 只能出现一次：重复发同一事件会让前端渲染两遍答案，这类错误在纯文本流里最容易溜过去。
+    step("流式端点给出 retrieval → delta* → answer（token 级；answer 恰好一次且为最后事件）",
+         "text/event-stream" in ctype
+         and bool(names) and names[0] == "retrieval" and names[-1] == "answer"
+         and set(names[1:-1]) <= {"delta"}
+         and names.count("answer") == 1,
+         {"content-type": ctype, "事件数": len(names), "delta 数": names.count("delta"),
+          "answer 次数": names.count("answer")})
 
     # ---- 9. 多轮指代消解：补全必须真的进检索，且对外仍是用户原话 ----
     # 这一步只断言**机制**（消解发生 + 进了检索 + 原话保留），不断言「补全一定让答案更好」：

@@ -73,8 +73,8 @@ def main() -> int:
 
     rows = []
     for i, q in enumerate(pool, start=1):
-        kinds, t_first_event, payload = [], None, {}
-        t_first_conclusion = None
+        kinds, t_first_event, payload, seen_fields = [], None, {}, []
+        t_first_visible = None
         deltas = 0
         t0 = time.perf_counter()
         for kind, body in iter_qa_events(eng, q["question"], ctx):
@@ -83,12 +83,11 @@ def main() -> int:
             kinds.append(kind)
             if kind == "delta":
                 deltas += 1
-                # 「用户看到第一个字」要按**结论内容**算，不能按生成层首 token 算：
-                # 信封的 `{` 也在 1.2s 内到，但屏幕上什么都没有。
-                # 而且 39/58 的结论是搬运出来的（模型没写 conclusion），
-                # 那种题根本没有可流的内容，first_conclusion_ms 为空是**事实**不是漏测。
-                if t_first_conclusion is None and body.get("text"):
-                    t_first_conclusion = round((time.perf_counter() - t0) * 1000, 1)
+                seen_fields.append({"field": body.get("field"), "index": body.get("index")})
+                # 「用户看到第一个字」按**任何一段可见内容**算：结论或任一要点都算，
+                # 不能按生成层首 token 算——信封的 `{` 也在 1.2s 内到，但屏幕上什么都没有。
+                if t_first_visible is None and body.get("text"):
+                    t_first_visible = round((time.perf_counter() - t0) * 1000, 1)
             if kind in ("answer", "error"):
                 payload = body
         tm = payload.get("timings_ms") or {}
@@ -99,20 +98,23 @@ def main() -> int:
                 "event_seq_head": kinds[:2],
                 "n_delta": deltas,
                 "first_token_ms": tm.get("first_token_ms"),
-                "first_conclusion_ms": t_first_conclusion,
+                "first_visible_ms": t_first_visible,
+                "streamed_fields": sorted({f'{d["field"]}:{d["index"]}' for d in seen_fields}),
                 "first_event_ms": t_first_event,
                 "retrieval_ms": tm.get("retrieval_ms"),
                 "generate_ms": tm.get("generate_ms"),
                 "e2e_ms": tm.get("e2e_ms"),
                 "streamed_chars": payload.get("provisional_streamed_chars", 0),
                 "retracted": bool(payload.get("provisional_retracted")),
+                "lost_items": payload.get("provisional_lost", 0),
+                "lost_samples": payload.get("provisional_lost_samples", []),
                 "conclusion_len": len((payload.get("conclusion") or "").strip()),
                 "notes": payload.get("notes") or [],
             }
         )
         r = rows[-1]
         print(f"[{i:2d}/{len(pool)}] {q['qid']} {r['status']:<10} "
-              f"信封首token={r['first_token_ms']} 首字可见={r['first_conclusion_ms']} "
+              f"信封首token={r['first_token_ms']} 首字可见={r['first_visible_ms']} "
               f"delta={r['n_delta']:2d} 流过{r['streamed_chars']}字 撤回={r['retracted']}")
 
     # ---- 有效性前置：整批没有生成产出时，这些数字一个都不该被写下 ----
@@ -138,7 +140,10 @@ def main() -> int:
             if kind == "answer":
                 streamed = body
         sync = run_qa(eng, q["question"], ctx).as_dict()
-        if set(streamed) - {"provisional_streamed_chars", "provisional_retracted"} != set(sync):
+        # 流式响应会多带 provisional_* 那组字段（本来就是流式专属的可观测项），
+        # 剔除后再比字段集合——不然这条对照永远在报「分叉」，而分叉并不存在。
+        streamed_keys = {k for k in streamed if not k.startswith("provisional_")}
+        if streamed_keys != set(sync):
             mismatch.append({"qid": q["qid"], "why": "响应字段集合不同（交付方式真的分叉了）"})
         elif kinds[:2] != ["retrieval", "delta"] and kinds[:2] != ["retrieval", "answer"]:
             mismatch.append({"qid": q["qid"], "why": f"事件序异常 {kinds[:3]}"})
@@ -147,7 +152,7 @@ def main() -> int:
             mismatch.append({"qid": q["qid"], "why": "答出了状态却无结论"})
 
     ft = [r["first_token_ms"] for r in rows if r["first_token_ms"] is not None]
-    fc = [r["first_conclusion_ms"] for r in rows if r["first_conclusion_ms"] is not None]
+    fc = [r["first_visible_ms"] for r in rows if r["first_visible_ms"] is not None]
     fe = [r["first_event_ms"] for r in rows if r["first_event_ms"] is not None]
     retracted = [r for r in rows if r["retracted"]]
     streamed_any = [r for r in rows if r["streamed_chars"]]
@@ -163,14 +168,15 @@ def main() -> int:
             "warning": "这是**信封首字符**的到达时间，不是用户看到字的时间；"
                        "门禁若照这个数报就是把 `{` 当成答案",
         },
-        "first_conclusion_ms": {  # 用户真正看到第一个答案字符
+        "first_visible_ms": {  # 用户真正看到第一个字（结论或任一要点都算）
             "n": len(fc),
             "coverage": round(len(fc) / len(rows), 4) if rows else None,
             "p50": round(percentile(fc, 50), 1) if fc else None,
             "p95": round(percentile(fc, 95), 1) if fc else None,
             "share_under_gate": round(sum(1 for x in fc if x < GATE_FIRST_TOKEN_MS) / len(fc), 4) if fc else None,
-            "note": "coverage 低于 1 是因为搬运出来的结论没有可流的原文（模型没写 conclusion）——"
-                    "那些题只能等 answer 事件",
+            "note": "覆盖率按**任何可见内容**算：结论为空但要点在流的题也算覆盖到。"
+                    "只流 conclusion 时实测覆盖 20.7%，加要点后才可能接近全量——"
+                    "因为 79% 的结论是本地逐字搬运拼的，模型根本没写 conclusion",
         },
         "first_event_ms": {  # 用户真正「看到东西」的时刻，含检索
             "p50": round(percentile(fe, 50), 1) if fe else None,
@@ -182,6 +188,14 @@ def main() -> int:
             "rate_of_streamed": round(len(retracted) / len(streamed_any), 4) if streamed_any else None,
             "rate_of_all": round(len(retracted) / len(rows), 4),
             "retracted_qids": [r["qid"] for r in retracted],
+        },
+        "lost_items": {  # 流出去过、最终答案里找不到的已闭合条目（要点被引用强制丢弃即在此）
+            "total": sum(r["lost_items"] for r in rows),
+            "n_rows": sum(1 for r in rows if r["lost_items"]),
+            "examples": [
+                {"qid": r["qid"], "n": r["lost_items"], "samples": r["lost_samples"]}
+                for r in rows if r["lost_items"]
+            ][:5],
         },
         "delivery_equivalence": {
             "n_compared": min(args.equiv, len(rows)),
@@ -197,8 +211,8 @@ def main() -> int:
     f = out["first_token_ms"]
     print(f"\n信封首 token（生成层第一个字符）：n={f['n']} p50={f['p50']} p95={f['p95']} max={f['max']} "
           f"低于 {GATE_FIRST_TOKEN_MS:.0f}ms 的比例={f['share_under_gate']}")
-    g = out["first_conclusion_ms"]
-    print(f"首个**可见结论字**：覆盖 {g['n']}/{len(rows)}（{g['coverage']}） "
+    g = out["first_visible_ms"]
+    print(f"首个**可见内容**：覆盖 {g['n']}/{len(rows)}（{g['coverage']}） "
           f"p50={g['p50']} p95={g['p95']} 低于门禁比例={g['share_under_gate']}")
     print(f"首个事件（含检索）：p50={out['first_event_ms']['p50']} p95={out['first_event_ms']['p95']}")
     rc = out["retraction"]

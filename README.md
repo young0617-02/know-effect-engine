@@ -137,7 +137,8 @@ section gold 降为报告值，Recall 类数字必须附 n 与 95% CI（阈值�
 | `scripts/m3_conclusion_probe.py` | 结论缺失分型（截断 / 解析失败 / 缺字段 / 主动留空），带 `done_reason` 取证 |
 | `scripts/m3_refusal_guard.py` | ⑤ 出口守门，**按类别两把尺**：refuse 类结论必须为空、escalate 类允许答但必须转人工 |
 | `scripts/m3_confidence_probe.py` | 置信度诊断：标签方差 → 成分分布 → AUC（含 CI）→ 温度可辨识性 |
-| `scripts/m4_stream_probe.py` | token 级流式实测：**首个可见结论字**延迟（不测信封首字符）+ 撤回率 + 流式/非流式交付一致性 |
+| `scripts/m4_stream_probe.py` | token 级流式实测：**首个可见内容**延迟（不拿信封首字符充数）+ 覆盖率 + 撤回/条目丢失 + 流式与非流式交付一致性 |
+| `reports/m4/M4_流式交付实测.md` | 上述实测的结论与口径说明（含「为什么 1.2s 门禁达不到、为什么 0 撤回不算安全保证」） |
 | `scripts/m3_graph_ab_live.py` | **同机 A/B**：重构前实现 vs 图，同一模型同一批题比对；不一致时用「同一实现能否复现」分清模型抖动与真回归 |
 | `scripts/m3_multiturn_probe.py` | 多轮消解的收益与代价：机械构造追问整批跑，benefit/harm 一起报，答案层面与检索层面分开报 |
 | `scripts/m3_graph_equivalence.py` | **图化重构的差分回归网**：把重构前的实现按 commit sha 从 git 抽出当 oracle，17 个出口场景逐字段比对，不依赖 GPU/容器 |
@@ -147,14 +148,14 @@ section gold 降为报告值，Recall 类数字必须附 n 与 95% CI（阈值�
 .venv/Scripts/python.exe scripts/m3_graph_equivalence.py   # 不需要任何服务
 ```
 
-已落地：`POST /api/v1/answers`（结构化答案 + 会话轮次 + 幂等）、`/answers/stream`（阶段级 SSE）、
+已落地：`POST /api/v1/answers`（结构化答案 + 会话轮次 + 幂等）、`/answers/stream`（token 级 SSE：`retrieval` → `delta`* → `answer`）、
 `GET /api/v1/sessions/{id}`；答案出口加确定性契约校验（空结论不得判成功）；
 强证据却声明无依据时转人工；答案完成率 24% → **91%**（根因是答案被写进 `key_points` 的字段错位，
 用逐字搬运修，**不用**「要求结论非空」的提示词改法——那会把「该答不答」换成「不该答也答」）。
 
 M3-05 已落地：在线链路搬进 `src/kee/qa/graph.py` 的 LangGraph 状态机（7 个显式出口，敏感闸前置——
 原实现先检索再判敏感，是顺序缺陷）；多轮指代消解在检索**之前**生效，补全后的查询同时进检索与生成提示词，
-而对外的 `question` 仍是用户原话；SSE 改成真的阶段级（此前文档承诺「检索即出事件」而实现只发一个事件），
+而对外的 `question` 仍是用户原话；SSE 先改成真的阶段级、M4 再升级为 token 级（此前文档承诺「检索即出事件」而实现只发一个事件），
 并补上流式路径缺的落轮次与审计。**Checkpointer 本轮不接**，多轮状态以 PG `session_turn` 为唯一权威源，
 代价是无断点续跑（裁决记在《技术方案》V1.0.5 / 《项目定义》V1.5）。
 

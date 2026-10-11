@@ -101,13 +101,35 @@ def test_event_sequence_is_retrieval_then_deltas_then_answer():
     assert set(kinds[1:-1]) == {"delta"}, f"中间只该是 delta 事件，实得 {kinds}"
 
 
-def test_streamed_text_is_a_prefix_of_the_final_conclusion():
-    """逐段给用户看的文字必须是最终结论的前缀——否则用户看到的会被事后改掉。"""
+def test_every_streamed_field_is_a_prefix_of_what_it_became():
+    """逐段给用户看的文字，必须是它最终成为的那段内容的前缀。
+
+    结论与每条要点是**各自独立**的流，所以要按 (field,index) 分开收，
+    不能拿最后一条 delta 当「流出去的文字」——那可能是第二条要点，与结论无关。
+    """
     kinds, deltas, final = collect(build(payload_json()))
     assert deltas, "一次 delta 都没有，等于没在流式"
-    shown = deltas[-1]["text"]
-    assert final["conclusion"].startswith(shown)
-    assert all(d["provisional"] is True for d in deltas)
+    shown: dict = {}
+    for d in deltas:
+        assert d["provisional"] is True
+        shown[(d["field"], d["index"])] = d["text"]
+    pool = [final["conclusion"]] + [p["point"] for p in final["key_points"]]
+    for (field, idx), text in shown.items():
+        assert any(p.startswith(text) for p in pool), f"{field}[{idx}] 流出了最终内容之外的文字：{text!r}"
+
+
+def test_key_points_are_streamed_so_most_answers_have_something_to_show():
+    """实测 79% 的答案 conclusion 是搬运来的、模型没写——只流结论对它们无事可做。
+
+    这条断言的存在理由就是这个测量结果：要点文字是模型生成的，流它才有覆盖率。
+    """
+    text = payload_json(conclusion="")  # 模型没写结论，答案全靠要点
+    kinds, deltas, final = collect(build(text))
+    point_events = [d for d in deltas if d["field"] == "point"]
+    assert point_events, "模型没写结论时一个要点事件都没有，等于对这类题没流式"
+    assert final["provisional_streamed_chars"] > 0
+    # 要点全部流完且最终答案给出了搬运出来的结论 → 不算撤回
+    assert final["provisional_retracted"] is False
 
 
 def test_final_answer_matches_the_non_streaming_path_exactly():
@@ -118,7 +140,9 @@ def test_final_answer_matches_the_non_streaming_path_exactly():
     a, b = dict(streamed), dict(sync)
     for k in ("timings_ms", "trace_id", "session_id", "turn_no"):
         a.pop(k, None), b.pop(k, None)
-    a.pop("provisional_streamed_chars", None), a.pop("provisional_retracted", None)
+    for k in ("provisional_streamed_chars", "provisional_retracted",
+              "provisional_lost", "provisional_lost_samples"):
+        a.pop(k, None)
     assert a == b, f"流式与同步收敛不一致：{ {k: (a.get(k), b.get(k)) for k in a if a.get(k) != b.get(k)} }"
 
 

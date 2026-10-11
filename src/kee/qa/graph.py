@@ -213,7 +213,7 @@ def build_qa_graph(engine):
         # 流式与非流式**共用同一个 generate 节点**：拓扑、门禁、出口契约一处都不分叉。
         # 分叉成两条链是这类功能最容易犯的错——测的是一条、上线的是另一条。
         if on_delta is not None and hasattr(engine.llm, "chat_stream"):
-            from kee.qa.streaming import scan_conclusion_delta
+            from kee.qa.streaming import scan_streamable
 
             llm_res = None
             err = ""
@@ -224,11 +224,10 @@ def build_qa_graph(engine):
                 if kind == "delta":
                     if first_token_ms is None:
                         first_token_ms = round((time.perf_counter() - t1) * 1000, 1)
-                    # payload 是内容**片段**；扫描器需要的是「到目前为止的完整缓冲」，
+                    # payload 是内容**片段**；扫描器需要「到目前为止的完整缓冲」，
                     # 因为它得从信封头部判断自己处在哪个字段里。
                     buf += payload
-                    ev = scan_conclusion_delta(buf)
-                    if ev:
+                    for ev in scan_streamable(buf):
                         on_delta(ev)
                 elif kind == "final":
                     llm_res = payload

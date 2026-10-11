@@ -86,3 +86,71 @@ def test_field_before_its_value_arrives_reads_empty():
         val, closed = partial_string_field(probe, "conclusion")
         assert closed is False, probe
         assert val in ("", "灾"), (probe, val)
+
+
+# ---- 要点（数组内对象的文本项）流式 ----
+# 加这条是因为实测发现：79% 的答案结论是搬运来的、模型没写 conclusion，
+# 只流 conclusion 等于对四分之三的题无事可做。流要点就把「会被引用强制丢弃」的东西
+# 也提前显示给用户了——所以这里的下标正确性是安全性问题，不只是美观问题。
+
+POINTS = json.dumps(
+    {
+        "conclusion": "",
+        "key_points": [
+            {"point": "灾备 RTO < 15 分钟", "evidence_ids": ["E1", "E2"]},
+            {"point": '含"引号"与\反斜杠的要点', "evidence_ids": ["E1"]},
+            {"point": "第 3 条要点：月结 T+3", "evidence_ids": ["E2"]},
+        ],
+        "no_evidence": False,
+        "self_assessed_confidence": 0.7,
+    },
+    ensure_ascii=False,
+)
+
+
+def _final_points():
+    return [p["point"] for p in json.loads(POINTS)["key_points"]]
+
+
+def test_point_items_match_the_final_array_exactly_when_complete():
+    from kee.qa.stream_json import partial_array_items
+
+    assert [t for t, _ in partial_array_items(POINTS, "key_points", "point")] == _final_points()
+
+
+def test_every_prefix_yields_only_prefixes_at_the_right_indexes():
+    """每个前缀帧里，第 k 个要点的文本必须是最终第 k 个要点的**前缀**。
+
+    下标错位（把第三条显示成第二条）在这一条下会当场失败——那比显示不全更糟。
+    """
+    from kee.qa.stream_json import partial_array_items
+
+    finals = _final_points()
+    for i in range(len(POINTS) + 1):
+        items = partial_array_items(POINTS[:i], "key_points", "point")
+        assert len(items) <= len(finals), f"第 {i} 帧凭空多出了要点"
+        for k, (text, _closed) in enumerate(items):
+            assert finals[k].startswith(text), f"第 {i} 帧第 {k} 条与最终内容矛盾：{text!r} vs {finals[k]!r}"
+
+
+def test_index_is_taken_from_position_not_arrival_order():
+    """`point` 在 `evidence_ids` 之后的对象里时，缺席中间项也不能让后面的一条顶上错号。"""
+    from kee.qa.stream_json import partial_array_items
+
+    buf = '{"key_points": [{"evidence_ids": ["E1"], "point": "第一条"}, {"point": "第二条"}]}'
+    assert [t for t, _ in partial_array_items(buf, "key_points", "point")] == ["第一条", "第二条"]
+
+
+def test_top_level_key_named_point_is_not_mixed_into_the_array():
+    from kee.qa.stream_json import partial_array_items
+
+    buf = '{"point": "这是顶层的同名键", "key_points": [{"point": "真要点"}]}'
+    assert [t for t, _ in partial_array_items(buf, "key_points", "point")] == ["真要点"]
+
+
+def test_numbers_and_booleans_are_consumed_so_indexes_do_not_drift():
+    """标量必须被消费掉，否则数组下标会漏位——这里直接盯住这个后果。"""
+    from kee.qa.stream_json import partial_array_items
+
+    buf = '{"key_points": [{"point": "甲", "score": 0.91, "ok": true}, {"point": "乙"}]}'
+    assert [t for t, _ in partial_array_items(buf, "key_points", "point")] == ["甲", "乙"]

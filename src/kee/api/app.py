@@ -508,10 +508,13 @@ def create_app(*, skip_embedding: bool = False, scheduler: Any | None = None, co
                 history=_history(session_id, body.rewrite),
                 token_stream=body.token_stream,
             ):
-                # 载荷是 JSON，换行已在字符串内被转义，不会破坏 SSE 的空行分帧
-                yield f"event: {kind}\ndata: {_json.dumps(payload, ensure_ascii=False, default=str)}\n\n"
                 if kind != "answer":
+                    # 载荷是 JSON，换行已在字符串内被转义，不会破坏 SSE 的空行分帧
+                    yield f"event: {kind}\ndata: {_json.dumps(payload, ensure_ascii=False, default=str)}\n\n"
                     continue
+                # answer 只在这里发一次：先落库拿到 turn_no，再带着它发出去。
+                # （早先的写法在循环头就 yield，之后又补发一次带 turn_no 的，
+                # 于是同一个 answer 事件到达两次——verify_m3 的分帧断言当场抓到。）
                 # 流式路径也要落 session_turn：多轮的上文是从这张表读的，
                 # 不落轮次等于「用流式的客户端永远没有上文」——而聊天界面恰恰只会用流式。
                 turn_no = pg.append_turn(
