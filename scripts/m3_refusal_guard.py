@@ -37,7 +37,7 @@ from kee.db.pg import AuthoritativeStore  # noqa: E402
 from kee.eval.build_eval import build_eval_set  # noqa: E402
 from kee.llm.ollama import OllamaClient  # noqa: E402
 from kee.models.registry import ResidencyScheduler  # noqa: E402
-from kee.qa.answer import AnswerEngine  # noqa: E402
+from kee.qa.answer import AnswerEngine, load_calibration_temperature  # noqa: E402
 from kee.retrieval.milvus_store import KbStore  # noqa: E402
 from kee.retrieval.pipeline import HybridRetriever  # noqa: E402
 from kee.retrieval.rbac import AccessContext  # noqa: E402
@@ -61,6 +61,8 @@ def main() -> int:
     kb = KbStore(s.milvus_collection, "jieba")
     rt = HybridRetriever(kb, scheduler=sched, cache=None, mode="hybrid", use_rerank=True)
     eng = AnswerEngine(retriever=rt, llm=OllamaClient())
+    # 与 API 同源取温度：否则「探针测出来的分布」又不是服务路径的那个分布了
+    eng.calibration_temperature = load_calibration_temperature(s)
     ctx = AccessContext(role="knowledge_owner")
 
     t_w = time.perf_counter()

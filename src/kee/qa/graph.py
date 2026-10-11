@@ -331,6 +331,9 @@ def build_qa_graph(engine):
                 "logit": round(_logit(composite), 4),
                 "calibrated": calibrated,
                 "temperature": engine.calibration_temperature,
+                # 明确标注这个数的性质，防止下游（前端、审计、对外材料）把它当概率使用。
+                # calibrated 只在 temperature != 1.0 时才经过缩放；两者都**不是**正确概率。
+                "score_basis": "rule_composite_not_probability",
             },
         }
 

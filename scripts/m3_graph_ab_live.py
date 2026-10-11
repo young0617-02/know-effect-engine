@@ -33,7 +33,7 @@ from kee.db.pg import AuthoritativeStore  # noqa: E402
 from kee.eval.build_eval import build_eval_set  # noqa: E402
 from kee.llm.ollama import OllamaClient  # noqa: E402
 from kee.models.registry import ResidencyScheduler  # noqa: E402
-from kee.qa.answer import AnswerEngine  # noqa: E402
+from kee.qa.answer import AnswerEngine, load_calibration_temperature  # noqa: E402
 from kee.retrieval.milvus_store import KbStore  # noqa: E402
 from kee.retrieval.pipeline import HybridRetriever  # noqa: E402
 from kee.retrieval.rbac import AccessContext  # noqa: E402
@@ -69,6 +69,10 @@ def main() -> int:
     # 免得一方把结果喂给另一方，A/B 就变成同一份结果比自己。
     eng_graph = AnswerEngine(retriever=make_retriever(), llm=OllamaClient())
     eng_legacy = legacy.AnswerEngine(retriever=make_retriever(), llm=OllamaClient())
+    # 两边都用服务路径的温度，否则 A/B 比的是「两个都没上线的配置」
+    t_cal = load_calibration_temperature(s)
+    eng_graph.calibration_temperature = t_cal
+    eng_legacy.calibration_temperature = t_cal
     ctx = AccessContext(role="knowledge_owner")
 
     t_w = time.perf_counter()

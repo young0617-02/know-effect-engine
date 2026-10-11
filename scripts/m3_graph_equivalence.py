@@ -40,8 +40,13 @@ from kee.retrieval.pipeline import RetrievedChunk, RetrievalResult  # noqa: E402
 from kee.retrieval.rbac import AccessContext  # noqa: E402
 
 NON_COMPARABLE = {"timings_ms", "trace_id"}
-# 图侧相对 oracle 的**已登记增量**字段（只允许这些，其余一律算差异）。
-DECLARED_ADDITIVE_RETRIEVAL_KEYS = frozenset({"query_used"})
+# 图侧相对 oracle 的**已登记增量**字段（按父字段分开登记，只允许这些，其余一律算差异）。
+DECLARED_ADDITIVE_KEYS = {
+    # 多轮指代消解上线后，「实际用去检索的查询」必须能从响应里查出来，否则审计只能靠猜。
+    "retrieval": frozenset({"query_used"}),
+    # M3-04c 裁决：分数不是概率，必须在响应里自带这个声明，防止下游当概率用。
+    "confidence": frozenset({"score_basis"}),
+}
 
 
 def load_legacy():
@@ -225,15 +230,14 @@ def diff_dict(a: dict, b: dict, drop: set[str]) -> list[str]:
     out: list[str] = []
     for k in sorted(keys - drop):
         va, vb = a.get(k), b.get(k)
-        if k == "retrieval" and isinstance(va, dict) and isinstance(vb, dict):
-            # 已声明的**纯增量**字段：图侧多记「实际用去检索的查询」。
-            # 多轮指代消解上线后，「补全成了什么」必须能从响应里查出来，否则审计只能靠猜。
-            # 只放行登记过的键；出现新键仍算差异，防止这个豁免口子以后被塞别的东西。
+        allowed = DECLARED_ADDITIVE_KEYS.get(k)
+        if allowed and isinstance(va, dict) and isinstance(vb, dict):
             extra = set(vb) - set(va)
-            if extra - DECLARED_ADDITIVE_RETRIEVAL_KEYS:
-                out.append(f"    retrieval 出现未声明的增量键：{sorted(extra - DECLARED_ADDITIVE_RETRIEVAL_KEYS)}")
-            vb = {k2: v2 for k2, v2 in vb.items() if k2 not in DECLARED_ADDITIVE_RETRIEVAL_KEYS}
-            va = {k2: v2 for k2, v2 in va.items() if k2 not in DECLARED_ADDITIVE_RETRIEVAL_KEYS}
+            if extra - allowed:
+                out.append(f"    {k} 出现未登记的增量键：{sorted(extra - allowed)}")
+            # 只在「增量确实全部落在登记表里」时才剔掉比对，剔错了也会报差异
+            va = {k2: v2 for k2, v2 in va.items() if k2 not in allowed}
+            vb = {k2: v2 for k2, v2 in vb.items() if k2 not in allowed}
         if va != vb:
             out.append(f"    {k}:\n      legacy={va!r}\n      graph ={vb!r}")
     return out
@@ -280,7 +284,8 @@ def main() -> int:
     print(
         "差分结论：图化重构与重构前逐字段等价。\n"
         "已声明差异 3 处：① 敏感题不再先烧检索（顺序缺陷已修）；"
-        "② 图侧 retrieval 多记 query_used；③ timings_ms / trace_id 不参与比对。"
+        "② 图侧登记过的增量键 retrieval.query_used（实际检索查询）与 confidence.score_basis（分数性质声明）；"
+        "③ timings_ms / trace_id 不参与比对。"
     )
     return 0
 

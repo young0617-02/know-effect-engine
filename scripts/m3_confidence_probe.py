@@ -48,7 +48,7 @@ from kee.eval.build_eval import build_eval_set  # noqa: E402
 from kee.eval.metrics import expected_calibration_error, fit_temperature  # noqa: E402
 from kee.llm.ollama import OllamaClient  # noqa: E402
 from kee.models.registry import ResidencyScheduler  # noqa: E402
-from kee.qa.answer import AnswerEngine  # noqa: E402
+from kee.qa.answer import AnswerEngine, load_calibration_temperature  # noqa: E402
 from kee.retrieval.milvus_store import KbStore  # noqa: E402
 from kee.retrieval.pipeline import HybridRetriever  # noqa: E402
 from kee.retrieval.rbac import AccessContext  # noqa: E402
@@ -223,9 +223,8 @@ def main() -> int:
         rt = HybridRetriever(kb, scheduler=ResidencyScheduler(policy="co_resident"), cache=None,
                              mode="hybrid", use_rerank=True)
         eng = AnswerEngine(retriever=rt, llm=OllamaClient())
-        temperature_used = float(
-            json.loads((Path(s.resolved_artifact_dir()) / "calibration.json").read_text(encoding="utf-8"))[
-                "temperature"])
+        # 与 API 同源，不再直接读 Gate 0 那份 calibration.json——那正是「两套温度」的由来
+        temperature_used = load_calibration_temperature(s)
         eng.calibration_temperature = temperature_used
         ctx = AccessContext(role="knowledge_owner")
         t0 = time.perf_counter()

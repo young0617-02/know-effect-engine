@@ -7,7 +7,12 @@ SYSTEM_PROMPT / USER_TEMPLATE / AnswerResult）和引擎的阈值配置；
 
 三条硬规则（对应方案 6.4 / Must 4·5·6）：
   1. 引用强制：要点必须挂证据编号，证据编号必须在本次检索集合内；无任何有效引用 → 不出结论。
-  2. 复合置信度：检索分 + 引用一致性 + 模型自评 → 温度缩放校准 → 分档。
+  2. 复合分数：检索分 + 引用一致性 + 模型自评 → 分档。
+     **它是规则分，不是「答案正确的概率」**：M3-04a 实测三个成分里
+     `citation_consistency` 恒为 1.0、`self_assessed` 只有两个取值、`retrieval` 已饱和，
+     composite 的 93% 是常数偏移，对唯一有方差的标签 AUC=0.346（低于随机）。
+     温度缩放因此**不再对外称校准**——零方差标签上的拟合只会把分数压向基率，
+     详见 `kee.eval.metrics.fit_temperature` 的拒绝分支与 M3 报告第七节。
   3. 确定性降级：无依据=拒答；低置信=「初步判断」并转人工；敏感话题=直接转人工。
 """
 
@@ -84,6 +89,37 @@ def is_sensitive(text: str) -> str | None:
         if pat in text:
             return pat
     return None
+
+
+def load_calibration_temperature(settings_obj: Any | None = None, default: float = 1.0) -> float:
+    """读服务路径用的温度参数。**API 与所有离线探针必须走这一个函数**。
+
+    此前 API 从 Gate 0 的 `calibration.json` 读 T=6.655、探针用默认 1.0，于是「answer 42 / tentative 11」
+    这类报出去的数字描述的是探针配置，而对外服务实际跑的是另一套
+    （那个温度下 `answer` 结构上永不可达）。两套配置混着报，比报一个难看的数字严重得多。
+
+    读的是 **M3 自己的 `confidence_calibration.json`**，不读 Gate 0 那份：
+    `calibration.json` 是 Gate 0 ⑤ 的落盘证据，M3 的裁决不能去改写它（历史结论只加横幅不抹除）。
+    而 M3-04a 已证明那次拟合用的是零方差标签，得到的 6.655 不是校准值——
+    所以这里**刻意不回落**到它的值：文件缺失或带 `refused` 一律按 1.0（不缩放）。
+    等真出现有方差的标签，再往这个文件里写可辨识的 T。
+    """
+    import json
+    from pathlib import Path
+
+    s = settings_obj or get_settings()
+    path = Path(s.resolved_artifact_dir()) / "confidence_calibration.json"
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return default
+    if not isinstance(data, dict) or data.get("refused"):
+        return default
+    try:
+        v = float(data.get("temperature", default))
+    except (TypeError, ValueError):
+        return default
+    return v if v > 0 else default
 
 
 @dataclass

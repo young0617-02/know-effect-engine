@@ -45,16 +45,14 @@ class ApiError(Exception):
 
 
 def _load_calibration(settings) -> dict[str, Any]:
-    """读 Gate 0 ⑤ 落盘的温度缩放参数；缺失时退回 T=1.0（等于不缩放），不猜值。"""
-    import json
-    from pathlib import Path
+    """服务路径的温度参数。**与离线探针共用同一个 loader**（`kee.qa.answer`），
+    否则「测出来的分布」和「服务出去的分布」会再度分叉——M3-04 就栽过一次。
+    缺失时退回 T=1.0（等于不缩放），不猜值。
+    """
+    from kee.qa.answer import load_calibration_temperature
 
-    p = Path(settings.resolved_artifact_dir()) / "calibration.json"
-    try:
-        data = json.loads(p.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
-        return {"temperature": 1.0}
-    return data if isinstance(data, dict) else {"temperature": 1.0}
+    t = load_calibration_temperature(settings)
+    return {"temperature": t}
 
 
 def _fail(code: str, status: int, message: str, trace_id: str) -> JSONResponse:
