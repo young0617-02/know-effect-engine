@@ -4,7 +4,7 @@
 漏掉一个分支的返回值形状是这类重构最常见的事故。所以这里做的是**差分**：
 把重构前的实现从 git 里抽出来当 oracle，同一批场景喂两边，逐字段比对。
 
-场景矩阵覆盖 answer() 的每个出口（17 个），不是随机样本。
+场景矩阵覆盖 answer() 的每个出口（18 个），不是随机样本。
 
 三处**已声明的差异**，脚本单独断言而不是抹平：
   1. 敏感题不再先烧一次检索（原实现是先检索再判敏感，顺序缺陷）。
@@ -127,7 +127,7 @@ def payload(**over):
 
 
 def scenarios():
-    """每个场景 = (名字, 检索桩工厂, LLM 桩, 问题)。覆盖 answer() 的全部 17 个出口形态。"""
+    """每个场景 = (名字, 检索桩工厂, LLM 桩, 问题)。覆盖 answer() 的全部 18 个出口形态。"""
     ok_chunks = [chunk("c1"), chunk("c2")]
     return [
         ("01_sensitive", lambda: CountingRetriever(ok_chunks), FakeLlm(payload()), "合同金额是多少"),
@@ -222,7 +222,25 @@ def scenarios():
             ),
             "RTO 是多少",
         ),
+        # 18 是 M3-04b 的**故意不等价**：q-061 的形状（证据勉强过检索门槛 + 模型没写结论 + 自评 0）。
+        # 重构前会逐字搬运补出一个结论，重构后 refuse 且不补。这条不是搬家搬坏了，
+        # 是被裁决的行为变更，所以它进 INTENTIONAL 表由脚本正向断言，而不是让等价网默默放过。
+        (
+            "18_marginal_evidence_no_derivation",
+            lambda: CountingRetriever([chunk("c1", score=0.2074)]),
+            FakeLlm(payload(conclusion="", self_assessed_confidence=0.0)),
+            "手册里有配置依据吗",
+        ),
     ]
+
+
+# 场景 18 的预期形状：两边各自必须长成这样，且必须**不同**。
+INTENTIONAL = {
+    "18_marginal_evidence_no_derivation": {
+        "legacy": {"status": "escalate", "conclusion_nonempty": True},
+        "graph": {"status": "refuse", "conclusion_nonempty": False, "key_points": [], "citations": []},
+    }
+}
 
 
 def diff_dict(a: dict, b: dict, drop: set[str]) -> list[str]:
@@ -270,6 +288,24 @@ def main() -> int:
 
         d = diff_dict(la, ga, drop)
         checked += 1
+
+        if name in INTENTIONAL:
+            # 这一条**不该等价**：它是被裁决的行为变更。脚本正向断言两边的形状，
+            # 任何一边漂了都算失败——否则新增的分支会在「等价网全绿」的名义下无人看守。
+            exp = INTENTIONAL[name]
+            bad = []
+            for side, body, want in (("legacy", la, exp["legacy"]), ("graph", ga, exp["graph"])):
+                for k, v in want.items():
+                    got = bool(body["conclusion"].strip()) if k == "conclusion_nonempty" else body.get(k)
+                    if got != v:
+                        bad.append(f"{side}.{k} 期望 {v!r} 实得 {got!r}")
+            if bad:
+                failures.append(f"[{name}] 预期变更没成立：" + "; ".join(bad))
+            else:
+                print(f"  {name:<26} 故意不等价（已验证两侧形状）  legacy={la['status']}"
+                      f"/{len(la['conclusion'].strip())}字  graph={ga['status']}/0字")
+            continue
+
         if d or extra:
             failures.append(f"[{name}] status legacy={la['status']} graph={ga['status']}")
             failures.extend(d)
@@ -277,15 +313,19 @@ def main() -> int:
         else:
             print(f"  {name:<26} status={ga['status']:<10} 等价")
 
-    print(f"\n可比对场景 {checked} 个，字段级差异 {len(failures)} 条")
+    n_intentional = len(INTENTIONAL)
+    print(f"\n可比对场景 {checked} 个（其中 {n_intentional} 个是已裁决的故意不等价），"
+          f"字段级差异 {len(failures)} 条")
     if failures:
         print("\n".join(failures))
         return 1
     print(
-        "差分结论：图化重构与重构前逐字段等价。\n"
-        "已声明差异 3 处：① 敏感题不再先烧检索（顺序缺陷已修）；"
+        "差分结论：控制流搬家本身逐字段等价；"
+        f"另有 {n_intentional} 个**已裁决的行为变更**由脚本正向断言（不是漏网的差异）。\n"
+        "已声明差异 4 处：① 敏感题不再先烧检索（顺序缺陷已修）；"
         "② 图侧登记过的增量键 retrieval.query_used（实际检索查询）与 confidence.score_basis（分数性质声明）；"
-        "③ timings_ms / trace_id 不参与比对。"
+        "③ timings_ms / trace_id 不参与比对；"
+        "④ 场景 18：证据勉强过线且模型未给结论时，重构前搬运出结论、重构后 refuse 不补（M3-04b）。"
     )
     return 0
 

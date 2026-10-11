@@ -34,6 +34,7 @@ from kee.qa.answer import (
     AnswerResult,
     _clamp,
     _logit,
+    composite_score,
     format_evidence,
     is_sensitive,
 )
@@ -78,10 +79,14 @@ class QAState(TypedDict, total=False):
 
 
 def _components(obj: dict, top_score: float, points: list, dropped: list) -> dict[str, float]:
-    """复合置信度的三个分量。enforce 与 confidence 两处都要用，必须同一份算法。
+    """复合分的三个成分 + 由它们算出的合成分。enforce 与 confidence 共用同一份算法。
 
     enforce 的两个契约出口也要吐 citation_consistency / self_assessed：
     原实现在那里就记录了它们，漏掉会让「拒答的原因构成」在审计里看不全。
+
+    `composite_candidate` 是给 enforce 的搬运下限判据用的**中间量**，
+    它不该出现在对外字典里（那里的 composite 一律是 0.0，表示「这条没成立」），
+    所以由 `_public()` / `_gate()` 统一剥掉，不靠每个出口各自记得。
     """
     citation_consistency = 1.0 if not dropped else round(len(points) / max(len(points) + len(dropped), 1), 4)
     self_assessed = _clamp(float(obj.get("self_assessed_confidence", 0.0) or 0.0))
@@ -89,7 +94,18 @@ def _components(obj: dict, top_score: float, points: list, dropped: list) -> dic
         "retrieval": round(top_score, 4),
         "citation_consistency": round(citation_consistency, 4),
         "self_assessed": round(self_assessed, 4),
+        "composite_candidate": composite_score(top_score, citation_consistency, self_assessed),
     }
+
+
+def _public(comp: dict[str, float]) -> dict[str, float]:
+    """剥掉中间量，得到可以对外发的成分字典。"""
+    return {k: v for k, v in comp.items() if k != "composite_candidate"}
+
+
+def _gate(comp: dict[str, float], rule: str) -> dict[str, Any]:
+    """契约出口的置信度块：成分照登，但 composite/calibrated 记 0——这条答案没成立。"""
+    return {**_public(comp), "composite": 0.0, "calibrated": 0.0, "rule": rule}
 
 
 def build_qa_graph(engine):
@@ -262,7 +278,6 @@ def build_qa_graph(engine):
 
         points, cites, dropped = engine._enforce_citations(obj, state["evidence_index"])
         comp = _components(obj, top_score, points, dropped)
-        base_gate = {**comp, "composite": 0.0, "calibrated": 0.0}
         out: dict[str, Any] = {"key_points": points, "citations": cites, "dropped_points": dropped}
         if not points or not cites:
             return {
@@ -270,13 +285,33 @@ def build_qa_graph(engine):
                 "gated": "no_citation",
                 "status": "refuse",
                 "notes": _n(state, "citation_enforcement_rejected"),
-                "confidence": {**base_gate, "rule": "contract_no_citation"},
+                "confidence": _gate(comp, "contract_no_citation"),
             }
         conclusion = str(obj.get("conclusion", "") or "").strip()
         carried: list[str] = []
         if not conclusion and points:
             # 实测 45/58 是「答案写在要点里、结论留空」的字段错位：逐字搬运而不是判死。
             # 不用「要求结论非空」的提示词修法——那会把 7 道无答案题从 0 道出结论变成 2 道。
+            #
+            # 但搬运有前提：**只有当其它独立信号都站得住时，空结论才算字段错位**。
+            # q-061（top_score 0.2074、自评 0、composite 0.4433）是「证据勉强过检索门槛 +
+            # 模型自己既没写结论也没给信心」，这时把要点拼成结论，等于由我们把一条站不住的答案
+            # 说出来——那是「无依据必拒」的漏口，不是完成率的成绩。
+            # 下限直接用现成的 confidence_low，不另造阈值：低于它本来就要转人工，
+            # 那它同时也该阻止我们替模型补结论。安全性已核：39 行搬运无一低于 0.45
+            # （最近的是 q-046 的 0.4588），所以这条不伤完成率——但余量只有 0.009，见报告。
+            if comp["composite_candidate"] < engine.settings.confidence_low:
+                return {
+                    **out,
+                    "key_points": [],
+                    "citations": [],
+                    "gated": "marginal_evidence_no_derivation",
+                    "status": "refuse",
+                    "needs_human": False,
+                    "notes": _n(state, "refused_low_confidence_no_basis",
+                                f"composite<{engine.settings.confidence_low} 且模型未给结论，不代为补全"),
+                    "confidence": _gate(comp, "marginal_evidence_refusal"),
+                }
             derived = "；".join(
                 str(p.get("point", "")).strip() for p in points if str(p.get("point", "")).strip()
             )
@@ -290,7 +325,7 @@ def build_qa_graph(engine):
                 "status": "degraded",
                 "needs_human": True,
                 "notes": _n(state, *carried, "contract_violation:empty_conclusion"),
-                "confidence": {**base_gate, "rule": "contract_empty_conclusion"},
+                "confidence": _gate(comp, "contract_empty_conclusion"),
             }
         out["conclusion"] = conclusion
         if carried:
@@ -301,9 +336,9 @@ def build_qa_graph(engine):
         obj = state.get("gen_obj") or {}
         top_score = float(state.get("top_score") or 0.0)
         comp = _components(obj, top_score, state.get("key_points") or [], state.get("dropped_points") or [])
-        citation_consistency = comp["citation_consistency"]
-        self_assessed = comp["self_assessed"]
-        composite = round(0.45 * _clamp(top_score) + 0.35 * citation_consistency + 0.20 * self_assessed, 4)
+        # 与 enforce 的搬运下限共用同一个 composite_score()：一处改权重另一处不会跟着走，
+        # 那就是「分档依据」和「要不要替模型补结论」用了两个不同的分数——不可解释。
+        composite = comp["composite_candidate"]
         calibrated = round(
             1.0 / (1.0 + math.exp(-(_logit(composite) / engine.calibration_temperature))), 4
         )
@@ -326,7 +361,7 @@ def build_qa_graph(engine):
             "needs_human": bool(needs or secret),
             "notes": notes,
             "confidence": {
-                **comp,
+                **_public(comp),
                 "composite": composite,
                 "logit": round(_logit(composite), 4),
                 "calibrated": calibrated,

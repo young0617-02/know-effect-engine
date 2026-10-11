@@ -91,6 +91,19 @@ def is_sensitive(text: str) -> str | None:
     return None
 
 
+# 复合分权重。enforce（要不要搬运）与 confidence（怎么分档）共用同一份，
+# 否则两处会各自演化出两个「置信度」——那正是 M3-04 一直在修的那类错。
+W_RETRIEVAL, W_CITATION, W_SELF_ASSESSED = 0.45, 0.35, 0.20
+
+
+def composite_score(top_score: float, citation_consistency: float, self_assessed: float) -> float:
+    """规则分。注意它**不是**答案正确的概率（见本模块 docstring 第 2 条与 M3 报告第七节）。"""
+    return round(
+        W_RETRIEVAL * _clamp(top_score) + W_CITATION * citation_consistency + W_SELF_ASSESSED * _clamp(self_assessed),
+        4,
+    )
+
+
 def load_calibration_temperature(settings_obj: Any | None = None, default: float = 1.0) -> float:
     """读服务路径用的温度参数。**API 与所有离线探针必须走这一个函数**。
 

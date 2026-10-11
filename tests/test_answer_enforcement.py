@@ -323,3 +323,57 @@ def test_no_basis_answer_stays_out_of_calibration_set():
     eng = AnswerEngine(FakeRetriever([chunk("c1", score=0.9683)]), FakeLlm(no_basis_payload()))
     res = eng.answer("电子记录那个项目的应急储备金比例是多少", ctx())
     assert "logit" not in res.confidence and res.confidence["composite"] == 0.0
+
+
+# ---- M3-04b 搬运下限：证据勉强过线且模型没写结论时，不许由我们替它补 ----
+# 复现的是 ⑤ 唯一未闭环的那一条（q-061：top_score=0.2074，比检索门槛 0.20 只高 0.0074，
+# 自评 0，结论留空，1 条要点）。它 composite=0.4433 < confidence_low=0.45。
+
+
+def test_marginal_evidence_must_not_have_its_conclusion_written_for_it():
+    payload = good_payload()
+    payload["conclusion"] = ""
+    payload["self_assessed_confidence"] = 0.0
+    eng = AnswerEngine(FakeRetriever([chunk("c1", score=0.2074)]), FakeLlm(payload))
+    res = eng.answer("手册里有配置依据吗", ctx())
+    assert res.status == "refuse"
+    assert res.conclusion == "", "低置信下搬运出的结论就是「无依据必拒」的漏口"
+    # 补出来的要点也不能留着：它们正是被搬运拼成结论的那些字
+    assert res.key_points == [] and res.citations == []
+    assert "refused_low_confidence_no_basis" in res.notes
+
+
+def test_derivation_still_fires_when_evidence_is_solid():
+    """反向对照：同一份 payload 只把证据强度抬上去，搬运必须照常发生。
+
+    没有这一条，上一条测试可能只是「搬运整条被关掉了」——那会把完成率打回 24% 而无人察觉。
+    """
+    payload = good_payload()
+    payload["conclusion"] = ""
+    payload["self_assessed_confidence"] = 0.0
+    eng = AnswerEngine(FakeRetriever([chunk("c1", score=0.95)]), FakeLlm(payload))
+    res = eng.answer("RTO 是多少", ctx())
+    assert res.conclusion != ""
+    assert any(str(n).startswith("conclusion_derived_from_points") for n in res.notes)
+
+
+def test_derivation_floor_uses_the_same_composite_as_the_grader():
+    """下限与分档必须是同一个分数，否则「要不要补结论」和「这答案多可信」各算各的。
+
+    取 composite 恰在 0.45 两侧的两个证据强度：低的那条 refuse、高的那条不许 refuse。
+    """
+    from kee.config import get_settings
+
+    low = get_settings().confidence_low
+    # 目标 composite 取门槛**两侧**而不是门槛上：score=(target-0.35)/0.45（自评 0、一致性 1）
+    def score_for(target_composite: float) -> float:
+        return round((target_composite - 0.35) / 0.45, 4)
+
+    for score, want_refused in ((score_for(low - 0.01), True), (score_for(low + 0.02), False)):
+        payload = good_payload()
+        payload["conclusion"] = ""
+        payload["self_assessed_confidence"] = 0.0
+        eng = AnswerEngine(FakeRetriever([chunk("c1", score=score)]), FakeLlm(payload))
+        res = eng.answer("RTO 是多少", ctx())
+        is_refused = "refused_low_confidence_no_basis" in res.notes
+        assert want_refused == is_refused, f"score={score} composite≈{0.45 * score + 0.35:.4f} 判据与分档不同源"
