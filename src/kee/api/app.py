@@ -88,6 +88,10 @@ class AnswerRequest(BaseModel):
     # 查询改写默认关：实测单次 P95 843ms，一步就吃满 800ms 检索门禁（方案 V1.0.3 第 2 行）。
     # 多轮追问时前端显式置 true——那才是字面查询不自足、值得花这一次调用的场景。
     rewrite: bool = False
+    # token 级流式：默认开。它只改「答案文字怎么到达前端」（逐段 + provisional），
+    # 不改图、不改门禁、不改出口契约——流式与非流式跑的是同一个 generate 节点。
+    # 关掉就退回阶段级两事件，这条开关是给对照测量用的，不是兼容垫片。
+    token_stream: bool = True
 
 
 def create_app(*, skip_embedding: bool = False, scheduler: Any | None = None, collection: str | None = None) -> FastAPI:
@@ -458,20 +462,26 @@ def create_app(*, skip_embedding: bool = False, scheduler: Any | None = None, co
         x_kee_industries: str | None = Header(None),
         x_kee_projects: str | None = Header(None),
     ):
-        """阶段级 SSE：`retrieval`（命中概况）→ `answer`（最终答案）。
+        """token 级 SSE：`retrieval`（命中概况）→ `delta`*（结论逐段）→ `answer`（校验后的最终答案）。
 
-        刻意**不是** token 级流式。答案链走的是 JSON 模式（结构化输出首次成功率是 ⑤ 门禁项），
-        而未闭合的 JSON 片段前端无法渲染，所以「首 token < 1.2s」与「只输出 JSON」这两条要求
-        本身冲突。要做 token 级流式必须改成两趟（先流式自由文本、再结构化），
-        那会牺牲结构化门禁，需要单独裁决。这里先把可交付的部分做实：
-        M3-05 图化之后，检索节点一跑完就能拿到它的状态增量，前端因此可以在生成之前
-        先拿到「用了哪条查询、命中几条、是否降级」，不用等整条链路结束。
-        `retrieval` 事件只带 chunk id 与概况、不带正文：正文要展示仍应走 answer 事件的引用，
-        免得同一个文本从两个事件里各出一遍。
+        事件语义的关键在**次序**：JSON 模式下 `conclusion` 排在信封最前，而引用强制要等整段
+        解析完才能跑——所以 `delta` 里的文字**必然早于校验**，这是使然不是缺陷。
+        处理办法是把它标出来而不是藏起来：`delta` 一律带 `provisional: true`，
+        前端必须用「未完成」样式渲染；`answer` 事件带 `provisional_retracted`，
+        即「流过非空文字、最后没成为对外答案」的**撤回率**。这个数要量出来（见
+        `scripts/m4_stream_probe.py`），撤回比例若高，token 级流式对知识服务就是负收益。
+
+        与「只输出 JSON」的结构化门禁**不冲突**——这条实现不需要改成两趟：
+        仍是一次 JSON 模式生成，只是把未闭合信封里的已知字段读出来（`kee.qa.stream_json`）。
+        `token_stream=false` 时退回阶段级两事件，那是对照开关而非兼容垫片。
+
+        流式与非流式跑同一张图、同一个 generate 节点、同一套出口契约：
+        分叉成两条链的话，测的就是其中一条、上线的是另一条（M3-04 才为这件事付过学费）。
+        `retrieval` 事件只带 chunk id 与概况、不带正文：正文展示走 `answer` 的引用。
         """
         import json as _json
 
-        from kee.qa.graph import initial_state, result_from_state
+        from kee.qa.streaming import iter_qa_events
 
         ctx, actor = context_of(x_kee_role, x_kee_actor, x_kee_industries, x_kee_projects)
         if app.state.skip_embedding:
@@ -487,30 +497,32 @@ def create_app(*, skip_embedding: bool = False, scheduler: Any | None = None, co
         engine = _answer_engine(body.rewrite)
 
         def events():
-            state = initial_state(
-                body.question, ctx, top_k=body.top_k, history=_history(session_id, body.rewrite)
-            )
-            try:
-                for update in engine.graph.stream(state, stream_mode="updates"):
-                    for node, delta in update.items():
-                        state.update(delta or {})
-                        if node == "retrieve":
-                            yield (
-                                "event: retrieval\ndata: "
-                                f"{_json.dumps(state['retrieval'], ensure_ascii=False, default=str)}\n\n"
-                            )
-                payload = result_from_state(state)
+            # 事件序列：retrieval → delta* → answer（异常以 error 收尾）。
+            # 图跑在工作线程里（见 kee.qa.streaming 的说明：生成节点会一路阻塞到整段吐完，
+            # 同一条线程做不到既跑图又发事件）。
+            for kind, payload in iter_qa_events(
+                engine,
+                body.question,
+                ctx,
+                top_k=body.top_k,
+                history=_history(session_id, body.rewrite),
+                token_stream=body.token_stream,
+            ):
+                # 载荷是 JSON，换行已在字符串内被转义，不会破坏 SSE 的空行分帧
+                yield f"event: {kind}\ndata: {_json.dumps(payload, ensure_ascii=False, default=str)}\n\n"
+                if kind != "answer":
+                    continue
                 # 流式路径也要落 session_turn：多轮的上文是从这张表读的，
                 # 不落轮次等于「用流式的客户端永远没有上文」——而聊天界面恰恰只会用流式。
                 turn_no = pg.append_turn(
                     session_id,
                     {
                         "question": body.question,
-                        "status": payload.status,
-                        "conclusion": payload.conclusion,
-                        "answer": payload.as_dict(),
-                        "retrieval_ms": payload.timings_ms.get("retrieval_ms"),
-                        "total_ms": payload.timings_ms.get("e2e_ms"),
+                        "status": payload.get("status", ""),
+                        "conclusion": payload.get("conclusion", ""),
+                        "answer": payload,
+                        "retrieval_ms": (payload.get("timings_ms") or {}).get("retrieval_ms"),
+                        "total_ms": (payload.get("timings_ms") or {}).get("e2e_ms"),
                         "trace_id": trace,
                     },
                 )
@@ -523,19 +535,19 @@ def create_app(*, skip_embedding: bool = False, scheduler: Any | None = None, co
                     trace,
                     {
                         "turn_no": turn_no,
-                        "status": payload.status,
-                        "needs_human": payload.needs_human,
-                        "n_citations": len(payload.citations),
-                        "confidence": payload.confidence,
+                        "status": payload.get("status"),
+                        "needs_human": payload.get("needs_human"),
+                        "n_citations": len(payload.get("citations") or []),
+                        "confidence": payload.get("confidence"),
                         "rewrite": body.rewrite,
                         "stream": True,
                     },
                 )
-            except Exception as exc:  # noqa: BLE001 - 流里必须以事件收尾，不能让前端猜
-                yield f"event: error\ndata: {_json.dumps({'code': 'E500', 'message': str(exc)[:200]})}\n\n"
-                return
-            out = {**payload.as_dict(), "session_id": session_id, "turn_no": turn_no}
-            yield f"event: answer\ndata: {_json.dumps(out, ensure_ascii=False)}\n\n"
+                # 先落库再发 answer：turn_no 要进同一个事件。
+                # 反过来（先发后落）会让客户端拿不到轮次号，多轮就接不上。
+                payload["session_id"] = session_id
+                payload["turn_no"] = turn_no
+                yield f"event: answer\ndata: {_json.dumps(payload, ensure_ascii=False, default=str)}\n\n"
 
         return StreamingResponse(events(), media_type="text/event-stream")
 

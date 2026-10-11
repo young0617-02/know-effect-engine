@@ -136,6 +136,90 @@ class OllamaClient:
             metrics["tokens_per_sec"] = round(tok / (metrics["eval_ms"] / 1000.0), 2)
         return LlmResult(ok=True, text=text, parsed=parsed, json_valid=json_valid, metrics=metrics)
 
+    def chat_stream(
+        self,
+        messages: list[dict[str, str]],
+        json_mode: bool = False,
+        temperature: float = 0.0,
+        max_tokens: int = 900,
+        keep_alive: str | None = None,
+    ):
+        """逐 token 产出内容增量。**与 chat() 的关键差别在于拿到的东西是不完整的**：
+
+        Ollama 的 `/api/chat` 在 `stream=true` 下按 NDJSON 返回，每行一个 `message.content` 片段，
+        最后一行带 `done`/`done_reason` 与计时。所以本函数是一个生成器，
+        调用方必须自己处理「JSON 信封还没闭合」这件事（见 `kee.qa.stream_json`）。
+
+        yield 的形状：
+          ("delta", 文本片段)      —— 生成过程中反复给
+          ("final", LlmResult)     —— 收尾，text 是完整原文、metrics 与 chat() 同构
+          ("error", 说明文字)      —— HTTP 层失败；此时没有任何 final
+
+        刻意**不在这里抛异常**：流式路径的失败要让 SSE 端点发一个 error 事件收尾，
+        而不是让生成器在半路断掉（那等于让前端停在「收到一半」的状态）。
+        """
+        payload: dict[str, Any] = {
+            "model": self.model,
+            "messages": messages,
+            "stream": True,
+            "options": {"temperature": temperature, "num_predict": max_tokens},
+            "keep_alive": normalize_keep_alive(
+                keep_alive if keep_alive is not None else self.keep_alive
+            ),
+        }
+        if json_mode:
+            payload["format"] = "json"
+
+        t0 = time.perf_counter()
+        pieces: list[str] = []
+        last: dict[str, Any] = {}
+        try:
+            with self._http.stream("POST", "/api/chat", json=payload) as resp:
+                if resp.status_code != 200:
+                    body = resp.read().decode("utf-8", "replace")[:200]
+                    yield ("error", f"http {resp.status_code}: {body}")
+                    return
+                for line in resp.iter_lines():
+                    if not line:
+                        continue
+                    try:
+                        j = json.loads(line)
+                    except json.JSONDecodeError:
+                        continue  # 半行/心跳行都不该中断整条流
+                    last = j
+                    delta = (j.get("message") or {}).get("content", "")
+                    if delta:
+                        pieces.append(delta)
+                        yield ("delta", delta)
+        except httpx.HTTPError as e:
+            yield ("error", f"{type(e).__name__}: {e}")
+            return
+
+        text = "".join(pieces)
+        parsed, json_valid = None, False
+        if json_mode:
+            try:
+                parsed = json.loads(text)
+                json_valid = True
+            except (json.JSONDecodeError, TypeError):
+                json_valid = False
+        # 计时字段只在最后一行；缺失时全部记 0 而不是猜——done_reason 缺失尤其要说清，
+        # 它是「被 num_predict 截断」与「模型自己说完」的唯一硬证据。
+        metrics = {
+            "total_ms": round((time.perf_counter() - t0) * 1000, 1),
+            "server_total_ms": round((last.get("total_duration", 0) or 0) / NS_TO_MS, 1),
+            "load_ms": round((last.get("load_duration", 0) or 0) / NS_TO_MS, 1),
+            "prompt_eval_ms": round((last.get("prompt_eval_duration", 0) or 0) / NS_TO_MS, 1),
+            "eval_ms": round((last.get("eval_duration", 0) or 0) / NS_TO_MS, 1),
+            "prompt_tokens": last.get("prompt_eval_count", 0),
+            "completion_tokens": last.get("eval_count", 0),
+            "done_reason": last.get("done_reason", ""),
+        }
+        tok = metrics["completion_tokens"]
+        if metrics["eval_ms"] > 0 and tok:
+            metrics["tokens_per_sec"] = round(tok / (metrics["eval_ms"] / 1000.0), 2)
+        yield ("final", LlmResult(ok=True, text=text, parsed=parsed, json_valid=json_valid, metrics=metrics))
+
     def embed(self, texts: list[str]) -> list[list[float]]:
         resp = self._http.post("/api/embed", json={"model": self.model, "input": texts})
         resp.raise_for_status()

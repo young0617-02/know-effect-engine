@@ -65,6 +65,9 @@ class QAState(TypedDict, total=False):
     gen_ok: bool
     gen_error: str
     llm_meta: dict[str, Any]
+    # token 级流式的回调（由 SSE 端点注入）。放进 state 而不是塞进 engine：
+    # 引擎实例是跨请求复用的，回调是每次请求各自的，放引擎上会把上一请求的管道接进下一请求。
+    on_delta: Any
 
     conclusion: str
     key_points: list[dict[str, Any]]
@@ -202,16 +205,50 @@ def build_qa_graph(engine):
         # 单轮时 effective_question 不设置，这里回落到原文——所以与重构前等价。
         query = state.get("effective_question") or state["question"]
         prompt = USER_TEMPLATE.format(evidence=ev_text, question=query)
+        messages = [{"role": "system", "content": SYSTEM_PROMPT}, {"role": "user", "content": prompt}]
         timings = dict(state.get("timings_ms") or {})
+        on_delta = state.get("on_delta")
         t1 = time.perf_counter()
-        llm_res = engine.llm.chat(
-            [{"role": "system", "content": SYSTEM_PROMPT}, {"role": "user", "content": prompt}],
-            json_mode=True,
-            temperature=engine.temperature,
-            max_tokens=engine.max_tokens,
-        )
+        first_token_ms: float | None = None
+        # 流式与非流式**共用同一个 generate 节点**：拓扑、门禁、出口契约一处都不分叉。
+        # 分叉成两条链是这类功能最容易犯的错——测的是一条、上线的是另一条。
+        if on_delta is not None and hasattr(engine.llm, "chat_stream"):
+            from kee.qa.streaming import scan_conclusion_delta
+
+            llm_res = None
+            err = ""
+            buf = ""
+            for kind, payload in engine.llm.chat_stream(
+                messages, json_mode=True, temperature=engine.temperature, max_tokens=engine.max_tokens
+            ):
+                if kind == "delta":
+                    if first_token_ms is None:
+                        first_token_ms = round((time.perf_counter() - t1) * 1000, 1)
+                    # payload 是内容**片段**；扫描器需要的是「到目前为止的完整缓冲」，
+                    # 因为它得从信封头部判断自己处在哪个字段里。
+                    buf += payload
+                    ev = scan_conclusion_delta(buf)
+                    if ev:
+                        on_delta(ev)
+                elif kind == "final":
+                    llm_res = payload
+                elif kind == "error":
+                    err = payload
+            if llm_res is None:
+                from kee.llm.ollama import LlmResult
+
+                llm_res = LlmResult(ok=False, error=err or "no_output")
+        else:
+            llm_res = engine.llm.chat(
+                messages, json_mode=True, temperature=engine.temperature, max_tokens=engine.max_tokens
+            )
         timings["generate_ms"] = round((time.perf_counter() - t1) * 1000, 1)
         timings["e2e_ms"] = round((time.perf_counter() - state["t_start"]) * 1000, 1)
+        if first_token_ms is not None:
+            # ① 门禁「流式首 token < 1.2s」的测量点。刻意记在从**发起请求**算起的位置，
+            # 不含检索耗时——门禁要的是「用户按下回车到看见第一个字」里属于生成那一段。
+            # 注意这是生成层的首 token，不是页面首屏；页面另有 retrieval 事件更早到。
+            timings["first_token_ms"] = first_token_ms
         return {
             "evidence_text": ev_text,
             "evidence_index": ev_index,
