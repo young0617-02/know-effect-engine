@@ -238,11 +238,18 @@ def main() -> int:
             rows.append({"qid": q["qid"], "category": q["category"], "status": r.status,
                          "question": q["question"], "conclusion": r.conclusion,
                          "reference_answer": str(q.get("reference_answer") or ""),
-                         "confidence": dict(r.confidence), **lab})
+                         "notes": list(r.notes), "confidence": dict(r.confidence), **lab})
             l4 = "—" if lab["ref_number_recall"] is None else f'{lab["ref_number_recall"]:.2f}'
             print(f"[{i:>2}/{len(pool)}] {q['qid']} {r.status:<10} L1={lab['section_any']} "
                   f"L2={lab['strict_any']} L3={lab['strict_precision']:.2f} L4={l4} "
                   f"编造{len(lab['invented_numbers'])} conf={r.confidence.get('calibrated')}")
+
+    from kee.eval.probe_guard import generation_failure_share, unusable_run
+
+    reason = unusable_run(generation_failure_share([r["notes"] for r in rows]))
+    if reason:
+        print("\n[判废] " + reason)
+        return 3
 
     add_runtime_signals(rows, texts)
     out = analyze(rows, temperature_used)

@@ -80,3 +80,28 @@ def test_temperature_refuses_to_fit_a_zero_variance_label():
 def test_temperature_rejects_mismatched_lengths():
     with pytest.raises(ValueError):
         fit_temperature([0.1, 0.2, 0.3], [1, 0])
+
+
+def test_probe_guard_refuses_to_report_a_dead_generator_as_a_pass():
+    """一次依赖故障会伪装成「所有题都干净地拒答」——那是假绿里最难发现的一类。
+
+    2026-10-11 真机撞见过：Ollama /api/tags 返回 200 但 llama-server 二进制缺失，
+    整批题都走到 generation_failed（degraded + 0 字结论）。
+    此时无守卫的守门脚本会报「refuse 类 0 泄漏 → PASS」。
+    """
+    from kee.eval.probe_guard import generation_failure_share, unusable_run
+
+    dead_run = [["generation_failed:http 500"], ["no_sufficient_evidence"],
+                ["generation_failed:http 500"], ["model_declared_no_evidence"]]
+    share = generation_failure_share(dead_run)
+    assert share == 0.5
+    assert "不是测量结果" in unusable_run(share)
+
+    # 健康的一轮不该被拦（个别题失败本来就该允许）
+    healthy = [["contract_violation:empty_conclusion"], ["no_sufficient_evidence"], ["ok"], ["ok"], ["ok"]]
+    assert generation_failure_share(healthy) == 0.0
+    assert unusable_run(generation_failure_share(healthy)) is None
+
+    # 只有 1/20 行失败：在阈值内，不拦
+    mostly_ok = [["ok"]] * 19 + [["generation_failed:timeout"]]
+    assert unusable_run(generation_failure_share(mostly_ok), threshold=0.2) is None

@@ -123,6 +123,17 @@ def main() -> int:
         rows.append({"qid": qid, "attribution": rec})
         print(f"  {qid}: graph 复现={graph_repro} legacy 复现={legacy_repro} → {verdict}")
 
+    from kee.eval.probe_guard import generation_failure_share, unusable_run
+
+    # 两边都跑在坏掉的生成层上时会「12/12 完全一致」——那是两遍同一个故障，不是等价性证据。
+    share = generation_failure_share(
+        [r["legacy"]["notes"] for r in rows if "agree" in r] + [r["graph"]["notes"] for r in rows if "agree" in r]
+    )
+    reason = unusable_run(share)
+    if reason:
+        print("\n[判废] " + reason)
+        return 3
+
     n_compared = sum(1 for r in rows if "agree" in r)
     out = {
         "n_questions": n_compared,

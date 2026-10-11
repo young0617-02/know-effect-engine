@@ -100,6 +100,16 @@ def main() -> int:
     refuse = [r for r in rows if r["expected_behavior"] == "refuse"]
     esc_unrouted = [r for r in esc if not r["needs_human"]]
 
+    # 这道前置在这里比在答案探针里更要紧：生成层整个挂掉时，每行结论都为空，
+    # 下面的判据会**如实地报出「refuse 类 7/7 干净、PASS」**——一次故障被读成一条通过的门禁。
+    # 所以先确认这些「空结论」是判断出来的，不是根本没算出来。
+    from kee.eval.probe_guard import generation_failure_share, unusable_run
+
+    reason = unusable_run(generation_failure_share([r["notes"] for r in rows]))
+    if reason:
+        print(f"\n[判废] {reason}")
+        return 3
+
     out = {
         "n_guarded": len(rows),
         "by_expected": dict(Counter(r["expected_behavior"] for r in rows)),

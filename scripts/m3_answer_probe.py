@@ -104,6 +104,17 @@ def main() -> int:
         conf = [r["confidence"]["composite"] for r in gradable]
         labels = [r["citation_hits_gold"] for r in gradable]
         out["calibration_on_gradable"] = expected_calibration_error(conf, labels)
+
+    # 有效性前置：见 kee.eval.probe_guard 的模块文档——一次依赖故障会伪装成
+    # 「合法的 degraded + 0 字结论」，被当成测量结果写进证据。
+    from kee.eval.probe_guard import generation_failure_share, unusable_run
+
+    reason = unusable_run(generation_failure_share([r["notes"] for r in rows]))
+    if reason:
+        print(f"\n[判废] {reason}")
+        kb.close()
+        return 3
+
     (art / "m3_answer_probe.json").write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
     kb.close()
     print("\n" + json.dumps({k: v for k, v in out.items() if k != "rows"}, ensure_ascii=False, indent=2))
