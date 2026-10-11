@@ -128,7 +128,7 @@ section gold 降为报告值，Recall 类数字必须附 n 与 95% CI（阈值�
 
 `KEE_REWRITE_MODE=off|sparse|both|extra_leg` 控制改写形态。
 
-## M3 编排 · 引用 · 置信度（进行中）
+## M3 编排 · 引用 · 置信度（已完成）
 
 | 入口 | 作用 |
 |---|---|
