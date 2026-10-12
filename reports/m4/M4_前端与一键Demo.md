@@ -113,6 +113,84 @@ cd frontend && npm run test                                 # 13 条组件/解�
 - **① 首 token 门禁**：仍不达标（本次 934ms 与 1477ms 两轮，M4 流式报告 p50 1642.7ms / 1.85% 达标）。
 - **视觉像素级**：未做（截图通道不可用），只有 DOM 结构与文本级验证。
 - **真断网 + 无外呼重验**：未跑（代价是整个存储栈重建）。本轮只有结构性证据。
+  ［**2026-10-12 已复跑，见第八节**——原判「未跑」在这一轮之前是对的，保留不抹。］
 - **撤回态**：现场未触发，仅组件断言覆盖。
 - **复核/回滚/对账的写路径**：按钮与错误处理已接，但**没在真库上跑过一次完整的通过→升版→回滚**——
   这类写操作会改语料状态，要跑就在干净的复现环境里跑，我没擅自改你的库。
+
+## 八、⑥「断网 + 无外呼」复跑（2026-10-12，任务 #49 的尾巴）
+
+跑法：`uv run python -m kee.gate0.g06_localization --isolation`（**不带 `--from-scratch`**，
+数据卷不动；代价是存储容器 `down`→internal 网起→探针→`down`→正常起重建一遍）。
+⑥ 的两份历史产物（`var/gate0/g06_localization.json`、`reports/gate0/g06_localization.md`）
+跑前备份、跑后按 md5 还原；`verdict_06.json` 亦 `git checkout` 还原。**本轮结果另存**
+`var/gate0/m4_g06_rerun2.json`，无效的第一轮另存 `m4_g06_rerun1.json` 当反面样本。
+
+### 第一次跑出来的是一条「空集上的真」，不能用
+
+`compose down` 删 `kee-gate0_kee-net` 被 **kee-web** 的 endpoint 挡住：
+`error while removing network: network ... has active endpoints (name:"kee-web")` → iso 栈 `up_rc=1`、
+容器一个都没起 → 探针全打在 `No such container: kee-milvus` 上，于是
+
+- `containers_blocked_from_public: true` —— **在空容器集上恒真**，零证据价值；
+- 总结判定 **不通过** —— 也是同一个干扰造成的假阴：`all_healthy` 硬比较「服务数 == 5」，
+  kee-web 让 `ps` 数出 6 个，而真实状态是 5/5 healthy、一键 1.5s。
+
+根因是结构性的：**Demo 容器与存储栈同属一个 compose 项目**（`docker-compose.m4.yml` 显式 `name: kee-gate0`
+以复用存储），所以任何「按项目 down 网络」的动作都会被 kee-web 绊住。处置：**先 `stop kee-web` 再跑**。
+
+### 第二次（有效读数）
+
+| 项 | 读数 |
+|---|---|
+| 一键启动 | `up_rc=0`，**1.4s**，5/5 healthy |
+| 仅绑定回环 | 非回环绑定 **0** |
+| 连通性 | milvus / postgres / redis / ollama **全 ok** |
+| internal 网变体 | `up_rc=0` 且 5/5 healthy；容器出网探测 **失败**（`curl` 到公网 rc=7 / 无应答）；容器间互联仍在（etcd 健康应答 `{"health":"true"}`）；**可疑对外连接 0** |
+| 宿主进程连接审计（跑核心链路时采） | dense 2 / sparse 2 / llm_ok / JSON 合法；**非回环连接 0、公网出网 0** |
+| 静态扫描 | 运行期出域嫌疑 **[]** |
+| 云端兜底开关 | `false` |
+| ⑥ 判定 | **通过**（md 第 67 行原文） |
+
+⚠ **但「断网下核心链路可运行」这句仍然没有被端到端证明**，两点要写死：
+1. `internal: true` 同时切断**宿主↔容器发布端口**通路，`host_can_reach_published_ports=false`
+   —— 本拓扑里应用跑在宿主（ADR-12 未裁决），所以核心链路只能在 iso 相位**之外**跑；
+   脚本里 `core_path` 也是在恢复之后才执行的。**iso 相位证明的是「容器封公网」，不是「断网仍能问答」。**
+2. 因此有效证据是四条结构性的：容器封公网 + 仅绑定 127.0.0.1 + 宿主连接审计 0 出网 + 云端兜底关。
+   真正的「整机断网跑通问答」要等 API 容器化、应用与存储同网段之后才能测——这条继续挂在 ADR-12。
+
+### 复跑后踩到的新坑（已登记进记忆）
+
+`stop kee-web` 之后再 `up -d kee-web` 起不来：
+`failed to set up container networking: network c48cf... not found` —— 旧容器引用的网络在 iso 相位被删了。
+解法是 **`up -d --force-recreate kee-web`**。恢复后实测：前端 `index.html` 200、
+经 Nginx 的 `/healthz` 200（193 chunks / 24 docs）、`verify_m4` 经同源链路 **12/12** 复跑通过。
+
+## 九、#48 知识库写路径：真库跑通，并当场撞出一个必现缺陷（2026-10-12）
+
+**为什么不在生产库上跑**：线上门户**没有删除文档的端点**（只有 upload / review / rollback / reconcile）。
+写进 `kee` 库与 `kb_chunks` 就撤不回来，还会永久改掉评测集的回查面。
+所以 `scripts/m4_kb_write_path.py` 在**同一个 Postgres 容器里另建 `kee_writepath` 库**、
+**同一个 Milvus 里另建 `kb_chunks_writepath` 集合**，跑完把库和集合都删掉。
+真引擎、真 SQL、真 Outbox、真嵌入（BGE-M3 走宿主显存），只是命名空间隔离。
+自检第一行就是这件事：healthz 回 `collection=kb_chunks_writepath, chunks=0`。
+
+**13 项全过**（`var/gate0/m4_kb_write_path.json`）：上传 201 出 `doc_id/version_id`；
+**上传者复核自己被拒 403「职责分离」**；他人复核后文档转 active 且版本生效；
+v1 生效后可检索到正文（检索接口只回元数据，正文经 `/chunks/batch` 二段取，顺带验了这条契约）；
+**升版**后生效版本切 v2 且旧口径正文不再命中；**回滚**后生效版本回 v1、索引里无 v2 子块残留；
+对账 dry-run 读得出漂移面 → **人为删掉一个向量子块后对账报 `missing_in_vector=1`** → 修复后归零；
+四类写操作都进审计（`document_ingested / document_review_pass / document_rollback / reconciliation_run`）；
+终态自洽（生效版本唯一 + 文档 active）。复原自检：生产侧仍 **193 chunks / 24 docs**。
+
+**撞到的真缺陷（已修）**：宿主 API 的**上传路径在真嵌入下必 500**。
+`serve_api.py` 用 `create_app()`（`scheduler=None`），而 `IngestionService.ingest()` 在非 `skip_embedding`
+分支要求嵌入器，遇 `scheduler is None` 直接 `raise RuntimeError("未提供 scheduler/embedder…")`；
+惰性建调度器**只写在检索端点里**，上传与回滚没有。
+`scripts/verify_m1.py` 一直自己 `create_app(scheduler=sched, ...)`，所以 166 个单测 + M1 验证全照不到这条路。
+> 与 M3-05 那条教训同源：**「单测过了」不等于「线上那条路走得通」**——
+> 测试替实现补上的那个参数，正是生产缺的那个。修法：`create_app` 内加 `ensure_scheduler()`，上传/检索/回滚共用。
+
+**写路径自带的两个坑（留给下一个人）**：① 升版必须**显式带同一个 `doc_id`**，
+靠文件名推 `doc_id` 会变成两篇独立文档，测不到版本切换；② `AuthoritativeStore.connect()` **不建表**，
+新库要先 `init_schema()`、Milvus 新集合要先 `ensure()` —— app 假设依赖已就绪，这是设计不是疏漏。

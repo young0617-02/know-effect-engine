@@ -144,6 +144,11 @@ QUESTIONS: list[dict] = [
         "gold_projects": ["PRJ-ENE-2024-006", "PRJ-ENE-2025-011"],
         "expected_behavior": "answer",
         "reference_answer": "必须经正反向隔离装置以单向方式传输，禁止任何形式的反向直连。",
+        "gold_manual_add": ["ene-compliance-prj-ene-2023-019@v1#2.1#c1"],
+        "gold_manual_why": "该块明写「管理信息大区与生产控制大区之间的数据交换只能经正反向隔离装置以单向方式完成」，"
+                           "正面答全该题，只因正文没有字面串「电力监控系统安全防护」而漏收（第二人判是，读原文确认）。"
+                           "同题另有一块 #2.2#c1（部署 6 台、反向 5000 条/小时上限）第二人也判是，"
+                           "但它是**描述型**部署口径、不含回答该问的强制句，本轮不采纳，列入待复核。",
     },
     {
         "qid": "q-013",
@@ -153,6 +158,7 @@ QUESTIONS: list[dict] = [
         "gold_projects": ["PRJ-CHM-2024-003"],
         "expected_behavior": "answer",
         "reference_answer": "采用 2oo3 表决逻辑，独立于优化平台部署，其整定值不随优化目标调整。",
+        "gold_manual_why": "题面两问（表决逻辑是什么 + 优化平台能不能改整定值）。第二人判是的三块（chm-compliance#2.1#c2、chm-closeout#1.1#c1、chm-ifspec#1.2#c1）**都只答第二问**，没有一块给出 2oo3 表决逻辑 → 乙口径下不收，该题列入拆题清单。",
     },
     {
         "qid": "q-014",
@@ -162,6 +168,9 @@ QUESTIONS: list[dict] = [
         "gold_projects": ["PRJ-CHM-2024-003"],
         "expected_behavior": "answer",
         "reference_answer": "一律设为只读，联锁值修改权限保留在客户工艺与仪表两个部门。",
+        "gold_manual_add": ["chm-ifspec-prj-chm-2024-003@v1#1.2#c1"],
+        "gold_manual_why": "该块写「联锁状态量与 SIS 安全仪表系统的输出量强制列为只读且仅用于状态监视」，"
+                           "正面回答该问；关键词按字面串「DCS 联锁逻辑」匹配，而正文用的是「联锁状态量」，故漏收。",
     },
     # ---------------- 编号（12 题）----------------
     {
@@ -262,6 +271,7 @@ QUESTIONS: list[dict] = [
         "gold_projects": ["PRJ-CHM-2023-021"],
         "expected_behavior": "answer",
         "reference_answer": "按 GB 50058-2014 的分区原则执行；设备新增或替换须提交区域等级证明与选型核对表，两项缺一不得签发作业票。",
+        "gold_manual_why": "题面两问（依据哪个国标 + 作业票怎么签发）。第二人判是的 chm-runbook#4.1#c1 只答作业票签发，未给 GB 50058-2014 依据 → 半问不收，列入拆题清单。",
     },
     {
         "qid": "q-026",
@@ -308,6 +318,7 @@ QUESTIONS: list[dict] = [
         "gold_projects": ["PRJ-CHM-2024-003"],
         "expected_behavior": "answer",
         "reference_answer": "以装置收率、能耗与平稳率三类指标为核心，汽油收率实测由 82.4% 提升至 83.2%。",
+        "gold_manual_why": "第二人判是的 chm-closeout#2.1#c1 给的是**实测成效**（收率 82.4%→83.2%），题问的是**验收目标** → 按判据第三条「描述/实测 ≠ 规范性答案」不收。",
     },
     {
         "qid": "q-031",
@@ -435,6 +446,9 @@ QUESTIONS: list[dict] = [
         "gold_projects": ["PRJ-CHM-2025-014"],
         "expected_behavior": "answer",
         "reference_answer": "审计追踪写入是唯一允许的变更方式，运维人员不得以数据库直连方式修正记录字段，错误须以追加更正记录处理。",
+        "gold_manual_add": ["chm-presale-prj-chm-2025-014@v1#2.1#c1"],
+        "gold_manual_why": "该块写「审计追踪日志只增不改不删，任何数据库层面的清理动作均视为严重违规并触发合规告警」，"
+                           "正是把「直接进库改字段」这条路堵死的那句；正文用「数据库层面」而非字面串「数据库直连」，故漏收。",
     },
     {
         "qid": "q-045",
@@ -545,6 +559,17 @@ QUESTIONS: list[dict] = [
         "gold_projects": ["PRJ-FIN-2024-017", "PRJ-FIN-2023-041", "PRJ-ENE-2024-006", "PRJ-CHM-2024-003", "PRJ-CHM-2023-021"],
         "expected_behavior": "answer",
         "reference_answer": "按项目登记需求管理、项目计划、配置管理、验证与决策分析等过程域的度量项，并把结论回灌组织过程资产库。",
+        "gold_manual_drop": [
+            "ene-closeout-prj-ene-2024-006@v1#4.1#c1",
+            "fin-retro-prj-fin-2023-041@v1#4.1#c1",
+            "chm-retro-prj-chm-2024-003@v1#4.1#c2",
+            "chm-closeout-prj-chm-2023-021@v1#4.1#c1",
+        ],
+        "gold_manual_why": "题问「登记**哪些**过程域和度量项」，这四块都只写「按 CMMI 3 级过程域映射要求登记度量项 9 类 / "
+                           "回灌资产库更新 N 条检查单」——是**描述型**计数（登记了几类、多少条），没列出过程域清单，"
+                           "乙口径下答不全该题。第二人逐块判否，读原文确认一致。"
+                           "本条也是「机械补词做不到」的那个例子：这四块正文都字面含关键词，靠 `gold_keywords` 删不掉，"
+                           "只能用逐块结论覆盖，所以开了 `gold_manual_drop`。",
     },
     {
         "qid": "q-057",
@@ -563,6 +588,13 @@ QUESTIONS: list[dict] = [
         "gold_projects": ["PRJ-CHM-2023-021", "PRJ-CHM-2025-014"],
         "expected_behavior": "answer",
         "reference_answer": "一致，均按 1 区与 2 区划分并逐单元对应设备防爆标志，合规摘录另给出 GB 50058-2014 的配线与密封要求。",
+        "gold_manual_drop": [
+            "chm-runbook-prj-chm-2025-014@v1#1.1#c1",
+            "chm-compliance-prj-chm-2023-021@v1#2.2#c2",
+        ],
+        "gold_manual_why": "题问「两处口径是否一致」，这两块一块讲巡检终端须防爆认证、一块讲便携仪器季度双项检查，"
+                           "都没有给出可对照的**分区口径**本身，判不出一致与否（第二人判否）。"
+                           "该题本身仍在拆题清单上（比较型题要两份文档同时在场）。",
     },
     # ---------------- 无答案（7 题，期望拒答）----------------
     {

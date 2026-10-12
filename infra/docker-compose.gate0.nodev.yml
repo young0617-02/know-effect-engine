@@ -1,0 +1,29 @@
+# 断网变体覆盖层：只去掉容器的出网 NAT，**保留**宿主↔容器发布端口通路。
+#
+# 为什么不用 `internal: true`：internal 会把宿主到容器发布端口的通路一起切断
+# （Gate 0 ⑥ 实测结论，`host_can_reach_published_ports=false`），而本拓扑里 API 跑在宿主
+# （ADR-12），于是「断网下核心链路是否还能跑」这一条**根本测不了**——只能测「容器封公网」。
+#
+# `enable_ip_masquerade: false` 只关 SNAT：容器不再能出公网，
+# 同网段容器互联与宿主经 127.0.0.1:3xxxx 访问容器都不受影响（那两条不走 MASQUERADE）。
+# 所以本文件证的是比 ⑥ 更硬的一条：**容器无出网通路时，核心链路端到端仍可跑完**。
+#
+# 跑法：uv run python scripts/m4_airgap_check.py（它负责起停与复原，别手工 up/down 后忘了还原）
+#
+# ⚠ 2026-10-12 实测：**这条路在本机不成立，别当断网证据用。**
+#   Docker Desktop 的容器流量先过它自己 VM 的 NAT，bridge 的 masquerade 开关关不掉那一层：
+#   `docker exec kee-milvus curl http://1.1.1.1` 仍返回 301（Cloudflare 的 http→https 跳转，
+#   证明 TCP 真的出去了）。同一轮里 8.8.8.8 / registry-1.docker.io 超时**不是**断网证据——
+#   那两个目标从本机本来就不可达（全局代理失效 + 境外站可达性矩阵）。
+#   有效读数只有反面这一条：`容器封公网=false`。见 `var/gate0/m4_airgap_nodev.json`。
+#   要证「断网下端到端」，仍只有 ADR-12（API 进容器、与存储同网段后用 internal:true）一条路。
+name: kee-gate0
+
+networks:
+  kee-net:
+    driver: bridge
+    # 注意：这不是 compose 的顶层字段（写 `enable_ip_masquerade: false` 会被 schema 直接拒掉，
+    # `config` 报 additional properties not allowed，up 静默啥也没起来）。
+    # 关 SNAT 要走 bridge 驱动的选项，key 是 com.docker.network.bridge.enable_ip_masquerade。
+    driver_opts:
+      com.docker.network.bridge.enable_ip_masquerade: "false"

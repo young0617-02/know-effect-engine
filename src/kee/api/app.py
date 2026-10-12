@@ -121,6 +121,21 @@ def create_app(*, skip_embedding: bool = False, scheduler: Any | None = None, co
     app.state.scheduler = scheduler
     app.state.skip_embedding = skip_embedding
 
+    def ensure_scheduler():
+        """嵌入器只有检索端点在建 —— 上传/回滚走的是同一条嵌入路径，
+        于是 `serve_api.py` 起的实例（`create_app()` 不传 scheduler）一上传就 500：
+        `IngestionService.ingest` 在非 skip_embedding 分支里遇到 `scheduler is None` 直接抛。
+        `verify_m1` 一直自己 `create_app(scheduler=...)`，所以这个洞没被测试照到。
+        """
+        sched = getattr(app.state, "scheduler", None)
+        if sched is None:
+            from kee.models.registry import ResidencyScheduler
+
+            sched = ResidencyScheduler(policy="co_resident")
+            app.state.scheduler = sched
+            service.scheduler = sched
+        return sched
+
     @app.middleware("http")
     async def trace_layer(request: Request, call_next):
         trace_id = request.headers.get("X-Trace-Id") or f"api-{uuid.uuid4().hex[:12]}"
@@ -212,6 +227,8 @@ def create_app(*, skip_embedding: bool = False, scheduler: Any | None = None, co
         data = await file.read()
         if not data:
             raise ApiError("E400", 400, "空文件", trace_id)
+        if not app.state.skip_embedding:
+            ensure_scheduler()
         try:
             result = service.ingest(
                 filename=file.filename or "untitled",
@@ -301,6 +318,9 @@ def create_app(*, skip_embedding: bool = False, scheduler: Any | None = None, co
         ctx, actor = context_of(x_kee_role, x_kee_actor, None, None)
         if ctx.role not in REVIEW_ROLES:
             raise ApiError("E403", 403, "回滚需 knowledge_owner 或 system_admin 角色", request.state.trace_id)
+        # 回滚要重灌索引（index_version），和上传一样吃嵌入器
+        if not app.state.skip_embedding:
+            ensure_scheduler()
         return service.rollback(doc_id, body.to_version_id, actor=actor, trace_id=request.state.trace_id)
 
     @app.post("/api/v1/reconcile/run")
@@ -324,12 +344,7 @@ def create_app(*, skip_embedding: bool = False, scheduler: Any | None = None, co
         ctx, _ = context_of(x_kee_role, x_kee_actor, x_kee_industries, x_kee_projects)
         if app.state.skip_embedding:
             raise ApiError("E902", 503, "本实例以 skip_embedding 启动，稠密检索不可用", request.state.trace_id)
-        scheduler = getattr(app.state, "scheduler", None)
-        if scheduler is None:
-            from kee.models.registry import ResidencyScheduler
-
-            scheduler = ResidencyScheduler(policy="co_resident")
-            app.state.scheduler = scheduler
+        scheduler = ensure_scheduler()
         retriever = HybridRetriever(kb, scheduler=scheduler, cache=None, mode="sparse", use_rerank=False)
         res = retriever.retrieve(body.query, ctx, top_k=body.top_k)
         return {

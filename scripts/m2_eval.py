@@ -52,6 +52,7 @@ GRID: list[tuple[str, dict[str, Any]]] = [
     ("rewrite_sparse", {"rewrite_mode": "sparse"}),
     ("rewrite_extra_leg", {"rewrite_mode": "extra_leg"}),
 ]
+GATE_HIT_AT_5 = 0.95
 GATE_RECALL_AT_5 = 0.85
 GATE_MRR = 0.75
 GATE_P95_MS = 800.0
@@ -220,19 +221,46 @@ def main() -> int:
     regression = None
     if prev:
         d = round(metric(base_full, "recall", k) - metric(prev["baseline_full"], "recall", k), 4)
+        # 回归比对也用 strict 尺子——section 那把刚被证实在注水，拿它判回归等于用错温度测温
+        ds = round(metric(base_full, "recall", k) - metric(prev["baseline_full"], "recall", k), 4)
+        d_strict = round(metric(base_full.get("strict_gold") or {}, "recall", k)
+                         - metric((prev["baseline_full"] or {}).get("strict_gold") or {}, "recall", k), 4)
         regression = {
             "prev": metric(prev["baseline_full"], "recall", k),
             "now": metric(base_full, "recall", k),
             "delta": d,
             "regressed": d < -0.02,
+            "prev_strict": metric((prev["baseline_full"] or {}).get("strict_gold") or {}, "recall", k),
+            "now_strict": metric(base_full.get("strict_gold") or {}, "recall", k),
+            "delta_strict": d_strict,
+            "regressed_strict": d_strict < -0.02,
+            "note": "section 为报告值；回归判定以 strict 为准（ds 与 d 同为 section 口径，留作对照）",
         }
 
     # 门禁一律看 full：基线配置是**预先声明**、没在数据上调过，所以全样本判定是干净的；
     # 反过来，若哪天把网格里赢的那格转正，就必须先改这里的声明再重跑，不能直接引用网格数字。
+    #
+    # 判定口径按 2026-10-10 的 M2 裁决第 1 项（《项目定义》V1.3 /《技术方案》V1.0.3）：
+    #   主判定 = Hit@5 ≥ 95% + **strict gold** Recall@5 ≥ 85%；section gold Recall@5 只是报告值。
+    # 此前这里实现错了——把 section 读数喂进 GATE_RECALL_AT_5 且根本不查 Hit@5，
+    # 于是门禁判定一直在用一个「已被独立第二人证成为注水尺子」的口径（详见 reports/m2 第十节）。
+    # 阈值数值一个都没动，改的是「它测哪把尺子」。
+    strict_full = base_full.get("strict_gold") or {}
     gates = {
-        f"Recall@{k}≥{GATE_RECALL_AT_5}": metric(base_full, "recall", k) >= GATE_RECALL_AT_5,
+        f"Hit@{k}(strict)≥{GATE_HIT_AT_5}": metric(strict_full, "hit", k) >= GATE_HIT_AT_5,
+        f"Recall@{k}(strict)≥{GATE_RECALL_AT_5}": metric(strict_full, "recall", k) >= GATE_RECALL_AT_5,
         f"MRR≥{GATE_MRR}": base_full.get("mrr", 0) >= GATE_MRR,
         f"P95检索≤{GATE_P95_MS:.0f}ms": base_full["latency_ms"]["p95"] <= GATE_P95_MS,
+    }
+    # section 口径降为报告值，按裁决必须带 n 与 95% CI；两份 Hit@5 在本语料上数值相同（0.9828），
+    # 所以「Hit 用哪把尺子」这个歧义在本机上是空歧义——仍按 strict 判，并把两把都报出来。
+    reported = {
+        "section_recall@5": metric(base_full, "recall", k),
+        "section_recall@5_ci95": base_full.get(f"recall@{k}_ci95"),
+        "section_hit@5": metric(base_full, "hit", k),
+        "strict_hit@5": metric(strict_full, "hit", k),
+        "n": base_full.get("n"),
+        "gate_basis": "Hit@5(strict) + Recall@5(strict)，section 仅报告——依 2026-10-10 M2 裁决第 1 项",
     }
     summ = sched.summary()
     from kee.models.gpu import vram_used_mib
@@ -249,6 +277,7 @@ def main() -> int:
         "baseline_dev": base_dev,
         "grid_dev": grid,
         "gates": gates,
+        "reported_not_gated": reported,
         "gates_passed": all(gates.values()),
         "regression": regression,
         "best_grid_cell_is_not_evidence": "网格只在 dev 上跑，用于诊断；门禁只认基线配置的全样本值",

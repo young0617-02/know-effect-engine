@@ -5,6 +5,12 @@
   - gold_section：关键词命中在父块（章节）正文里 → 该章节下所有子块算 gold。
   分级取 gold_section ∪ gold_strict：章节级相关即算相关，与人工标注习惯一致；
   同时单独报告 strict 命中率，作为标注质量的自检信号。
+
+人工逐块结论可以盖过关键词口径（题面的 `gold_manual_add` / `gold_manual_drop`，**只作用于 strict**）：
+关键词是 gold 的机械近似、不是定义。第二人脱离本题答案字段逐块判「这块能不能独立答全该题」之后，
+会出现两个方向相反的偏差——某块确实答得出，只因字面缺一个关键词串而漏收；或某块字面全含，
+却只答了半问、给的是实测而非规范。两种都由逐块结论纠正，理由写在该题的 `gold_manual_why`。
+section 保持纯机械（它已降为报告值，不该再掺手工成分）。
 """
 
 from __future__ import annotations
@@ -53,9 +59,18 @@ def build_eval_set(pg: AuthoritativeStore, write_files: bool = True) -> dict[str
 
     rows: list[dict[str, Any]] = []
     unmatched: list[str] = []
+    overridden: list[str] = []
     for q in questions:
         kws = [k for k in q.get("gold_keywords", []) or [] if k]
         strict = [c["id"] for c in children if kws and _all_in(c["content"], kws)]
+        # 逐块人工结论优先于关键词口径：`gold_keywords` 只是 gold 的**机械近似**，
+        # 当它与第二人「这块能不能独立答全该题」的逐块判断相反时，以判断为准（裁决见 V1.0.11 / V1.10）。
+        # 只作用于 strict 这把主尺；section 保持纯机械（它已经降为报告值，不该再混入手工成分）。
+        drop = set(q.get("gold_manual_drop") or [])
+        add = set(q.get("gold_manual_add") or [])
+        if drop or add:
+            strict = sorted(({*strict} - drop) | add)
+            overridden.append(q["qid"])
         section: list[str] = []
         if kws:
             for c in children:
@@ -88,6 +103,8 @@ def build_eval_set(pg: AuthoritativeStore, write_files: bool = True) -> dict[str
             1 for r in rows if r["expected_behavior"] == "answer" and not r["gold_chunk_ids"]
         ),
         "unmatched_qids": unmatched,
+        # 人工覆盖必须显式可见：哪几题的 strict gold 被逐块结论改过，一眼能查出来
+        "manual_override_qids": overridden,
         "mean_gold_per_question": round(
             sum(r["n_gold"] for r in rows if r["gold_chunk_ids"]) / max(sum(1 for r in rows if r["gold_chunk_ids"]), 1), 2
         ),
