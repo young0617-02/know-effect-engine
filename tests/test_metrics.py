@@ -105,3 +105,15 @@ def test_probe_guard_refuses_to_report_a_dead_generator_as_a_pass():
     # 只有 1/20 行失败：在阈值内，不拦
     mostly_ok = [["ok"]] * 19 + [["generation_failed:timeout"]]
     assert unusable_run(generation_failure_share(mostly_ok), threshold=0.2) is None
+
+
+def test_cohens_kappa_rejects_string_labels_loudly():
+    """字符串标注会让 Counter[1] 恒为 0 ⇒ pe==1 ⇒ 返回 NaN：一个"看起来算过"的坏数。
+    我在重测信度那段真踩到了，所以这里挡住而不是留个 NaN 让下游猜。"""
+    import pytest
+
+    from kee.eval.kappa import cohens_kappa
+
+    with pytest.raises(TypeError, match="int 0/1"):
+        cohens_kappa(["1", "0"], ["1", "1"])
+    assert cohens_kappa([1, 0], [1, 1])["kappa"] is not None

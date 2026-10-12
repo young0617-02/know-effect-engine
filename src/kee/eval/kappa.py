@@ -22,6 +22,11 @@ from kee.config import get_settings  # noqa: E402
 def cohens_kappa(labels_a: list[int], labels_b: list[int]) -> dict[str, float]:
     if len(labels_a) != len(labels_b) or not labels_a:
         raise ValueError("两份标注必须等长且非空")
+    # 传字符串进来会让 Counter[1] 恒为 0、于是 pe==1 而返回 NaN——一个"看起来算过"的坏数。
+    # 这类静默降级比报错昂贵得多（我自己在重测信度那段就踩了），所以在这里挡住。
+    bad = [x for x in (*labels_a, *labels_b) if not isinstance(x, int) or x not in (0, 1)]
+    if bad:
+        raise TypeError(f"标注必须是 int 0/1，收到 {bad[:5]!r}——字符串要先 int() 再传")
     n = len(labels_a)
     agree = sum(1 for a, b in zip(labels_a, labels_b) if a == b)
     po = agree / n

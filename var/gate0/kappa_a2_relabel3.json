@@ -1,0 +1,193 @@
+{
+  "unit": "(qid, 候选块) 的相关判定",
+  "scope_note": "观测域是**候选池**（第二人只看过这些块），不是全库。这个 Kappa 是「在候选池上的一致性」，不得表述成全库标注一致。",
+  "n_rows_judged": 10,
+  "sources": [
+    "annotations_a2_relabel3"
+  ],
+  "n_questions_done": 1,
+  "n_questions_total": 1,
+  "complete": true,
+  "blank_rows": 0,
+  "excluded": null,
+  "gold_version": {
+    "source": "qrels.jsonl（当前尺子）",
+    "rows_relabeled_from_snapshot": 0
+  },
+  "against_section_gold": {
+    "kappa": 0.4118,
+    "po": 0.8,
+    "pe": 0.66,
+    "n": 10,
+    "disagreement": {
+      "a_yes_b_no": 2,
+      "a_no_b_yes": 0
+    },
+    "raw_agreement": 0.8,
+    "b_positive_rate": 0.1
+  },
+  "against_strict_gold": {
+    "kappa": 0.6154,
+    "po": 0.9,
+    "pe": 0.74,
+    "n": 10,
+    "disagreement": {
+      "a_yes_b_no": 1,
+      "a_no_b_yes": 0
+    },
+    "raw_agreement": 0.9,
+    "b_positive_rate": 0.1
+  },
+  "bootstrap": {
+    "unit": "题（聚类重采样）",
+    "draws": 2000,
+    "degenerate_draws": 0,
+    "section_ci95": [
+      0.4118,
+      0.4118
+    ],
+    "strict_ci95": [
+      0.6154,
+      0.6154
+    ],
+    "diff_strict_minus_section": {
+      "point": 0.2036,
+      "ci95": [
+        0.2036,
+        0.2036
+      ],
+      "share_draws_positive": 1.0
+    }
+  },
+  "retest": {
+    "against": "annotations_a2",
+    "shared_rows": 10,
+    "kappa_self": 0.6154,
+    "po_self": 0.9,
+    "flipped": [
+      {
+        "qid": "q-044",
+        "chunk_id": "chm-presale-prj-chm-2025-014@v1#2.1#c1",
+        "then": "1",
+        "now": "0"
+      }
+    ],
+    "note": "同一人跨轮的自一致，不是双人一致性；它给的是这台测量仪的噪声地板。用它约束结论：分歧数小于这个地板的『改善』不能声称成立。"
+  },
+  "relevance_scope": {
+    "decided": "敏感/拒答题（expected_behavior=escalate|refuse）不参与相关性测量，按 ⑤ 的路由正确性判；剔除理由是其结构（按设计就没有可给的答案块），不是数值。两份读数并列，对外只用「含敏感题」那份",
+    "including_sensitive": {
+      "rows": 10,
+      "questions": 1,
+      "kappa_vs_strict": 0.6154,
+      "po": 0.9,
+      "positive_b": 1,
+      "positive_gold": 2,
+      "both_positive": 1
+    },
+    "excluding_sensitive": {
+      "rows": 10,
+      "questions": 1,
+      "kappa_vs_strict": 0.6154,
+      "po": 0.9,
+      "positive_b": 1,
+      "positive_gold": 2,
+      "both_positive": 1
+    },
+    "ladder_warning": "按题型剔除会一路把 Kappa 抬上去（含敏感 < 不含敏感 < 再剔跨文档）。**跨文档类不得剔除**：那是本系统最难也最值钱的能力，剔它就是为了好看的数请掉真问题。"
+  },
+  "criterion": {
+    "decided": "乙：一块必须能独立答全该题全部内容才算 1（2026-10-12 用户裁决）。细则另两条：题面点名主体时别的项目/行业的同名章节算 0；描述型块（部署几台、达成率）算 0",
+    "label_basis": "本轮工单抬头写的就是**乙**，第二人按乙填 ⇒ 不再机械改判（`--already-yi`）。as_filled 与 adjudicated 两行因此相同，读 as_filled 那份即可",
+    "as_filled_jia": {
+      "kappa_vs_strict": 0.6154,
+      "po": 0.9,
+      "positive_b": 1,
+      "positive_gold": 2,
+      "both_positive": 1,
+      "both_negative": 8
+    },
+    "adjudicated_yi": {
+      "kappa_vs_strict": 0.6154,
+      "po": 0.9,
+      "positive_b": 1,
+      "positive_gold": 2,
+      "both_positive": 1,
+      "both_negative": 8
+    },
+    "adjudicated_yi_with_doc_scope": {
+      "kappa_vs_strict": 0.6154,
+      "po": 0.9,
+      "positive_b": 1,
+      "positive_gold": 2,
+      "both_positive": 1,
+      "both_negative": 8
+    },
+    "part_answer_rows_zeroed": 0,
+    "doc_scope_amendment": {
+      "rule": "细则 2 的文档级补充（2026-10-12 裁决）：题面点名单一文档类型的题（`DOC_SCOPED_QIDS`，现 9 道），第二人判是但块不属那份文档 ⇒ 按判据为 0",
+      "applied_to_qids": [
+        "q-038",
+        "q-053",
+        "q-055",
+        "q-058",
+        "q-073",
+        "q-075",
+        "q-077",
+        "q-078",
+        "q-079"
+      ],
+      "q-044_excluded": "题面说「规范里」而它的两块 gold 在售前方案与运维手册里——那是限定语与答题块不同源的**题面缺陷**，不入表；硬配 doc_scope 等于用判据把第一人自己的 gold 清零",
+      "rows_flipped": [],
+      "kappa_before": 0.6154,
+      "kappa_after": 0.6154,
+      "direction_warning": "这条补充把第二人的 1 改成 0、方向对第一人有利，且规则是在看过分歧之后才补的。所以两版必须并排报，**且只用于相关性叙述，不进 `m2_eval` 的门禁判定**；对外引用时以「补充前」为保守值、「补充后」为判据现值，不得只报高的那份"
+    },
+    "uplift_warning": "本轮抬头即乙口径，甲/乙两行数值相同，**不存在抬升**，也就没有「负例变多冒充一致性」的空间",
+    "split_check": "**2026-10-12 全量复核后作废**此前写在此处的「拆题是空集」：那句靠「≥2 个疑问标记」的检测器得出，而集合型题往往只有一个问号。实测定为必须拆 3 道——q-053（哪些文档引用过）、q-055（三条线各自门限）、q-058（两份文档口径一致吗）；q-054 的第二问「各项目是怎么用的」同属集合型。q-056/057 经核单块可答，不拆。检测器 scripts/m4_split_candidates.py 的输出只当候选面，结论要逐题人工读。"
+  },
+  "joint_section_strict_b": {
+    "000": 7,
+    "100": 1,
+    "110": 1,
+    "111": 1
+  },
+  "n_divergence": 2,
+  "divergence_on_two_part_questions": 0,
+  "divergence_samples": [
+    {
+      "src": "annotations_a2_relabel3",
+      "qid": "q-044",
+      "cand_no": 7,
+      "b": 0,
+      "a_section": 1,
+      "a_strict": 1,
+      "kind": "双 gold 认、B 判否",
+      "question": "运维图省事想直接进库里把那个字段改回来，哪条规定把这条路堵死了？",
+      "n_sub_questions": 0,
+      "doc_id": "chm-presale-prj-chm-2025-014",
+      "chunk_id": "chm-presale-prj-chm-2025-014@v1#2.1#c1",
+      "reference_answer": "审计追踪写入是唯一允许的变更方式，运维人员不得以数据库直连方式修正记录字段，错误须以追加更正记录处理。",
+      "chunk_text": "方案架构与关键能力｜方案以记录模板引擎加电子签名加审计追踪三条能力线组织，采集层从 DCS 与实验室系统取数，取数动作直接落库并附时间戳，避免二次录入；关键工艺参数的写入范围由采集侧只读约束保证，操作员仅可在受控字段填写备注且备注同样进入审计追踪。 针对 GMP 数据完整性要求，系统须实现四级可归因记录：操作事件、复核事件、偏差事件与系统事件，每条记录包含发生时间、执行终端与原值新值对照；审计追踪日志只增不改不删，任何数据库层面的清理动作均视为严重违规并触发合规告警。"
+    },
+    {
+      "src": "annotations_a2_relabel3",
+      "qid": "q-044",
+      "cand_no": 10,
+      "b": 0,
+      "a_section": 1,
+      "a_strict": 0,
+      "kind": "section 独认（strict 与 B 都不认）",
+      "question": "运维图省事想直接进库里把那个字段改回来，哪条规定把这条路堵死了？",
+      "n_sub_questions": 0,
+      "doc_id": "chm-runbook-prj-chm-2025-014",
+      "chunk_id": "chm-runbook-prj-chm-2025-014@v1#2.2#c2",
+      "reference_answer": "审计追踪写入是唯一允许的变更方式，运维人员不得以数据库直连方式修正记录字段，错误须以追加更正记录处理。",
+      "chunk_text": "GMP 数据完整性核查｜系统时间偏差控制目标为不超过 2 秒，采用双时间源并对时结果日核；一旦时间源失效超过 10 分钟，记录产生时间字段自动打上不可信标记，被标记的记录不得作为放行依据，须由质量部门判定是否重取数据，此类事件 2025 年发生 2 起均在当班闭环。"
+    }
+  ],
+  "kind_counts": {
+    "双 gold 认、B 判否": 1,
+    "section 独认（strict 与 B 都不认）": 1
+  }
+}

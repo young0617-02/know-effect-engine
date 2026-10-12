@@ -161,6 +161,9 @@ def main() -> int:
                          "必须配 --exclude-note 说明理由，否则拒绝")
     ap.add_argument("--exclude-note", default="",
                     help="剔除理由，会原样写进产物——没有理由的剔除就是择优取样本")
+    ap.add_argument("--retest-vs", default="",
+                    help="与另一张工单比**同一人跨轮**的判断（重测信度），按 (qid, chunk_id) 对齐；"
+                         "这不是双人一致性，是同一个标注者的自一致——它给出所有 Kappa 的噪声地板")
     args = ap.parse_args()
     if args.exclude_qids and not args.exclude_note.strip():
         print("[拒绝] 剔除题目必须给 --exclude-note：没有书面理由的剔除等于挑好看的样本")
@@ -239,6 +242,28 @@ def main() -> int:
         res["b_positive_rate"] = round(sum(lb) / max(len(lb), 1), 4)
         out[name] = res
     out["bootstrap"] = cluster_bootstrap(filled)
+
+    # 重测信度：同一个第二人、隔几轮、题面微调后重判同一批块。
+    # 为什么单列：所有 Kappa 都默认「标注者对自己上一轮的判断是稳的」，这条假设从没量过。
+    # 翻标的比例就是这台测量仪的噪声地板——它比任何一次「A 与 B 差多少」都更该先知道。
+    if args.retest_vs:
+        base = {r["qid"] + "|" + r["chunk_id"]: (r.get(FILL_COL) or "").strip() for r in rows}
+        with (art / f"{args.retest_vs}_fill.csv").open(encoding="utf-8-sig", newline="") as f:
+            prior = {r["qid"] + "|" + r["chunk_id"]: (r.get(FILL_COL) or "").strip()
+                     for r in csv.DictReader(f)}
+        shared = sorted(set(base) & set(prior))
+        pair = [(int(prior[k]), int(base[k])) for k in shared if prior[k] in ("0", "1") and base[k] in ("0", "1")]
+        flips = [{"qid": k.split("|")[0], "chunk_id": k.split("|")[1], "then": prior[k], "now": base[k]}
+                 for k in shared if prior[k] in ("0", "1") and base[k] in ("0", "1") and prior[k] != base[k]]
+        rt = cohens_kappa([a for a, _ in pair], [b for _, b in pair]) if pair else {}
+        out["retest"] = {
+            "against": args.retest_vs,
+            "shared_rows": len(pair),
+            "kappa_self": rt.get("kappa"), "po_self": rt.get("po"),
+            "flipped": flips,
+            "note": ("同一人跨轮的自一致，不是双人一致性；它给的是这台测量仪的噪声地板。"
+                     "用它约束结论：分歧数小于这个地板的『改善』不能声称成立。"),
+        }
 
     # ---- 裁决后的判据（乙）：一块要算 1，必须能独立答全该题的全部内容 ----
     # 第二人当时是按甲填的，所以乙的改判是**机械的、不需要人工重标**：
@@ -431,6 +456,12 @@ def main() -> int:
     if gv["rows_relabeled_from_snapshot"]:
         print("    ⚠ 本轮 gold 已修订（#41），修订方向与第二人判断同向 ⇒ 修订后的一致率**不是独立证据**，"
               "只能读成「第一人按复核收窄了 gold」；独立证据是修订前那份（pre_goldfix/kappa_a2.json）")
+    if out.get("retest"):
+        rt = out["retest"]
+        keys = "、".join(f"{f['qid']}#{f['chunk_id'].split('#')[-1]}" for f in rt["flipped"]) or "无"
+        print(f"  重测信度（同一人跨轮 vs {rt['against']}）：共有 {rt['shared_rows']} 行、翻标 {len(rt['flipped'])} 行"
+              f"（{keys}），自身 Kappa {rt['kappa_self']} / po {rt['po_self']}")
+        print(f"    ⚠ {rt['note']}")
     print("  口径提醒:", out["scope_note"])
     print(f"  判据读数基准: {out['criterion']['label_basis']}")
     print(f"证据： {art / args.out}")
