@@ -1,7 +1,7 @@
 """M5-02 版本锁定清单：把「这台机器上跑出来的结果」换成「换台机器也该一样」的前提。
 
 原则：**取不到就标 `未固定` 并写原因**，不留空、不假装锁定。凡 `未固定` 的项都是可移植性缺口，
-M6 部署前必须逐条销掉或明写「接受此偏离」。
+MVP 收口前必须逐条销掉或明写「接受此偏离」。
 
 跑法：uv run python scripts/m5_version_lock.py
 产物：var/gate0/m5_versions.json + reports/m5/M5_版本锁定清单.md
@@ -94,7 +94,7 @@ def main() -> int:
 
     rep = {
         "generated_at": datetime.now().isoformat(timespec="seconds"),
-        "principle": "取不到就标 未固定 并写原因；未固定项 = 可移植性缺口，M6 前逐条销掉或明写接受",
+        "principle": "取不到就标 未固定 并写原因；未固定项 = 可移植性缺口，MVP 收口前逐条销掉或明写接受",
         "host": {
             "os": f"{platform.system()} {platform.release()}",
             "machine": platform.machine(),
@@ -129,7 +129,7 @@ def main() -> int:
         ],
         "ollama": {"raw": ollama_models, "digest_fixed": False,
                    "note": "`ollama list` 不输出权重 sha256 ⇒ **生成模型未被真正锁定**。"
-                           "同 tag 被 `ollama pull` 覆盖后本机不会报错，换机可能拿到不同权重。M6 前要用 `ollama show --format json` 补 digest。"},
+                           "同 tag 被 `ollama pull` 覆盖后本机不会报错，换机可能拿到不同权重。MVP 收口前要用 `ollama show --format json` 补 digest。"},
         "dtype": os.environ.get("KEE_MODEL_DTYPE", "float16（.env 未覆盖时取 config 默认）"),
         "device": os.environ.get("KEE_DEVICE", "cuda（.env 未覆盖时取 config 默认）"),
         "env_keys": env_present,
@@ -181,7 +181,7 @@ def main() -> int:
           "- 端口只绑 127.0.0.1（`serve_api.py` 拒绝非回环绑定）：API 38000、Demo web 38080、Vite dev 38173",
           "- 身份走请求头且**可伪造**，仅内网 Demo 可用；生产必须换真实身份源（《技术方案》7.2.1）", "",
           "## Ollama 生成模型", "", "```", rep["ollama"]["raw"] or "（未取到）", "```", "",
-          f"⚠ {rep['ollama']['note']}", "", "## 未固定项（M6 前逐条销或明写接受）", ""]
+          f"⚠ {rep['ollama']['note']}", "", "## 未固定项（MVP 收口前逐条销或明写接受）", ""]
     L += [f"{i + 1}. {u}" for i, u in enumerate(rep["unfixed"])]
     L.append("")
     OUT_MD.parent.mkdir(parents=True, exist_ok=True)
