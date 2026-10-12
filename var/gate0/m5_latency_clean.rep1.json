@@ -1,0 +1,561 @@
+{
+  "generated_at": "2026-10-12T21:53:29+0800",
+  "env_at_measurement": {
+    "gpu": "8 %, 7666 MiB, 8188 MiB",
+    "containers": [
+      "kee-etcd",
+      "kee-milvus",
+      "kee-minio",
+      "kee-postgres",
+      "kee-redis",
+      "kee-web"
+    ],
+    "non_kee_containers": []
+  },
+  "protocol": {
+    "entrypoint": "http://127.0.0.1:38000/api/v1/answers（宿主 API，生产入口）",
+    "sessions": "一问一 session，统计只取本次创建的 session_id",
+    "cold": "单次冷启动单列，不进热态分位数",
+    "sample": "20 题等距抽样 + 6 道不进生成的题（验 total_ms 不再为 NULL）",
+    "stream": "12 题走 /api/v1/answers/stream 量首 token 三口径",
+    "cache_flushed_keys": 0,
+    "stream_cache_flushed_keys": 26
+  },
+  "cold_start_ms": 3703.8,
+  "cache_hits": {
+    "rows": 26,
+    "cached": 1,
+    "note": "以下端到端分位数只取**未命中检索缓存**的轮次；命中轮次整条检索腿被短路（retrieval_ms=0.0），是另一条路径"
+  },
+  "client_side": {
+    "n": 25,
+    "p50": 3170.1,
+    "p95": 4011.5,
+    "max": 7386.5,
+    "mean": 3183.9,
+    "share_over_3s": 0.6,
+    "share_over_6s": 0.04
+  },
+  "client_side_generating_only": {
+    "n": 19,
+    "p50": 3206.0,
+    "p95": 4011.5,
+    "max": 4118.8,
+    "mean": 3230.0,
+    "share_over_3s": 0.6842,
+    "share_over_6s": 0.0
+  },
+  "server_side": {
+    "n": 25,
+    "p50": 3110.8,
+    "p95": 3971.1,
+    "max": 7342.7,
+    "mean": 3124.8,
+    "share_over_3s": 0.56,
+    "share_over_6s": 0.04
+  },
+  "retrieval_only": {
+    "n": 25,
+    "p50": 305.6,
+    "p95": 323.6,
+    "max": 336.4,
+    "mean": 308.0,
+    "share_over_3s": 0.0,
+    "share_over_6s": 0.0
+  },
+  "server_side_generating_only": {
+    "n": 19,
+    "p50": 3157.1,
+    "p95": 3971.1,
+    "max": 4063.1,
+    "mean": 3167.0,
+    "share_over_3s": 0.6316,
+    "share_over_6s": 0.0
+  },
+  "first_token": {
+    "envelope_first_char": {
+      "n": 12,
+      "p50": 334.6,
+      "p95": 368.1,
+      "max": 380.1,
+      "mean": 340.8,
+      "share_over_3s": 0.0,
+      "share_over_6s": 0.0
+    },
+    "first_event_ms": {
+      "n": 12,
+      "p50": 334.6,
+      "p95": 368.1,
+      "max": 380.1,
+      "mean": 340.8,
+      "share_over_3s": 0.0,
+      "share_over_6s": 0.0
+    },
+    "first_visible_ms": {
+      "n": 12,
+      "p50": 714.5,
+      "p95": 859.2,
+      "max": 1008.6,
+      "mean": 712.8,
+      "share_over_3s": 0.0,
+      "share_over_6s": 0.0
+    }
+  },
+  "missing_e2e_qids": [],
+  "rows": [
+    {
+      "qid": "q-001",
+      "category": "术语",
+      "session_id": "s-lat-7f627e91f1",
+      "client_ms": 2669.7,
+      "status": "answer",
+      "cache_hit": true,
+      "expected_behavior": "answer",
+      "generates": true,
+      "n_citations": 1,
+      "server_total_ms": 2630.0,
+      "retrieval_ms": 0.0
+    },
+    {
+      "qid": "q-004",
+      "category": "术语",
+      "session_id": "s-lat-f40c626ef4",
+      "client_ms": 3860.3,
+      "status": "answer",
+      "cache_hit": false,
+      "expected_behavior": "answer",
+      "generates": true,
+      "n_citations": 1,
+      "server_total_ms": 3819.8,
+      "retrieval_ms": 278.7
+    },
+    {
+      "qid": "q-007",
+      "category": "术语",
+      "session_id": "s-lat-a4dfac0cdd",
+      "client_ms": 2991.9,
+      "status": "answer",
+      "cache_hit": false,
+      "expected_behavior": "answer",
+      "generates": true,
+      "n_citations": 1,
+      "server_total_ms": 2916.5,
+      "retrieval_ms": 285.3
+    },
+    {
+      "qid": "q-010",
+      "category": "术语",
+      "session_id": "s-lat-f4d8fca4bc",
+      "client_ms": 4011.5,
+      "status": "answer",
+      "cache_hit": false,
+      "expected_behavior": "answer",
+      "generates": true,
+      "n_citations": 1,
+      "server_total_ms": 3971.1,
+      "retrieval_ms": 306.8
+    },
+    {
+      "qid": "q-013",
+      "category": "术语",
+      "session_id": "s-lat-9c6c0b3311",
+      "client_ms": 3698.7,
+      "status": "answer",
+      "cache_hit": false,
+      "expected_behavior": "answer",
+      "generates": true,
+      "n_citations": 1,
+      "server_total_ms": 3595.5,
+      "retrieval_ms": 323.1
+    },
+    {
+      "qid": "q-016",
+      "category": "编号",
+      "session_id": "s-lat-03991ebd9f",
+      "client_ms": 3206.0,
+      "status": "answer",
+      "cache_hit": false,
+      "expected_behavior": "answer",
+      "generates": true,
+      "n_citations": 1,
+      "server_total_ms": 3157.1,
+      "retrieval_ms": 329.3
+    },
+    {
+      "qid": "q-019",
+      "category": "编号",
+      "session_id": "s-lat-0959308d64",
+      "client_ms": 3008.0,
+      "status": "answer",
+      "cache_hit": false,
+      "expected_behavior": "answer",
+      "generates": true,
+      "n_citations": 1,
+      "server_total_ms": 2854.9,
+      "retrieval_ms": 304.1
+    },
+    {
+      "qid": "q-022",
+      "category": "编号",
+      "session_id": "s-lat-6278d8c265",
+      "client_ms": 3242.2,
+      "status": "answer",
+      "cache_hit": false,
+      "expected_behavior": "answer",
+      "generates": true,
+      "n_citations": 1,
+      "server_total_ms": 3194.5,
+      "retrieval_ms": 297.6
+    },
+    {
+      "qid": "q-025",
+      "category": "编号",
+      "session_id": "s-lat-ac0c6fcb2b",
+      "client_ms": 2910.2,
+      "status": "answer",
+      "cache_hit": false,
+      "expected_behavior": "answer",
+      "generates": true,
+      "n_citations": 1,
+      "server_total_ms": 2860.6,
+      "retrieval_ms": 316.9
+    },
+    {
+      "qid": "q-028",
+      "category": "方案名",
+      "session_id": "s-lat-cfb065dc94",
+      "client_ms": 3974.2,
+      "status": "answer",
+      "cache_hit": false,
+      "expected_behavior": "answer",
+      "generates": true,
+      "n_citations": 1,
+      "server_total_ms": 3916.4,
+      "retrieval_ms": 301.7
+    },
+    {
+      "qid": "q-031",
+      "category": "方案名",
+      "session_id": "s-lat-ae9b03dd97",
+      "client_ms": 3562.4,
+      "status": "answer",
+      "cache_hit": false,
+      "expected_behavior": "answer",
+      "generates": true,
+      "n_citations": 1,
+      "server_total_ms": 3513.0,
+      "retrieval_ms": 296.8
+    },
+    {
+      "qid": "q-034",
+      "category": "方案名",
+      "session_id": "s-lat-8778ca465a",
+      "client_ms": 2845.9,
+      "status": "answer",
+      "cache_hit": false,
+      "expected_behavior": "answer",
+      "generates": true,
+      "n_citations": 1,
+      "server_total_ms": 2742.2,
+      "retrieval_ms": 282.0
+    },
+    {
+      "qid": "q-037",
+      "category": "方案名",
+      "session_id": "s-lat-60f1897eb3",
+      "client_ms": 2944.1,
+      "status": "answer",
+      "cache_hit": false,
+      "expected_behavior": "answer",
+      "generates": true,
+      "n_citations": 1,
+      "server_total_ms": 2860.2,
+      "retrieval_ms": 304.0
+    },
+    {
+      "qid": "q-040",
+      "category": "口语化",
+      "session_id": "s-lat-a02fbcbdb8",
+      "client_ms": 3794.8,
+      "status": "tentative",
+      "cache_hit": false,
+      "expected_behavior": "answer",
+      "generates": true,
+      "n_citations": 2,
+      "server_total_ms": 3750.6,
+      "retrieval_ms": 322.8
+    },
+    {
+      "qid": "q-043",
+      "category": "口语化",
+      "session_id": "s-lat-52300fcdd2",
+      "client_ms": 4118.8,
+      "status": "tentative",
+      "cache_hit": false,
+      "expected_behavior": "answer",
+      "generates": true,
+      "n_citations": 1,
+      "server_total_ms": 4063.1,
+      "retrieval_ms": 305.6
+    },
+    {
+      "qid": "q-046",
+      "category": "口语化",
+      "session_id": "s-lat-9657353503",
+      "client_ms": 3439.2,
+      "status": "tentative",
+      "cache_hit": false,
+      "expected_behavior": "answer",
+      "generates": true,
+      "n_citations": 1,
+      "server_total_ms": 3374.7,
+      "retrieval_ms": 313.9
+    },
+    {
+      "qid": "q-049",
+      "category": "口语化",
+      "session_id": "s-lat-4713aebd3f",
+      "client_ms": 2901.9,
+      "status": "tentative",
+      "cache_hit": false,
+      "expected_behavior": "answer",
+      "generates": true,
+      "n_citations": 1,
+      "server_total_ms": 2859.7,
+      "retrieval_ms": 288.7
+    },
+    {
+      "qid": "q-052",
+      "category": "口语化",
+      "session_id": "s-lat-408c439793",
+      "client_ms": 366.8,
+      "status": "refuse",
+      "cache_hit": false,
+      "expected_behavior": "answer",
+      "generates": true,
+      "n_citations": 0,
+      "server_total_ms": 329.1,
+      "retrieval_ms": 319.3
+    },
+    {
+      "qid": "q-055",
+      "category": "跨文档",
+      "session_id": "s-lat-b17c86ae29",
+      "client_ms": 3323.1,
+      "status": "answer",
+      "cache_hit": false,
+      "expected_behavior": "answer",
+      "generates": true,
+      "n_citations": 1,
+      "server_total_ms": 3283.5,
+      "retrieval_ms": 336.4
+    },
+    {
+      "qid": "q-058",
+      "category": "跨文档",
+      "session_id": "s-lat-f2f0a958fe",
+      "client_ms": 3170.1,
+      "status": "answer",
+      "cache_hit": false,
+      "expected_behavior": "answer",
+      "generates": true,
+      "n_citations": 1,
+      "server_total_ms": 3110.8,
+      "retrieval_ms": 305.3
+    },
+    {
+      "qid": "q-059",
+      "category": "无答案",
+      "session_id": "s-lat-89ddaabca7",
+      "client_ms": 2128.4,
+      "status": "refuse",
+      "cache_hit": false,
+      "expected_behavior": "refuse",
+      "generates": false,
+      "n_citations": 0,
+      "server_total_ms": 2083.7,
+      "retrieval_ms": 299.7
+    },
+    {
+      "qid": "q-060",
+      "category": "无答案",
+      "session_id": "s-lat-da7180705f",
+      "client_ms": 353.2,
+      "status": "refuse",
+      "cache_hit": false,
+      "expected_behavior": "refuse",
+      "generates": false,
+      "n_citations": 0,
+      "server_total_ms": 317.6,
+      "retrieval_ms": 307.7
+    },
+    {
+      "qid": "q-061",
+      "category": "无答案",
+      "session_id": "s-lat-198df6b68f",
+      "client_ms": 2869.5,
+      "status": "refuse",
+      "cache_hit": false,
+      "expected_behavior": "refuse",
+      "generates": false,
+      "n_citations": 0,
+      "server_total_ms": 2808.1,
+      "retrieval_ms": 314.8
+    },
+    {
+      "qid": "q-062",
+      "category": "无答案",
+      "session_id": "s-lat-e68998e197",
+      "client_ms": 1955.1,
+      "status": "refuse",
+      "cache_hit": false,
+      "expected_behavior": "refuse",
+      "generates": false,
+      "n_citations": 0,
+      "server_total_ms": 1895.1,
+      "retrieval_ms": 314.0
+    },
+    {
+      "qid": "q-063",
+      "category": "无答案",
+      "session_id": "s-lat-53c88592c6",
+      "client_ms": 7386.5,
+      "status": "refuse",
+      "cache_hit": false,
+      "expected_behavior": "refuse",
+      "generates": false,
+      "n_citations": 0,
+      "server_total_ms": 7342.7,
+      "retrieval_ms": 320.9
+    },
+    {
+      "qid": "q-064",
+      "category": "无答案",
+      "session_id": "s-lat-d526f3a275",
+      "client_ms": 3535.1,
+      "status": "refuse",
+      "cache_hit": false,
+      "expected_behavior": "refuse",
+      "generates": false,
+      "n_citations": 0,
+      "server_total_ms": 3500.6,
+      "retrieval_ms": 323.6
+    }
+  ],
+  "stream_rows": [
+    {
+      "envelope_first_char": 317.0,
+      "first_event_ms": 317.0,
+      "first_visible_ms": 1008.6,
+      "retract_rate": false,
+      "final_status": "answer",
+      "qid": "q-001",
+      "session_id": "s-str-d14ed32dec"
+    },
+    {
+      "envelope_first_char": 329.9,
+      "first_event_ms": 329.8,
+      "first_visible_ms": 531.1,
+      "retract_rate": false,
+      "final_status": "answer",
+      "qid": "q-004",
+      "session_id": "s-str-49a7dd343b"
+    },
+    {
+      "envelope_first_char": 338.9,
+      "first_event_ms": 338.9,
+      "first_visible_ms": 539.9,
+      "retract_rate": false,
+      "final_status": "answer",
+      "qid": "q-007",
+      "session_id": "s-str-de81359a8c"
+    },
+    {
+      "envelope_first_char": 347.0,
+      "first_event_ms": 347.0,
+      "first_visible_ms": 714.5,
+      "retract_rate": false,
+      "final_status": "answer",
+      "qid": "q-010",
+      "session_id": "s-str-e70bf545d0"
+    },
+    {
+      "envelope_first_char": 362.1,
+      "first_event_ms": 362.0,
+      "first_visible_ms": 748.0,
+      "retract_rate": false,
+      "final_status": "answer",
+      "qid": "q-013",
+      "session_id": "s-str-191842f378"
+    },
+    {
+      "envelope_first_char": 380.1,
+      "first_event_ms": 380.1,
+      "first_visible_ms": 771.0,
+      "retract_rate": false,
+      "final_status": "answer",
+      "qid": "q-016",
+      "session_id": "s-str-a5b00f1d6c"
+    },
+    {
+      "envelope_first_char": 334.6,
+      "first_event_ms": 334.6,
+      "first_visible_ms": 717.6,
+      "retract_rate": false,
+      "final_status": "answer",
+      "qid": "q-019",
+      "session_id": "s-str-4acf802580"
+    },
+    {
+      "envelope_first_char": 329.8,
+      "first_event_ms": 329.8,
+      "first_visible_ms": 696.6,
+      "retract_rate": false,
+      "final_status": "answer",
+      "qid": "q-022",
+      "session_id": "s-str-726dc87b5b"
+    },
+    {
+      "envelope_first_char": 368.1,
+      "first_event_ms": 368.1,
+      "first_visible_ms": 739.9,
+      "retract_rate": false,
+      "final_status": "answer",
+      "qid": "q-025",
+      "session_id": "s-str-6feaa108c8"
+    },
+    {
+      "envelope_first_char": 350.4,
+      "first_event_ms": 350.4,
+      "first_visible_ms": 859.2,
+      "retract_rate": false,
+      "final_status": "answer",
+      "qid": "q-028",
+      "session_id": "s-str-98c1a96e09"
+    },
+    {
+      "envelope_first_char": 324.5,
+      "first_event_ms": 324.4,
+      "first_visible_ms": 713.9,
+      "retract_rate": false,
+      "final_status": "answer",
+      "qid": "q-031",
+      "session_id": "s-str-282dc76e49"
+    },
+    {
+      "envelope_first_char": 307.3,
+      "first_event_ms": 307.3,
+      "first_visible_ms": 513.7,
+      "retract_rate": false,
+      "final_status": "answer",
+      "qid": "q-034",
+      "session_id": "s-str-742f31489f"
+    }
+  ],
+  "caveats": [
+    "本机仍跑着 IDE 与桌面服务（我就在里面），做不到零背景；已把当时的 GPU 占用与容器清单记进 env_at_measurement。",
+    "客户端与服务端两把尺都给了——DoD#5 认哪把、门禁取 3s 还是 6s，属口径裁决，不由这批数自己决定。",
+    "冷启动 3703.8ms 与热态差一个量级；对外引用延迟必须分开说，否则下次拿到冷值会被读成 regression。",
+    "首 token 三个口径量的是完全不同的东西（信封字节 ≠ 检索骨架事件 ≠ 可读文本），① 门禁认哪一个必须先由人裁；把最有利的那个当默认口径就是择优取样本。"
+  ]
+}

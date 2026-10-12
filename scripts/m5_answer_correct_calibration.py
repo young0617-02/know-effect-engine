@@ -177,17 +177,40 @@ def describe(name: str, rows: list[dict], labels: dict[str, int], fit_admissible
 
 
 def main() -> int:
-    if not LABELS.exists() or not PROBE.exists():
-        print(f"[缺输入] {LABELS.name} / {PROBE.name} 有一份不在，先去填工单或跑 m3 置信度探针。")
+    import argparse
+
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--probe", default=str(PROBE),
+                    help="与标签配对的那一份探针产物。**标签是按哪次生成就必须配哪次**——"
+                         "探针一重跑就会覆盖源文件，配对错了对标签不是报错而是安静地失配")
+    ap.add_argument("--ignore-qids", default="",
+                    help="探针里有、工单里没有的 qid（逗号分隔），例如新加 yet 未标注的题")
+    ap.add_argument("--ignore-reason", default="", help="上一条的书面理由，空理由视为未豁免")
+    args = ap.parse_args()
+
+    probe_path = Path(args.probe)
+    if not LABELS.exists() or not probe_path.exists():
+        print(f"[缺输入] {LABELS.name} / {probe_path.name} 有一份不在，先去填工单或跑 m3 置信度探针。")
         return 2
     labels = read_labels()
-    probe = json.loads(PROBE.read_text(encoding="utf-8"))
+    probe = json.loads(probe_path.read_text(encoding="utf-8"))
     by = {r["qid"]: r for r in probe["rows"]}
 
-    missing = (set(labels) - set(by)) | (set(by) - set(labels))
-    if missing:
-        print(f"[对不上] 工单 qid 与探针不一致：{sorted(missing)[:8]}")
+    only_probe = set(by) - set(labels)
+    only_labels = set(labels) - set(by)
+    ignored = {q.strip() for q in args.ignore_qids.split(",") if q.strip()}
+    if ignored and not args.ignore_reason.strip():
+        print("[拒绝产出] --ignore-qids 必须配 --ignore-reason（空理由视为未豁免）")
+        return 2
+    unexplained = only_probe - ignored
+    if unexplained:
+        print(f"[对不上] 工单 qid 与探针不一致（探针多出且未豁免）：{sorted(unexplained)[:8]}"
+              f"{'；工单侧还多 ' + str(sorted(only_labels)[:5]) if only_labels else ''}。"
+              "新题没标签要用 --ignore-qids 点名并写理由，其余情况一律拒。")
         return 3
+    if ignored:
+        # 只豁免「探针有、标签没有」的方向；反向（标签找不到对应探针行）永远是错行，不给豁免
+        labels = {q: v for q, v in labels.items() if q in by}
 
     rows = [{"qid": q,
              "status": by[q]["status"],
@@ -199,10 +222,31 @@ def main() -> int:
              "label": labels[q]} for q in sorted(labels)]
     answer_prod = [r for r in rows if r["status"] not in ABSTAIN]
 
+    # 生成可复现性：同一套题、同一份配置重跑一次探针，结论文本变了多少行？
+    # 这个数字决定「人判标签」还能不能配在另一代产物上——漂移大就说明标签标的是一个已经不存在的输出。
+    archived = ART / "pre_reprobe" / "m3_confidence_probe.json"
+    other = PROBE if probe_path.resolve() == archived.resolve() else archived
+    drift = {}
+    if other.exists() and other.resolve() != probe_path.resolve():
+        old = {r["qid"]: (r.get("conclusion") or "").strip() for r in
+               json.loads(other.read_text(encoding="utf-8"))["rows"]}
+        shared = [q for q in labels if q in old]
+        changed = [q for q in shared if old[q] != (by[q].get("conclusion") or "").strip()]
+        drift = {"comparing_this_to": other.name, "shared_rows": len(shared),
+                 "conclusion_changed": len(changed),
+                 "changed_ratio": round(len(changed) / len(shared), 4) if shared else None,
+                 "changed_qids": changed[:12],
+                 "note": ("标签是照着 `--probe` 指的那一份判的；这一栏只说明**重跑一次探针会改多少行结论文本**，"
+                          "不用于改判标签。漂移不为 0 ⇒ 标签与另一代产物不可互换配对。")}
+
     out = {
-        "source": {"labels": LABELS.name, "scores": PROBE.name,
+        "source": {"labels": LABELS.name, "scores": str(probe_path.relative_to(ART.parent.parent))
+                   if probe_path.is_relative_to(ROOT) else str(probe_path),
+                   "paired_note": "标签与探针必须同一次生成；换探针产物要显式 --probe",
+                   "ignored_unlabeled": {sorted(ignored): args.ignore_reason} if ignored else {},
                    "score_basis": probe["rows"][0]["confidence"].get("score_basis", "rule_composite"),
                    "temperature_used_at_runtime": probe["temperature_used"]},
+        "generation_drift": drift,
         "label_check": {"n": len(rows), "n_correct": sum(r["label"] for r in rows),
                         "n_wrong": sum(1 - r["label"] for r in rows),
                         "degenerate": sum(r["label"] for r in rows) in (0, len(rows)),

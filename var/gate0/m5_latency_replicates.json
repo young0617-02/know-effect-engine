@@ -1,0 +1,442 @@
+{
+  "generated_at": "2026-10-12T22:16:30+0800",
+  "rule": "同配置多轮 → **合并样本再判**，各来源值与样本量一起列出；禁止挑其中一轮当唯一读数",
+  "sources": {
+    "uncached_replicates": {
+      "run2": {
+        "cold_start_ms": 17164.3,
+        "env_gpu": "13 %, 5139 MiB, 8188 MiB",
+        "rows": 26,
+        "cached_rows": 1,
+        "generating_uncached": {
+          "n": 19,
+          "p50": 3193.4,
+          "p95": 3972.0,
+          "max": 4155.6,
+          "mean": 3215.7,
+          "share_over_3s": 0.6316,
+          "share_over_6s": 0.0
+        },
+        "all_uncached": {
+          "n": 25,
+          "p50": 3193.4,
+          "p95": 4114.6,
+          "max": 7854.6,
+          "mean": 3287.8,
+          "share_over_3s": 0.6,
+          "share_over_6s": 0.04
+        },
+        "server_all_uncached": {
+          "n": 25,
+          "p50": 3158.7,
+          "p95": 4059.1,
+          "max": 7817.5,
+          "mean": 3226.5,
+          "share_over_3s": 0.6,
+          "share_over_6s": 0.04
+        },
+        "retrieval": {
+          "n": 25,
+          "p50": 315.5,
+          "p95": 339.3,
+          "max": 346.6,
+          "mean": 313.8,
+          "share_over_3s": 0.0,
+          "share_over_6s": 0.0
+        },
+        "first_token": {
+          "envelope_first_char": {
+            "n": 12,
+            "p50": 38.2,
+            "p95": 47.1,
+            "max": 49.3,
+            "mean": 36.0,
+            "share_over_3s": 0.0,
+            "share_over_6s": 0.0
+          },
+          "first_event_ms": {
+            "n": 12,
+            "p50": 38.2,
+            "p95": 47.1,
+            "max": 49.3,
+            "mean": 35.9,
+            "share_over_3s": 0.0,
+            "share_over_6s": 0.0
+          },
+          "first_visible_ms": {
+            "n": 12,
+            "p50": 407.0,
+            "p95": 570.8,
+            "max": 716.6,
+            "mean": 405.3,
+            "share_over_3s": 0.0,
+            "share_over_6s": 0.0
+          }
+        },
+        "stream_flushed_before_stream": null,
+        "stream_flushed_keys": null,
+        "null_total_ms_rows": []
+      },
+      "rep1": {
+        "cold_start_ms": 3703.8,
+        "env_gpu": "8 %, 7666 MiB, 8188 MiB",
+        "rows": 26,
+        "cached_rows": 1,
+        "generating_uncached": {
+          "n": 19,
+          "p50": 3206.0,
+          "p95": 4011.5,
+          "max": 4118.8,
+          "mean": 3230.0,
+          "share_over_3s": 0.6842,
+          "share_over_6s": 0.0
+        },
+        "all_uncached": {
+          "n": 25,
+          "p50": 3170.1,
+          "p95": 4011.5,
+          "max": 7386.5,
+          "mean": 3183.9,
+          "share_over_3s": 0.6,
+          "share_over_6s": 0.04
+        },
+        "server_all_uncached": {
+          "n": 25,
+          "p50": 3110.8,
+          "p95": 3971.1,
+          "max": 7342.7,
+          "mean": 3124.8,
+          "share_over_3s": 0.56,
+          "share_over_6s": 0.04
+        },
+        "retrieval": {
+          "n": 25,
+          "p50": 305.6,
+          "p95": 323.6,
+          "max": 336.4,
+          "mean": 308.0,
+          "share_over_3s": 0.0,
+          "share_over_6s": 0.0
+        },
+        "first_token": {
+          "envelope_first_char": {
+            "n": 12,
+            "p50": 334.6,
+            "p95": 368.1,
+            "max": 380.1,
+            "mean": 340.8,
+            "share_over_3s": 0.0,
+            "share_over_6s": 0.0
+          },
+          "first_event_ms": {
+            "n": 12,
+            "p50": 334.6,
+            "p95": 368.1,
+            "max": 380.1,
+            "mean": 340.8,
+            "share_over_3s": 0.0,
+            "share_over_6s": 0.0
+          },
+          "first_visible_ms": {
+            "n": 12,
+            "p50": 714.5,
+            "p95": 859.2,
+            "max": 1008.6,
+            "mean": 712.8,
+            "share_over_3s": 0.0,
+            "share_over_6s": 0.0
+          }
+        },
+        "stream_flushed_before_stream": 26,
+        "stream_flushed_keys": 26,
+        "null_total_ms_rows": []
+      },
+      "rep2": {
+        "cold_start_ms": 3512.1,
+        "env_gpu": "1 %, 7674 MiB, 8188 MiB",
+        "rows": 26,
+        "cached_rows": 1,
+        "generating_uncached": {
+          "n": 19,
+          "p50": 3287.0,
+          "p95": 4186.4,
+          "max": 4548.5,
+          "mean": 3289.4,
+          "share_over_3s": 0.6842,
+          "share_over_6s": 0.0
+        },
+        "all_uncached": {
+          "n": 25,
+          "p50": 3010.3,
+          "p95": 4186.4,
+          "max": 7844.7,
+          "mean": 3245.9,
+          "share_over_3s": 0.6,
+          "share_over_6s": 0.04
+        },
+        "server_all_uncached": {
+          "n": 25,
+          "p50": 2976.9,
+          "p95": 4153.0,
+          "max": 7757.4,
+          "mean": 3176.2,
+          "share_over_3s": 0.52,
+          "share_over_6s": 0.04
+        },
+        "retrieval": {
+          "n": 25,
+          "p50": 300.9,
+          "p95": 333.8,
+          "max": 344.0,
+          "mean": 305.4,
+          "share_over_3s": 0.0,
+          "share_over_6s": 0.0
+        },
+        "first_token": {
+          "envelope_first_char": {
+            "n": 0,
+            "p50": 0.0,
+            "p95": 0.0,
+            "max": 0.0,
+            "mean": 0.0,
+            "share_over_3s": null,
+            "share_over_6s": null
+          },
+          "first_event_ms": {
+            "n": 0,
+            "p50": 0.0,
+            "p95": 0.0,
+            "max": 0.0,
+            "mean": 0.0,
+            "share_over_3s": null,
+            "share_over_6s": null
+          },
+          "first_visible_ms": {
+            "n": 0,
+            "p50": 0.0,
+            "p95": 0.0,
+            "max": 0.0,
+            "mean": 0.0,
+            "share_over_3s": null,
+            "share_over_6s": null
+          }
+        },
+        "stream_flushed_before_stream": null,
+        "stream_flushed_keys": null,
+        "null_total_ms_rows": []
+      },
+      "rep3": {
+        "cold_start_ms": 4089.2,
+        "env_gpu": "8 %, 5305 MiB, 8188 MiB",
+        "rows": 26,
+        "cached_rows": 1,
+        "generating_uncached": {
+          "n": 19,
+          "p50": 3261.3,
+          "p95": 3967.1,
+          "max": 4242.5,
+          "mean": 3267.5,
+          "share_over_3s": 0.7368,
+          "share_over_6s": 0.0
+        },
+        "all_uncached": {
+          "n": 25,
+          "p50": 3205.0,
+          "p95": 3967.1,
+          "max": 7488.5,
+          "mean": 3244.1,
+          "share_over_3s": 0.68,
+          "share_over_6s": 0.04
+        },
+        "server_all_uncached": {
+          "n": 25,
+          "p50": 3168.4,
+          "p95": 3925.4,
+          "max": 7370.8,
+          "mean": 3174.6,
+          "share_over_3s": 0.6,
+          "share_over_6s": 0.04
+        },
+        "retrieval": {
+          "n": 25,
+          "p50": 285.9,
+          "p95": 303.7,
+          "max": 315.0,
+          "mean": 286.6,
+          "share_over_3s": 0.0,
+          "share_over_6s": 0.0
+        },
+        "first_token": {
+          "envelope_first_char": {
+            "n": 12,
+            "p50": 311.1,
+            "p95": 330.6,
+            "max": 336.3,
+            "mean": 313.2,
+            "share_over_3s": 0.0,
+            "share_over_6s": 0.0
+          },
+          "first_event_ms": {
+            "n": 12,
+            "p50": 311.1,
+            "p95": 330.6,
+            "max": 336.3,
+            "mean": 313.2,
+            "share_over_3s": 0.0,
+            "share_over_6s": 0.0
+          },
+          "first_visible_ms": {
+            "n": 12,
+            "p50": 688.3,
+            "p95": 846.2,
+            "max": 981.6,
+            "mean": 680.0,
+            "share_over_3s": 0.0,
+            "share_over_6s": 0.0
+          }
+        },
+        "stream_flushed_before_stream": 26,
+        "stream_flushed_keys": 26,
+        "null_total_ms_rows": []
+      }
+    },
+    "transcribed": {
+      "source": "run1（修 e2e_ms 前，转录自终端读数，无产物文件）",
+      "n_generating": 20,
+      "cold_start_ms": 23507.8,
+      "client_p50": 4502.3,
+      "client_p95": 5617.7,
+      "client_max": 5750.2,
+      "share_over_3s": 0.95,
+      "share_over_6s": 0.0,
+      "note": "这一轮拒答轮次 total_ms 为 NULL，所以它的 n 里没有拒答行；客户端读数还含当轮的其他背景负载。与后三轮不同构，只能并列不能合并。"
+    },
+    "cached_sample": "var/gate0/m5_latency_clean.cachedpath.json"
+  },
+  "pooled_uncached": {
+    "n_rows": 100,
+    "n_generating": 76,
+    "n_questions": 25,
+    "runs": 4,
+    "client_all": {
+      "n": 100,
+      "p50": 3242.2,
+      "p95": 4242.5,
+      "max": 7854.6,
+      "mean": 3240.4,
+      "share_over_3s": 0.62,
+      "share_over_6s": 0.04
+    },
+    "client_generating_only": {
+      "n": 76,
+      "p50": 3287.0,
+      "p95": 4118.8,
+      "max": 4548.5,
+      "mean": 3250.6,
+      "share_over_3s": 0.6842,
+      "share_over_6s": 0.0
+    },
+    "server_all": {
+      "n": 100,
+      "p50": 3187.3,
+      "p95": 4153.0,
+      "max": 7817.5,
+      "mean": 3175.5,
+      "share_over_3s": 0.57,
+      "share_over_6s": 0.04
+    },
+    "server_generating_only": {
+      "n": 76,
+      "p50": 3204.1,
+      "p95": 4063.1,
+      "max": 4439.6,
+      "mean": 3186.9,
+      "share_over_3s": 0.6316,
+      "share_over_6s": 0.0
+    }
+  },
+  "pooled_cached": {
+    "n_rows": 4,
+    "client_all": {
+      "n": 4,
+      "p50": 2707.9,
+      "p95": 2731.7,
+      "max": 2755.5,
+      "mean": 2716.2,
+      "share_over_3s": 0.0,
+      "share_over_6s": 0.0
+    },
+    "note": "命中检索缓存的轮次，检索腿被短路。单列，不与 uncached 合并。"
+  },
+  "pooled_first_token": {
+    "runs": [
+      "rep1",
+      "rep3"
+    ],
+    "excluded_runs": [
+      "rep2",
+      "run2"
+    ],
+    "口径": {
+      "envelope_first_char": "收到响应第一个字节（几乎不代表『有用』）",
+      "first_event_ms": "首个带内容的 SSE 事件（通常是检索骨架，用户已能看到查到了什么）",
+      "first_visible_ms": "首个非空 delta 文本（第一个真正可读的字）——**最严的那把**"
+    },
+    "bands": {
+      "envelope_first_char": {
+        "n": 24,
+        "p50": 324.0,
+        "p95": 362.1,
+        "max": 380.1,
+        "mean": 327.0,
+        "share_over_3s": 0.0,
+        "share_over_6s": 0.0
+      },
+      "first_event_ms": {
+        "n": 24,
+        "p50": 324.0,
+        "p95": 362.0,
+        "max": 380.1,
+        "mean": 327.0,
+        "share_over_3s": 0.0,
+        "share_over_6s": 0.0
+      },
+      "first_visible_ms": {
+        "n": 24,
+        "p50": 695.4,
+        "p95": 859.2,
+        "max": 1008.6,
+        "mean": 696.4,
+        "share_over_3s": 0.0,
+        "share_over_6s": 0.0
+      }
+    },
+    "note": "三个口径量的是完全不同的东西，① 门禁「1.2s」认哪个必须先由人裁；默认取最严的 first_visible_ms，取宽松的那个就是择优取样本。"
+  },
+  "spread_across_runs": {
+    "client_generating_p50": {
+      "run2": 3193.4,
+      "rep1": 3206.0,
+      "rep2": 3287.0,
+      "rep3": 3261.3
+    },
+    "client_generating_p95": {
+      "run2": 3972.0,
+      "rep1": 4011.5,
+      "rep2": 4186.4,
+      "rep3": 3967.1
+    },
+    "p50_range_ms": 93.6,
+    "note": "同一配置重复跑之间的 p50 极差就是这台机器的测量噪声地板；任何小于这个极差的 Δ 都不许写成「改善/恶化」。"
+  },
+  "gate_relevance": {
+    "3s": "合并样本后 >3s 的超标率见 pooled_uncached.client_generating_only.share_over_3s",
+    "6s": "同上 >6s",
+    "statement": "这一支脚本**不给达标/不达标**：DoD#5 认客户端还是服务端、取 3s 还是 6s，属口径裁决（待用户裁），裁决前给结论就是把尺子和读数混为一谈。"
+  },
+  "e2e_fix_verification": {
+    "rows_without_total_ms": 0,
+    "rows_covered": 100,
+    "statement": "修 e2e_ms 前，不进生成的轮次（拒答/转人工）total_ms 恒为 NULL，从 session_turn 算的每个分位数都在悄悄丢掉最快的轮次。现在每轮都跑了 6 道不进生成的题，上表 rows_without_total_ms 必须为 0。"
+  }
+}

@@ -1,9 +1,25 @@
 {
   "source": {
     "labels": "answer_correct_fill.csv",
-    "scores": "m3_confidence_probe.json",
+    "scores": "var\\gate0\\pre_reprobe\\m3_confidence_probe.json",
+    "paired_note": "标签与探针必须同一次生成；换探针产物要显式 --probe",
+    "ignored_unlabeled": {},
     "score_basis": "rule_composite_not_probability",
     "temperature_used_at_runtime": 1.0
+  },
+  "generation_drift": {
+    "comparing_this_to": "m3_confidence_probe.json",
+    "shared_rows": 67,
+    "conclusion_changed": 5,
+    "changed_ratio": 0.0746,
+    "changed_qids": [
+      "q-001",
+      "q-002",
+      "q-031",
+      "q-040",
+      "q-071"
+    ],
+    "note": "标签是照着 `--probe` 指的那一份判的；这一栏只说明**重跑一次探针会改多少行结论文本**，不用于改判标签。漂移不为 0 ⇒ 标签与另一代产物不可互换配对。"
   },
   "label_check": {
     "n": 67,
@@ -287,7 +303,7 @@
     "gate0_⑤_fitted_T": 6.655
   },
   "coverage_boundary": {
-    "评测集总数": 79,
+    "评测集总数": 80,
     "本标签集覆盖": 67,
     "覆盖范围": "仅 `expected_behavior == answer` 的 67 题（探针的取题口径就是这条过滤）",
     "未覆盖": [
@@ -320,6 +336,7 @@
     "为什么这个不达标不危险": "方向是**欠置信**：平均复合分 0.7671 低于实测正确率 0.9677。危险的是过置信（错答案顶着高分被自动放行），这里没有——但高置信带里仍漏了 2 行错答案（['q-013', 'q-076']，复合分 0.75~0.79 贴着门槛过线）。",
     "温度缩放": "两档拟合都**不采纳**：answer_prod 负类仅 2 例不可辨识；all_behav 的负类 5/7 是复合分被钉在 0.0 的拒答行，T<1 拟合的是同义反复。运行时维持 T=1.0、复合分不进门禁——与 confidence_calibration.json 的裁决一致，本次不改。",
     "真正暴露的问题": "7 个错行为按层拆开：4 行是检索漏召（证据没进 Top-K，拒答在链路内是对的、题却是该答的），1 行是判定层老毛病（检索分 ≥0.9 却声明无依据转人工，即 M3-02 那类），1 行引用块在 gold 内仍读错，1 行引用块不在 strict gold 而结论跟着错块走。没有一行是「校准能救」的——校准只改分数的显示口径，不改行为。",
+    "欠置信的代价": "反过来读：把复合分当概率呈现，会系统性低估自己（报 0.77 而实得 0.97）。在这批标签里它没造成错误放行，但它压低的是**用户看到的把握程度**，所以这个分数继续只用于内部闸门与降级排序，对用户的口径维持「三态 + 引用」不显示概率。",
     "样本量边界": "62 行的正确率与 2 个负类撑不起任何「总体正确率 ≥ X%」的断言，AUC 的 CI95 宽到 [0.63, 0.91]。所有读数只描述这一批探针，不外推。"
   }
 }

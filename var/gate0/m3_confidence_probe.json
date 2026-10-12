@@ -1,35 +1,35 @@
 {
-  "n_run": 67,
-  "n_gradable": 62,
-  "n_l4_assessable": 50,
-  "l4_positives": 24,
+  "n_run": 68,
+  "n_gradable": 63,
+  "n_l4_assessable": 51,
+  "l4_positives": 23,
   "temperature_used": 1.0,
   "label_variance": {
     "L1_section_any": {
-      "n": 62,
-      "ones": 61,
+      "n": 63,
+      "ones": 62,
       "zeros": 1,
-      "mean": 0.9839,
+      "mean": 0.9841,
       "degenerate": false
     },
     "L2_strict_any": {
-      "n": 62,
+      "n": 63,
       "ones": 61,
-      "zeros": 1,
-      "mean": 0.9839,
+      "zeros": 2,
+      "mean": 0.9683,
       "degenerate": false
     },
     "L3_strict_precision": {
-      "n": 62,
-      "mean": 0.9629,
-      "std": 0.1547,
+      "n": 63,
+      "mean": 0.9476,
+      "std": 0.1951,
       "distinct": 4,
       "degenerate": false
     },
     "L4_ref_number_recall": {
-      "n": 50,
-      "mean": 0.6921,
-      "std": 0.3301,
+      "n": 51,
+      "mean": 0.6622,
+      "std": 0.3416,
       "distinct": 10,
       "degenerate": false
     }
@@ -39,7 +39,7 @@
       "distinct": 45,
       "min": 0.2417,
       "max": 0.9985,
-      "mean": 0.9133,
+      "mean": 0.915,
       "constant": false
     },
     "citation_consistency": {
@@ -53,40 +53,40 @@
       "distinct": 3,
       "min": 0.0,
       "max": 1.0,
-      "mean": 0.0306,
+      "mean": 0.0444,
       "constant": false
     },
     "composite": {
-      "distinct": 47,
+      "distinct": 48,
       "min": 0.4588,
-      "max": 0.998,
-      "mean": 0.7671,
+      "max": 0.9976,
+      "mean": 0.7706,
       "constant": false
     },
     "calibrated": {
-      "distinct": 47,
+      "distinct": 48,
       "min": 0.4588,
-      "max": 0.998,
-      "mean": 0.7671,
+      "max": 0.9976,
+      "mean": 0.7706,
       "constant": false
     }
   },
   "auc_vs_L4": {
-    "retrieval": 0.3205,
+    "retrieval": 0.2997,
     "citation_consistency": null,
-    "self_assessed": 0.5208,
-    "composite": 0.3438,
-    "calibrated": 0.3438,
+    "self_assessed": 0.5031,
+    "composite": 0.3207,
+    "calibrated": 0.3207,
     "number_groundedness": null,
-    "n_citations": 0.5208,
-    "evidence_number_count": 0.52
+    "n_citations": 0.486,
+    "evidence_number_count": 0.4775
   },
   "ece_and_fit": {
     "L1_current_label": {
-      "ece": 0.2168,
-      "n": 62,
-      "mean_conf": 0.7671,
-      "accuracy": 0.9839,
+      "ece": 0.2135,
+      "n": 63,
+      "mean_conf": 0.7706,
+      "accuracy": 0.9841,
       "bins": [
         {
           "bin": 4,
@@ -109,23 +109,23 @@
         {
           "bin": 7,
           "n": 53,
-          "conf": 0.7868,
+          "conf": 0.787,
           "acc": 0.9811
         },
         {
           "bin": 9,
-          "n": 2,
-          "conf": 0.9853,
+          "n": 3,
+          "conf": 0.9828,
           "acc": 1.0
         }
       ],
       "note": "现在报告里那条 0.24 的口径：标签全 1"
     },
     "L4_answer_correct": {
-      "ece": 0.3563,
-      "n": 50,
-      "mean_conf": 0.7577,
-      "accuracy": 0.48,
+      "ece": 0.3872,
+      "n": 51,
+      "mean_conf": 0.7622,
+      "accuracy": 0.451,
       "bins": [
         {
           "bin": 4,
@@ -148,29 +148,35 @@
         {
           "bin": 7,
           "n": 42,
-          "conf": 0.7863,
-          "acc": 0.4286
+          "conf": 0.786,
+          "acc": 0.4048
         },
         {
           "bin": 9,
-          "n": 1,
-          "conf": 0.9727,
-          "acc": 1.0
+          "n": 2,
+          "conf": 0.9851,
+          "acc": 0.5
         }
       ],
       "ci95_gap": [
-        0.4524,
-        0.604
+        0.4762,
+        0.6233
       ],
       "fit": {
         "temperature": 6.655,
-        "nll_before_1.0": 0.9402,
-        "nll_at_best": 0.7061,
-        "n": 50
+        "nll_before_1.0": 1.0657,
+        "nll_at_best": 0.7206,
+        "n": 51
       }
     }
   },
   "invented_number_rows": [
+    {
+      "qid": "q-001",
+      "nums": [
+        "3.2"
+      ]
+    },
     {
       "qid": "q-010",
       "nums": [
@@ -224,6 +230,12 @@
       ]
     },
     {
+      "qid": "q-031",
+      "nums": [
+        "15"
+      ]
+    },
+    {
       "qid": "q-033",
       "nums": [
         "12",
@@ -268,9 +280,11 @@
       "category": "术语",
       "status": "answer",
       "question": "银企直联实时清算方案 V3.2 的灾备切换目标里，RTO 要求是多少？",
-      "conclusion": "RTO 小于 15 分钟",
+      "conclusion": "银企直联实时清算方案 V3.2 的灾备切换目标按 RTO 小于 15 分钟设定",
       "reference_answer": "RTO 小于 15 分钟，同时要求 RPO 等于 0。",
-      "notes": [],
+      "notes": [
+        "conclusion_derived_from_points:1"
+      ],
       "confidence": {
         "retrieval": 0.9932,
         "citation_consistency": 1.0,
@@ -289,7 +303,9 @@
       "strict_any": 1,
       "strict_precision": 1.0,
       "ref_number_recall": 0.5,
-      "invented_numbers": [],
+      "invented_numbers": [
+        "3.2"
+      ],
       "assessable_by_numbers": true,
       "number_groundedness": 1.0,
       "evidence_number_count": 6
@@ -299,16 +315,16 @@
       "category": "术语",
       "status": "answer",
       "question": "头寸管理上线后，法人账户日间头寸预测偏差收敛到多少？",
-      "conclusion": "头寸管理模块上线后，法人账户日间头寸预测偏差绝对值由改造前的 3.7% 收敛至 1.2%",
+      "conclusion": "头寸管理模块上线后，法人账户日间头寸预测偏差绝对值收敛至1.2%",
       "reference_answer": "预测偏差绝对值由改造前的 3.7% 收敛至 1.2%。",
       "notes": [],
       "confidence": {
         "retrieval": 0.9946,
         "citation_consistency": 1.0,
-        "self_assessed": 0.0,
-        "composite": 0.7976,
-        "logit": 1.3714,
-        "calibrated": 0.7976,
+        "self_assessed": 1.0,
+        "composite": 0.9976,
+        "logit": 6.0299,
+        "calibrated": 0.9976,
         "temperature": 1.0,
         "score_basis": "rule_composite_not_probability"
       },
@@ -319,7 +335,7 @@
       "section_any": 1,
       "strict_any": 1,
       "strict_precision": 1.0,
-      "ref_number_recall": 1.0,
+      "ref_number_recall": 0.5,
       "invented_numbers": [],
       "assessable_by_numbers": true,
       "number_groundedness": 1.0,
@@ -366,10 +382,10 @@
       "confidence": {
         "retrieval": 0.9956,
         "citation_consistency": 1.0,
-        "self_assessed": 1.0,
-        "composite": 0.998,
-        "logit": 6.2126,
-        "calibrated": 0.998,
+        "self_assessed": 0.9,
+        "composite": 0.978,
+        "logit": 3.7945,
+        "calibrated": 0.978,
         "temperature": 1.0,
         "score_basis": "rule_composite_not_probability"
       },
@@ -1262,7 +1278,7 @@
       "category": "方案名",
       "status": "answer",
       "question": "信贷资产风险分类模型方案 V1.0 拆分作业后达成了哪个周期目标？",
-      "conclusion": "增量作业 P95 时长稳定在 8 分 20 秒，达成 5 个工作日以内作业周期的验收目标。",
+      "conclusion": "增量作业每 15 分钟一次、全量校准作业每周一次，改造后增量作业 P95 时长稳定在 8 分 20 秒，达成 5 个工作日以内作业周期的验收目标。",
       "reference_answer": "达成 5 个工作日以内作业周期的验收目标，增量作业 P95 时长稳定在 8 分 20 秒。",
       "notes": [
         "conclusion_derived_from_points:1"
@@ -1285,7 +1301,9 @@
       "strict_any": 1,
       "strict_precision": 1.0,
       "ref_number_recall": 1.0,
-      "invented_numbers": [],
+      "invented_numbers": [
+        "15"
+      ],
       "assessable_by_numbers": true,
       "number_groundedness": 1.0,
       "evidence_number_count": 12
@@ -1566,10 +1584,10 @@
       "category": "口语化",
       "status": "tentative",
       "question": "厂里一路联锁失去保护了，值班经理问这算几级事故、人最晚多久得到现场？",
-      "conclusion": "联锁失去保护属于P1事件；P1事件要求2小时内到场",
+      "conclusion": "联锁失去保护属于P1事件",
       "reference_answer": "按 ITSS 事件分级属 P1，须在 30 分钟内启动应急响应并在 2 小时内到场。",
       "notes": [
-        "conclusion_derived_from_points:2",
+        "conclusion_derived_from_points:1",
         "初步判断（低置信度显式降级）"
       ],
       "confidence": {
@@ -1583,17 +1601,18 @@
         "score_basis": "rule_composite_not_probability"
       },
       "cited_ids": [
+        "chm-runbook-prj-chm-2023-021@v1#2.1#c2",
         "chm-runbook-prj-chm-2023-021@v1#2.1#c1"
       ],
-      "n_citations": 1,
+      "n_citations": 2,
       "section_any": 1,
       "strict_any": 1,
-      "strict_precision": 1.0,
-      "ref_number_recall": 0.6667,
+      "strict_precision": 0.5,
+      "ref_number_recall": 0.3333,
       "invented_numbers": [],
       "assessable_by_numbers": true,
       "number_groundedness": 1.0,
-      "evidence_number_count": 6
+      "evidence_number_count": 8
     },
     {
       "qid": "q-041",
@@ -1704,14 +1723,14 @@
       "qid": "q-044",
       "category": "口语化",
       "status": "refuse",
-      "question": "运维图省事想直接进库里把那个字段改回来，规范里哪句话把这条路堵死了？",
+      "question": "运维图省事想直接进库里把那个字段改回来，哪条规定把这条路堵死了？",
       "conclusion": "",
       "reference_answer": "审计追踪写入是唯一允许的变更方式，运维人员不得以数据库直连方式修正记录字段，错误须以追加更正记录处理。",
       "notes": [
         "no_sufficient_evidence"
       ],
       "confidence": {
-        "retrieval": 0.0046,
+        "retrieval": 0.007,
         "composite": 0.0,
         "calibrated": 0.0,
         "rule": "retrieval_gate"
@@ -2194,36 +2213,35 @@
       "qid": "q-071",
       "category": "术语",
       "status": "answer",
-      "question": "装置优化平台能不能修改 SIS 安全仪表系统的输出回路或整定值？",
-      "conclusion": "装置优化平台不能修改 SIS 安全仪表系统的输出回路或整定值。",
-      "reference_answer": "不能：SIS 输出回路不得由优化类应用写入，也不得经中间服务间接接收设定值建议，属强制隔离条款。",
+      "question": "装置优化平台能不能写入 SIS 安全仪表系统的输出回路？",
+      "conclusion": "优化平台不得写入 SIS 安全仪表系统的输出回路",
+      "reference_answer": "不能：SIS 安全仪表系统的输出回路不得由优化类应用写入，也不得通过任何中间服务间接接收设定值建议，属强制隔离条款。",
       "notes": [
         "conclusion_derived_from_points:1",
         "secret_level_cited:1 条需人工复核"
       ],
       "confidence": {
-        "retrieval": 0.9243,
+        "retrieval": 0.979,
         "citation_consistency": 1.0,
         "self_assessed": 0.0,
-        "composite": 0.7659,
-        "logit": 1.1853,
-        "calibrated": 0.7659,
+        "composite": 0.7906,
+        "logit": 1.3285,
+        "calibrated": 0.7906,
         "temperature": 1.0,
         "score_basis": "rule_composite_not_probability"
       },
       "cited_ids": [
-        "chm-closeout-prj-chm-2024-003@v1#2.2#c1",
         "chm-compliance-prj-chm-2023-021@v1#2.1#c2"
       ],
-      "n_citations": 2,
+      "n_citations": 1,
       "section_any": 1,
       "strict_any": 1,
-      "strict_precision": 0.5,
+      "strict_precision": 1.0,
       "ref_number_recall": null,
       "invented_numbers": [],
       "assessable_by_numbers": false,
       "number_groundedness": null,
-      "evidence_number_count": 7
+      "evidence_number_count": 1
     },
     {
       "qid": "q-072",
@@ -2490,6 +2508,41 @@
       "assessable_by_numbers": true,
       "number_groundedness": 1.0,
       "evidence_number_count": 9
+    },
+    {
+      "qid": "q-080",
+      "category": "术语",
+      "status": "answer",
+      "question": "装置优化平台能不能改变 SIS 安全仪表系统的整定值？",
+      "conclusion": "优化平台不能改变 SIS 安全仪表系统的整定值",
+      "reference_answer": "不能：验收的三项安全约束之一即「不得改变 SIS 安全仪表系统的整定值」；SIS 独立于优化平台部署，其 2oo3 表决逻辑与整定值不随优化目标调整。",
+      "notes": [
+        "conclusion_derived_from_points:1",
+        "secret_level_cited:1 条需人工复核"
+      ],
+      "confidence": {
+        "retrieval": 0.9668,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7851,
+        "logit": 1.2956,
+        "calibrated": 0.7851,
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cited_ids": [
+        "chm-closeout-prj-chm-2024-003@v1#2.2#c1",
+        "chm-compliance-prj-chm-2023-021@v1#2.1#c2"
+      ],
+      "n_citations": 2,
+      "section_any": 1,
+      "strict_any": 0,
+      "strict_precision": 0.0,
+      "ref_number_recall": 0.0,
+      "invented_numbers": [],
+      "assessable_by_numbers": true,
+      "number_groundedness": null,
+      "evidence_number_count": 7
     }
   ]
 }

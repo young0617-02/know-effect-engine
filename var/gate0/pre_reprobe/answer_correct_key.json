@@ -1,0 +1,609 @@
+{
+  "generated_at": "2026-10-12T17:26:42",
+  "note": "含 reference_answer，**只在标注回收之后**才能打开比对",
+  "rows": [
+    {
+      "qid": "q-001",
+      "conclusion": "RTO 小于 15 分钟",
+      "reference_answer": "RTO 小于 15 分钟，同时要求 RPO 等于 0。",
+      "cited_ids": [
+        "fin-closeout-prj-fin-2024-017@v1#2.1#c1"
+      ],
+      "status": "answer"
+    },
+    {
+      "qid": "q-002",
+      "conclusion": "头寸管理模块上线后，法人账户日间头寸预测偏差绝对值由改造前的 3.7% 收敛至 1.2%",
+      "reference_answer": "预测偏差绝对值由改造前的 3.7% 收敛至 1.2%。",
+      "cited_ids": [
+        "fin-closeout-prj-fin-2024-017@v1#2.2#c1"
+      ],
+      "status": "answer"
+    },
+    {
+      "qid": "q-003",
+      "conclusion": "",
+      "reference_answer": "拨备覆盖率不低于 150%，同时不良贷款率不高于 1.8%。",
+      "cited_ids": [],
+      "status": "escalate"
+    },
+    {
+      "qid": "q-004",
+      "conclusion": "信贷资产风险分类结果按五级类别落库，即正常、关注、次级、可疑与损失。",
+      "reference_answer": "按五级类别落库，即正常、关注、次级、可疑与损失。",
+      "cited_ids": [
+        "fin-presale-prj-fin-2023-041@v1#2.1#c1"
+      ],
+      "status": "answer"
+    },
+    {
+      "qid": "q-005",
+      "conclusion": "人行支付报文字段共改造报文字段映射 214 项",
+      "reference_answer": "共改造报文字段映射 214 项，其中金额类 38 项、账号与户名类 57 项、业务标识类 119 项。",
+      "cited_ids": [
+        "fin-closeout-prj-fin-2024-017@v1#3.1#c1"
+      ],
+      "status": "answer"
+    },
+    {
+      "qid": "q-006",
+      "conclusion": "双活数据中心同城链路正常水位不超过 800 毫秒",
+      "reference_answer": "正常水位不超过 800 毫秒，达 2000 毫秒黄色告警、达 5000 毫秒红色告警。",
+      "cited_ids": [
+        "fin-ifspec-prj-fin-2024-033@v1#2.1#c1"
+      ],
+      "status": "answer"
+    },
+    {
+      "qid": "q-007",
+      "conclusion": "92%",
+      "reference_answer": "误报率长期高于 92%，人工甄别团队 74 人仍无法消化预警积压。",
+      "cited_ids": [
+        "fin-presale-prj-fin-2025-008@v1#1.1#c1"
+      ],
+      "status": "answer"
+    },
+    {
+      "qid": "q-008",
+      "conclusion": "15 分钟内启动应急响应",
+      "reference_answer": "P1 级故障须在 15 分钟内启动应急响应。",
+      "cited_ids": [
+        "fin-runbook-prj-fin-2024-017@v1#2.1#c1"
+      ],
+      "status": "answer"
+    },
+    {
+      "qid": "q-009",
+      "conclusion": "2秒",
+      "reference_answer": "实时数据刷新周期为 2 秒，人机界面画面刷新不超过 3 秒。",
+      "cited_ids": [
+        "ene-runbook-prj-ene-2023-019@v1#2.2#c1"
+      ],
+      "status": "answer"
+    },
+    {
+      "qid": "q-010",
+      "conclusion": "接口编号 IF-ENE-0021 用于配电自动化终端的遥测数据上送，信息体地址段规划为 16385 至 18000，覆盖三相电流、三相电压、有功与无功功率及功率因数共 14 个测点。",
+      "reference_answer": "共 14 个测点，覆盖三相电流、三相电压、有功与无功功率及功率因数。",
+      "cited_ids": [
+        "ene-ifspec-prj-ene-2024-006@v1#1.2#c1"
+      ],
+      "status": "answer"
+    },
+    {
+      "qid": "q-011",
+      "conclusion": "采集数据质量与计量异常｜用电信息采集成功率由治理前的 91.6% 提升至 99.3%；",
+      "reference_answer": "由治理前的 91.6% 提升至 99.3%。",
+      "cited_ids": [
+        "ene-closeout-prj-ene-2024-006@v1#3.1#c1"
+      ],
+      "status": "answer"
+    },
+    {
+      "qid": "q-012",
+      "conclusion": "配电自动化终端与信息管理大区之间的数据交换必须经正反向隔离装置单向传输。",
+      "reference_answer": "必须经正反向隔离装置以单向方式传输，禁止任何形式的反向直连。",
+      "cited_ids": [
+        "ene-ifspec-prj-ene-2024-006@v1#3.1#c1"
+      ],
+      "status": "answer"
+    },
+    {
+      "qid": "q-013",
+      "conclusion": "改造共重构安全仪表功能回路 96 项，其中表决逻辑由 1oo1 升级为 1oo2 加冗余通道的 29 项、新增安全仪表功能 14 项。",
+      "reference_answer": "采用 2oo3 表决逻辑。",
+      "cited_ids": [
+        "chm-closeout-prj-chm-2023-021@v1#2.1#c1"
+      ],
+      "status": "answer"
+    },
+    {
+      "qid": "q-014",
+      "conclusion": "涉及 DCS 联锁逻辑的点位一律设为只读",
+      "reference_answer": "一律设为只读，联锁值修改权限保留在客户工艺与仪表两个部门。",
+      "cited_ids": [
+        "chm-closeout-prj-chm-2024-003@v1#2.2#c1"
+      ],
+      "status": "answer"
+    },
+    {
+      "qid": "q-015",
+      "conclusion": "结项文档连同验收原始记录须完整归档并保留3年",
+      "reference_answer": "依据 Q/KEE-SOP-032 归档并保留 3 年，不得以摘要件替代原件。",
+      "cited_ids": [
+        "fin-closeout-prj-fin-2024-017@v1#4.2#c1"
+      ],
+      "status": "answer"
+    },
+    {
+      "qid": "q-016",
+      "conclusion": "第三级安全计算环境的身份鉴别与会话锁定要求出自 GB/T 22239-2019 第 8.1.4 条",
+      "reference_answer": "出自 GB/T 22239-2019 第 8.1.4 条，落地为登录失败 5 次锁定 30 分钟、会话空闲 15 分钟强制注销。",
+      "cited_ids": [
+        "fin-compliance-prj-fin-2025-008@v1#2.1#c1"
+      ],
+      "status": "answer"
+    },
+    {
+      "qid": "q-017",
+      "conclusion": "SLA-A1 对应 PRJ-FIN-2024-017 项目；质保期 12 个月",
+      "reference_answer": "对应银企直联清算平台，质保期 12 个月，含工作日 8:00 至 20:00 一阶段支持与 7×24 小时 P1 级响应。",
+      "cited_ids": [
+        "fin-closeout-prj-fin-2024-017@v1#1.1#c2"
+      ],
+      "status": "answer"
+    },
+    {
+      "qid": "q-018",
+      "conclusion": "单笔汇款金额上限为 500 万元",
+      "reference_answer": "单笔汇款金额上限为 500 万元，超限须走人工复核通道并附授权影像件。",
+      "cited_ids": [
+        "fin-ifspec-prj-fin-2024-017@v1#1.2#c1"
+      ],
+      "status": "answer"
+    },
+    {
+      "qid": "q-019",
+      "conclusion": "接口编号 IF-FIN-0013 单次响应报文体积不得超过 2 MB",
+      "reference_answer": "单次响应报文体积不得超过 2 MB。",
+      "cited_ids": [
+        "fin-ifspec-prj-fin-2024-017@v1#1.3#c1"
+      ],
+      "status": "answer"
+    },
+    {
+      "qid": "q-020",
+      "conclusion": "信息体地址段从16385开始",
+      "reference_answer": "信息体地址段规划为 16385 至 18000。",
+      "cited_ids": [
+        "ene-ifspec-prj-ene-2024-006@v1#1.2#c1"
+      ],
+      "status": "answer"
+    },
+    {
+      "qid": "q-021",
+      "conclusion": "心跳试验帧机制为TESTFH；链路中断等效判定超时为60秒",
+      "reference_answer": "采用 IEC 60870-5-104 的 TESTFH 试验帧，主站 20 秒发起、连续 2 次无应答判定中断，等效超时 60 秒。",
+      "cited_ids": [
+        "ene-ifspec-prj-ene-2024-006@v1#2.2#c1"
+      ],
+      "status": "answer"
+    },
+    {
+      "qid": "q-022",
+      "conclusion": "表计通信规约遵循 DL/T 645-2007 多功能电能表通信协议，地址采用 12 位表号。",
+      "reference_answer": "遵循 DL/T 645-2007，地址采用 12 位表号，抄读为半双工主从方式，单次会话时长上限 3 秒。",
+      "cited_ids": [
+        "ene-ifspec-prj-ene-2025-011@v1#2.1#c1"
+      ],
+      "status": "answer"
+    },
+    {
+      "qid": "q-023",
+      "conclusion": "接口编号 IF-CHM-0007 的订阅点位规模上限为 8000 个。",
+      "reference_answer": "订阅点位规模上限 8000 个，最小发布间隔 500 毫秒。",
+      "cited_ids": [
+        "chm-ifspec-prj-chm-2024-003@v1#1.2#c1"
+      ],
+      "status": "answer"
+    },
+    {
+      "qid": "q-024",
+      "conclusion": "IF-CHM-0011 的查询响应时延目标为 P95 不高于 4 秒，单次返回时间序列点数上限 86400 点，超限须分片。",
+      "reference_answer": "单次返回上限 86400 点，超限须分片并保持帧序号连续。",
+      "cited_ids": [
+        "chm-ifspec-prj-chm-2024-003@v1#2.2#c1"
+      ],
+      "status": "answer"
+    },
+    {
+      "qid": "q-025",
+      "conclusion": "防爆区域划分依据GB 50058-2014国家标准执行",
+      "reference_answer": "按 GB 50058-2014 的分区原则执行，以释放源位置与通风条件为依据。",
+      "cited_ids": [
+        "chm-compliance-prj-chm-2023-021@v1#2.2#c1"
+      ],
+      "status": "answer"
+    },
+    {
+      "qid": "q-026",
+      "conclusion": "变更单号 CR-CHM-2024-118 涉及气化单元一路模拟量量程调整，可能间接影响 DCS 联锁逻辑的判定输入，因此需要补做联锁功能验证。；从发起到关闭共耗时 4 小时，其中功能验证 90 分钟。",
+      "reference_answer": "因该量程调整可能间接影响 DCS 联锁逻辑的判定输入，须补做验证后方可实施，从发起到关闭共耗时 4 小时。",
+      "cited_ids": [
+        "chm-runbook-prj-chm-2023-021@v1#5.1#c1"
+      ],
+      "status": "answer"
+    },
+    {
+      "qid": "q-027",
+      "conclusion": "日间清算高峰3200笔每秒持续60分钟无积压",
+      "reference_answer": "要求 3200 笔每秒持续 60 分钟无积压，实测达到 3760 笔每秒。",
+      "cited_ids": [
+        "fin-closeout-prj-fin-2024-017@v1#2.1#c2"
+      ],
+      "status": "answer"
+    },
+    {
+      "qid": "q-028",
+      "conclusion": "核心清算通道年度可用性目标不低于 99.99%",
+      "reference_answer": "年度可用性目标不低于 99.99%，全年非计划中断时长控制在 53 分钟以内。",
+      "cited_ids": [
+        "fin-closeout-prj-fin-2024-017@v1#2.1#c1"
+      ],
+      "status": "answer"
+    },
+    {
+      "qid": "q-029",
+      "conclusion": "同期线损率指标；采集数据完整率；台区档案一致率",
+      "reference_answer": "以同期线损率指标、采集数据完整率与台区档案一致率三项为验收核心口径。",
+      "cited_ids": [
+        "ene-closeout-prj-ene-2024-006@v1#1.1#c2"
+      ],
+      "status": "answer"
+    },
+    {
+      "qid": "q-030",
+      "conclusion": "验收以装置收率、能耗与平稳率三类指标为核心",
+      "reference_answer": "以装置收率、能耗与平稳率三类指标为核心，汽油收率实测由 82.4% 提升至 83.2%。",
+      "cited_ids": [
+        "chm-closeout-prj-chm-2024-003@v1#1.1#c1"
+      ],
+      "status": "answer"
+    },
+    {
+      "qid": "q-031",
+      "conclusion": "增量作业 P95 时长稳定在 8 分 20 秒，达成 5 个工作日以内作业周期的验收目标。",
+      "reference_answer": "达成 5 个工作日以内作业周期的验收目标，增量作业 P95 时长稳定在 8 分 20 秒。",
+      "cited_ids": [
+        "fin-retro-prj-fin-2023-041@v1#3.1#c1"
+      ],
+      "status": "answer"
+    },
+    {
+      "qid": "q-032",
+      "conclusion": "99.99%",
+      "reference_answer": "主站年度可用率目标不低于 99.99%。",
+      "cited_ids": [
+        "ene-runbook-prj-ene-2023-019@v1#1.1#c1"
+      ],
+      "status": "answer"
+    },
+    {
+      "qid": "q-033",
+      "conclusion": "配置与指标口径版本每日备份一次，备份保留 90 天在线、12 个月近线；口径版本变更须保留前后对照表，可支持任意历史时点按当期口径重算，归档调阅响应时限为 4 小时以内。",
+      "reference_answer": "归档调阅响应时限为 4 小时以内，且口径版本变更须保留前后对照表。",
+      "cited_ids": [
+        "ene-runbook-prj-ene-2025-011@v1#4.1#c1"
+      ],
+      "status": "answer"
+    },
+    {
+      "qid": "q-034",
+      "conclusion": "312 项",
+      "reference_answer": "规则总量规划为 312 项，含阈值类 168 项、关系网络类 96 项、行为序列类 48 项。",
+      "cited_ids": [
+        "fin-presale-prj-fin-2025-008@v1#2.1#c1"
+      ],
+      "status": "answer"
+    },
+    {
+      "qid": "q-035",
+      "conclusion": "SIS 回路改造实施方案 V1.1 对单批停车切换窗口的上限不超过 36 小时",
+      "reference_answer": "每批切换窗口不超过 36 小时，实际最长一次为 33 小时 40 分钟。",
+      "cited_ids": [
+        "chm-closeout-prj-chm-2023-021@v1#1.1#c1"
+      ],
+      "status": "answer"
+    },
+    {
+      "qid": "q-036",
+      "conclusion": "批生产记录电子化覆盖率不低于 95%",
+      "reference_answer": "批生产记录电子化覆盖率不低于 95%，记录及时率不低于 99%，批放行周期压缩至 2 天以内。",
+      "cited_ids": [
+        "chm-presale-prj-chm-2025-014@v1#1.1#c2"
+      ],
+      "status": "answer"
+    },
+    {
+      "qid": "q-037",
+      "conclusion": "非计划应急切换须双人确认，两名确认人员须分属运维岗与业务岗。",
+      "reference_answer": "须双人确认，两名确认人员分别属于运维岗与业务岗。",
+      "cited_ids": [
+        "fin-ifspec-prj-fin-2024-033@v1#2.2#c1"
+      ],
+      "status": "answer"
+    },
+    {
+      "qid": "q-038",
+      "conclusion": "接口编号 IF-CHM-0007 采用 OPC UA 订阅模式；最小发布间隔为 500 毫秒",
+      "reference_answer": "采用 OPC UA 订阅模式，最小发布间隔 500 毫秒。",
+      "cited_ids": [
+        "chm-ifspec-prj-chm-2024-003@v1#1.2#c1"
+      ],
+      "status": "answer"
+    },
+    {
+      "qid": "q-039",
+      "conclusion": "P1级故障须在15分钟内启动应急响应，并同时按ITIL P1流程成立事件指挥组",
+      "reference_answer": "P1 级故障须在 15 分钟内启动应急响应，并按 ITIL P1 流程成立事件指挥组。",
+      "cited_ids": [
+        "fin-runbook-prj-fin-2024-017@v1#2.1#c1"
+      ],
+      "status": "tentative"
+    },
+    {
+      "qid": "q-040",
+      "conclusion": "联锁失去保护属于P1事件；P1事件要求2小时内到场",
+      "reference_answer": "按 ITSS 事件分级属 P1，须在 30 分钟内启动应急响应并在 2 小时内到场。",
+      "cited_ids": [
+        "chm-runbook-prj-chm-2023-021@v1#2.1#c1"
+      ],
+      "status": "tentative"
+    },
+    {
+      "qid": "q-041",
+      "conclusion": "心跳超时的判定口径为：探活报文发送间隔 5 秒，连续 3 次未收到应答即判定链路中断，等效超时阈值为 15 秒；",
+      "reference_answer": "探活报文发送间隔 5 秒、连续 3 次无应答判定链路中断，等效超时阈值 15 秒。",
+      "cited_ids": [
+        "fin-runbook-prj-fin-2024-017@v1#2.2#c1"
+      ],
+      "status": "tentative"
+    },
+    {
+      "qid": "q-042",
+      "conclusion": "抄表同期性约束为全台区采集时间窗不超过15分钟，同期率低于95%的台区其线损结果标记为不可信",
+      "reference_answer": "全台区采集时间窗不超过 15 分钟，同期率低于 95% 时该台区线损结果标记为不可信。",
+      "cited_ids": [
+        "ene-closeout-prj-ene-2024-006@v1#3.1#c2"
+      ],
+      "status": "tentative"
+    },
+    {
+      "qid": "q-043",
+      "conclusion": "现场阶段在停车窗口内完成联锁功能验证 96 项、报警联动验证 214 项，现场阶段全部通过且无一项以跳过方式关闭。现场验证采用注错方式覆盖传感器断线、通道短路与会话超时三类故障注入，每类不少于 30 次。",
+      "reference_answer": "现场阶段以注错方式覆盖传感器断线、通道短路与会话超时三类故障注入，每类不少于 30 次。",
+      "cited_ids": [
+        "chm-closeout-prj-chm-2023-021@v1#3.1#c1"
+      ],
+      "status": "tentative"
+    },
+    {
+      "qid": "q-044",
+      "conclusion": "",
+      "reference_answer": "审计追踪写入是唯一允许的变更方式，运维人员不得以数据库直连方式修正记录字段，错误须以追加更正记录处理。",
+      "cited_ids": [],
+      "status": "refuse"
+    },
+    {
+      "qid": "q-045",
+      "conclusion": "联锁摘除有效期不超过24小时",
+      "reference_answer": "联锁摘除单有效期不超过 24 小时，超时须重新审批并在操作台账挂牌提醒。",
+      "cited_ids": [
+        "chm-compliance-prj-chm-2023-021@v1#3.1#c1",
+        "chm-runbook-prj-chm-2023-021@v1#5.1#c1"
+      ],
+      "status": "tentative"
+    },
+    {
+      "qid": "q-046",
+      "conclusion": "采集网关须在断电后5分钟内以本地缓存方式续录，缓存容量支持4小时连续记录；供电恢复后自动补传并按发生时间重排。",
+      "reference_answer": "采集网关在断电后 5 分钟内起以本地缓存续录，缓存容量支持 4 小时连续记录，恢复后自动补传并按发生时间重排。",
+      "cited_ids": [
+        "chm-runbook-prj-chm-2025-014@v1#4.1#c1"
+      ],
+      "status": "tentative"
+    },
+    {
+      "qid": "q-047",
+      "conclusion": "",
+      "reference_answer": "同步延迟达 5000 毫秒触发红色告警并禁止发起任何计划内切换。",
+      "cited_ids": [],
+      "status": "refuse"
+    },
+    {
+      "qid": "q-048",
+      "conclusion": "客户当前拨备覆盖率稳定在 182% 至 196% 区间",
+      "reference_answer": "当前拨备覆盖率稳定在 182% 至 196% 区间。",
+      "cited_ids": [
+        "fin-presale-prj-fin-2023-041@v1#1.1#c1"
+      ],
+      "status": "tentative"
+    },
+    {
+      "qid": "q-049",
+      "conclusion": "接口IF-FIN-0012使用业务日期加企业流水号双字段联合判重",
+      "reference_answer": "幂等控制以业务日期加企业流水号双字段联合判重，判重窗口保留 7 个自然日。",
+      "cited_ids": [
+        "fin-ifspec-prj-fin-2024-017@v1#1.2#c1"
+      ],
+      "status": "tentative"
+    },
+    {
+      "qid": "q-050",
+      "conclusion": "操作员连续拒绝三条建议后，平台会暂停该回路建议30分钟",
+      "reference_answer": "同一回路连续 3 条建议被操作员拒绝后，平台暂停该回路建议 30 分钟并回传拒绝原因。",
+      "cited_ids": [
+        "chm-ifspec-prj-chm-2024-003@v1#2.1#c1"
+      ],
+      "status": "answer"
+    },
+    {
+      "qid": "q-051",
+      "conclusion": "",
+      "reference_answer": "连续 2 次抄读失败的表计自动生成核查工单，要求 3 个工作日内定位原因。",
+      "cited_ids": [],
+      "status": "refuse"
+    },
+    {
+      "qid": "q-052",
+      "conclusion": "",
+      "reference_answer": "远程支持仅允许观看屏幕共享而不允许数据传递，该约束已写入交付作业指导书。",
+      "cited_ids": [],
+      "status": "refuse"
+    },
+    {
+      "qid": "q-053",
+      "conclusion": "验收以两地三中心架构下连续两次成功演练为必要条件，且两次演练之间不得存在未闭环的高级缺陷",
+      "reference_answer": "以两地三中心架构下连续两次成功演练为必要条件，且两次演练之间不得存在未闭环的高级缺陷。",
+      "cited_ids": [
+        "fin-ifspec-prj-fin-2024-033@v1#5.1#c1"
+      ],
+      "status": "answer"
+    },
+    {
+      "qid": "q-054",
+      "conclusion": "现状诊断；方案定型；试点验证；规模推广；成效固化",
+      "reference_answer": "现状诊断、方案定型、试点验证、规模推广、成效固化五个阶段。",
+      "cited_ids": [
+        "fin-presale-prj-fin-2025-008@v1#3.1#c1",
+        "fin-closeout-prj-fin-2024-017@v1#4.1#c1",
+        "chm-presale-prj-chm-2025-014@v1#2.2#c1",
+        "fin-presale-prj-fin-2023-041@v1#2.2#c1",
+        "chm-closeout-prj-chm-2024-003@v1#5.1#c1"
+      ],
+      "status": "answer"
+    },
+    {
+      "qid": "q-055",
+      "conclusion": "P1 判定依据为任一在用的 SIS 安全仪表系统回路失去保护功能或两条以上可燃气体探测回路同时失效。",
+      "reference_answer": "P1 为任一在用 SIS 回路失去保护功能或两条以上可燃气体探测回路同时失效；30 分钟内启动应急响应、2 小时内到场。",
+      "cited_ids": [
+        "chm-runbook-prj-chm-2023-021@v1#2.1#c1"
+      ],
+      "status": "answer"
+    },
+    {
+      "qid": "q-056",
+      "conclusion": "本项目登记了需求管理、项目计划、配置管理与决策分析四个过程域的度量项。；按 CMMI 3 级过程域映射要求登记度量项 9 类。；补充了需求变更管理与配置管理两个过程域的度量口径。；完成需求管理、配置管理与验证三个过程域的度量归档。；归档度量样本 2410 条，需求变更条目 388 条。",
+      "reference_answer": "按项目登记需求管理、项目计划、配置管理、验证与决策分析等过程域的度量项，并把结论回灌组织过程资产库。",
+      "cited_ids": [
+        "fin-closeout-prj-fin-2024-017@v1#4.1#c1",
+        "ene-closeout-prj-ene-2024-006@v1#4.1#c1",
+        "ene-retro-prj-ene-2024-006@v1#3.1#c1",
+        "chm-closeout-prj-chm-2024-003@v1#5.1#c1",
+        "chm-closeout-prj-chm-2023-021@v1#4.1#c1"
+      ],
+      "status": "answer"
+    },
+    {
+      "qid": "q-057",
+      "conclusion": "第一道防线为环境隔离，开发测试数据一律使用造数或脱敏数据。；第二道防线为出口管控，任何跨域传输须经审批工单并留存审批链。；第三道防线为内容识别，出口通道部署敏感字段自动识别与阻断。；第四道防线为审计追溯，所有访问与出口行为日志集中留存3年。",
+      "reference_answer": "四道防线为环境隔离、出口管控（审批）、内容识别与审计追溯，任一道未闭环即暂停相关作业。",
+      "cited_ids": [
+        "fin-compliance-prj-fin-2025-008@v1#2.2#c1"
+      ],
+      "status": "answer"
+    },
+    {
+      "qid": "q-058",
+      "conclusion": "防爆区域划分为2区与1区两类主要区域，2区共47个单元、1区共9个单元",
+      "reference_answer": "划分为 2 区（47 个单元）与 1 区（9 个单元）；进入 1 区须办受限空间与动火两项作业票。",
+      "cited_ids": [
+        "chm-runbook-prj-chm-2023-021@v1#4.1#c1"
+      ],
+      "status": "answer"
+    },
+    {
+      "qid": "q-071",
+      "conclusion": "装置优化平台不能修改 SIS 安全仪表系统的输出回路或整定值。",
+      "reference_answer": "不能：SIS 输出回路不得由优化类应用写入，也不得经中间服务间接接收设定值建议，属强制隔离条款。",
+      "cited_ids": [
+        "chm-closeout-prj-chm-2024-003@v1#2.2#c1",
+        "chm-compliance-prj-chm-2023-021@v1#2.1#c2"
+      ],
+      "status": "answer"
+    },
+    {
+      "qid": "q-072",
+      "conclusion": "进入1区作业须办理受限空间与动火两项作业票",
+      "reference_answer": "须办受限空间与动火两项作业票；有效期不超过当班 8 小时，且每日须重新确认气体检测合格。",
+      "cited_ids": [
+        "chm-runbook-prj-chm-2023-021@v1#4.1#c1"
+      ],
+      "status": "answer"
+    },
+    {
+      "qid": "q-073",
+      "conclusion": "客户灾备架构为两地三中心，同城两个中心以双活数据中心方式承载核心业务，异地中心以异步热备方式承载关键业务；接口按控制面与数据面分离设计，控制面接口负责切换指令下发与状态查询，数据面接口仅用于同步链路健康度上报；控制面与数据面分属不同网络区域，跨区访问须经过正反向隔离策略允许的两条专用通道，其余端口一律关闭。",
+      "reference_answer": "同城双活承载核心业务、异地异步热备承载关键业务；控制面下发指令与查状态，数据面只上报链路健康度，跨区仅允许两条专用通道。",
+      "cited_ids": [
+        "fin-ifspec-prj-fin-2024-033@v1#1.1#c1"
+      ],
+      "status": "answer"
+    },
+    {
+      "qid": "q-074",
+      "conclusion": "银企直联通道改造；清算规则引擎替换；两地三中心灾备链路验证",
+      "reference_answer": "银企直联通道改造、清算规则引擎替换、两地三中心灾备链路验证。",
+      "cited_ids": [
+        "fin-closeout-prj-fin-2024-017@v1#1.1#c1"
+      ],
+      "status": "answer"
+    },
+    {
+      "qid": "q-075",
+      "conclusion": "42分钟（全量恢复）；71分钟（含校核的端到端恢复）",
+      "reference_answer": "全量恢复 42 分钟、含校核的端到端恢复 71 分钟；备份按同城与异地两处布局，日全量加每 15 分钟增量。",
+      "cited_ids": [
+        "ene-runbook-prj-ene-2023-019@v1#5.1#c1"
+      ],
+      "status": "answer"
+    },
+    {
+      "qid": "q-076",
+      "conclusion": "现状诊断阶段完成8.4万个台区的线损分布画像；成效固化阶段交付指标维持机制与责任矩阵",
+      "reference_answer": "现状诊断完成 8.4 万个台区线损分布画像；成效固化交付档案核查模板与归因字典并纳入组织过程资产库。",
+      "cited_ids": [
+        "ene-closeout-prj-ene-2024-006@v1#4.1#c1"
+      ],
+      "status": "answer"
+    },
+    {
+      "qid": "q-077",
+      "conclusion": "金融线 P1 判定为清算链路整体中断或资金差错外溢；P1 事件须在 15 分钟内启动应急响应，并同时按 ITIL P1 流程成立事件指挥组",
+      "reference_answer": "P1 为清算链路整体中断或资金差错外溢；15 分钟内启动应急响应，并按 ITIL P1 成立事件指挥组。",
+      "cited_ids": [
+        "fin-runbook-prj-fin-2024-017@v1#2.1#c1"
+      ],
+      "status": "answer"
+    },
+    {
+      "qid": "q-078",
+      "conclusion": "P1 为 SCADA 主站功能失效或 30 座以上厂站失联；须在 15 分钟内启动应急响应并同步报告客户调度部门；处置过程中每一关键动作均须口头复述确认并录音留存",
+      "reference_answer": "P1 为 SCADA 主站功能失效或 30 座以上厂站失联；15 分钟内启动并同步报告客户调度部门。",
+      "cited_ids": [
+        "ene-runbook-prj-ene-2023-019@v1#2.1#c1"
+      ],
+      "status": "answer"
+    },
+    {
+      "qid": "q-079",
+      "conclusion": "防爆区域划分依据GB 50058-2014标准；边界密封核查386处，发现21处不合规并全部整改",
+      "reference_answer": "按 GB 50058-2014 分区，以释放源位置与通风条件为依据；穿越边界须做密封隔离，本项目核查 386 处、不合规 21 处全部整改并经客户安全环保部复验通过。",
+      "cited_ids": [
+        "chm-compliance-prj-chm-2023-021@v1#2.2#c1"
+      ],
+      "status": "answer"
+    }
+  ]
+}

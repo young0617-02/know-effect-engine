@@ -1,0 +1,325 @@
+{
+  "source": {
+    "labels": "answer_correct_fill.csv",
+    "scores": "m3_confidence_probe.json",
+    "score_basis": "rule_composite_not_probability",
+    "temperature_used_at_runtime": 1.0
+  },
+  "label_check": {
+    "n": 67,
+    "n_correct": 60,
+    "n_wrong": 7,
+    "degenerate": false,
+    "by_status": {
+      "answer": {
+        "n": 53,
+        "wrong": 2
+      },
+      "escalate": {
+        "n": 1,
+        "wrong": 1
+      },
+      "refuse": {
+        "n": 4,
+        "wrong": 4
+      },
+      "tentative": {
+        "n": 9,
+        "wrong": 0
+      }
+    }
+  },
+  "populations": {
+    "answer_prod": {
+      "population": "status ∈ {answer, tentative}：给出的答案对不对",
+      "n": 62,
+      "n_correct": 60,
+      "n_wrong": 2,
+      "accuracy": 0.9677,
+      "mean_conf": 0.7671,
+      "ece": 0.2006,
+      "ece_sign": "欠置信（平均置信低于实测正确率）",
+      "reliability_bins": [
+        {
+          "bin": 4,
+          "lo": 0.4,
+          "hi": 0.5,
+          "n": 2,
+          "mean_conf": 0.4653,
+          "accuracy": 1
+        },
+        {
+          "bin": 5,
+          "lo": 0.5,
+          "hi": 0.6,
+          "n": 2,
+          "mean_conf": 0.5658,
+          "accuracy": 1
+        },
+        {
+          "bin": 6,
+          "lo": 0.6,
+          "hi": 0.7,
+          "n": 3,
+          "mean_conf": 0.6089,
+          "accuracy": 1
+        },
+        {
+          "bin": 7,
+          "lo": 0.7,
+          "hi": 0.8,
+          "n": 53,
+          "mean_conf": 0.7868,
+          "accuracy": 0.9623
+        },
+        {
+          "bin": 9,
+          "lo": 0.9,
+          "hi": 1.0,
+          "n": 2,
+          "mean_conf": 0.9853,
+          "accuracy": 1
+        }
+      ],
+      "brier": 0.079,
+      "auc_composite_vs_answer_correct": 0.7833,
+      "auc_ci95": [
+        0.6271,
+        0.9138
+      ],
+      "gate_band": {
+        "conf_high": 0.75,
+        "conf_low": 0.45,
+        "n_in_high_band": 53,
+        "accuracy_in_high_band": 0.9623,
+        "wrong_rows_in_high_band": [
+          "q-013",
+          "q-076"
+        ],
+        "wrong_rows_in_low_band": [],
+        "note": "wrong_rows_in_high_band 是安全相关读数（错行为被高置信放行）；low_band 里的错行是「该不该拒」另一回事。"
+      },
+      "neg_composition": {
+        "答错(有结论)": 2,
+        "误拒/误转人工": 0,
+        "复合分钉在 0.0 的行": []
+      },
+      "temperature_fit": {
+        "n": 62,
+        "neg": 2,
+        "nll_at_T1": 0.3111,
+        "best_T": 0.4,
+        "nll_at_best": 0.1847,
+        "adoptable": false,
+        "refused": "负类仅 2 例（<5）：T 由极少数点决定，网格上近乎平坦，把它写进服务参数就是给噪声配了个名字。只报 NLL 对照，不产出可上线的 T。"
+      }
+    },
+    "all_behav": {
+      "population": "全 67 行：行为对不对（误拒/误转人工计 0）",
+      "n": 67,
+      "n_correct": 60,
+      "n_wrong": 7,
+      "accuracy": 0.8955,
+      "mean_conf": 0.7099,
+      "ece": 0.1857,
+      "ece_sign": "欠置信（平均置信低于实测正确率）",
+      "reliability_bins": [
+        {
+          "bin": 0,
+          "lo": 0.0,
+          "hi": 0.1,
+          "n": 5,
+          "mean_conf": 0.0,
+          "accuracy": 0
+        },
+        {
+          "bin": 4,
+          "lo": 0.4,
+          "hi": 0.5,
+          "n": 2,
+          "mean_conf": 0.4653,
+          "accuracy": 1
+        },
+        {
+          "bin": 5,
+          "lo": 0.5,
+          "hi": 0.6,
+          "n": 2,
+          "mean_conf": 0.5658,
+          "accuracy": 1
+        },
+        {
+          "bin": 6,
+          "lo": 0.6,
+          "hi": 0.7,
+          "n": 3,
+          "mean_conf": 0.6089,
+          "accuracy": 1
+        },
+        {
+          "bin": 7,
+          "lo": 0.7,
+          "hi": 0.8,
+          "n": 53,
+          "mean_conf": 0.7868,
+          "accuracy": 0.9623
+        },
+        {
+          "bin": 9,
+          "lo": 0.9,
+          "hi": 1.0,
+          "n": 2,
+          "mean_conf": 0.9853,
+          "accuracy": 1
+        }
+      ],
+      "brier": 0.0731,
+      "auc_composite_vs_answer_correct": 0.9381,
+      "auc_ci95": [
+        0.8355,
+        1.0
+      ],
+      "gate_band": {
+        "conf_high": 0.75,
+        "conf_low": 0.45,
+        "n_in_high_band": 53,
+        "accuracy_in_high_band": 0.9623,
+        "wrong_rows_in_high_band": [
+          "q-013",
+          "q-076"
+        ],
+        "wrong_rows_in_low_band": [
+          "q-003",
+          "q-044",
+          "q-047",
+          "q-051",
+          "q-052"
+        ],
+        "note": "wrong_rows_in_high_band 是安全相关读数（错行为被高置信放行）；low_band 里的错行是「该不该拒」另一回事。"
+      },
+      "neg_composition": {
+        "答错(有结论)": 2,
+        "误拒/误转人工": 5,
+        "复合分钉在 0.0 的行": [
+          "q-003",
+          "q-044",
+          "q-047",
+          "q-051",
+          "q-052"
+        ]
+      },
+      "temperature_fit": {
+        "n": 67,
+        "neg": 7,
+        "nll_at_T1": 0.2879,
+        "best_T": 0.4,
+        "nll_at_best": 0.1709,
+        "adoptable": false,
+        "refused": "负类 5 行是拒答/转人工，其复合分被规则**钉死为 0.0**（结构值，不是证据强度读数）。T<1 的收益几乎全来自把这批行更狠地压到 0——那是在拟合「没作答当然不算答对」这条同义反复，不是校准。此档只作对照，不产出可上线的 T。"
+      }
+    }
+  },
+  "wrong_rows": [
+    {
+      "qid": "q-003",
+      "status": "escalate",
+      "composite": 0.0,
+      "calibrated": 0.0,
+      "conclusion": "",
+      "reference_answer": "拨备覆盖率不低于 150%，同时不良贷款率不高于 1.8%。"
+    },
+    {
+      "qid": "q-013",
+      "status": "answer",
+      "composite": 0.7813,
+      "calibrated": 0.7813,
+      "conclusion": "改造共重构安全仪表功能回路 96 项，其中表决逻辑由 1oo1 升级为 1oo2 加冗余通道的 29 项、新增安全仪表功",
+      "reference_answer": "采用 2oo3 表决逻辑。"
+    },
+    {
+      "qid": "q-044",
+      "status": "refuse",
+      "composite": 0.0,
+      "calibrated": 0.0,
+      "conclusion": "",
+      "reference_answer": "审计追踪写入是唯一允许的变更方式，运维人员不得以数据库直连方式修正记录字段，错误须以追加更正记录处理。"
+    },
+    {
+      "qid": "q-047",
+      "status": "refuse",
+      "composite": 0.0,
+      "calibrated": 0.0,
+      "conclusion": "",
+      "reference_answer": "同步延迟达 5000 毫秒触发红色告警并禁止发起任何计划内切换。"
+    },
+    {
+      "qid": "q-051",
+      "status": "refuse",
+      "composite": 0.0,
+      "calibrated": 0.0,
+      "conclusion": "",
+      "reference_answer": "连续 2 次抄读失败的表计自动生成核查工单，要求 3 个工作日内定位原因。"
+    },
+    {
+      "qid": "q-052",
+      "status": "refuse",
+      "composite": 0.0,
+      "calibrated": 0.0,
+      "conclusion": "",
+      "reference_answer": "远程支持仅允许观看屏幕共享而不允许数据传递，该约束已写入交付作业指导书。"
+    },
+    {
+      "qid": "q-076",
+      "status": "answer",
+      "composite": 0.7523,
+      "calibrated": 0.7523,
+      "conclusion": "现状诊断阶段完成8.4万个台区的线损分布画像；成效固化阶段交付指标维持机制与责任矩阵",
+      "reference_answer": "现状诊断完成 8.4 万个台区线损分布画像；成效固化交付档案核查模板与归因字典并纳入组织过程资产库。"
+    }
+  ],
+  "comparison_with_prior_readings": {
+    "L1_section_any_ece_全1标签": 0.2168,
+    "L4_ref_number_recall_proxy": {
+      "ece": 0.3563,
+      "accuracy": 0.48,
+      "注意": "那是「数字召回」代理标签，不是人判的答案正确性，两者别混"
+    },
+    "gate0_⑤_fitted_T": 6.655
+  },
+  "coverage_boundary": {
+    "评测集总数": 79,
+    "本标签集覆盖": 67,
+    "覆盖范围": "仅 `expected_behavior == answer` 的 67 题（探针的取题口径就是这条过滤）",
+    "未覆盖": [
+      "q-059",
+      "q-060",
+      "q-061",
+      "q-062",
+      "q-063",
+      "q-064",
+      "q-065",
+      "q-066",
+      "q-067",
+      "q-068",
+      "q-069",
+      "q-070"
+    ],
+    "未覆盖的是什么": "无答案 7 题 + 敏感 5 题——它们的**正确行为本就是拒答/升级**，所以「误拒率 7.5%」只描述该答却拒的那一面，不能当系统总体拒答行为；反过来，这 12 题上「该拒却答了」没有真人标签，仍是空白。"
+  },
+  "wrong_row_causes": {
+    "q-003": "判定层：检索分高却声明无依据（转人工）",
+    "q-013": "证据层：所引块不在 strict gold，结论跟着错块走",
+    "q-044": "检索层：证据没进 Top-K，拒答是链路内的正确反应，但题本身该答",
+    "q-047": "检索层：证据没进 Top-K，拒答是链路内的正确反应，但题本身该答",
+    "q-051": "检索层：证据没进 Top-K，拒答是链路内的正确反应，但题本身该答",
+    "q-052": "检索层：证据没进 Top-K，拒答是链路内的正确反应，但题本身该答",
+    "q-076": "生成层：引用块在 strict gold 内，结论仍读错"
+  },
+  "verdict": {
+    "⑤_ECE_敞口": "关闭：第一个真人判「答案对不对」的标签集已回收（62 行给出答案的行 + 5 行拒答/转人工），ECE 有了方差供给。主口径 ECE=0.2006（欠置信（平均置信低于实测正确率）），门禁 ECE ≤ 0.10 **仍不达标**。",
+    "为什么这个不达标不危险": "方向是**欠置信**：平均复合分 0.7671 低于实测正确率 0.9677。危险的是过置信（错答案顶着高分被自动放行），这里没有——但高置信带里仍漏了 2 行错答案（['q-013', 'q-076']，复合分 0.75~0.79 贴着门槛过线）。",
+    "温度缩放": "两档拟合都**不采纳**：answer_prod 负类仅 2 例不可辨识；all_behav 的负类 5/7 是复合分被钉在 0.0 的拒答行，T<1 拟合的是同义反复。运行时维持 T=1.0、复合分不进门禁——与 confidence_calibration.json 的裁决一致，本次不改。",
+    "真正暴露的问题": "7 个错行为按层拆开：4 行是检索漏召（证据没进 Top-K，拒答在链路内是对的、题却是该答的），1 行是判定层老毛病（检索分 ≥0.9 却声明无依据转人工，即 M3-02 那类），1 行引用块在 gold 内仍读错，1 行引用块不在 strict gold 而结论跟着错块走。没有一行是「校准能救」的——校准只改分数的显示口径，不改行为。",
+    "样本量边界": "62 行的正确率与 2 个负类撑不起任何「总体正确率 ≥ X%」的断言，AUC 的 CI95 宽到 [0.63, 0.91]。所有读数只描述这一批探针，不外推。"
+  }
+}

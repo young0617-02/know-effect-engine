@@ -70,6 +70,7 @@ def build() -> dict:
     m1, v3, v4 = load("m1_verify.json"), load("m3_verify.json"), load("m4_verify.json")
     g6 = load("m4_g06_rerun2.json")
     ac = load("answer_correct_calibration.json")
+    rep = load("m5_latency_replicates.json")
     ap = ac.get("populations", {}).get("answer_prod", {})
     ab = ac.get("populations", {}).get("all_behav", {})
     ver = {i: load(f"verdict_0{i}.json") for i in range(1, 7)}
@@ -89,6 +90,45 @@ def build() -> dict:
 
     cause_short = "、".join(f"{n}×{k.split('：')[0]}"
                             for k, n in Counter(v.split("：")[0] for v in ac.get("wrong_row_causes", {}).values()).items())
+
+    # ---- DoD#5：#56 净环境复测批落地后的读数。合并样本、缓存命中的轮次单列，不给单一口径的结论。
+    pu = rep.get("pooled_uncached", {})
+    cg = pu.get("client_generating_only", {})
+    sg2 = pu.get("server_generating_only", {})
+    ftb = rep.get("pooled_first_token", {}).get("bands", {})
+    fvv = ftb.get("first_visible_ms", {})
+    if not cg.get("n"):
+        lat_verdict = "待复测"
+        lat_reading = "净环境复测产物缺失（先跑 m5_latency_clean.py --tag … 再跑 m5_latency_merge.py）"
+        lat_say = "没有这一格的数据就不要写结论——旧的那份 session_turn 全表读数混着脚本自身流量，已不作引用源。"
+    else:
+        lat_verdict = "部分达标"
+        lat_reading = (
+            f"**端到端 3s/6s 取哪个待裁** ｜ P95 检索 {bf.get('latency_ms', {}).get('p95')}ms ✓ ｜ "
+            f"**净环境复测（#56）**"
+            f"{rep.get('spread_across_runs', {}).get('client_generating_p50', {})} 四轮合并："
+            f"端到端（仅进生成、未命中缓存，n={cg['n']}）客户端 p50 {cg['p50']} / p95 {cg['p95']} / max {cg['max']}ms，"
+            f">3s {pct(cg['share_over_3s'])} / >6s {pct(cg['share_over_6s'])} ｜ "
+            f"服务端 p95 {sg2.get('p95')}ms ｜ 含拒答轮次（n={pu.get('n_rows')}）>6s "
+            f"{pct(pu.get('client_all', {}).get('share_over_6s'))}（q-063 一道无答案题 7.8s） ｜ "
+            f"轮间 p50 极差 {rep.get('spread_across_runs', {}).get('p50_range_ms')}ms ｜ "
+            f"首 token（n={fvv.get('n')}，SSE 真通路）信封/首事件 p50 "
+            f"{ftb.get('first_event_ms', {}).get('p50')}ms、首个可读字 p50 {fvv.get('p50')} / "
+            f"p95 {fvv.get('p95')} / max {fvv.get('max')}ms ｜ 冷装载 {rep.get('sources', {}).get('transcribed', {}).get('cold_start_ms')}ms 单列")
+        lat_say = (
+            "**三个口径互相打架的问题，这批数把它拆成了两个独立问题**："
+            f"①「3s 还是 6s」不再是『两边都过不了』——净环境下 p95 {cg['p95']}ms，**<6s 过、<3s 不过**"
+            f"（{pct(cg['share_over_3s'])} 的轮次超 3s）。这是口径裁决，不是系统改善，等用户裁后按三件套改需求原文。"
+            f"②「首 token 1.2s」现在按**最严的那把**（首个可读字）也过：p95 {fvv.get('p95')}ms、max {fvv.get('max')}ms，"
+            "V1.7 那句『按可见内容口径达不到（p50 1642.7ms）』是**非净环境 + 缓存状态未记录**条件下的读数，已被本轮取代。"
+            "③ 引用这一格必须同句带的边界：分位数只取**未命中检索缓存**的轮次（命中轮次检索腿被短路，"
+            f"实测快 {round(cg['p50'] - rep.get('pooled_cached', {}).get('client_all', {}).get('p50', 0))}ms，单列不合并）；"
+            f"冷装载 {rep.get('sources', {}).get('transcribed', {}).get('cold_start_ms')}ms 与热态差一个量级，不许混进同一个数；"
+            f"轮间 p50 极差 {rep.get('spread_across_runs', {}).get('p50_range_ms')}ms 就是这台机器的噪声地板，"
+            "小于它的 Δ 不得写成改善或恶化。旧的那份 `session_turn` 全表读数（混着验证脚本自身流量、"
+            f"且当时拒答轮次 total_ms 恒为 NULL）自本轮起**不作引用源**。"
+            f"e2e 漏计已修：{rep.get('e2e_fix_verification', {}).get('rows_covered')} 行里 "
+            f"{rep.get('e2e_fix_verification', {}).get('rows_without_total_ms')} 行缺 total_ms。")
 
     rows = [
         row("1", "Must 链端到端可演示", "达标", "9 条 Must 全链路可跑通",
@@ -135,18 +175,12 @@ def build() -> dict:
             f"{len(ab.get('gate_band', {}).get('wrong_rows_in_high_band', []))} 行贴线过的答案。"
             "**温度缩放两档都不采纳**（负类太少不可辨识 / 拒答行复合分被钉在 0.0，拟合的是同义反复），"
             "运行时维持 T=1.0、复合分不进门禁——沿用 2026-10-11 的裁决，本次不改口径。"),
-        row("5", "延迟", "待复测", "P95 检索 < 800ms；P95 端到端 < 3s（本地命中路径）",
-            f"P95 检索 {bf.get('latency_ms', {}).get('p95')}ms ✓ ｜ 端到端（PG session_turn）n={lat['n']}："
-            f"p50 {lat['p50']:.0f}ms / p95 {lat['p95']:.0f}ms / max {lat['max']:.0f}ms"
-            f"（>10s 的 {lat['n_over_10s']} 行是模型冷装载）｜ 流式首可见 p50 {stream.get('first_visible_ms', {}).get('p50')}ms",
-            ["var/gate0/m2_eval.json", "PostgreSQL:session_turn", "var/gate0/m4_stream_probe.json", "var/gate0/verdict_01.json"],
-            "**DoD#5 写 P95 端到端 < 3s，《项目定义》第六节已按 Gate 0 实测改成 < 6s**，技术方案 8.1 也写 < 6s——"
-            f"三处两个值，M5 必须先定口径；而现值 p50 就 {lat['p50']:.0f}ms，**照哪一边都过不了**。"
-            f"这批 total_ms 混着验证脚本自己打的流量（{lat['n']} 行），不是纯用户流量；"
-            "且本机当时还跑着别的容器与宿主应用——**这不是净环境**。"
-            "用户 2026-10-12 决定整条延迟线后置复测：清空其他进程后重测，在那之前"
-            "**不得把这一格当成系统延迟结论引用**，DoD#5 的 3s vs 6s 口径也等干净数据出来再定。"
-            "唯一可信的一边是 P95 检索（同轮离线跑、不含生成）——它已达标且不受 7B 干扰。"),
+        row("5", "延迟", lat_verdict,
+            "P95 检索 < 800ms；P95 端到端 < 3s（DoD 原文）/ < 6s（《项目定义》第六节 V1.14 现行）",
+            lat_reading,
+            ["var/gate0/m2_eval.json", "var/gate0/m5_latency_replicates.json",
+             "scripts/m5_latency_clean.py", "scripts/m5_latency_merge.py"],
+            lat_say),
         row("6", "业务指标", "不可测", "自助解答率 ≥ 60%；重复提问占比下降 ≥ 30%；新人上手周期缩短 ≥ 30%",
             f"无真实用户与线上流量 ⇒ 不可测。结构性代理：可答题 {ans.get('n_answerable')} 道里 "
             f"answer {sd.get('answer')} / tentative {sd.get('tentative')} / refuse {sd.get('refuse')} / escalate {sd.get('escalate')}，"
@@ -174,6 +208,12 @@ def build() -> dict:
             "清单里凡标 `未固定` 的都要带原因，不能靠「本地能跑」蒙过去。"),
     ]
 
+    # 汇总数是从 `结论` 这个**显式字段**数的，所以状态取值必须落在 STATUSES 里；
+    # 否则新增的措辞（如「部分达标（口径待裁）」）不会报错，只会悄悄从汇总里少一行。
+    off = [f"DoD#{r['#']}={r['结论']!r}" for r in rows if r["结论"] not in STATUSES]
+    if off:
+        raise SystemExit(f"结论取值不在 STATUSES 内，汇总会漏计：{off}")
+
     return {
         "generated_at": datetime.now().isoformat(timespec="seconds"),
         "principle": "读数全部从 var/gate0 产物与 PG 取；取不到就标不可测；status 显式给定，不靠散文里有没有「达标」二字来数",
@@ -181,6 +221,13 @@ def build() -> dict:
         "gate0_verdicts_latest": [{"门禁": f"Gate0 {k}", "结论": v.get("mark"), "实测": v.get("measured"), "ts": v.get("ts")}
                                   for k, v in ver.items() if v],
         "summary": {k: sum(1 for r in rows if r["结论"] == k) for k in STATUSES},
+        # 下面这份是 DoD#5 的原子读数，`to_md` 那段散文要用它——散文里的数字必须从字段来，
+        # 不能从上一轮的结论里"猜"（踩过一次：把「检索达标；端到端不达标」按 startswith 数成达标）。
+        "lat_clean": {"p95_client": cg.get("p95"), "over_3s": cg.get("share_over_3s"),
+                      "over_6s": cg.get("share_over_6s"), "n": cg.get("n"),
+                      "p50_range_ms": rep.get("spread_across_runs", {}).get("p50_range_ms"),
+                      "ft_n": fvv.get("n"), "ft_p50": fvv.get("p50"), "ft_p95": fvv.get("p95"),
+                      "ft_max": fvv.get("max"), "event_p50": ftb.get("first_event_ms", {}).get("p50")},
         "ac": {"ece": ac_ece, "sign": ap.get("ece_sign", "未定"),
                         "accuracy": ap.get("accuracy", "NA"), "mean_conf": ap.get("mean_conf", "NA"),
                         "n": ap.get("n", 0), "coverage_boundary": ac.get("coverage_boundary", {})},
@@ -189,6 +236,7 @@ def build() -> dict:
 
 def to_md(rep: dict) -> str:
     s = rep["summary"]
+    lc = rep["lat_clean"]
     L = ["# M5 · DoD 逐条核对表", "",
          f"> 生成时点：{rep['generated_at']}｜由 `scripts/m5_dod_check.py` 从 `var/gate0/` 产物与 PG **取数**生成，不手抄。",
          "> 原则：取不到数就标「不可测 / 待裁决」，**不许留空当通过**；每条结论必须连同最右列那句一起引用，"
@@ -220,9 +268,15 @@ def to_md(rep: dict) -> str:
           "是把敞口关到了可判定的位置上。",
           "", "## 这张表暴露的**口径互相打架**（M5 必须先裁，否则「达标」无定义）", "",
           "1. **P95 完整答案 / 端到端**：DoD#5 写 `< 3s`，《项目定义》第六节写 `< 6s（Gate 0 实测后修订）`，"
-          "技术方案 8.1 写 `< 6s`——三处两个值，**且现值两边都过不了**。",
-          "2. **首 token 1.2s**：门禁值在、口径没定（信封首字符 / 首可见内容 / 首事件三种读法差一个数量级），"
-          "已登记暂缓·待裁决；定案前对外不得声称达标。",
+          "技术方案 8.1 写 `< 6s`——三处两个值。**#56 净环境复测后这一条从『两边都过不了』变成『一边过一边不过』**："
+          f"四轮合并 p95 {lc['p95_client']}ms ⇒ <6s 过、<3s 不过（{pct(lc['over_3s'])} 的轮次超 3s）。"
+          "所以剩下的**只是口径裁决**：裁 3s 就要改实现（当前生成预算下不可达），裁 6s 只需按三件套把 DoD#5 的原文改过来。",
+          "2. **首 token 1.2s**：门禁值在、口径没定（信封首字符 / 首事件 / 首可见内容三种读法差一个数量级）。"
+          f"#56 已把三种读法**在同一次 SSE 跑里都量了**（n={lc['ft_n']}）："
+          f"信封与首事件 p50 {lc['event_p50']}ms、"
+          f"首个可读字 p50 {lc['ft_p50']} / p95 {lc['ft_p95']} / max {lc['ft_max']}ms。"
+          "结论：**取最严的那把也达标**，这一格不再需要裁「认哪个口径」——需要裁的是 DoD 文字要不要把口径写死，"
+          f"免得下次有人拿信封那 {lc['event_p50']}ms 对外说『首 token 0.3s』。",
           "3. **「引用正确率」到底指什么**：DoD#3 的 ≥ 90% 原来只有「引用落 gold」一种实测，它不等于结论正确。"
           f"**2026-10-12 起这一格有两种实测并存**（落 gold 0.9839 / 人判 answer_correct {ac['accuracy']}），"
           "判据文字仍写「引用正确率」——两个数都能自称 ≥ 90%，"

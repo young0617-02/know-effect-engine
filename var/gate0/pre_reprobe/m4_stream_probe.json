@@ -1,0 +1,1576 @@
+{
+  "n": 58,
+  "gate_first_token_ms": 1200.0,
+  "first_token_ms": {
+    "n": 54,
+    "p50": 849.5,
+    "p95": 1235.4,
+    "max": 1370.8,
+    "share_under_gate": 0.9259,
+    "warning": "这是**信封首字符**的到达时间，不是用户看到字的时间；门禁若照这个数报就是把 `{` 当成答案"
+  },
+  "first_visible_ms": {
+    "n": 54,
+    "coverage": 0.931,
+    "p50": 1642.7,
+    "p95": 1960.4,
+    "share_under_gate": 0.0185,
+    "note": "覆盖率按**任何可见内容**算：结论为空但要点在流的题也算覆盖到。只流 conclusion 时实测覆盖 20.7%，加要点后才可能接近全量——因为 79% 的结论是本地逐字搬运拼的，模型根本没写 conclusion"
+  },
+  "first_event_ms": {
+    "p50": 440.4,
+    "p95": 510.7
+  },
+  "retraction": {
+    "n_streamed": 54,
+    "n_retracted": 0,
+    "rate_of_streamed": 0.0,
+    "rate_of_all": 0.0,
+    "retracted_qids": []
+  },
+  "lost_items": {
+    "total": 0,
+    "n_rows": 0,
+    "examples": []
+  },
+  "delivery_equivalence": {
+    "n_compared": 10,
+    "mismatches": [],
+    "note": "比的是响应字段集合、事件序、状态与结论的一致性；结论文本不作对比——本地 7B 两次生成本来就可能不同，比文本会把生成抖动误报成分叉"
+  },
+  "rows": [
+    {
+      "qid": "q-001",
+      "status": "answer",
+      "event_seq_head": [
+        "retrieval",
+        "delta"
+      ],
+      "n_delta": 27,
+      "first_token_ms": 808.3,
+      "first_visible_ms": 1648.9,
+      "streamed_fields": [
+        "point:0"
+      ],
+      "first_event_ms": 482.4,
+      "retrieval_ms": 475.4,
+      "generate_ms": 4049.1,
+      "e2e_ms": 4529.3,
+      "streamed_chars": 39,
+      "retracted": false,
+      "lost_items": 0,
+      "lost_samples": [],
+      "conclusion_len": 39,
+      "notes": [
+        "conclusion_derived_from_points:1"
+      ]
+    },
+    {
+      "qid": "q-002",
+      "status": "answer",
+      "event_seq_head": [
+        "retrieval",
+        "delta"
+      ],
+      "n_delta": 57,
+      "first_token_ms": 843.4,
+      "first_visible_ms": 1443.2,
+      "streamed_fields": [
+        "conclusion:None",
+        "point:0"
+      ],
+      "first_event_ms": 462.3,
+      "retrieval_ms": 435.9,
+      "generate_ms": 4817.9,
+      "e2e_ms": 5257.4,
+      "streamed_chars": 76,
+      "retracted": false,
+      "lost_items": 0,
+      "lost_samples": [],
+      "conclusion_len": 32,
+      "notes": []
+    },
+    {
+      "qid": "q-003",
+      "status": "escalate",
+      "event_seq_head": [
+        "retrieval",
+        "delta"
+      ],
+      "n_delta": 25,
+      "first_token_ms": 833.6,
+      "first_visible_ms": 1754.7,
+      "streamed_fields": [
+        "point:0"
+      ],
+      "first_event_ms": 569.2,
+      "retrieval_ms": 445.8,
+      "generate_ms": 3980.2,
+      "e2e_ms": 4429.9,
+      "streamed_chars": 41,
+      "retracted": false,
+      "lost_items": 0,
+      "lost_samples": [],
+      "conclusion_len": 0,
+      "notes": [
+        "model_declared_no_evidence",
+        "strong_evidence_but_no_basis_claimed:0.9697>=0.9"
+      ]
+    },
+    {
+      "qid": "q-004",
+      "status": "answer",
+      "event_seq_head": [
+        "retrieval",
+        "delta"
+      ],
+      "n_delta": 79,
+      "first_token_ms": 833.4,
+      "first_visible_ms": 1428.3,
+      "streamed_fields": [
+        "conclusion:None",
+        "point:0"
+      ],
+      "first_event_ms": 457.7,
+      "retrieval_ms": 451.4,
+      "generate_ms": 5539.5,
+      "e2e_ms": 5995.6,
+      "streamed_chars": 124,
+      "retracted": false,
+      "lost_items": 0,
+      "lost_samples": [],
+      "conclusion_len": 34,
+      "notes": [
+        "secret_level_cited:1 条需人工复核"
+      ]
+    },
+    {
+      "qid": "q-005",
+      "status": "answer",
+      "event_seq_head": [
+        "retrieval",
+        "delta"
+      ],
+      "n_delta": 19,
+      "first_token_ms": 815.2,
+      "first_visible_ms": 1645.6,
+      "streamed_fields": [
+        "point:0"
+      ],
+      "first_event_ms": 463.4,
+      "retrieval_ms": 458.1,
+      "generate_ms": 3840.5,
+      "e2e_ms": 4302.5,
+      "streamed_chars": 23,
+      "retracted": false,
+      "lost_items": 0,
+      "lost_samples": [],
+      "conclusion_len": 23,
+      "notes": [
+        "conclusion_derived_from_points:1"
+      ]
+    },
+    {
+      "qid": "q-006",
+      "status": "answer",
+      "event_seq_head": [
+        "retrieval",
+        "delta"
+      ],
+      "n_delta": 32,
+      "first_token_ms": 798.5,
+      "first_visible_ms": 1385.5,
+      "streamed_fields": [
+        "conclusion:None",
+        "point:0"
+      ],
+      "first_event_ms": 462.9,
+      "retrieval_ms": 453.8,
+      "generate_ms": 4283.2,
+      "e2e_ms": 4743.9,
+      "streamed_chars": 48,
+      "retracted": false,
+      "lost_items": 0,
+      "lost_samples": [],
+      "conclusion_len": 24,
+      "notes": [
+        "secret_level_cited:1 条需人工复核"
+      ]
+    },
+    {
+      "qid": "q-007",
+      "status": "answer",
+      "event_seq_head": [
+        "retrieval",
+        "delta"
+      ],
+      "n_delta": 35,
+      "first_token_ms": 864.2,
+      "first_visible_ms": 1446.7,
+      "streamed_fields": [
+        "conclusion:None",
+        "point:0"
+      ],
+      "first_event_ms": 434.6,
+      "retrieval_ms": 424.3,
+      "generate_ms": 4370.2,
+      "e2e_ms": 4801.2,
+      "streamed_chars": 49,
+      "retracted": false,
+      "lost_items": 0,
+      "lost_samples": [],
+      "conclusion_len": 3,
+      "notes": [
+        "secret_level_cited:1 条需人工复核"
+      ]
+    },
+    {
+      "qid": "q-008",
+      "status": "answer",
+      "event_seq_head": [
+        "retrieval",
+        "delta"
+      ],
+      "n_delta": 27,
+      "first_token_ms": 799.0,
+      "first_visible_ms": 1664.0,
+      "streamed_fields": [
+        "point:0"
+      ],
+      "first_event_ms": 481.5,
+      "retrieval_ms": 475.3,
+      "generate_ms": 4269.1,
+      "e2e_ms": 4749.1,
+      "streamed_chars": 35,
+      "retracted": false,
+      "lost_items": 0,
+      "lost_samples": [],
+      "conclusion_len": 35,
+      "notes": [
+        "conclusion_derived_from_points:1"
+      ]
+    },
+    {
+      "qid": "q-009",
+      "status": "answer",
+      "event_seq_head": [
+        "retrieval",
+        "delta"
+      ],
+      "n_delta": 14,
+      "first_token_ms": 830.1,
+      "first_visible_ms": 1430.5,
+      "streamed_fields": [
+        "conclusion:None",
+        "point:0"
+      ],
+      "first_event_ms": 453.2,
+      "retrieval_ms": 447.8,
+      "generate_ms": 3774.6,
+      "e2e_ms": 4226.3,
+      "streamed_chars": 21,
+      "retracted": false,
+      "lost_items": 0,
+      "lost_samples": [],
+      "conclusion_len": 2,
+      "notes": []
+    },
+    {
+      "qid": "q-010",
+      "status": "answer",
+      "event_seq_head": [
+        "retrieval",
+        "delta"
+      ],
+      "n_delta": 70,
+      "first_token_ms": 832.7,
+      "first_visible_ms": 1643.5,
+      "streamed_fields": [
+        "point:0"
+      ],
+      "first_event_ms": 444.2,
+      "retrieval_ms": 440.3,
+      "generate_ms": 5353.5,
+      "e2e_ms": 5796.2,
+      "streamed_chars": 91,
+      "retracted": false,
+      "lost_items": 0,
+      "lost_samples": [],
+      "conclusion_len": 91,
+      "notes": [
+        "conclusion_derived_from_points:1"
+      ]
+    },
+    {
+      "qid": "q-011",
+      "status": "answer",
+      "event_seq_head": [
+        "retrieval",
+        "delta"
+      ],
+      "n_delta": 31,
+      "first_token_ms": 846.4,
+      "first_visible_ms": 1640.4,
+      "streamed_fields": [
+        "point:0"
+      ],
+      "first_event_ms": 426.9,
+      "retrieval_ms": 421.9,
+      "generate_ms": 4238.2,
+      "e2e_ms": 4663.0,
+      "streamed_chars": 43,
+      "retracted": false,
+      "lost_items": 0,
+      "lost_samples": [],
+      "conclusion_len": 43,
+      "notes": [
+        "conclusion_derived_from_points:1"
+      ]
+    },
+    {
+      "qid": "q-012",
+      "status": "answer",
+      "event_seq_head": [
+        "retrieval",
+        "delta"
+      ],
+      "n_delta": 22,
+      "first_token_ms": 833.4,
+      "first_visible_ms": 1649.9,
+      "streamed_fields": [
+        "point:0"
+      ],
+      "first_event_ms": 452.6,
+      "retrieval_ms": 446.5,
+      "generate_ms": 4029.2,
+      "e2e_ms": 4479.5,
+      "streamed_chars": 36,
+      "retracted": false,
+      "lost_items": 0,
+      "lost_samples": [],
+      "conclusion_len": 36,
+      "notes": [
+        "conclusion_derived_from_points:1"
+      ]
+    },
+    {
+      "qid": "q-013",
+      "status": "answer",
+      "event_seq_head": [
+        "retrieval",
+        "delta"
+      ],
+      "n_delta": 30,
+      "first_token_ms": 796.3,
+      "first_visible_ms": 1677.9,
+      "streamed_fields": [
+        "point:0"
+      ],
+      "first_event_ms": 509.8,
+      "retrieval_ms": 502.7,
+      "generate_ms": 4274.8,
+      "e2e_ms": 4782.5,
+      "streamed_chars": 44,
+      "retracted": false,
+      "lost_items": 0,
+      "lost_samples": [],
+      "conclusion_len": 44,
+      "notes": [
+        "conclusion_derived_from_points:1"
+      ]
+    },
+    {
+      "qid": "q-014",
+      "status": "answer",
+      "event_seq_head": [
+        "retrieval",
+        "delta"
+      ],
+      "n_delta": 14,
+      "first_token_ms": 868.5,
+      "first_visible_ms": 1653.7,
+      "streamed_fields": [
+        "point:0"
+      ],
+      "first_event_ms": 422.2,
+      "retrieval_ms": 417.4,
+      "generate_ms": 3906.8,
+      "e2e_ms": 4327.5,
+      "streamed_chars": 20,
+      "retracted": false,
+      "lost_items": 0,
+      "lost_samples": [],
+      "conclusion_len": 20,
+      "notes": [
+        "conclusion_derived_from_points:1"
+      ]
+    },
+    {
+      "qid": "q-015",
+      "status": "answer",
+      "event_seq_head": [
+        "retrieval",
+        "delta"
+      ],
+      "n_delta": 16,
+      "first_token_ms": 876.4,
+      "first_visible_ms": 1674.9,
+      "streamed_fields": [
+        "point:0"
+      ],
+      "first_event_ms": 436.1,
+      "retrieval_ms": 431.1,
+      "generate_ms": 3987.4,
+      "e2e_ms": 4422.0,
+      "streamed_chars": 22,
+      "retracted": false,
+      "lost_items": 0,
+      "lost_samples": [],
+      "conclusion_len": 22,
+      "notes": [
+        "conclusion_derived_from_points:1"
+      ]
+    },
+    {
+      "qid": "q-016",
+      "status": "answer",
+      "event_seq_head": [
+        "retrieval",
+        "delta"
+      ],
+      "n_delta": 34,
+      "first_token_ms": 803.7,
+      "first_visible_ms": 1669.0,
+      "streamed_fields": [
+        "point:0"
+      ],
+      "first_event_ms": 486.0,
+      "retrieval_ms": 481.7,
+      "generate_ms": 4524.3,
+      "e2e_ms": 5008.8,
+      "streamed_chars": 49,
+      "retracted": false,
+      "lost_items": 0,
+      "lost_samples": [],
+      "conclusion_len": 49,
+      "notes": [
+        "conclusion_derived_from_points:1"
+      ]
+    },
+    {
+      "qid": "q-017",
+      "status": "answer",
+      "event_seq_head": [
+        "retrieval",
+        "delta"
+      ],
+      "n_delta": 29,
+      "first_token_ms": 802.7,
+      "first_visible_ms": 1726.7,
+      "streamed_fields": [
+        "point:0",
+        "point:1"
+      ],
+      "first_event_ms": 516.0,
+      "retrieval_ms": 508.1,
+      "generate_ms": 4789.4,
+      "e2e_ms": 5303.2,
+      "streamed_chars": 38,
+      "retracted": false,
+      "lost_items": 0,
+      "lost_samples": [],
+      "conclusion_len": 39,
+      "notes": [
+        "conclusion_derived_from_points:2"
+      ]
+    },
+    {
+      "qid": "q-018",
+      "status": "answer",
+      "event_seq_head": [
+        "retrieval",
+        "delta"
+      ],
+      "n_delta": 42,
+      "first_token_ms": 1370.8,
+      "first_visible_ms": 1971.4,
+      "streamed_fields": [
+        "conclusion:None",
+        "point:0"
+      ],
+      "first_event_ms": 453.3,
+      "retrieval_ms": 448.8,
+      "generate_ms": 5250.4,
+      "e2e_ms": 5702.3,
+      "streamed_chars": 55,
+      "retracted": false,
+      "lost_items": 0,
+      "lost_samples": [],
+      "conclusion_len": 16,
+      "notes": []
+    },
+    {
+      "qid": "q-019",
+      "status": "answer",
+      "event_seq_head": [
+        "retrieval",
+        "delta"
+      ],
+      "n_delta": 20,
+      "first_token_ms": 828.5,
+      "first_visible_ms": 1639.0,
+      "streamed_fields": [
+        "point:0"
+      ],
+      "first_event_ms": 456.6,
+      "retrieval_ms": 450.8,
+      "generate_ms": 3979.2,
+      "e2e_ms": 4433.6,
+      "streamed_chars": 34,
+      "retracted": false,
+      "lost_items": 0,
+      "lost_samples": [],
+      "conclusion_len": 34,
+      "notes": [
+        "conclusion_derived_from_points:1"
+      ]
+    },
+    {
+      "qid": "q-020",
+      "status": "answer",
+      "event_seq_head": [
+        "retrieval",
+        "delta"
+      ],
+      "n_delta": 11,
+      "first_token_ms": 857.1,
+      "first_visible_ms": 1627.0,
+      "streamed_fields": [
+        "point:0"
+      ],
+      "first_event_ms": 425.5,
+      "retrieval_ms": 420.2,
+      "generate_ms": 3514.8,
+      "e2e_ms": 3938.4,
+      "streamed_chars": 14,
+      "retracted": false,
+      "lost_items": 0,
+      "lost_samples": [],
+      "conclusion_len": 14,
+      "notes": [
+        "conclusion_derived_from_points:1"
+      ]
+    },
+    {
+      "qid": "q-021",
+      "status": "answer",
+      "event_seq_head": [
+        "retrieval",
+        "delta"
+      ],
+      "n_delta": 19,
+      "first_token_ms": 892.5,
+      "first_visible_ms": 1681.6,
+      "streamed_fields": [
+        "point:0",
+        "point:1"
+      ],
+      "first_event_ms": 466.3,
+      "retrieval_ms": 459.4,
+      "generate_ms": 4030.9,
+      "e2e_ms": 4494.4,
+      "streamed_chars": 28,
+      "retracted": false,
+      "lost_items": 0,
+      "lost_samples": [],
+      "conclusion_len": 29,
+      "notes": [
+        "conclusion_derived_from_points:2"
+      ]
+    },
+    {
+      "qid": "q-022",
+      "status": "answer",
+      "event_seq_head": [
+        "retrieval",
+        "delta"
+      ],
+      "n_delta": 35,
+      "first_token_ms": 858.5,
+      "first_visible_ms": 1582.8,
+      "streamed_fields": [
+        "point:0"
+      ],
+      "first_event_ms": 403.4,
+      "retrieval_ms": 398.8,
+      "generate_ms": 4270.4,
+      "e2e_ms": 4672.2,
+      "streamed_chars": 46,
+      "retracted": false,
+      "lost_items": 0,
+      "lost_samples": [],
+      "conclusion_len": 46,
+      "notes": [
+        "conclusion_derived_from_points:1"
+      ]
+    },
+    {
+      "qid": "q-023",
+      "status": "answer",
+      "event_seq_head": [
+        "retrieval",
+        "delta"
+      ],
+      "n_delta": 71,
+      "first_token_ms": 1125.4,
+      "first_visible_ms": 1693.4,
+      "streamed_fields": [
+        "conclusion:None",
+        "point:0"
+      ],
+      "first_event_ms": 440.4,
+      "retrieval_ms": 434.6,
+      "generate_ms": 5568.2,
+      "e2e_ms": 6006.4,
+      "streamed_chars": 103,
+      "retracted": false,
+      "lost_items": 0,
+      "lost_samples": [],
+      "conclusion_len": 35,
+      "notes": []
+    },
+    {
+      "qid": "q-024",
+      "status": "answer",
+      "event_seq_head": [
+        "retrieval",
+        "delta"
+      ],
+      "n_delta": 47,
+      "first_token_ms": 829.8,
+      "first_visible_ms": 1623.0,
+      "streamed_fields": [
+        "point:0"
+      ],
+      "first_event_ms": 453.3,
+      "retrieval_ms": 448.8,
+      "generate_ms": 4654.4,
+      "e2e_ms": 5106.1,
+      "streamed_chars": 62,
+      "retracted": false,
+      "lost_items": 0,
+      "lost_samples": [],
+      "conclusion_len": 62,
+      "notes": [
+        "conclusion_derived_from_points:1"
+      ]
+    },
+    {
+      "qid": "q-025",
+      "status": "answer",
+      "event_seq_head": [
+        "retrieval",
+        "delta"
+      ],
+      "n_delta": 52,
+      "first_token_ms": 852.7,
+      "first_visible_ms": 1639.2,
+      "streamed_fields": [
+        "point:0",
+        "point:1"
+      ],
+      "first_event_ms": 429.3,
+      "retrieval_ms": 423.8,
+      "generate_ms": 6507.3,
+      "e2e_ms": 6934.5,
+      "streamed_chars": 79,
+      "retracted": false,
+      "lost_items": 0,
+      "lost_samples": [],
+      "conclusion_len": 80,
+      "notes": [
+        "conclusion_derived_from_points:2",
+        "secret_level_cited:1 条需人工复核"
+      ]
+    },
+    {
+      "qid": "q-026",
+      "status": "answer",
+      "event_seq_head": [
+        "retrieval",
+        "delta"
+      ],
+      "n_delta": 70,
+      "first_token_ms": 845.3,
+      "first_visible_ms": 1611.2,
+      "streamed_fields": [
+        "point:0",
+        "point:1"
+      ],
+      "first_event_ms": 425.4,
+      "retrieval_ms": 422.0,
+      "generate_ms": 7056.5,
+      "e2e_ms": 7480.6,
+      "streamed_chars": 99,
+      "retracted": false,
+      "lost_items": 0,
+      "lost_samples": [],
+      "conclusion_len": 100,
+      "notes": [
+        "conclusion_derived_from_points:2"
+      ]
+    },
+    {
+      "qid": "q-027",
+      "status": "answer",
+      "event_seq_head": [
+        "retrieval",
+        "delta"
+      ],
+      "n_delta": 48,
+      "first_token_ms": 880.0,
+      "first_visible_ms": 1436.1,
+      "streamed_fields": [
+        "conclusion:None",
+        "point:0"
+      ],
+      "first_event_ms": 413.5,
+      "retrieval_ms": 408.7,
+      "generate_ms": 4602.7,
+      "e2e_ms": 5014.3,
+      "streamed_chars": 62,
+      "retracted": false,
+      "lost_items": 0,
+      "lost_samples": [],
+      "conclusion_len": 22,
+      "notes": []
+    },
+    {
+      "qid": "q-028",
+      "status": "answer",
+      "event_seq_head": [
+        "retrieval",
+        "delta"
+      ],
+      "n_delta": 55,
+      "first_token_ms": 1221.9,
+      "first_visible_ms": 1785.8,
+      "streamed_fields": [
+        "conclusion:None",
+        "point:0"
+      ],
+      "first_event_ms": 430.9,
+      "retrieval_ms": 426.5,
+      "generate_ms": 5148.7,
+      "e2e_ms": 5577.7,
+      "streamed_chars": 79,
+      "retracted": false,
+      "lost_items": 0,
+      "lost_samples": [],
+      "conclusion_len": 23,
+      "notes": []
+    },
+    {
+      "qid": "q-029",
+      "status": "answer",
+      "event_seq_head": [
+        "retrieval",
+        "delta"
+      ],
+      "n_delta": 14,
+      "first_token_ms": 869.5,
+      "first_visible_ms": 1647.2,
+      "streamed_fields": [
+        "point:0",
+        "point:1",
+        "point:2"
+      ],
+      "first_event_ms": 415.7,
+      "retrieval_ms": 411.9,
+      "generate_ms": 4490.2,
+      "e2e_ms": 4904.5,
+      "streamed_chars": 21,
+      "retracted": false,
+      "lost_items": 0,
+      "lost_samples": [],
+      "conclusion_len": 23,
+      "notes": [
+        "conclusion_derived_from_points:3"
+      ]
+    },
+    {
+      "qid": "q-030",
+      "status": "answer",
+      "event_seq_head": [
+        "retrieval",
+        "delta"
+      ],
+      "n_delta": 14,
+      "first_token_ms": 855.4,
+      "first_visible_ms": 1628.8,
+      "streamed_fields": [
+        "point:0"
+      ],
+      "first_event_ms": 448.9,
+      "retrieval_ms": 444.4,
+      "generate_ms": 3757.7,
+      "e2e_ms": 4204.8,
+      "streamed_chars": 21,
+      "retracted": false,
+      "lost_items": 0,
+      "lost_samples": [],
+      "conclusion_len": 21,
+      "notes": [
+        "conclusion_derived_from_points:1"
+      ]
+    },
+    {
+      "qid": "q-031",
+      "status": "answer",
+      "event_seq_head": [
+        "retrieval",
+        "delta"
+      ],
+      "n_delta": 30,
+      "first_token_ms": 856.0,
+      "first_visible_ms": 1654.4,
+      "streamed_fields": [
+        "point:0"
+      ],
+      "first_event_ms": 440.3,
+      "retrieval_ms": 434.3,
+      "generate_ms": 4153.8,
+      "e2e_ms": 4592.2,
+      "streamed_chars": 45,
+      "retracted": false,
+      "lost_items": 0,
+      "lost_samples": [],
+      "conclusion_len": 45,
+      "notes": [
+        "conclusion_derived_from_points:1"
+      ]
+    },
+    {
+      "qid": "q-032",
+      "status": "answer",
+      "event_seq_head": [
+        "retrieval",
+        "delta"
+      ],
+      "n_delta": 28,
+      "first_token_ms": 812.9,
+      "first_visible_ms": 1385.8,
+      "streamed_fields": [
+        "conclusion:None",
+        "point:0"
+      ],
+      "first_event_ms": 441.1,
+      "retrieval_ms": 435.6,
+      "generate_ms": 4046.4,
+      "e2e_ms": 4485.9,
+      "streamed_chars": 38,
+      "retracted": false,
+      "lost_items": 0,
+      "lost_samples": [],
+      "conclusion_len": 6,
+      "notes": []
+    },
+    {
+      "qid": "q-033",
+      "status": "answer",
+      "event_seq_head": [
+        "retrieval",
+        "delta"
+      ],
+      "n_delta": 59,
+      "first_token_ms": 837.3,
+      "first_visible_ms": 1641.8,
+      "streamed_fields": [
+        "point:0"
+      ],
+      "first_event_ms": 455.5,
+      "retrieval_ms": 451.1,
+      "generate_ms": 4998.6,
+      "e2e_ms": 5452.5,
+      "streamed_chars": 85,
+      "retracted": false,
+      "lost_items": 0,
+      "lost_samples": [],
+      "conclusion_len": 85,
+      "notes": [
+        "conclusion_derived_from_points:1"
+      ]
+    },
+    {
+      "qid": "q-034",
+      "status": "answer",
+      "event_seq_head": [
+        "retrieval",
+        "delta"
+      ],
+      "n_delta": 15,
+      "first_token_ms": 869.7,
+      "first_visible_ms": 1444.8,
+      "streamed_fields": [
+        "conclusion:None",
+        "point:0"
+      ],
+      "first_event_ms": 435.3,
+      "retrieval_ms": 430.4,
+      "generate_ms": 3813.4,
+      "e2e_ms": 4246.7,
+      "streamed_chars": 18,
+      "retracted": false,
+      "lost_items": 0,
+      "lost_samples": [],
+      "conclusion_len": 5,
+      "notes": [
+        "secret_level_cited:1 条需人工复核"
+      ]
+    },
+    {
+      "qid": "q-035",
+      "status": "answer",
+      "event_seq_head": [
+        "retrieval",
+        "delta"
+      ],
+      "n_delta": 24,
+      "first_token_ms": 810.0,
+      "first_visible_ms": 1655.9,
+      "streamed_fields": [
+        "point:0"
+      ],
+      "first_event_ms": 486.3,
+      "retrieval_ms": 480.6,
+      "generate_ms": 4034.7,
+      "e2e_ms": 4518.8,
+      "streamed_chars": 37,
+      "retracted": false,
+      "lost_items": 0,
+      "lost_samples": [],
+      "conclusion_len": 37,
+      "notes": [
+        "conclusion_derived_from_points:1"
+      ]
+    },
+    {
+      "qid": "q-036",
+      "status": "answer",
+      "event_seq_head": [
+        "retrieval",
+        "delta"
+      ],
+      "n_delta": 22,
+      "first_token_ms": 841.8,
+      "first_visible_ms": 1418.8,
+      "streamed_fields": [
+        "conclusion:None",
+        "point:0"
+      ],
+      "first_event_ms": 436.2,
+      "retrieval_ms": 431.8,
+      "generate_ms": 3892.2,
+      "e2e_ms": 4327.1,
+      "streamed_chars": 36,
+      "retracted": false,
+      "lost_items": 0,
+      "lost_samples": [],
+      "conclusion_len": 18,
+      "notes": [
+        "secret_level_cited:1 条需人工复核"
+      ]
+    },
+    {
+      "qid": "q-037",
+      "status": "answer",
+      "event_seq_head": [
+        "retrieval",
+        "delta"
+      ],
+      "n_delta": 21,
+      "first_token_ms": 753.9,
+      "first_visible_ms": 1696.9,
+      "streamed_fields": [
+        "point:0"
+      ],
+      "first_event_ms": 576.5,
+      "retrieval_ms": 568.2,
+      "generate_ms": 3922.0,
+      "e2e_ms": 4495.4,
+      "streamed_chars": 30,
+      "retracted": false,
+      "lost_items": 0,
+      "lost_samples": [],
+      "conclusion_len": 30,
+      "notes": [
+        "conclusion_derived_from_points:1",
+        "secret_level_cited:1 条需人工复核"
+      ]
+    },
+    {
+      "qid": "q-038",
+      "status": "answer",
+      "event_seq_head": [
+        "retrieval",
+        "delta"
+      ],
+      "n_delta": 28,
+      "first_token_ms": 1125.5,
+      "first_visible_ms": 1954.5,
+      "streamed_fields": [
+        "point:0",
+        "point:1"
+      ],
+      "first_event_ms": 471.3,
+      "retrieval_ms": 465.8,
+      "generate_ms": 4941.9,
+      "e2e_ms": 5411.4,
+      "streamed_chars": 45,
+      "retracted": false,
+      "lost_items": 0,
+      "lost_samples": [],
+      "conclusion_len": 46,
+      "notes": [
+        "conclusion_derived_from_points:2"
+      ]
+    },
+    {
+      "qid": "q-039",
+      "status": "tentative",
+      "event_seq_head": [
+        "retrieval",
+        "delta"
+      ],
+      "n_delta": 25,
+      "first_token_ms": 778.9,
+      "first_visible_ms": 1641.3,
+      "streamed_fields": [
+        "point:0"
+      ],
+      "first_event_ms": 498.6,
+      "retrieval_ms": 492.4,
+      "generate_ms": 3672.8,
+      "e2e_ms": 4169.2,
+      "streamed_chars": 39,
+      "retracted": false,
+      "lost_items": 0,
+      "lost_samples": [],
+      "conclusion_len": 39,
+      "notes": [
+        "conclusion_derived_from_points:1",
+        "初步判断（低置信度显式降级）"
+      ]
+    },
+    {
+      "qid": "q-040",
+      "status": "tentative",
+      "event_seq_head": [
+        "retrieval",
+        "delta"
+      ],
+      "n_delta": 8,
+      "first_token_ms": 859.0,
+      "first_visible_ms": 1573.6,
+      "streamed_fields": [
+        "point:0"
+      ],
+      "first_event_ms": 418.5,
+      "retrieval_ms": 413.7,
+      "generate_ms": 3279.3,
+      "e2e_ms": 3696.0,
+      "streamed_chars": 12,
+      "retracted": false,
+      "lost_items": 0,
+      "lost_samples": [],
+      "conclusion_len": 12,
+      "notes": [
+        "conclusion_derived_from_points:1",
+        "初步判断（低置信度显式降级）"
+      ]
+    },
+    {
+      "qid": "q-041",
+      "status": "tentative",
+      "event_seq_head": [
+        "retrieval",
+        "delta"
+      ],
+      "n_delta": 44,
+      "first_token_ms": 1260.5,
+      "first_visible_ms": 1976.4,
+      "streamed_fields": [
+        "point:0"
+      ],
+      "first_event_ms": 421.4,
+      "retrieval_ms": 418.1,
+      "generate_ms": 4615.0,
+      "e2e_ms": 5035.0,
+      "streamed_chars": 56,
+      "retracted": false,
+      "lost_items": 0,
+      "lost_samples": [],
+      "conclusion_len": 56,
+      "notes": [
+        "conclusion_derived_from_points:1",
+        "初步判断（低置信度显式降级）"
+      ]
+    },
+    {
+      "qid": "q-042",
+      "status": "tentative",
+      "event_seq_head": [
+        "retrieval",
+        "delta"
+      ],
+      "n_delta": 34,
+      "first_token_ms": 883.2,
+      "first_visible_ms": 1630.1,
+      "streamed_fields": [
+        "point:0"
+      ],
+      "first_event_ms": 429.5,
+      "retrieval_ms": 423.7,
+      "generate_ms": 4254.2,
+      "e2e_ms": 4681.6,
+      "streamed_chars": 46,
+      "retracted": false,
+      "lost_items": 0,
+      "lost_samples": [],
+      "conclusion_len": 46,
+      "notes": [
+        "conclusion_derived_from_points:1",
+        "初步判断（低置信度显式降级）"
+      ]
+    },
+    {
+      "qid": "q-043",
+      "status": "tentative",
+      "event_seq_head": [
+        "retrieval",
+        "delta"
+      ],
+      "n_delta": 72,
+      "first_token_ms": 832.7,
+      "first_visible_ms": 1617.3,
+      "streamed_fields": [
+        "point:0"
+      ],
+      "first_event_ms": 435.0,
+      "retrieval_ms": 431.0,
+      "generate_ms": 5489.7,
+      "e2e_ms": 5923.4,
+      "streamed_chars": 102,
+      "retracted": false,
+      "lost_items": 0,
+      "lost_samples": [],
+      "conclusion_len": 102,
+      "notes": [
+        "conclusion_derived_from_points:1",
+        "初步判断（低置信度显式降级）"
+      ]
+    },
+    {
+      "qid": "q-044",
+      "status": "refuse",
+      "event_seq_head": [
+        "retrieval",
+        "answer"
+      ],
+      "n_delta": 0,
+      "first_token_ms": null,
+      "first_visible_ms": null,
+      "streamed_fields": [],
+      "first_event_ms": 408.0,
+      "retrieval_ms": 403.6,
+      "generate_ms": null,
+      "e2e_ms": null,
+      "streamed_chars": 0,
+      "retracted": false,
+      "lost_items": 0,
+      "lost_samples": [],
+      "conclusion_len": 0,
+      "notes": [
+        "no_sufficient_evidence"
+      ]
+    },
+    {
+      "qid": "q-045",
+      "status": "tentative",
+      "event_seq_head": [
+        "retrieval",
+        "delta"
+      ],
+      "n_delta": 9,
+      "first_token_ms": 509.3,
+      "first_visible_ms": 1217.8,
+      "streamed_fields": [
+        "point:0"
+      ],
+      "first_event_ms": 367.2,
+      "retrieval_ms": 362.9,
+      "generate_ms": 4732.9,
+      "e2e_ms": 5098.6,
+      "streamed_chars": 14,
+      "retracted": false,
+      "lost_items": 0,
+      "lost_samples": [],
+      "conclusion_len": 14,
+      "notes": [
+        "conclusion_derived_from_points:1",
+        "secret_level_cited:1 条需人工复核",
+        "初步判断（低置信度显式降级）"
+      ]
+    },
+    {
+      "qid": "q-046",
+      "status": "tentative",
+      "event_seq_head": [
+        "retrieval",
+        "delta"
+      ],
+      "n_delta": 41,
+      "first_token_ms": 865.2,
+      "first_visible_ms": 1712.3,
+      "streamed_fields": [
+        "point:0"
+      ],
+      "first_event_ms": 465.3,
+      "retrieval_ms": 460.9,
+      "generate_ms": 4644.7,
+      "e2e_ms": 5108.7,
+      "streamed_chars": 55,
+      "retracted": false,
+      "lost_items": 0,
+      "lost_samples": [],
+      "conclusion_len": 55,
+      "notes": [
+        "conclusion_derived_from_points:1",
+        "初步判断（低置信度显式降级）"
+      ]
+    },
+    {
+      "qid": "q-047",
+      "status": "refuse",
+      "event_seq_head": [
+        "retrieval",
+        "answer"
+      ],
+      "n_delta": 0,
+      "first_token_ms": null,
+      "first_visible_ms": null,
+      "streamed_fields": [],
+      "first_event_ms": 407.3,
+      "retrieval_ms": 403.8,
+      "generate_ms": null,
+      "e2e_ms": null,
+      "streamed_chars": 0,
+      "retracted": false,
+      "lost_items": 0,
+      "lost_samples": [],
+      "conclusion_len": 0,
+      "notes": [
+        "no_sufficient_evidence"
+      ]
+    },
+    {
+      "qid": "q-048",
+      "status": "tentative",
+      "event_seq_head": [
+        "retrieval",
+        "delta"
+      ],
+      "n_delta": 20,
+      "first_token_ms": 992.7,
+      "first_visible_ms": 1661.9,
+      "streamed_fields": [
+        "point:0"
+      ],
+      "first_event_ms": 325.8,
+      "retrieval_ms": 321.5,
+      "generate_ms": 4111.2,
+      "e2e_ms": 4435.6,
+      "streamed_chars": 27,
+      "retracted": false,
+      "lost_items": 0,
+      "lost_samples": [],
+      "conclusion_len": 27,
+      "notes": [
+        "conclusion_derived_from_points:1",
+        "secret_level_cited:1 条需人工复核",
+        "初步判断（低置信度显式降级）"
+      ]
+    },
+    {
+      "qid": "q-049",
+      "status": "tentative",
+      "event_seq_head": [
+        "retrieval",
+        "delta"
+      ],
+      "n_delta": 22,
+      "first_token_ms": 1343.2,
+      "first_visible_ms": 2099.0,
+      "streamed_fields": [
+        "point:0"
+      ],
+      "first_event_ms": 406.9,
+      "retrieval_ms": 401.0,
+      "generate_ms": 4419.5,
+      "e2e_ms": 4824.3,
+      "streamed_chars": 36,
+      "retracted": false,
+      "lost_items": 0,
+      "lost_samples": [],
+      "conclusion_len": 36,
+      "notes": [
+        "conclusion_derived_from_points:1",
+        "初步判断（低置信度显式降级）"
+      ]
+    },
+    {
+      "qid": "q-050",
+      "status": "answer",
+      "event_seq_head": [
+        "retrieval",
+        "delta"
+      ],
+      "n_delta": 33,
+      "first_token_ms": 855.6,
+      "first_visible_ms": 1626.7,
+      "streamed_fields": [
+        "point:0"
+      ],
+      "first_event_ms": 414.8,
+      "retrieval_ms": 411.1,
+      "generate_ms": 4333.2,
+      "e2e_ms": 4746.7,
+      "streamed_chars": 46,
+      "retracted": false,
+      "lost_items": 0,
+      "lost_samples": [],
+      "conclusion_len": 46,
+      "notes": [
+        "conclusion_derived_from_points:1"
+      ]
+    },
+    {
+      "qid": "q-051",
+      "status": "refuse",
+      "event_seq_head": [
+        "retrieval",
+        "answer"
+      ],
+      "n_delta": 0,
+      "first_token_ms": null,
+      "first_visible_ms": null,
+      "streamed_fields": [],
+      "first_event_ms": 444.6,
+      "retrieval_ms": 440.2,
+      "generate_ms": null,
+      "e2e_ms": null,
+      "streamed_chars": 0,
+      "retracted": false,
+      "lost_items": 0,
+      "lost_samples": [],
+      "conclusion_len": 0,
+      "notes": [
+        "no_sufficient_evidence"
+      ]
+    },
+    {
+      "qid": "q-052",
+      "status": "refuse",
+      "event_seq_head": [
+        "retrieval",
+        "answer"
+      ],
+      "n_delta": 0,
+      "first_token_ms": null,
+      "first_visible_ms": null,
+      "streamed_fields": [],
+      "first_event_ms": 367.7,
+      "retrieval_ms": 363.1,
+      "generate_ms": null,
+      "e2e_ms": null,
+      "streamed_chars": 0,
+      "retracted": false,
+      "lost_items": 0,
+      "lost_samples": [],
+      "conclusion_len": 0,
+      "notes": [
+        "no_sufficient_evidence"
+      ]
+    },
+    {
+      "qid": "q-053",
+      "status": "tentative",
+      "event_seq_head": [
+        "retrieval",
+        "delta"
+      ],
+      "n_delta": 8,
+      "first_token_ms": 198.0,
+      "first_visible_ms": 812.6,
+      "streamed_fields": [
+        "point:0"
+      ],
+      "first_event_ms": 331.7,
+      "retrieval_ms": 326.1,
+      "generate_ms": 2792.4,
+      "e2e_ms": 3122.6,
+      "streamed_chars": 12,
+      "retracted": false,
+      "lost_items": 0,
+      "lost_samples": [],
+      "conclusion_len": 12,
+      "notes": [
+        "conclusion_derived_from_points:1",
+        "secret_level_cited:1 条需人工复核",
+        "初步判断（低置信度显式降级）"
+      ]
+    },
+    {
+      "qid": "q-054",
+      "status": "answer",
+      "event_seq_head": [
+        "retrieval",
+        "delta"
+      ],
+      "n_delta": 23,
+      "first_token_ms": 881.2,
+      "first_visible_ms": 1660.7,
+      "streamed_fields": [
+        "point:0"
+      ],
+      "first_event_ms": 421.3,
+      "retrieval_ms": 416.4,
+      "generate_ms": 9632.9,
+      "e2e_ms": 10052.8,
+      "streamed_chars": 36,
+      "retracted": false,
+      "lost_items": 0,
+      "lost_samples": [],
+      "conclusion_len": 36,
+      "notes": [
+        "conclusion_derived_from_points:1",
+        "secret_level_cited:3 条需人工复核"
+      ]
+    },
+    {
+      "qid": "q-055",
+      "status": "answer",
+      "event_seq_head": [
+        "retrieval",
+        "delta"
+      ],
+      "n_delta": 35,
+      "first_token_ms": 824.6,
+      "first_visible_ms": 1644.0,
+      "streamed_fields": [
+        "point:0",
+        "point:1",
+        "point:2"
+      ],
+      "first_event_ms": 466.1,
+      "retrieval_ms": 460.5,
+      "generate_ms": 6452.1,
+      "e2e_ms": 6916.3,
+      "streamed_chars": 47,
+      "retracted": false,
+      "lost_items": 0,
+      "lost_samples": [],
+      "conclusion_len": 49,
+      "notes": [
+        "conclusion_derived_from_points:3"
+      ]
+    },
+    {
+      "qid": "q-056",
+      "status": "answer",
+      "event_seq_head": [
+        "retrieval",
+        "delta"
+      ],
+      "n_delta": 93,
+      "first_token_ms": 875.4,
+      "first_visible_ms": 1660.2,
+      "streamed_fields": [
+        "point:0",
+        "point:1",
+        "point:2",
+        "point:3",
+        "point:4"
+      ],
+      "first_event_ms": 424.7,
+      "retrieval_ms": 420.3,
+      "generate_ms": 12677.7,
+      "e2e_ms": 13100.8,
+      "streamed_chars": 134,
+      "retracted": false,
+      "lost_items": 0,
+      "lost_samples": [],
+      "conclusion_len": 138,
+      "notes": [
+        "conclusion_derived_from_points:5"
+      ]
+    },
+    {
+      "qid": "q-057",
+      "status": "answer",
+      "event_seq_head": [
+        "retrieval",
+        "delta"
+      ],
+      "n_delta": 77,
+      "first_token_ms": 908.7,
+      "first_visible_ms": 1590.2,
+      "streamed_fields": [
+        "point:0",
+        "point:1",
+        "point:2",
+        "point:3"
+      ],
+      "first_event_ms": 386.5,
+      "retrieval_ms": 382.4,
+      "generate_ms": 9340.6,
+      "e2e_ms": 9725.6,
+      "streamed_chars": 117,
+      "retracted": false,
+      "lost_items": 0,
+      "lost_samples": [],
+      "conclusion_len": 120,
+      "notes": [
+        "conclusion_derived_from_points:4"
+      ]
+    },
+    {
+      "qid": "q-058",
+      "status": "tentative",
+      "event_seq_head": [
+        "retrieval",
+        "delta"
+      ],
+      "n_delta": 6,
+      "first_token_ms": 853.8,
+      "first_visible_ms": 1594.6,
+      "streamed_fields": [
+        "point:0"
+      ],
+      "first_event_ms": 441.0,
+      "retrieval_ms": 435.3,
+      "generate_ms": 4337.2,
+      "e2e_ms": 4776.6,
+      "streamed_chars": 10,
+      "retracted": false,
+      "lost_items": 0,
+      "lost_samples": [],
+      "conclusion_len": 10,
+      "notes": [
+        "conclusion_derived_from_points:1",
+        "secret_level_cited:1 条需人工复核",
+        "初步判断（低置信度显式降级）"
+      ]
+    }
+  ]
+}
