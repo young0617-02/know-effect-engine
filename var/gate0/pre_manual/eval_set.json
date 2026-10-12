@@ -1,0 +1,21 @@
+{
+  "n_questions": 70,
+  "n_children": 193,
+  "n_parents": 140,
+  "answerable": 58,
+  "refuse": 7,
+  "escalate": 5,
+  "gradeable": 63,
+  "gold_empty_but_answerable": 0,
+  "unmatched_qids": [],
+  "mean_gold_per_question": 2.38,
+  "by_category": {
+    "术语": 14,
+    "编号": 12,
+    "方案名": 12,
+    "口语化": 14,
+    "跨文档": 6,
+    "无答案": 7,
+    "敏感": 5
+  }
+}

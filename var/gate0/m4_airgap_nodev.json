@@ -1,0 +1,189 @@
+{
+  "env": {
+    "ts": "2026-10-12T15:01:03",
+    "commit": "dc028c0"
+  },
+  "pre": {
+    "health": {
+      "status": "ok",
+      "deps": {
+        "milvus": {
+          "ok": true,
+          "collection": "kb_chunks",
+          "chunks": 193
+        },
+        "postgres": {
+          "ok": true,
+          "documents": 24
+        }
+      }
+    },
+    "counts": [
+      193,
+      24
+    ]
+  },
+  "steps": {
+    "stop_web": {
+      "rc": 0,
+      "out": "",
+      "err": "Container kee-web Stopping \n Container kee-web Stopped"
+    },
+    "down_main": {
+      "rc": 0,
+      "out": "",
+      "err": "Container kee-milvus Stopping \n Container kee-postgres Stopping \n Container kee-redis Stopping \n Container kee-postgres Stopped \n Container kee-postgres Removing \n Container kee-postgres Removed \n Container kee-redis Stopped \n Container kee-redis Removing \n Container kee-redis Removed \n Container kee-milvus Stopped \n Container kee-milvus Removing \n Container kee-milvus Removed \n Container kee-etcd"
+    },
+    "up_nodev": {
+      "rc": 0,
+      "out": "",
+      "err": "Network kee-gate0_kee-net Creating \n Network kee-gate0_kee-net Created \n Container kee-minio Creating \n Container kee-redis Creating \n Container kee-postgres Creating \n Container kee-etcd Creating \n Container kee-minio Created \n Container kee-redis Created \n Container kee-etcd Created \n Container kee-milvus Creating \n Container kee-postgres Created \n Container kee-milvus Created \n Container kee-et"
+    },
+    "ready": {
+      "ok": true,
+      "waited_sec": 6.0,
+      "health": {
+        "status": "ok",
+        "deps": {
+          "milvus": {
+            "ok": true,
+            "collection": "kb_chunks",
+            "chunks": 193
+          },
+          "postgres": {
+            "ok": true,
+            "documents": 24
+          }
+        }
+      }
+    },
+    "network_options": "{\"com.docker.network.bridge.enable_ip_masquerade\":\"false\",\"com.docker.network.enable_ipv4\":\"true\",\"com.docker.network.enable_ipv6\":\"false\"}",
+    "down_nodev": {
+      "rc": 0,
+      "out": "",
+      "err": "Container kee-milvus Stopping \n Container kee-redis Stopping \n Container kee-postgres Stopping \n Container kee-redis Stopped \n Container kee-redis Removing \n Container kee-redis Removed \n Container kee-postgres Stopped \n Container kee-postgres Removing \n Container kee-postgres Removed \n Container kee-milvus Stopped \n Container kee-milvus Removing \n Container kee-milvus Removed \n Container kee-etcd"
+    },
+    "up_main": {
+      "rc": 0,
+      "out": "",
+      "err": "Network kee-gate0_kee-net Creating \n Network kee-gate0_kee-net Created \n Container kee-redis Creating \n Container kee-minio Creating \n Container kee-postgres Creating \n Container kee-etcd Creating \n Container kee-etcd Created \n Container kee-minio Created \n Container kee-milvus Creating \n Container kee-redis Created \n Container kee-postgres Created \n Container kee-milvus Created \n Container kee-re"
+    },
+    "restore_web": {
+      "rc": 0,
+      "out": "",
+      "err": "Container kee-web Creating \n Container kee-web Created \n Container kee-web Starting \n Container kee-web Started"
+    }
+  },
+  "post": {
+    "ready": {
+      "ok": true,
+      "waited_sec": 6.0,
+      "health": {
+        "status": "ok",
+        "deps": {
+          "milvus": {
+            "ok": true,
+            "collection": "kb_chunks",
+            "chunks": 193
+          },
+          "postgres": {
+            "ok": true,
+            "documents": 24
+          }
+        }
+      }
+    },
+    "health": {
+      "status": "ok",
+      "deps": {
+        "milvus": {
+          "ok": true,
+          "collection": "kb_chunks",
+          "chunks": 193
+        },
+        "postgres": {
+          "ok": true,
+          "documents": 24
+        }
+      }
+    },
+    "counts": [
+      193,
+      24
+    ]
+  },
+  "core": {
+    "容器出网探测": [
+      {
+        "url": "http://1.1.1.1",
+        "rc": 0,
+        "http": "301",
+        "err": ""
+      },
+      {
+        "url": "http://8.8.8.8",
+        "rc": 28,
+        "http": "000",
+        "err": "curl: (28) Connection timed out after 6000 milliseconds"
+      },
+      {
+        "url": "https://registry-1.docker.io/v2/",
+        "rc": 28,
+        "http": "000",
+        "err": "curl: (28) Connection timed out after 6001 milliseconds"
+      },
+      {
+        "url": "dns:github.com",
+        "rc": 0,
+        "http": "127.0.0.1       github.com",
+        "err": ""
+      }
+    ],
+    "容器间互联": {
+      "etcd_health": "{\"health\":\"true\",\"reason\":\"\"}",
+      "rc": 0
+    },
+    "宿主→容器发布端口": {
+      "healthz": {
+        "status": "ok",
+        "deps": {
+          "milvus": {
+            "ok": true,
+            "collection": "kb_chunks",
+            "chunks": 193
+          },
+          "postgres": {
+            "ok": true,
+            "documents": 24
+          }
+        }
+      }
+    },
+    "核心链路_单轮问答": {
+      "status": "answer",
+      "结论字数": 39,
+      "引用数": 1,
+      "needs_human": false,
+      "turn_no": 1
+    },
+    "核心链路_流式": {
+      "事件序列": [
+        " retrieval",
+        " delta",
+        " delta",
+        " delta",
+        " delta",
+        " delta"
+      ],
+      "事件数": 38
+    },
+    "复原后_计数一致": true,
+    "判定": {
+      "容器封公网": false,
+      "容器间互联可用": true,
+      "宿主可达发布端口": true,
+      "断网下核心链路跑通": true,
+      "复原无损伤": true
+    }
+  }
+}

@@ -1,0 +1,395 @@
+{
+  "env": {
+    "ts": "2026-10-12T14:33:07+08:00",
+    "git_commit": "dc028c0",
+    "git_dirty": true,
+    "python": "3.12.8",
+    "platform": "Windows 11",
+    "torch": "2.14.0+cu130",
+    "cuda_available": true,
+    "gpu": {
+      "name": "NVIDIA GeForce RTX 4060 Laptop GPU",
+      "total_mib": 8188,
+      "used_mib": 6807.5
+    },
+    "transformers": "5.19.0",
+    "pymilvus": "3.0.2"
+  },
+  "steps": {
+    "up": {
+      "config_ok": true,
+      "config_error": "",
+      "up_rc": 0,
+      "up_error": "time=\"2026-10-12T14:33:08+08:00\" level=warning msg=\"Found orphan containers (kee-web) for this project. If you removed or renamed this service in your compose file, you can run this command with the --remove-orphans flag to clean it up.\"\n Container kee-postgres Running \n Container kee-redis Running \n Container kee-etcd Running \n Container kee-minio Running \n Container kee-milvus Running \n Containe",
+      "startup_sec": 1.4,
+      "services": [
+        {
+          "name": "kee-etcd",
+          "status": "Up 2 minutes (healthy)",
+          "ports": "2379-2380/tcp"
+        },
+        {
+          "name": "kee-milvus",
+          "status": "Up About a minute (healthy)",
+          "ports": "127.0.0.1:39091->9091/tcp, 127.0.0.1:39530->19530/tcp"
+        },
+        {
+          "name": "kee-minio",
+          "status": "Up 2 minutes (healthy)",
+          "ports": "9000/tcp"
+        },
+        {
+          "name": "kee-postgres",
+          "status": "Up 2 minutes (healthy)",
+          "ports": "127.0.0.1:35432->5432/tcp"
+        },
+        {
+          "name": "kee-redis",
+          "status": "Up 2 minutes (healthy)",
+          "ports": "127.0.0.1:36379->6379/tcp"
+        }
+      ],
+      "all_healthy": true
+    },
+    "milvus_ready": {
+      "ok": true,
+      "waited_sec": 0.0,
+      "server": "3.0.0"
+    },
+    "binding": {
+      "non_loopback_bindings": [],
+      "published_ports": [
+        "kee-milvus 39091",
+        "kee-milvus 39530",
+        "kee-postgres 35432",
+        "kee-redis 36379"
+      ]
+    },
+    "connectivity": {
+      "milvus": {
+        "ok": true,
+        "server": "3.0.0",
+        "collections": 7
+      },
+      "postgres": {
+        "ok": true,
+        "version": "PostgreSQL 18.6 (Debian 18.6-1"
+      },
+      "redis": {
+        "ok": true,
+        "version": "8.10.1"
+      },
+      "ollama": {
+        "ok": true,
+        "model": "qwen2.5:7b",
+        "resident": true
+      }
+    },
+    "isolation": {
+      "up_rc": 0,
+      "up_error": " Network kee-gate0_kee-net Creating \n Network kee-gate0_kee-net Created \ntime=\"2026-10-12T14:33:13+08:00\" level=warning msg=\"Found orphan containers (kee-web) for this project. If you removed or renamed this service in your compose file, you can run this command with the --remove-orphans flag to cle",
+      "services": [
+        "kee-etcd\tUp 41 seconds (healthy)",
+        "kee-milvus\tUp 10 seconds (healthy)",
+        "kee-minio\tUp 41 seconds (healthy)",
+        "kee-postgres\tUp 41 seconds (healthy)",
+        "kee-redis\tUp 41 seconds (healthy)"
+      ],
+      "all_healthy": true,
+      "probe": {
+        "internal_mode": true,
+        "milvus_to_public": {
+          "rc": 7,
+          "body": "000"
+        },
+        "milvus_healthz_in_container": "200",
+        "etcd_peer_reachable": "{\"health\":\"true\",\"reason\":\"\"}",
+        "containers_blocked_from_public": true,
+        "containers_can_reach_public": false,
+        "connections": {
+          "kee-etcd": {
+            "container": "kee-etcd",
+            "n_estab": 0,
+            "suspicious_external": [],
+            "peers": []
+          },
+          "kee-minio": {
+            "container": "kee-minio",
+            "n_estab": 0,
+            "suspicious_external": [],
+            "peers": []
+          },
+          "kee-milvus": {
+            "container": "kee-milvus",
+            "n_estab": 26,
+            "suspicious_external": [],
+            "peers": [
+              [
+                "00000000…",
+                "41810"
+              ],
+              [
+                "00000000…",
+                "41812"
+              ],
+              [
+                "00000000…",
+                "46212"
+              ],
+              [
+                "00000000…",
+                "46226"
+              ],
+              [
+                "00000000…",
+                "46228"
+              ],
+              [
+                "00000000…",
+                "46234"
+              ],
+              [
+                "00000000…",
+                "52440"
+              ],
+              [
+                "00000000…",
+                "52456"
+              ],
+              [
+                "00000000…",
+                "54964"
+              ],
+              [
+                "00000000…",
+                "58196"
+              ],
+              [
+                "172.30.0.2",
+                "2379"
+              ],
+              [
+                "172.30.0.6",
+                "19529"
+              ],
+              [
+                "172.30.0.6",
+                "21123"
+              ],
+              [
+                "172.30.0.6",
+                "21124"
+              ],
+              [
+                "172.30.0.6",
+                "22125"
+              ],
+              [
+                "172.30.0.6",
+                "22222"
+              ]
+            ]
+          },
+          "kee-postgres": {
+            "container": "kee-postgres",
+            "n_estab": 0,
+            "suspicious_external": [],
+            "peers": []
+          },
+          "kee-redis": {
+            "container": "kee-redis",
+            "n_estab": 0,
+            "suspicious_external": [],
+            "peers": []
+          }
+        },
+        "any_suspicious_external": false
+      },
+      "host_can_reach_published_ports": false,
+      "milvus_ready_after_restore": {
+        "ok": true,
+        "waited_sec": 0.0,
+        "server": "3.0.0"
+      }
+    },
+    "core_path": {
+      "dense_hits": 2,
+      "sparse_hits": 2,
+      "llm_ok": true,
+      "llm_json_valid": true,
+      "llm_metrics": {
+        "total_ms": 419.5,
+        "server_total_ms": 398.8,
+        "load_ms": 3.9,
+        "prompt_eval_ms": 38.0,
+        "eval_ms": 351.0,
+        "prompt_tokens": 71,
+        "completion_tokens": 15,
+        "done_reason": "stop",
+        "tokens_per_sec": 42.74
+      },
+      "observed_connections_uniq": [
+        [
+          "0.0.0.0",
+          "0",
+          "Bound"
+        ],
+        [
+          "127.0.0.1",
+          "11434",
+          "Established"
+        ],
+        [
+          "127.0.0.1",
+          "39530",
+          "Established"
+        ],
+        [
+          "::",
+          "0",
+          "Bound"
+        ]
+      ],
+      "non_loopback_connections": [],
+      "public_egress_connections": []
+    },
+    "container_probe": {
+      "internal_mode": false,
+      "milvus_to_public": {
+        "rc": 0,
+        "body": "301"
+      },
+      "milvus_healthz_in_container": "200",
+      "etcd_peer_reachable": "{\"health\":\"true\",\"reason\":\"\"}",
+      "containers_blocked_from_public": false,
+      "containers_can_reach_public": true,
+      "connections": {
+        "kee-etcd": {
+          "container": "kee-etcd",
+          "n_estab": 0,
+          "suspicious_external": [],
+          "peers": []
+        },
+        "kee-minio": {
+          "container": "kee-minio",
+          "n_estab": 0,
+          "suspicious_external": [],
+          "peers": []
+        },
+        "kee-milvus": {
+          "container": "kee-milvus",
+          "n_estab": 29,
+          "suspicious_external": [],
+          "peers": [
+            [
+              "00000000…",
+              "38384"
+            ],
+            [
+              "00000000…",
+              "38388"
+            ],
+            [
+              "00000000…",
+              "42934"
+            ],
+            [
+              "00000000…",
+              "49084"
+            ],
+            [
+              "00000000…",
+              "49090"
+            ],
+            [
+              "00000000…",
+              "53950"
+            ],
+            [
+              "00000000…",
+              "53962"
+            ],
+            [
+              "00000000…",
+              "53974"
+            ],
+            [
+              "00000000…",
+              "53984"
+            ],
+            [
+              "00000000…",
+              "53994"
+            ],
+            [
+              "00000000…",
+              "55290"
+            ],
+            [
+              "00000000…",
+              "59288"
+            ],
+            [
+              "172.30.0.4",
+              "2379"
+            ],
+            [
+              "172.30.0.6",
+              "19529"
+            ],
+            [
+              "172.30.0.6",
+              "21123"
+            ],
+            [
+              "172.30.0.6",
+              "21124"
+            ],
+            [
+              "172.30.0.6",
+              "22125"
+            ],
+            [
+              "172.30.0.6",
+              "22222"
+            ]
+          ]
+        },
+        "kee-postgres": {
+          "container": "kee-postgres",
+          "n_estab": 0,
+          "suspicious_external": [],
+          "peers": []
+        },
+        "kee-redis": {
+          "container": "kee-redis",
+          "n_estab": 0,
+          "suspicious_external": [],
+          "peers": []
+        }
+      },
+      "any_suspicious_external": false
+    },
+    "static_scan": {
+      "findings": [
+        {
+          "file": "src\\kee\\gate0\\g06_localization.py",
+          "url": "http://1.1.1.1",
+          "line_hint": 311
+        }
+      ],
+      "probe_targets": [
+        {
+          "file": "src\\kee\\gate0\\g06_localization.py",
+          "url": "http://1.1.1.1",
+          "line_hint": 311
+        }
+      ],
+      "internal_names": [],
+      "runtime_data_egress": []
+    },
+    "cloud_switch": {
+      "cloud_fallback_enabled": false
+    }
+  }
+}

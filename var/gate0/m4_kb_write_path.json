@@ -1,0 +1,146 @@
+{
+  "env": {
+    "ts": "2026-10-12T15:17:38",
+    "commit": "dc028c0",
+    "scratch_db": "kee_writepath",
+    "scratch_collection": "kb_chunks_writepath"
+  },
+  "checks": [
+    {
+      "name": "写路径跑在 scratch 上（没碰生产库与基线集合）",
+      "ok": true,
+      "detail": {
+        "collection": "kb_chunks_writepath",
+        "chunks": 0
+      }
+    },
+    {
+      "name": "上传 v1 返回 201 并给出 doc_id/version_id",
+      "ok": true,
+      "detail": {
+        "http": 201,
+        "body": "{\"status\":\"accepted\",\"doc_id\":\"prj-ene-2024-001-handover-wtest\",\"version_id\":\"prj-ene-2024-001-handover-wtest@v1\",\"title\":\"运维交接说明 v1\",\"new_document\":true,\"chunks\":{\"parent\":1,\"child\":1},\"indexed\":1,\"parse_notes\":[\"Markdown 无固定分页，页码字段置 0 并标注不可得\"],\"meta_warnings\":[],\"outbox\":{\"rounds\":[{\"round\":1,\"dis",
+        "doc_id": "prj-ene-2024-001-handover-wtest",
+        "version_id": "prj-ene-2024-001-handover-wtest@v1",
+        "chunks": null
+      }
+    },
+    {
+      "name": "上传者复核自己被拒（E403 职责分离）",
+      "ok": true,
+      "detail": {
+        "http": 403,
+        "detail": ""
+      }
+    },
+    {
+      "name": "他人复核 pass 后文档转 active 且版本生效",
+      "ok": true,
+      "detail": {
+        "doc_status": "active",
+        "effective": "prj-ene-2024-001-handover-wtest@v1"
+      }
+    },
+    {
+      "name": "v1 生效后可被检索命中（15 分钟那条在）",
+      "ok": true,
+      "detail": {
+        "命中正文字数": 45
+      }
+    },
+    {
+      "name": "升版：v2 复核后生效版本切到 v2",
+      "ok": true,
+      "detail": {
+        "v1": "prj-ene-2024-001-handover-wtest@v1",
+        "v2": "prj-ene-2024-001-handover-wtest@v2",
+        "effective": "prj-ene-2024-001-handover-wtest@v2"
+      }
+    },
+    {
+      "name": "升版后检索到新口径（10 分钟），旧口径不再是生效内容",
+      "ok": true,
+      "detail": {
+        "含10分钟": true,
+        "含15分钟": false
+      }
+    },
+    {
+      "name": "回滚到 v1：生效版本回 v1，且索引里不再有 v2 的子块",
+      "ok": true,
+      "detail": {
+        "http": 200,
+        "effective": "prj-ene-2024-001-handover-wtest@v1",
+        "v2 残留": [],
+        "索引内": [
+          "prj-ene-2024-001-handover-wtest@v1#1.1#c1"
+        ]
+      }
+    },
+    {
+      "name": "对账 dry-run 读得出漂移面",
+      "ok": true,
+      "detail": {
+        "authoritative_children": 1,
+        "indexed": 1,
+        "missing_in_vector": 0,
+        "extra_in_vector": 0
+      }
+    },
+    {
+      "name": "漂移被发现（missing_in_vector ≥ 1）",
+      "ok": true,
+      "detail": {
+        "被删子块": "prj-ene-2024-001-handover-wtest@v1#1.1#c1",
+        "diff": {
+          "authoritative_children": 1,
+          "indexed": 0,
+          "missing_in_vector": 1,
+          "extra_in_vector": 0
+        }
+      }
+    },
+    {
+      "name": "修复后缺口归零",
+      "ok": true,
+      "detail": {
+        "missing_in_vector": 0,
+        "extra_in_vector": 0
+      }
+    },
+    {
+      "name": "四步写操作都留了审计",
+      "ok": true,
+      "detail": {
+        "actions": [
+          "chunks_read",
+          "document_ingested",
+          "document_review_pass",
+          "document_rollback",
+          "reconciliation_run"
+        ]
+      }
+    },
+    {
+      "name": "终态自洽：生效版本唯一、文档 active",
+      "ok": true,
+      "detail": {
+        "versions": [
+          [
+            "est@v2",
+            "superseded"
+          ],
+          [
+            "est@v1",
+            "effective"
+          ]
+        ]
+      }
+    }
+  ],
+  "passed": true,
+  "生产侧未受影响（对照 m2_eval 记录）": {
+    "collection": "kb_chunks",
+    "chunks": 193
+  }
+}

@@ -8,7 +8,14 @@
   "gradeable": 63,
   "gold_empty_but_answerable": 0,
   "unmatched_qids": [],
-  "mean_gold_per_question": 2.38,
+  "manual_override_qids": [
+    "q-012",
+    "q-014",
+    "q-044",
+    "q-056",
+    "q-058"
+  ],
+  "mean_gold_per_question": 2.41,
   "by_category": {
     "术语": 14,
     "编号": 12,

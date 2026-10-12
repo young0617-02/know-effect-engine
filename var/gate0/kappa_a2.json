@@ -8,30 +8,30 @@
   "blank_rows": 0,
   "gold_version": {
     "source": "qrels.jsonl（当前尺子）",
-    "rows_relabeled_from_snapshot": 14
+    "rows_relabeled_from_snapshot": 23
   },
   "against_section_gold": {
-    "kappa": 0.6112,
-    "po": 0.8629,
-    "pe": 0.6474,
+    "kappa": 0.6241,
+    "po": 0.8665,
+    "pe": 0.645,
     "n": 547,
     "disagreement": {
       "a_yes_b_no": 65,
-      "a_no_b_yes": 10
+      "a_no_b_yes": 8
     },
-    "raw_agreement": 0.8629,
+    "raw_agreement": 0.8665,
     "b_positive_rate": 0.1737
   },
   "against_strict_gold": {
-    "kappa": 0.8634,
-    "po": 0.9616,
-    "pe": 0.7189,
+    "kappa": 0.9209,
+    "po": 0.9781,
+    "pe": 0.7225,
     "n": 547,
     "disagreement": {
-      "a_yes_b_no": 8,
-      "a_no_b_yes": 13
+      "a_yes_b_no": 2,
+      "a_no_b_yes": 10
     },
-    "raw_agreement": 0.9616,
+    "raw_agreement": 0.9781,
     "b_positive_rate": 0.1737
   },
   "bootstrap": {
@@ -39,18 +39,18 @@
     "draws": 2000,
     "degenerate_draws": 0,
     "section_ci95": [
-      0.5411,
-      0.6867
+      0.5521,
+      0.698
     ],
     "strict_ci95": [
-      0.7793,
-      0.943
+      0.8459,
+      0.9798
     ],
     "diff_strict_minus_section": {
-      "point": 0.2516,
+      "point": 0.2955,
       "ci95": [
-        0.1886,
-        0.3175
+        0.2304,
+        0.3603
       ],
       "share_draws_positive": 1.0
     }
@@ -60,54 +60,54 @@
     "including_sensitive": {
       "rows": 547,
       "questions": 63,
-      "kappa_vs_strict": 0.8875,
-      "po": 0.9689,
+      "kappa_vs_strict": 0.9463,
+      "po": 0.9854,
       "positive_b": 91,
-      "positive_gold": 90,
-      "both_positive": 82
+      "positive_gold": 87,
+      "both_positive": 85
     },
     "excluding_sensitive": {
       "rows": 504,
       "questions": 58,
-      "kappa_vs_strict": 0.9211,
-      "po": 0.9782,
+      "kappa_vs_strict": 0.9854,
+      "po": 0.996,
       "positive_b": 83,
-      "positive_gold": 84,
-      "both_positive": 78
+      "positive_gold": 81,
+      "both_positive": 81
     },
     "ladder_warning": "按题型剔除会一路把 Kappa 抬上去（含敏感 < 不含敏感 < 再剔跨文档）。**跨文档类不得剔除**：那是本系统最难也最值钱的能力，剔它就是为了好看的数请掉真问题。"
   },
   "criterion": {
     "decided": "乙：一块必须能独立答全该题全部内容才算 1（2026-10-12 用户裁决）。细则另两条：题面点名主体时别的项目/行业的同名章节算 0；描述型块（部署几台、达成率）算 0",
     "as_filled_jia": {
-      "kappa_vs_strict": 0.8634,
-      "po": 0.9616,
+      "kappa_vs_strict": 0.9209,
+      "po": 0.9781,
       "positive_b": 95,
-      "positive_gold": 90,
-      "both_positive": 82,
-      "both_negative": 444
+      "positive_gold": 87,
+      "both_positive": 85,
+      "both_negative": 450
     },
     "adjudicated_yi": {
-      "kappa_vs_strict": 0.8875,
-      "po": 0.9689,
+      "kappa_vs_strict": 0.9463,
+      "po": 0.9854,
       "positive_b": 91,
-      "positive_gold": 90,
-      "both_positive": 82,
-      "both_negative": 448
+      "positive_gold": 87,
+      "both_positive": 85,
+      "both_negative": 454
     },
     "part_answer_rows_zeroed": 4,
-    "uplift_warning": "Kappa 0.8634 → 0.8875 的抬升**不能读成两人更合**：双正例 82 → 82（一个没多），双负例 444 → 448——抬幅全部来自负例变多。这与复合分那次的零方差标签是同一类陷阱：可判定的方差变小了，一致率自然变高。",
+    "uplift_warning": "Kappa 0.9209 → 0.9463 的抬升**不能读成两人更合**：双正例 85 → 85（一个没多），双负例 450 → 454——抬幅全部来自负例变多。这与复合分那次的零方差标签是同一类陷阱：可判定的方差变小了，一致率自然变高。",
     "split_check": "**2026-10-12 全量复核后作废**此前写在此处的「拆题是空集」：那句靠「≥2 个疑问标记」的检测器得出，而集合型题往往只有一个问号。实测定为必须拆 3 道——q-053（哪些文档引用过）、q-055（三条线各自门限）、q-058（两份文档口径一致吗）；q-054 的第二问「各项目是怎么用的」同属集合型。q-056/057 经核单块可答，不拆。检测器 scripts/m4_split_candidates.py 的输出只当候选面，结论要逐题人工读。"
   },
   "joint_section_strict_b": {
     "000": 387,
-    "001": 10,
-    "100": 57,
-    "101": 3,
-    "110": 8,
-    "111": 82
+    "001": 8,
+    "100": 63,
+    "101": 2,
+    "110": 2,
+    "111": 85
   },
-  "n_divergence": 78,
+  "n_divergence": 75,
   "divergence_on_two_part_questions": 12,
   "divergence_samples": [
     {
@@ -266,20 +266,6 @@
     },
     {
       "qid": "q-012",
-      "cand_no": 3,
-      "b": 1,
-      "a_section": 1,
-      "a_strict": 0,
-      "kind": "section 与 B 认、strict 不认",
-      "question": "按电力监控系统安全防护口径，终端与信息管理大区之间的数据交换必须经过什么装置？",
-      "n_sub_questions": 1,
-      "doc_id": "ene-compliance-prj-ene-2023-019",
-      "chunk_id": "ene-compliance-prj-ene-2023-019@v1#2.1#c1",
-      "reference_answer": "必须经正反向隔离装置以单向方式传输，禁止任何形式的反向直连。",
-      "chunk_text": "安全分区与跨区访问约束｜生产控制大区划分为控制区与非控制区，调度自动化系统及其 SCADA 主站部署于控制区，计量与用电信息采集类前置系统部署于非控制区；两区之间通过纵向与横向访问控制设备隔离，禁止任何形式的跨区直接路由。 管理信息大区与生产控制大区之间的数据交换只能经正反向隔离装置以单向方式完成，且传输内容限于已定义的非实时数据集，字段清单由客户自动化部门批准并纳入接口台账管理；台账变更须经双岗复核并留存变更记录。"
-    },
-    {
-      "qid": "q-012",
       "cand_no": 9,
       "b": 0,
       "a_section": 1,
@@ -389,20 +375,6 @@
       "chunk_id": "chm-closeout-prj-chm-2024-003@v1#2.2#c2",
       "reference_answer": "采用 2oo3 表决逻辑，独立于优化平台部署，其整定值不随优化目标调整。",
       "chunk_text": "DCS 联锁逻辑与安全边界｜写入权限开通须经客户书面变更单授权，单张变更单有效期不超过 72 小时且仅限单个回路，超期未使用自动失效；全部写入动作在操作站与平台两侧同时留痕，两侧时间戳偏差要求不超过 1 秒，超限即暂停建议下发并触发时钟告警。"
-    },
-    {
-      "qid": "q-014",
-      "cand_no": 2,
-      "b": 1,
-      "a_section": 0,
-      "a_strict": 0,
-      "kind": "两口径都不认、B 判是（gold 缺口方向）",
-      "question": "优化平台上涉及 DCS 联锁逻辑的点位是什么读写权限？",
-      "n_sub_questions": 1,
-      "doc_id": "chm-ifspec-prj-chm-2024-003",
-      "chunk_id": "chm-ifspec-prj-chm-2024-003@v1#1.2#c1",
-      "reference_answer": "一律设为只读，联锁值修改权限保留在客户工艺与仪表两个部门。",
-      "chunk_text": "接口编号 IF-CHM-0007 实时点位读取｜按装置优化数据接口规范 V2.0 的约定，接口编号 IF-CHM-0007 定义优化平台向控制层读取实时点位的方式，采用 OPC UA 订阅模式，订阅点位规模上限 8000 个，最小发布间隔 500 毫秒；单点数据质量码为不确定或坏值时，订阅端须立即停止基于该点的建议计算而非沿用上一次值。 读取权限按只读原则分配，禁止在本接口上写入任何控制变量；点位分为工艺量、设备量与质量量三类，其中联锁状态量与 SIS 安全仪表系统的输出量强制列为只读且仅用于状态监视，不参与优化目标函数的构造与求解。"
     },
     {
       "qid": "q-014",
@@ -728,20 +700,6 @@
     },
     {
       "qid": "q-044",
-      "cand_no": 7,
-      "b": 1,
-      "a_section": 0,
-      "a_strict": 0,
-      "kind": "两口径都不认、B 判是（gold 缺口方向）",
-      "question": "运维图省事想直接进库里把那个字段改回来，规范里哪句话把这条路堵死了？",
-      "n_sub_questions": 0,
-      "doc_id": "chm-presale-prj-chm-2025-014",
-      "chunk_id": "chm-presale-prj-chm-2025-014@v1#2.1#c1",
-      "reference_answer": "审计追踪写入是唯一允许的变更方式，运维人员不得以数据库直连方式修正记录字段，错误须以追加更正记录处理。",
-      "chunk_text": "方案架构与关键能力｜方案以记录模板引擎加电子签名加审计追踪三条能力线组织，采集层从 DCS 与实验室系统取数，取数动作直接落库并附时间戳，避免二次录入；关键工艺参数的写入范围由采集侧只读约束保证，操作员仅可在受控字段填写备注且备注同样进入审计追踪。 针对 GMP 数据完整性要求，系统须实现四级可归因记录：操作事件、复核事件、偏差事件与系统事件，每条记录包含发生时间、执行终端与原值新值对照；审计追踪日志只增不改不删，任何数据库层面的清理动作均视为严重违规并触发合规告警。"
-    },
-    {
-      "qid": "q-044",
       "cand_no": 10,
       "b": 0,
       "a_section": 1,
@@ -955,8 +913,8 @@
       "cand_no": 2,
       "b": 0,
       "a_section": 1,
-      "a_strict": 1,
-      "kind": "双 gold 认、B 判否",
+      "a_strict": 0,
+      "kind": "section 独认（strict 与 B 都不认）",
       "question": "CMMI 3 级过程域映射在项目上具体登记哪些过程域和度量项？",
       "n_sub_questions": 1,
       "doc_id": "ene-closeout-prj-ene-2024-006",
@@ -969,8 +927,8 @@
       "cand_no": 3,
       "b": 0,
       "a_section": 1,
-      "a_strict": 1,
-      "kind": "双 gold 认、B 判否",
+      "a_strict": 0,
+      "kind": "section 独认（strict 与 B 都不认）",
       "question": "CMMI 3 级过程域映射在项目上具体登记哪些过程域和度量项？",
       "n_sub_questions": 1,
       "doc_id": "fin-retro-prj-fin-2023-041",
@@ -983,8 +941,8 @@
       "cand_no": 4,
       "b": 0,
       "a_section": 1,
-      "a_strict": 1,
-      "kind": "双 gold 认、B 判否",
+      "a_strict": 0,
+      "kind": "section 独认（strict 与 B 都不认）",
       "question": "CMMI 3 级过程域映射在项目上具体登记哪些过程域和度量项？",
       "n_sub_questions": 1,
       "doc_id": "chm-retro-prj-chm-2024-003",
@@ -997,8 +955,8 @@
       "cand_no": 7,
       "b": 0,
       "a_section": 1,
-      "a_strict": 1,
-      "kind": "双 gold 认、B 判否",
+      "a_strict": 0,
+      "kind": "section 独认（strict 与 B 都不认）",
       "question": "CMMI 3 级过程域映射在项目上具体登记哪些过程域和度量项？",
       "n_sub_questions": 1,
       "doc_id": "chm-closeout-prj-chm-2023-021",
@@ -1025,8 +983,8 @@
       "cand_no": 2,
       "b": 0,
       "a_section": 1,
-      "a_strict": 1,
-      "kind": "双 gold 认、B 判否",
+      "a_strict": 0,
+      "kind": "section 独认（strict 与 B 都不认）",
       "question": "防爆区域划分在运维手册和合规摘录里的口径一致吗？",
       "n_sub_questions": 1,
       "doc_id": "chm-runbook-prj-chm-2025-014",
@@ -1039,8 +997,8 @@
       "cand_no": 4,
       "b": 0,
       "a_section": 1,
-      "a_strict": 1,
-      "kind": "双 gold 认、B 判否",
+      "a_strict": 0,
+      "kind": "section 独认（strict 与 B 都不认）",
       "question": "防爆区域划分在运维手册和合规摘录里的口径一致吗？",
       "n_sub_questions": 1,
       "doc_id": "chm-compliance-prj-chm-2023-021",
@@ -1204,9 +1162,9 @@
     }
   ],
   "kind_counts": {
-    "section 独认（strict 与 B 都不认）": 57,
-    "section 与 B 认、strict 不认": 3,
-    "两口径都不认、B 判是（gold 缺口方向）": 10,
-    "双 gold 认、B 判否": 8
+    "section 独认（strict 与 B 都不认）": 63,
+    "section 与 B 认、strict 不认": 2,
+    "两口径都不认、B 判是（gold 缺口方向）": 8,
+    "双 gold 认、B 判否": 2
   }
 }
