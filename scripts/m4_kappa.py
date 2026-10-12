@@ -51,14 +51,20 @@ SENTINEL = "todo"
 INTERROGATIVE = re.compile(r"什么|哪些|怎么|怎样|多久|多少|能不能|可不可以|是否|依据哪|哪个|哪几|吗")
 
 
-def load(art: Path) -> tuple[list[dict], dict[tuple[str, int], dict]]:
-    with (art / "annotations_a2_fill.csv").open(encoding="utf-8-sig", newline="") as f:
-        rows = list(csv.DictReader(f))
-    key = {(r["qid"], int(r["cand_no"])): r
-           for r in json.loads((art / "annotations_a2_key.json").read_text(encoding="utf-8"))}
-    # key.json 是**出工单那一刻**的第一人标签快照。gold 一旦被修订（#41），继续拿它算 Kappa
-    # 就是在跟一把已经不存在的尺子比——数值不会报错，只会安静地是旧的。
-    # 所以这里按 chunk_id 用**当前 qrels** 重算两个口径的成员关系，并把版本盖进产物。
+def load(art: Path, prefix: str = "annotations_a2") -> tuple[list[dict], dict[tuple[str, int], dict]]:
+    """支持逗号分隔的多张工单合并成一个观测域（同一把尺子下分批收的标注该能合起来算）。
+    每行带上它来自哪张工单，剔除才能精确到「某工单的某题」而不是全局按题号砍。"""
+    rows: list[dict] = []
+    key: dict[tuple[str, int], dict] = {}
+    for one in [x.strip() for x in prefix.split(",") if x.strip()]:
+        with (art / f"{one}_fill.csv").open(encoding="utf-8-sig", newline="") as f:
+            part = list(csv.DictReader(f))
+        for r in part:
+            r["_src"] = one
+        rows += part
+        for x in json.loads((art / f"{one}_key.json").read_text(encoding="utf-8")):
+            x["_src"] = one
+            key[(one, x["qid"], int(x["cand_no"]))] = x
     qp = art / "qrels.jsonl"
     if qp.exists():
         cur = {}
@@ -68,7 +74,7 @@ def load(art: Path) -> tuple[list[dict], dict[tuple[str, int], dict]]:
                 cur[rec["qid"]] = (set(rec["gold_chunk_ids"]), set(rec.get("gold_strict_ids") or []))
         stale = 0
         for k, v in key.items():
-            pair = cur.get(k[0])
+            pair = cur.get(k[1])
             if not pair:
                 continue
             cid = v["chunk_id"]
@@ -78,7 +84,7 @@ def load(art: Path) -> tuple[list[dict], dict[tuple[str, int], dict]]:
                 v["in_a_section_gold"], v["in_a_strict_gold"] = str(new_s), str(new_t)
         v_gold = {"source": "qrels.jsonl（当前尺子）", "rows_relabeled_from_snapshot": stale}
     else:
-        v_gold = {"source": "annotations_a2_key.json（工单快照，可能滞后于 gold 修订）",
+        v_gold = {"source": f"{prefix}_key.json（工单快照，可能滞后于 gold 修订）",
                   "rows_relabeled_from_snapshot": 0}
     return rows, key, v_gold
 
@@ -143,15 +149,30 @@ def cluster_bootstrap(filled: list[tuple], draws: int = 2000,
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--fail-if-incomplete", action="store_true")
+    ap.add_argument("--prefix", default="annotations_a2",
+                    help="读 <prefix>_fill.csv + <prefix>_key.json；重标轮是 annotations_a2_relabel")
+    ap.add_argument("--out", default="kappa_a2.json",
+                    help="产物文件名。**重标轮必须另起名**——kappa_a2.json 是 M4 已收证据，同名会静默覆盖")
+    ap.add_argument("--already-yi", action="store_true",
+                    help="本轮工单抬头写的就是乙口径（第二人按乙填），不再机械把「部分回答」压成 0；"
+                         "首轮工单抬头是甲，默认仍走机械改判")
+    ap.add_argument("--exclude-qids", default="",
+                    help="把这些题从一致性观测域里剔除（只在「题面已改、旧行判的不是同一件事」时用），"
+                         "必须配 --exclude-note 说明理由，否则拒绝")
+    ap.add_argument("--exclude-note", default="",
+                    help="剔除理由，会原样写进产物——没有理由的剔除就是择优取样本")
     args = ap.parse_args()
+    if args.exclude_qids and not args.exclude_note.strip():
+        print("[拒绝] 剔除题目必须给 --exclude-note：没有书面理由的剔除等于挑好看的样本")
+        return 2
 
     art = Path(get_settings().resolved_artifact_dir())
-    rows, key, gold_version = load(art)
+    rows, key, gold_version = load(art, args.prefix)
     if not rows:
         print("没有工单，先跑 scripts/m4_build_annotation_sheet.py")
         return 2
 
-    filled: list[tuple[str, int, int, int, int]] = []  # qid, cand_no, b, a_section, a_strict
+    filled: list[tuple[str, int, int, int, int, str]] = []  # qid, cand_no, b, a_section, a_strict, doc_id
     blank_qids: list[str] = []
     for r in rows:
         raw = (r.get(FILL_COL) or "").strip().lower()
@@ -161,9 +182,24 @@ def main() -> int:
         if raw not in ("0", "1"):
             print(f"[判废] {r['qid']}#{r['cand_no']} 填了 {raw!r}，只接受 1 或 0")
             return 2
-        k = key[(r["qid"], int(r["cand_no"]))]
+        k = key[(r["_src"], r["qid"], int(r["cand_no"]))]
         filled.append((r["qid"], int(r["cand_no"]), int(raw),
-                       int(k["in_a_section_gold"]), int(k["in_a_strict_gold"])))
+                       int(k["in_a_section_gold"]), int(k["in_a_strict_gold"]), r["doc_id"],
+                       r["_src"]))
+
+    # 剔除可以精确到「某张工单的某题」——q-071 在两张工单里都有，但那是两个不同的题面，
+    # 全局按题号砍会把新问法那 9 行也一起剔掉。写法：`qid` 对所有工单生效，`工单名/qid` 只剔那一张。
+    ex_items = [x.strip() for x in args.exclude_qids.split(",") if x.strip()]
+    ex_qids = {e for e in ex_items if "/" not in e}
+    ex_pairs = {(e.split("/", 1)[0], e.split("/", 1)[1]) for e in ex_items if "/" in e}
+
+    def dropped(f) -> bool:
+        return f[0] in ex_qids or (f[6], f[0]) in ex_pairs
+
+    excluded_rows = sum(1 for f in filled if dropped(f))
+    if ex_items:
+        filled = [f for f in filled if not dropped(f)]
+    excluded = set(ex_items)
 
     if not filled:
         print("一题都没填，无法计算。建议先填前 25 题跑一次，确认判据没跑偏再续标。")
@@ -178,10 +214,13 @@ def main() -> int:
         "scope_note": ("观测域是**候选池**（第二人只看过这些块），不是全库。"
                        "这个 Kappa 是「在候选池上的一致性」，不得表述成全库标注一致。"),
         "n_rows_judged": len(filled),
+        "sources": sorted({f[6] for f in filled}),
         "n_questions_done": len(done_qids),
         "n_questions_total": len(total_qids),
         "complete": complete,
         "blank_rows": len(blank_qids),
+        "excluded": ({"spec": sorted(excluded), "rows_dropped": excluded_rows,
+                      "reason": args.exclude_note.strip()} if excluded else None),
         "gold_version": gold_version,
     }
 
@@ -211,11 +250,27 @@ def main() -> int:
         return len(INTERROGATIVE.findall((qtexts_c.get(qid) or {}).get("question", "")))
 
     def yi_label(qid: str, b: int, a_t: int) -> int:
+        if args.already_yi:
+            return b
         return 0 if (parts_of(qid) >= 2 and a_t == 0) else b
 
     gold_t = [f[4] for f in filled]
     b_jia = [f[2] for f in filled]
     b_yi = [yi_label(f[0], f[2], f[4]) for f in filled]
+
+    # 细则 2 的文档级补充（2026-10-12 裁决）：题面点名单一文档类型的题，第二人判「是」的块
+    # 若不属那份文档，按判据应为 0。这条**会把人判的 1 改成 0、方向对第一人有利**，
+    # 所以两版必须并排报，且只用在相关性叙述里，不进 `m2_eval` 的门禁判定。
+    from kee.eval.eval_data import DOC_SCOPED_QIDS
+
+    def doc_scoped(label: int, qid: str, doc_id: str) -> int:
+        kind = DOC_SCOPED_QIDS.get(qid)
+        return 0 if (kind and label == 1 and kind not in (doc_id or "")) else label
+
+    b_doc = [doc_scoped(y, f[0], f[5]) for y, f in zip(b_yi, filled)]
+    doc_flipped = [{"qid": f[0], "cand_no": f[1], "doc_id": f[5],
+                    "named": DOC_SCOPED_QIDS.get(f[0])}
+                   for y, f in zip(b_yi, filled) if doc_scoped(y, f[0], f[5]) != y]
 
     def snapshot(labels: list[int]) -> dict[str, Any]:
         res = cohens_kappa(gold_t, labels)
@@ -227,6 +282,7 @@ def main() -> int:
         }
 
     snap_jia, snap_yi = snapshot(b_jia), snapshot(b_yi)
+    snap_doc = snapshot(b_doc)
 
     # ---- 测量面（用户 2026-10-12 裁决：敏感题不测相关性，只测路由）----
     # 理由必须是结构性的、先于数值：`escalate`/`refuse` 题按设计就没有「该对外给的答案块」，
@@ -239,7 +295,7 @@ def main() -> int:
 
     def snap_for(sub: list[tuple]) -> dict[str, Any]:
         la = [f[4] for f in sub]
-        lb = [yi_label(f[0], f[2], f[4]) for f in sub]
+        lb = [doc_scoped(yi_label(f[0], f[2], f[4]), f[0], f[5]) for f in sub]
         res = cohens_kappa(la, lb)
         return {"rows": len(sub), "questions": len({f[0] for f in sub}),
                 "kappa_vs_strict": res["kappa"], "po": res["po"],
@@ -257,10 +313,30 @@ def main() -> int:
     out["criterion"] = {
         "decided": ("乙：一块必须能独立答全该题全部内容才算 1（2026-10-12 用户裁决）。"
                     "细则另两条：题面点名主体时别的项目/行业的同名章节算 0；描述型块（部署几台、达成率）算 0"),
+        "label_basis": ("本轮工单抬头写的就是**乙**，第二人按乙填 ⇒ 不再机械改判（`--already-yi`）。"
+                        "as_filled 与 adjudicated 两行因此相同，读 as_filled 那份即可"
+                        if args.already_yi else
+                        "工单抬头是甲，乙口径的改判是机械的（两问题上「不在 strict gold 却判 1」→ 0）"),
         "as_filled_jia": snap_jia,
         "adjudicated_yi": snap_yi,
+        "adjudicated_yi_with_doc_scope": snap_doc,
         "part_answer_rows_zeroed": sum(1 for j, y in zip(b_jia, b_yi) if j == 1 and y == 0),
+        "doc_scope_amendment": {
+            "rule": ("细则 2 的文档级补充（2026-10-12 裁决）：题面点名单一文档类型的题（`DOC_SCOPED_QIDS`，"
+                     "现 9 道），第二人判是但块不属那份文档 ⇒ 按判据为 0"),
+            "applied_to_qids": sorted(DOC_SCOPED_QIDS),
+            "q-044_excluded": "题面说「规范里」而它的两块 gold 在售前方案与运维手册里——"
+                              "那是限定语与答题块不同源的**题面缺陷**，不入表；硬配 doc_scope 等于用判据把第一人自己的 gold 清零",
+            "rows_flipped": doc_flipped,
+            "kappa_before": snap_yi["kappa_vs_strict"],
+            "kappa_after": snap_doc["kappa_vs_strict"],
+            "direction_warning": ("这条补充把第二人的 1 改成 0、方向对第一人有利，且规则是在看过分歧之后才补的。"
+                                  "所以两版必须并排报，**且只用于相关性叙述，不进 `m2_eval` 的门禁判定**；"
+                                  "对外引用时以「补充前」为保守值、「补充后」为判据现值，不得只报高的那份"),
+        },
         "uplift_warning": (
+            "本轮抬头即乙口径，甲/乙两行数值相同，**不存在抬升**，也就没有「负例变多冒充一致性」的空间"
+            if args.already_yi else
             f"Kappa {snap_jia['kappa_vs_strict']} → {snap_yi['kappa_vs_strict']} 的抬升**不能读成两人更合**："
             f"双正例 {snap_jia['both_positive']} → {snap_yi['both_positive']}（一个没多），"
             f"双负例 {snap_jia['both_negative']} → {snap_yi['both_negative']}——抬幅全部来自负例变多。"
@@ -286,18 +362,18 @@ def main() -> int:
     }
     samples: list[dict] = []
     joint: Counter = Counter()
-    row_by_key = {(r["qid"], int(r["cand_no"])): r for r in rows}
+    row_by_key = {(r["_src"], r["qid"], int(r["cand_no"])): r for r in rows}
     qtexts = load_questions(art)
-    for qid, no, b, a_s, a_t in filled:
+    for qid, no, b, a_s, a_t, doc_i, src_name in filled:
         joint[(a_s, a_t, b)] += 1
         kind = bucket.get((a_s, a_t, b))
         if not kind:
             continue
         rec = qtexts.get(qid) or {}
         qtext = rec.get("question", "")
-        src = row_by_key[(qid, no)]
+        src = row_by_key[(src_name, qid, no)]
         samples.append({
-            "qid": qid, "cand_no": no, "b": b, "a_section": a_s, "a_strict": a_t, "kind": kind,
+            "src": src_name, "qid": qid, "cand_no": no, "b": b, "a_section": a_s, "a_strict": a_t, "kind": kind,
             # 下面这些字段是为了让「成因」能在 artifact 里被复看，而不是只活在某次对话里
             "question": qtext,
             "n_sub_questions": len(INTERROGATIVE.findall(qtext)) if qtext else 0,
@@ -312,11 +388,14 @@ def main() -> int:
     out["divergence_samples"] = samples
     out["kind_counts"] = dict(Counter(s["kind"] for s in samples))
 
-    (art / "kappa_a2.json").write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
+    (art / args.out).write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
 
     s_, t_ = out["against_section_gold"], out["against_strict_gold"]
     status = "（完整）" if complete else f"（未完成，还有 {out['blank_rows']} 行空着）"
     print(f"已判 {out['n_rows_judged']} 行 / 覆盖 {out['n_questions_done']}/{out['n_questions_total']} 题{status}")
+    if out["excluded"]:
+        e = out["excluded"]
+        print(f"  ⚠ 剔除观测域：{e['spec']}（{e['rows_dropped']} 行）——理由：{e['reason']}")
     print(f"  Kappa vs section gold : {s_.get('kappa')}  po={s_.get('po')} 分歧 A多标={s_['disagreement']['a_yes_b_no']} A漏标={s_['disagreement']['a_no_b_yes']}")
     print(f"  Kappa vs strict gold  : {t_.get('kappa')}  po={t_.get('po')} 分歧 A多标={t_['disagreement']['a_yes_b_no']} A漏标={t_['disagreement']['a_no_b_yes']}")
     print(f"  分歧分类: {out['kind_counts']}（共 {out['n_divergence']} 行；三元组分布 {out['joint_section_strict_b']}）")
@@ -333,6 +412,10 @@ def main() -> int:
           f"（正例 {c['adjudicated_yi']['positive_b']}、双正例 {c['adjudicated_yi']['both_positive']}、"
           f"机械改判 {c['part_answer_rows_zeroed']} 行）")
     print(f"    ⚠ {c['uplift_warning']}")
+    ds = c["doc_scope_amendment"]
+    flipped_keys = "、".join(f"{r['qid']}#{r['cand_no']}" for r in ds["rows_flipped"]) or "无"
+    print(f"  细则 2 文档级补充：改判 {len(ds['rows_flipped'])} 行（{flipped_keys}），"
+          f"vs strict {ds['kappa_before']} → {ds['kappa_after']}（方向对第一人有利，两版并排报，不进 m2_eval 门禁）")
     print(f"    拆题核对：{c['split_check']}")
     rs = out["relevance_scope"]
     inc, exc = rs["including_sensitive"], rs["excluding_sensitive"]
@@ -349,7 +432,8 @@ def main() -> int:
         print("    ⚠ 本轮 gold 已修订（#41），修订方向与第二人判断同向 ⇒ 修订后的一致率**不是独立证据**，"
               "只能读成「第一人按复核收窄了 gold」；独立证据是修订前那份（pre_goldfix/kappa_a2.json）")
     print("  口径提醒:", out["scope_note"])
-    print(f"证据： {art / 'kappa_a2.json'}")
+    print(f"  判据读数基准: {out['criterion']['label_basis']}")
+    print(f"证据： {art / args.out}")
 
     if args.fail_if_incomplete and not complete:
         return 1

@@ -66,6 +66,9 @@ JUDGEMENT_LINE = (
     "只答其中一问 → 0。\n"
     "2. 题面点名了主体（清算平台 / 某装置 / 某条线）时，**其他行业或别的项目**的同名章节即使数字相同也算 0；"
     "题面未点名主体、把几条线并列问到时，各线的块都算。\n"
+    "   2b. 题面**点名了某一份文档**（如「化工运维手册里…」「接口规范里…」「合规摘录里…」）时，"
+    "同项目**别那份文档**里内容相同的块也算 0（2026-10-12 补，重标轮第二人在 q-058 上判过一例，"
+    "其余 7 道点名文档的题他都遵守了这条，说明这是判据没写清而不是人不合）。\n"
     "3. **描述型**块（部署了几台、达成率多少、周期几天）不算直接可答，除非正文里有带强制性"
     "（必须 / 不得 / 只能 / 一律）的句子正面回答该问。\n"
 )
@@ -105,7 +108,12 @@ def main() -> int:
                     help="只出这些题号的工单，逗号分隔（拆题后重标用：题面一改，原来那几行的判断就不再是同一件事了）")
     ap.add_argument("--out-prefix", default="annotations_a2",
                     help="输出文件名前缀；重标轮要另起一套，别覆盖已收 full 的那份证据")
+    ap.add_argument("--worksheet-only", action="store_true",
+                    help="只按已存在的 _fill.csv 重排人读版式（不碰 CSV、不连存储栈、不重跑检索）")
     args = ap.parse_args()
+
+    if args.worksheet_only:
+        return _rewrite_worksheet_only(Path(args.out_prefix), args.hybrid)
 
     s = get_settings()
     art = Path(s.resolved_artifact_dir())
@@ -189,8 +197,9 @@ def main() -> int:
 
     (art / f"{args.out_prefix}_key.json").write_text(json.dumps(key_rows, ensure_ascii=False, indent=1),
                                                  encoding="utf-8")
-    (art / f"{args.out_prefix}_worksheet.md").write_text(_worksheet(fill_rows, pool, outside_share, args.hybrid),
-                                                     encoding="utf-8")
+    (art / f"{args.out_prefix}_worksheet.md").write_text(
+        _worksheet(fill_rows, {q["qid"]: q["question"] for q in pool}, outside_share, args.hybrid),
+        encoding="utf-8")
     print(f"工单：{len(pool)} 题 / {len(fill_rows)} 个候选块，待填列「{FILL_COL}」全为 TODO")
     print(f"含「第一人未标」候选的题占比：{outside_share:.0%}（闸值 {MIN_OUTSIDE_A_GOLD_SHARE:.0%}）")
     print(f"人读：{art / f'{args.out_prefix}_worksheet.md'}")
@@ -199,35 +208,103 @@ def main() -> int:
     return 0
 
 
-def _worksheet(fill_rows: list[dict], pool: list[dict], outside_share: float, hybrid: bool) -> str:
+def _head_stats(rows: list[dict]) -> dict:
+    """正文是不是真被截过——这句必须算出来，不能照抄模板话术。
+    上一版工单写着「正文只截前 320 字」，而实测最长 287 字、**一行都没截**：
+    那等于让标注人以为看到的是节选，于是对「块里其实写全了」的那几行倾向给 0。"""
+    lens = [len(r["text_head"]) for r in rows]
+    truncated = [r for r in rows if len(r["text_head"]) >= TEXT_HEAD_CHARS or r["text_head"].rstrip().endswith("…")]
+    return {"max": max(lens) if lens else 0, "n_truncated": len(truncated),
+            "truncated_keys": [f"{r['qid']}#{r['cand_no']}" for r in truncated][:12]}
+
+
+def _worksheet(fill_rows: list[dict], qtext: dict[str, str], outside_share: float, hybrid: bool) -> str:
+    hs = _head_stats(fill_rows)
+    head_note = (f"正文**本批 {len(fill_rows)} 行没有一行被截**（最长 {hs['max']} 字，上限 {TEXT_HEAD_CHARS}），"
+                 "你看到的就是整块内容——不要因为「怕后面还有」而压成 0。"
+                 if not hs["n_truncated"] else
+                 f"正文只截前 {TEXT_HEAD_CHARS} 字，**本批有 {hs['n_truncated']} 行被截**"
+                 f"（如 {hs['truncated_keys'][:4]}），要全文报 `qid#编号` 现场取。")
+    by_q: dict[str, list[dict]] = {}
+    for r in fill_rows:
+        by_q.setdefault(r["qid"], []).append(r)
     lines = [
         "# 第二人标注工单",
         "",
         JUDGEMENT_LINE,
         "",
-        "**怎么填**：只改最后一列 `1` 或 `0`，其它列别动。一个题的每一行都要填，不留 TODO。",
+        "**怎么填**：只改最后一列 `1` 或 `0`，其它列别动。一个题的每一行都要填，不留 TODO。"
+        f"本批 **{len(by_q)} 题 / {len(fill_rows)} 行**，逐题行数见各标题后。",
+        "**嫌横向找列容易错行**：`uv run python scripts/m4_annotation_fill_helper.py --prefix <前缀> --emit`"
+        " 会生成一张只有键的小表（`q-013#1=`），在等号后敲 0/1，再 `--merge` 写回——"
+        "写回前自动备份整份，漏一行、填 `?`、键写错都会**被拒绝而不是被当成 0**。",
         f"**防假绿设计**：{outside_share:.0%} 的题里含第一人未标出的候选块，所以你有机会表示异议。",
         "**刻意不告诉你**第一人标了哪些——一起看就会被锚定，那测出来的不是独立性。",
-        f"正文只截前 {TEXT_HEAD_CHARS} 字；要哪一条的全文，报 `qid#编号` 即可现场取。",
+        head_note,
         f"**候选来源**：{'稠密+词法' if hybrid else '服务端 BM25（词法）'}——"
         "用来定 gold 合适，不代表系统实际答题用的那五块。",
+        "",
+        "**细则 1 在本批几乎不会触发**：这 15 题是拆题后重出的，题面已收成**单一问点**，"
+        "所以「必须同一块答全两问」这条只在块里出现**两件事、题只问一件**时用来防误读，不是用来加严。"
+        "真正吃紧的是细则 2（别的项目/行业的同名章节）与细则 3（描述型块 vs 带强制性句子）。",
         "",
         "---",
         "",
     ]
-    by_q: dict[str, list[dict]] = {}
-    for r in fill_rows:
-        by_q.setdefault(r["qid"], []).append(r)
-    qtext = {q["qid"]: q["question"] for q in pool}
     for qid in sorted(by_q):
         lines.append(f"## {qid}｜{qtext.get(qid, '')}")
+        lines.append("")
+        lines.append(f"共 {len(by_q[qid])} 行，全部要填。")
         lines.append("")
         lines.append(f"| # | 章节 | 页 | 正文起头 | {FILL_COL} |")
         lines.append("|---|---|---|---|---|")
         for r in by_q[qid]:
-            lines.append(f"| {r['cand_no']} | {r['section_no']} | {r['page']} | {r['text_head']} | TODO |")
+            lines.append(f"| {r['cand_no']} | {r['section_no']} | {r['page']} | {r['text_head']} | "
+                         f"{(r.get(FILL_COL) or 'TODO').strip() or 'TODO'} |")
         lines.append("")
     return "\n".join(lines)
+
+
+def _rewrite_worksheet_only(prefix: str, hybrid: bool) -> int:
+    """人读版式改了（截断话术、行数提示）但工单内容一个字没动时用这条路径：
+    不连 Milvus/PG、不重跑检索、**不重写 CSV**，所以不会碰到已填或待填的任何一格。"""
+    from kee.eval.eval_data import QUESTIONS
+
+    art = Path(get_settings().resolved_artifact_dir())
+    csv_path = art / f"{prefix}_fill.csv"
+    if not csv_path.exists():
+        print(f"[缺工单] {csv_path.name} 不在；worksheet-only 只能重排版式，不能凭空造工单。")
+        return 2
+    lines = [l for l in csv_path.read_text(encoding="utf-8-sig").splitlines() if not l.startswith("#")]
+    rows = list(csv.DictReader(lines))
+    qtext = {q["qid"]: q["question"] for q in QUESTIONS}
+    out = art / f"{prefix}_worksheet.md"
+    filled = sum(1 for r in rows if (r.get(FILL_COL) or "").strip() in ("0", "1"))
+    # 「有几成题含第一人未标的块」必须**算**出来。写死一个数（哪怕碰巧对上）就是给没人复核的断言配读数；
+    # 没有 key 文件可算时这行宁可不出现。
+    share = _outside_a_share(art / f"{prefix}_key.json")
+    out.write_text(_worksheet(rows, qtext, share if share is not None else 0.0, hybrid), encoding="utf-8")
+    print(f"只重排版式：{out.name}｜{len({r['qid'] for r in rows})} 题 / {len(rows)} 行｜已填 {filled} 行（未动）")
+    print("防假绿读数：" + (f"{share:.0%} 的题含第一人未标的候选块（由 _key.json 聚合算出）"
+                          if share is not None else "无 _key.json 可算 ⇒ 不写这句，不编数"))
+    print(f"CSV 未被改写：{csv_path}")
+    return 0
+
+
+def _outside_a_share(key_path: Path) -> float | None:
+    """只取聚合值：有几成题里存在 A 未标的块。**不输出任何逐行 A 标签**——
+    逐行标签会让第二人锚定，聚合值不会。"""
+    import json
+    from collections import defaultdict
+
+    if not key_path.exists():
+        return None
+    by: dict[str, list[int]] = defaultdict(list)
+    for r in json.loads(key_path.read_text(encoding="utf-8")):
+        by[r["qid"]].append(int(r.get("in_a_strict_gold") or 0))
+    if not by:
+        return None
+    return sum(1 for v in by.values() if 0 in v) / len(by)
 
 
 if __name__ == "__main__":
