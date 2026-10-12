@@ -1,0 +1,208 @@
+"""M5-01 DoD 逐条核对：数字从证据产物里**取**，不手抄。
+
+为什么做成脚本而不是手写表：手抄的读数会随产物重跑而失真，而 M5 的交付物恰好是
+「验收时这张表还能不能复算」。取不到数的一律标 `不可测` / `待裁决`，**不许留空当通过**。
+
+一条自己踩过的坑写在这儿：汇总**不能靠散文里有没有「达标」二字来数**。
+第一版用 `verdict.startswith("达标")` 计数，于是「检索达标；端到端**不达标**」被算进了达标。
+现在 status 是显式字段，散文只负责解释。
+
+跑法：uv run python scripts/m5_dod_check.py
+产物：var/gate0/m5_dod.json + reports/m5/M5_DoD核对表.md
+"""
+
+from __future__ import annotations
+
+import json
+import statistics
+from datetime import datetime
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+ART = ROOT / "var" / "gate0"
+OUT_MD = ROOT / "reports" / "m5" / "M5_DoD核对表.md"
+STATUSES = ("达标", "部分达标", "不达标", "不可测", "本次产出")
+
+
+def load(name: str) -> dict:
+    p = ART / name
+    try:
+        return json.loads(p.read_text(encoding="utf-8")) if p.exists() else {}
+    except Exception:  # noqa: BLE001
+        return {}
+
+
+def pct(x: float) -> str:
+    return f"{x * 100:.2f}%"
+
+
+def quantile(vals: list[float], q: float) -> float:
+    v = sorted(vals)
+    return round(v[min(len(v) - 1, max(0, int(q * len(v)) - 1))], 1) if v else 0.0
+
+
+def e2e_from_pg() -> dict:
+    """端到端延迟取**线上 HTTP 路径每轮落库那一列**（`session_turn.total_ms`），不取探针自报数——
+    那才是用户点一次发送实际等到的时间。代价：这张表里混着验证脚本自己打的流量，必须一并说明。"""
+    import psycopg
+    from psycopg.rows import dict_row
+
+    from kee.config import get_settings
+
+    with psycopg.connect(get_settings().postgres_dsn, row_factory=dict_row) as conn:
+        vals = [r["total_ms"] for r in conn.execute(
+            "SELECT total_ms FROM session_turn WHERE total_ms IS NOT NULL ORDER BY total_ms").fetchall()]
+    if not vals:
+        return {"n": 0, "p50": 0.0, "p95": 0.0, "max": 0.0, "n_over_10s": 0}
+    return {"n": len(vals), "p50": vals[len(vals) // 2], "p95": quantile(vals, 0.95),
+            "max": vals[-1], "n_over_10s": sum(1 for v in vals if v > 10000)}
+
+
+def row(no, item, status, crit, reading, ev, say) -> dict:
+    return {"#": no, "验收项": item, "判定标准": crit, "实测读数": reading,
+            "证据": ev, "结论": status, "引用时必须连着说的话": say}
+
+
+def build() -> dict:
+    m2, ans, concl = load("m2_eval.json"), load("m3_answer_probe.json"), load("m3_conclusion_probe.json")
+    conf, stream, kb = load("m3_confidence_probe.json"), load("m4_stream_probe.json"), load("m4_kb_write_path.json")
+    m1, v3, v4 = load("m1_verify.json"), load("m3_verify.json"), load("m4_verify.json")
+    g6 = load("m4_g06_rerun2.json")
+    ver = {i: load(f"verdict_0{i}.json") for i in range(1, 7)}
+
+    bf = m2.get("baseline_full", {})
+    sg = bf.get("strict_gold", {})
+    calib = ans.get("calibration_on_gradable", {})
+    lat = e2e_from_pg()
+    grounded = [r.get("number_groundedness") for r in conf.get("rows", []) if r.get("number_groundedness") is not None]
+    invented = [r for r in conf.get("rows", []) if r.get("invented_numbers")]
+    struct_ok, n_gen = concl.get("分型", {}).get("ok", 0), concl.get("n_generations", 0)
+    g6s = g6.get("steps", {})
+    sd = ans.get("status_dist", {})
+
+    rows = [
+        row("1", "Must 链端到端可演示", "达标", "9 条 Must 全链路可跑通",
+            f"M1 {len(m1.get('steps', []))} 步 ｜ M2 基线 gates_passed={m2.get('gates_passed')} ｜ "
+            f"M3 {len(v3.get('steps', []))} 步（多轮/流式/RBAC/拒答/审计）｜ M4 交付层 {len(v4.get('checks', []))} 项 ｜ "
+            f"M4 写路径 {len(kb.get('checks', []))} 项",
+            ["var/gate0/m1_verify.json", "var/gate0/m2_eval.json", "var/gate0/m3_verify.json",
+             "var/gate0/m4_verify.json", "var/gate0/m4_kb_write_path.json"],
+            "写路径那 13 项跑在 **scratch 库 + scratch 集合**（线上没有删除文档的端点，不能拿生产语料试）；"
+            "浏览器里的手动上传→复核是在「上传必 500」缺陷**修复之前**走的，修完还没重走。"),
+        row("2", "检索质量", "达标" if m2.get("gates_passed") else "不达标",
+            "Hit@5 ≥ 95% 且 strict gold Recall@5 ≥ 85% 且 MRR ≥ 0.75；section 只作报告值并附 n 与 95% CI",
+            f"Hit@5(strict) {pct(sg.get('hit@5', 0))} ｜ Recall@5(strict) {pct(sg.get('recall@5', 0))} ｜ MRR {bf.get('mrr')} ｜ "
+            f"P95 检索 {bf.get('latency_ms', {}).get('p95')}ms ｜ 报告值 section Recall@5 {pct(bf.get('recall@5', 0))}"
+            f"（95% CI {bf.get('recall@5_ci95')}，n={bf.get('n')}）",
+            ["var/gate0/m2_eval.json", "reports/m2/M2_检索评测基线.md 第十节"],
+            f"section {pct(bf.get('recall@5', 0))} 仍低于 0.85，按 V1.0.3 裁决它只是报告值——"
+            "只说「检索门禁通过」而不带这句，就是选择性引用。"),
+        row("3", "引用可信", "部分达标", "引用正确率 ≥ 90%；幻觉率 ≤ 10%（Faithfulness 为报告值，非阻塞）",
+            f"行级引用落 gold {ans.get('行级引用落gold')} ｜ 数字落地率均值 "
+            f"{round(statistics.mean(grounded), 4) if grounded else 'NA'}（{len(grounded)} 题可判）｜ "
+            f"含编造数字的题 {len(invented)} 道 ｜ 零引用结论 {ans.get('契约拦下的空结论')} 条",
+            ["var/gate0/m3_answer_probe.json", "var/gate0/m3_confidence_probe.json"],
+            "「引用落 gold」= 引用的块确实是该题 gold，**不等于**结论内容正确；"
+            "现在能说的是「出处可信」，不能说「答案可信」——后者等 #40 的 answer_correct。"),
+        row("4", "校准与结构化", "部分达标", "ECE ≤ 0.10；结构化输出首次成功率 ≥ 90%",
+            f"结构化首次成功率 {pct(struct_ok / n_gen) if n_gen else 'NA'}（{struct_ok}/{n_gen}，被截断 {concl.get('被截断数')}）｜ "
+            f"ECE **{calib.get('ece', '无数')}**（n={calib.get('n')}，mean_conf {calib.get('mean_conf')} vs accuracy {calib.get('accuracy')}）",
+            ["var/gate0/m3_conclusion_probe.json", "var/gate0/m3_answer_probe.json", "var/gate0/verdict_05.json"],
+            f"ECE {calib.get('ece')} > 0.10 ⇒ 这一格不达标；且这份 accuracy=1.0 来自**标签零方差**，"
+            "所以它既不是「快校准好了」也不是「校准崩了」，是「拿没有方差的标签算出来的偏差」。"
+            "关闭只有一条路：#40 的 58 行工单（已生成、未填）。"),
+        row("5", "延迟", "不达标", "P95 检索 < 800ms；P95 端到端 < 3s（本地命中路径）",
+            f"P95 检索 {bf.get('latency_ms', {}).get('p95')}ms ✓ ｜ 端到端（PG session_turn）n={lat['n']}："
+            f"p50 {lat['p50']:.0f}ms / p95 {lat['p95']:.0f}ms / max {lat['max']:.0f}ms"
+            f"（>10s 的 {lat['n_over_10s']} 行是模型冷装载）｜ 流式首可见 p50 {stream.get('first_visible_ms', {}).get('p50')}ms",
+            ["var/gate0/m2_eval.json", "PostgreSQL:session_turn", "var/gate0/m4_stream_probe.json", "var/gate0/verdict_01.json"],
+            "**DoD#5 写 P95 端到端 < 3s，《项目定义》第六节已按 Gate 0 实测改成 < 6s**，技术方案 8.1 也写 < 6s——"
+            f"三处两个值，M5 必须先定口径；而现值 p50 就 {lat['p50']:.0f}ms，**照哪一边都过不了**。"
+            f"这批 total_ms 混着验证脚本自己打的流量（{lat['n']} 行），不是纯用户流量。"),
+        row("6", "业务指标", "不可测", "自助解答率 ≥ 60%；重复提问占比下降 ≥ 30%；新人上手周期缩短 ≥ 30%",
+            f"无真实用户与线上流量 ⇒ 不可测。结构性代理：可答题 {ans.get('n_answerable')} 道里 "
+            f"answer {sd.get('answer')} / tentative {sd.get('tentative')} / refuse {sd.get('refuse')} / escalate {sd.get('escalate')}，"
+            f"需转人工 {ans.get('needs_human')} 道",
+            ["var/gate0/m3_answer_probe.json"],
+            "代理读数测的是「构造语料上的系统行为分布」，**不是**用户是否真的自助解决了问题。"
+            "把它当业务指标写进材料就是编数；这一格在 MVP 阶段只能标不可测。"),
+        row("7", "合规", "部分达标", "数据不出域；RBAC 检索层过滤；审计追加禁改",
+            f"⑥ 2026-10-12 复跑：一键 {g6s.get('up', {}).get('startup_sec')}s、全 healthy={g6s.get('up', {}).get('all_healthy')}、"
+            f"非回环绑定 {len(g6s.get('binding', {}).get('non_loopback_bindings', []))}、"
+            f"宿主审计非回环连接 {len(g6.get('core_path', {}).get('non_loopback_connections', []))}、"
+            f"公网出网 {len(g6.get('core_path', {}).get('public_egress_connections', []))}、"
+            f"云端兜底={g6s.get('cloud_switch', {}).get('cloud_fallback_enabled')} ｜ "
+            f"静态扫描运行期出域 {len(g6s.get('static_scan', {}).get('runtime_data_egress', []))} ｜ "
+            "RBAC 密级/行业过滤、审计追加禁改各有实测",
+            ["var/gate0/m4_g06_rerun2.json", "var/gate0/m4_verify.json", "reports/m4/M4_前端与一键Demo.md"],
+            "「断网下核心链路可运行」这句**没被端到端证明**：`internal: true` 把宿主↔容器通路一起切断，"
+            "而 API 在宿主（ADR-12 待裁决）；替代路 `enable_ip_masquerade=false` 实测在 Docker Desktop 上不成立。"
+            "三条里 RBAC 与审计禁改是硬的，这一条悬着。"),
+        row("8", "交付物", "本次产出", "版本锁定清单 + 风险登记册定稿",
+            "本脚本 + `scripts/m5_version_lock.py` + `reports/m5/M5_风险登记册定稿.md`",
+            ["reports/m5/M5_DoD核对表.md", "reports/m5/M5_版本锁定清单.md", "reports/m5/M5_风险登记册定稿.md"],
+            "清单里凡标 `未固定` 的都要带原因，不能靠「本地能跑」蒙过去。"),
+    ]
+
+    return {
+        "generated_at": datetime.now().isoformat(timespec="seconds"),
+        "principle": "读数全部从 var/gate0 产物与 PG 取；取不到就标不可测；status 显式给定，不靠散文里有没有「达标」二字来数",
+        "dod": rows,
+        "gate0_verdicts_latest": [{"门禁": f"Gate0 {k}", "结论": v.get("mark"), "实测": v.get("measured"), "ts": v.get("ts")}
+                                  for k, v in ver.items() if v],
+        "summary": {k: sum(1 for r in rows if r["结论"] == k) for k in STATUSES},
+    }
+
+
+def to_md(rep: dict) -> str:
+    s = rep["summary"]
+    L = ["# M5 · DoD 逐条核对表", "",
+         f"> 生成时点：{rep['generated_at']}｜由 `scripts/m5_dod_check.py` 从 `var/gate0/` 产物与 PG **取数**生成，不手抄。",
+         "> 原则：取不到数就标「不可测 / 待裁决」，**不许留空当通过**；每条结论必须连同最右列那句一起引用，"
+         "否则构成选择性引用。", "",
+         f"**汇总**：达标 {s['达标']} ｜ 部分达标 {s['部分达标']} ｜ 不达标 {s['不达标']} ｜ "
+         f"不可测 {s['不可测']} ｜ 本次产出 {s['本次产出']}（共 {len(rep['dod'])} 条）", "",
+         "| # | 验收项 | 判定标准 | 实测读数 | 证据 | 结论 | 引用时必须连着说的话 |",
+         "|---|---|---|---|---|---|---|"]
+    for r in rep["dod"]:
+        cells = [r["#"], r["验收项"], r["判定标准"], r["实测读数"],
+                 "、".join(f"`{e}`" for e in r["证据"]), f"**{r['结论']}**", r["引用时必须连着说的话"]]
+        L.append("| " + " | ".join(str(c).replace("\n", " ").replace("|", "／") for c in cells) + " |")
+    L += ["", "## 停止条件（V1.1 第九节）对照", "",
+          "| 停止条件 | 现在能不能说满足 | 依据 |", "|---|---|---|",
+          "| ① Must 链端到端可演示 | **能**，但要同段说明写路径跑在 scratch 命名空间 | DoD#1 |",
+          "| ② ≥ 3 项量化指标达标 | **能**：Hit@5(strict)、Recall@5(strict)、P95 检索、结构化首次成功率——"
+          "四项各有同轮可复算读数；但端到端延迟与 ECE 两格不过 | DoD#2、#4、#5 |",
+          "| ③ 版本锁定清单 + 风险登记册定稿 | 本次产出 | DoD#8 |", "",
+          "## Gate 0 六项门禁的最新状态（不是只看 2026-10-09 那份）", "",
+          "| 门禁 | 结论 | 实测 | 时点 |", "|---|---|---|---|"]
+    for g in rep["gate0_verdicts_latest"]:
+        L.append(f"| {g['门禁']} | {g['结论']} | {str(g['实测'])[:150].replace('|', '／')} | {g['ts']} |")
+    L += ["", "> ⑥ 已用 2026-10-12 复跑读数替换（`var/gate0/m4_g06_rerun2.json`）。",
+          "> ⑤ 的 **fail 没有被后续任何一轮改成通过**：M3-04b 把拒答修到 7/7、转人工 5/5，"
+          "但 ECE 那一格至今空（缺有方差的正确性标签）——这是诚实状态，不是笔误。",
+          "", "## 这张表暴露的**口径互相打架**（M5 必须先裁，否则「达标」无定义）", "",
+          "1. **P95 完整答案 / 端到端**：DoD#5 写 `< 3s`，《项目定义》第六节写 `< 6s（Gate 0 实测后修订）`，"
+          "技术方案 8.1 写 `< 6s`——三处两个值，**且现值两边都过不了**。",
+          "2. **首 token 1.2s**：门禁值在、口径没定（信封首字符 / 首可见内容 / 首事件三种读法差一个数量级），"
+          "已登记暂缓·待裁决；定案前对外不得声称达标。",
+          "3. **「引用正确率」到底指什么**：DoD#3 的 ≥ 90% 现在只有「引用落 gold」这一种实测，"
+          "而它不等于结论正确；要么改判据文字、要么等 answer_correct，**不能拿落 gold 冒充正确率**。", ""]
+    return "\n".join(L)
+
+
+def main() -> int:
+    rep = build()
+    ART.mkdir(parents=True, exist_ok=True)
+    (ART / "m5_dod.json").write_text(json.dumps(rep, ensure_ascii=False, indent=2, default=str), encoding="utf-8")
+    OUT_MD.parent.mkdir(parents=True, exist_ok=True)
+    OUT_MD.write_text(to_md(rep), encoding="utf-8")
+    print("汇总:", json.dumps(rep["summary"], ensure_ascii=False))
+    for r in rep["dod"]:
+        print(f"  DoD#{r['#']} {r['验收项']}: {r['结论']}")
+    print("产物：", OUT_MD)
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

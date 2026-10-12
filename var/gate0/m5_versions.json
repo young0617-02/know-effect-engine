@@ -1,0 +1,149 @@
+{
+  "generated_at": "2026-10-12T15:59:26",
+  "principle": "取不到就标 未固定 并写原因；未固定项 = 可移植性缺口，M6 前逐条销掉或明写接受",
+  "host": {
+    "os": "Windows 11",
+    "machine": "AMD64",
+    "python": "3.12.8",
+    "python_prefix": "D:\\project\\know-effect-engine\\.venv",
+    "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU, 8188 MiB",
+    "shell": "C:\\Program Files\\Git\\bin\\bash.exe"
+  },
+  "toolchain": {
+    "uv": "uv 0.11.31 (b7fdec626 2026-07-21 x86_64-pc-windows-msvc)",
+    "docker": "Docker version 29.6.2, build dfc4efb",
+    "docker_compose": "5.3.1",
+    "node": "v24.19.0",
+    "npm": "__ERR__ FileNotFoundError: [WinError 2] 系统找不到指定的文件。"
+  },
+  "python_lock": {
+    "file": "uv.lock",
+    "sha256_head": "6b7dcdc079d1",
+    "pyproject": "f4ea615cca0e"
+  },
+  "key_packages": {
+    "fastapi": "0.143.0",
+    "uvicorn": "0.54.0",
+    "pydantic": "2.14.0",
+    "pydantic-settings": "2.15.0",
+    "psycopg": "3.3.6",
+    "pymilvus": "3.0.2",
+    "redis": "8.1.0",
+    "langgraph": "1.2.14",
+    "httpx": "0.28.1",
+    "numpy": "2.5.3",
+    "sentence-transformers": "6.1.0",
+    "torch": "2.14.0+cu130",
+    "transformers": "5.19.0",
+    "pytest": "9.1.1"
+  },
+  "not_declared_in_pyproject": {
+    "torch / transformers / sentence-transformers": "**pyproject 刻意不声明**，由本机 D:\\py312-torch 的 CUDA 环境经 .pth 挂载提供——这是 ADR-12（API 未容器化）的根因，也是这张清单上最大的可移植性缺口。"
+  },
+  "frontend_lock": {
+    "file": "frontend/package-lock.json",
+    "sha256_head": "f65105ee98a5",
+    "vite": true
+  },
+  "containers": {
+    "images": [
+      "crm-api:0.1.0\t6d0670abfca6",
+      "crm-pg:16\t360a1868088a",
+      "hawkeye/rag-adapter:local\t27cd9b23c45f",
+      "prom/prometheus:latest\tefd719c99d83",
+      "hawkeye/webhook-adapter:local\t640b08429869",
+      "auscult-ingest-self-decoder:latest\t56b21ac80107",
+      "paradedb/paradedb:latest\t188591a0bc31",
+      "neo4j:5-community\tab3aafb0020e",
+      "redis:7-alpine\t858f009f9709",
+      "eclipse-mosquitto:2\t38c0da4f2ef8",
+      "docker:cli\t018edbc908e0",
+      "bash:5\t61962062d969",
+      "alpine:latest\t294b683cb724",
+      "mongodb/mongodb-atlas-local:8.0\t33de960ef58b",
+      "mongo:8\t5d7043a4ffe0",
+      "nacos/nacos-server:latest\t1c191c30c8cd",
+      "redis:8\t298e5b3bc566",
+      "postgres:18\t4ef4dbc939d6",
+      "pgvector/pgvector:pg18\t2ba9ca5f2e7d",
+      "milvusdb/milvus:v3.0.0\t49371c30af46",
+      "mysql:8.4\tb3b90af2a655",
+      "docker/desktop-cloud-provider-kind:v0.6.0\t46d51b990e97",
+      "docker/desktop-containerd-registry-mirror:v0.0.4\t1de142695bb0",
+      "envoyproxy/envoy:v1.36.7\t29d778ba078e",
+      "kindest/node:v1.36.1\t3489c7674813",
+      "alpine:3.20\td9e853e87e55",
+      "quay.io/coreos/etcd:v3.5.25\t52f17f7e56e4",
+      "tdengine/tsdb:3.3.8.0\t36e2bf82f151",
+      "swr.cn-east-2.myhuaweicloud.com/kuboard/kuboard:v3\td4fa05057802",
+      "golang:1.23-alpine\t383395b794df",
+      "nginx:1.27-alpine\t65645c7bb6a0",
+      "minio/minio:RELEASE.2024-12-18T13-15-44Z\t1dce27c494a1",
+      "prom/prometheus:v2.53.1\tf20d3127bf28",
+      "grafana/grafana:11.1.0\t079600c9517b",
+      "prom/node-exporter:v1.8.1\tfa7fa12a57ef",
+      "axllent/mailpit:v1.15\tc4eacf95c04f",
+      "quay.io/strimzi/kafka:0.40.0-kafka-3.7.0\tc491a95f9b9b",
+      "prom/alertmanager:v0.27.0\te13b6ed5cb92",
+      "prom/blackbox-exporter:v0.24.0\t3af31f8bd1ad",
+      "swr.cn-east-2.myhuaweicloud.com/kuboard/kuboard-agent:v3\tdc94b0fc47af",
+      "swr.cn-east-2.myhuaweicloud.com/library/nginx:latest\tc0b69559d28f"
+    ],
+    "compose_files": {
+      "docker-compose.gate0.yml": "0feafc8850ec",
+      "docker-compose.m4.yml": "5f9eecfe8632",
+      "docker-compose.gate0.iso.yml": "5e19ef937df8",
+      "docker-compose.gate0.nodev.yml": "cec446d18e21"
+    },
+    "nginx_conf": "408fb36c8af4"
+  },
+  "servers": {
+    "milvus": "3.0.0",
+    "postgres": "18.6 (Debian 18.6-1.pgdg13+2)"
+  },
+  "models": [
+    {
+      "项": "BGE-M3（稠密+稀疏嵌入）",
+      "路径": "D:/modelscope/hub/models/BAAI--bge-m3/snapshots/master",
+      "状态": "30 个文件 / 4.59 GB",
+      "摘要": "f86c480bf18a"
+    },
+    {
+      "项": "BGE-reranker-v2-m3（重排）",
+      "路径": "D:/modelscope/hub/models/BAAI--bge-reranker-v2-m3/snapshots/master",
+      "状态": "14 个文件 / 2.29 GB",
+      "摘要": "05b0fa09f7fc"
+    },
+    {
+      "项": "MinerU 4.x ONNX（版面+OCR+表格）",
+      "路径": "D:/modelscope/hub/models/MinerU-4_models_onnx",
+      "状态": "13 个文件 / 0.86 GB",
+      "摘要": "eccf3efb7beb"
+    }
+  ],
+  "ollama": {
+    "raw": "NAME              ID              SIZE      MODIFIED    \nqwen2.5:7b        845dbda0ea48    4.7 GB    3 weeks ago    \ndeepseek-r1:7b    755ced02ce7b    4.7 GB    3 weeks ago",
+    "digest_fixed": false,
+    "note": "`ollama list` 不输出权重 sha256 ⇒ **生成模型未被真正锁定**。同 tag 被 `ollama pull` 覆盖后本机不会报错，换机可能拿到不同权重。M6 前要用 `ollama show --format json` 补 digest。"
+  },
+  "env_keys": {
+    "KEE_BGE_M3_PATH": true,
+    "KEE_BGE_RERANKER_PATH": true,
+    "KEE_LLM_MODEL": true,
+    "KEE_OLLAMA_URL": true,
+    "KEE_MILVUS_URI": true,
+    "KEE_POSTGRES_DSN": true,
+    "KEE_REDIS_URL": true,
+    "KEE_CLOUD_FALLBACK_ENABLED": true,
+    "KEE_RRF_K": false,
+    "KEE_DENSE_TOP_K": false,
+    "KEE_SPARSE_TOP_K": false,
+    "KEE_RERANK_TOP_N": false,
+    "KEE_REWRITE_MODE": false
+  },
+  "unfixed": [
+    "生成模型 qwen2.5:7b 无 digest（见 ollama 项）",
+    "torch/transformers 未进 pyproject 依赖声明（见 not_declared_in_pyproject）",
+    "宿主 OS 补丁级别未登记（Windows 11 26200 只到 build 号）"
+  ]
+}
