@@ -1,0 +1,64 @@
+{
+  "n_questions": 80,
+  "n_children": 193,
+  "n_parents": 140,
+  "answerable": 68,
+  "refuse": 7,
+  "escalate": 5,
+  "gradeable": 73,
+  "gold_empty_but_answerable": 0,
+  "unmatched_qids": [],
+  "gold_defects": [
+    {
+      "qid": "q-054",
+      "n_strict": 6,
+      "limit": 3,
+      "waived": true,
+      "waiver_reason": "五步交付法：收窄后 strict 仍有 6 块 >3，这 6 块都逐条列了五个阶段，再收窄就要删第二人确认「能独立答全」的块——「>3」在这道题上是下界受标注约束，不是关键词写宽了。",
+      "question": "公司的五步交付法是哪五个阶段？"
+    }
+  ],
+  "gold_defect_count": 1,
+  "gold_defect_unwaived": [],
+  "doc_scope_defects": [
+    {
+      "qid": "q-044",
+      "named_kinds": [
+        "ifspec"
+      ],
+      "gold_kinds": [
+        "presale",
+        "runbook"
+      ],
+      "waived": false,
+      "waiver_reason": "",
+      "question": "运维图省事想直接进库里把那个字段改回来，规范里哪句话把这条路堵死了？"
+    }
+  ],
+  "doc_scope_defect_unwaived": [
+    "q-044"
+  ],
+  "manual_override_qids": [
+    "q-012",
+    "q-014",
+    "q-025",
+    "q-044",
+    "q-056",
+    "q-058",
+    "q-071",
+    "q-076",
+    "q-077",
+    "q-078",
+    "q-080"
+  ],
+  "mean_gold_per_question": 2.15,
+  "by_category": {
+    "术语": 16,
+    "编号": 13,
+    "方案名": 12,
+    "口语化": 14,
+    "跨文档": 13,
+    "无答案": 7,
+    "敏感": 5
+  }
+}

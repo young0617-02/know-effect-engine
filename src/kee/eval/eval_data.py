@@ -451,7 +451,7 @@ QUESTIONS: list[dict] = [
     },
     {
         "qid": "q-044",
-        "question": "运维图省事想直接进库里把那个字段改回来，规范里哪句话把这条路堵死了？",
+        "question": "运维图省事想直接进库里把那个字段改回来，哪条规定把这条路堵死了？",
         "category": "口语化",
         "gold_keywords": ["审计追踪", "数据库直连"],
         "gold_projects": ["PRJ-CHM-2025-014"],

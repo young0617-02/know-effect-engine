@@ -236,7 +236,12 @@ def main() -> int:
     # 而是两把不同尺子上的两个数——过去几批 gold 改动后 prev 指针一直没动，
     # 于是一行「delta=+0.0179 / regressed=false」其实是在跟四批之前、70 题那把尺子比。
     ruler = {"n_questions": len(questions), "n_graded": base_full.get("n"),
-             "gold_section_total": sum(r.get("n_gold", 0) for r in base_full.get("per_question", []))}
+             "gold_section_total": sum(r.get("n_gold", 0) for r in base_full.get("per_question", [])),
+             # 题面哈希也要进指纹：改题干等于换了查询串，检索结果本来就该变——
+             # 只看题量与 gold 数的话，一次纯题面改动会被读成「同尺子可比」，那是假的。
+             "question_hash": zlib.crc32("|".join(f"{q['qid']}::{q['question']}"
+                                                  for q in sorted(questions, key=lambda x: x["qid"]))
+                                         .encode("utf-8"))}
     prev_path = Path(args.prev) if args.prev else art / "m2_eval_prev.json"
     prev = json.loads(prev_path.read_text(encoding="utf-8")) if prev_path.exists() else None
     regression = None

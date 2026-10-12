@@ -20,24 +20,8 @@
   ],
   "gold_defect_count": 1,
   "gold_defect_unwaived": [],
-  "doc_scope_defects": [
-    {
-      "qid": "q-044",
-      "named_kinds": [
-        "ifspec"
-      ],
-      "gold_kinds": [
-        "presale",
-        "runbook"
-      ],
-      "waived": false,
-      "waiver_reason": "",
-      "question": "运维图省事想直接进库里把那个字段改回来，规范里哪句话把这条路堵死了？"
-    }
-  ],
-  "doc_scope_defect_unwaived": [
-    "q-044"
-  ],
+  "doc_scope_defects": [],
+  "doc_scope_defect_unwaived": [],
   "manual_override_qids": [
     "q-012",
     "q-014",

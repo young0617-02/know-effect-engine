@@ -42,7 +42,7 @@ q-040,"厂里一路联锁失去保护了，值班经理问这算几级事故、�
 q-041,"客户问我们那个心跳多久算超时，这个数在哪儿有依据？","心跳超时|15 秒",TODO_ANNOTATOR2,TODO_ANNOTATOR2,
 q-042,"台区电量老对不上，怀疑是抄表不同期，系统看的是哪个窗口、多长算合格？","采集时间窗|15 分钟",TODO_ANNOTATOR2,TODO_ANNOTATOR2,
 q-043,"厂里验收是不是真去碰联锁啊？现场那套故障是怎么试出来的？","FAT 与 SAT 验证|注错",TODO_ANNOTATOR2,TODO_ANNOTATOR2,
-q-044,"运维图省事想直接进库里把那个字段改回来，规范里哪句话把这条路堵死了？","审计追踪|数据库直连",TODO_ANNOTATOR2,TODO_ANNOTATOR2,
+q-044,"运维图省事想直接进库里把那个字段改回来，哪条规定把这条路堵死了？","审计追踪|数据库直连",TODO_ANNOTATOR2,TODO_ANNOTATOR2,
 q-045,"检修要临时摘一个联锁，最多能摘多久，超时了咋办？","联锁摘除|24 小时",TODO_ANNOTATOR2,TODO_ANNOTATOR2,
 q-046,"车间电压一闪，采集那边咋保证记录不断，能自己顶多久？","断电|本地缓存",TODO_ANNOTATOR2,TODO_ANNOTATOR2,
 q-047,"想切之前先确认两地数据跟没跟上，超过多少就不能发起切换了？","同步延迟|5000 毫秒",TODO_ANNOTATOR2,TODO_ANNOTATOR2,
