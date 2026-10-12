@@ -1,0 +1,31 @@
+{
+  "n_questions": 79,
+  "n_children": 193,
+  "n_parents": 140,
+  "answerable": 67,
+  "refuse": 7,
+  "escalate": 5,
+  "gradeable": 72,
+  "gold_empty_but_answerable": 0,
+  "unmatched_qids": [],
+  "manual_override_qids": [
+    "q-012",
+    "q-014",
+    "q-044",
+    "q-056",
+    "q-058",
+    "q-076",
+    "q-077",
+    "q-078"
+  ],
+  "mean_gold_per_question": 2.14,
+  "by_category": {
+    "术语": 15,
+    "编号": 13,
+    "方案名": 12,
+    "口语化": 14,
+    "跨文档": 13,
+    "无答案": 7,
+    "敏感": 5
+  }
+}

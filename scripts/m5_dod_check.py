@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import json
 import statistics
+from collections import Counter
 from datetime import datetime
 from pathlib import Path
 
@@ -68,6 +69,9 @@ def build() -> dict:
     conf, stream, kb = load("m3_confidence_probe.json"), load("m4_stream_probe.json"), load("m4_kb_write_path.json")
     m1, v3, v4 = load("m1_verify.json"), load("m3_verify.json"), load("m4_verify.json")
     g6 = load("m4_g06_rerun2.json")
+    ac = load("answer_correct_calibration.json")
+    ap = ac.get("populations", {}).get("answer_prod", {})
+    ab = ac.get("populations", {}).get("all_behav", {})
     ver = {i: load(f"verdict_0{i}.json") for i in range(1, 7)}
 
     bf = m2.get("baseline_full", {})
@@ -79,6 +83,12 @@ def build() -> dict:
     struct_ok, n_gen = concl.get("分型", {}).get("ok", 0), concl.get("n_generations", 0)
     g6s = g6.get("steps", {})
     sd = ans.get("status_dist", {})
+    # #40 工单没回收时这一格必须显式「无数」，不能显示成 0.00%——那是把「没测」写成「测了且不合格」
+    ac_acc = f"{pct(ap['accuracy'])}（{ap['n_correct']}/{ap['n']}）" if ap.get("n") else "无数（#40 answer_correct 工单未回收）"
+    ac_ece = f"{ap['ece']}" if ap.get("n") else "无数（同上）"
+
+    cause_short = "、".join(f"{n}×{k.split('：')[0]}"
+                            for k, n in Counter(v.split("：")[0] for v in ac.get("wrong_row_causes", {}).values()).items())
 
     rows = [
         row("1", "Must 链端到端可演示", "达标", "9 条 Must 全链路可跑通",
@@ -98,21 +108,33 @@ def build() -> dict:
             f"section {pct(bf.get('recall@5', 0))} 仍低于 0.85，按 V1.0.3 裁决它只是报告值——"
             "只说「检索门禁通过」而不带这句，就是选择性引用。"),
         row("3", "引用可信", "部分达标", "引用正确率 ≥ 90%；幻觉率 ≤ 10%（Faithfulness 为报告值，非阻塞）",
-            f"行级引用落 gold {ans.get('行级引用落gold')} ｜ 数字落地率均值 "
+            f"行级引用落 gold {ans.get('行级引用落gold')} ｜ **人判答案正确性（#40 已回收）{ac_acc}** ｜ 数字落地率均值 "
             f"{round(statistics.mean(grounded), 4) if grounded else 'NA'}（{len(grounded)} 题可判）｜ "
             f"含编造数字的题 {len(invented)} 道 ｜ 零引用结论 {ans.get('契约拦下的空结论')} 条",
-            ["var/gate0/m3_answer_probe.json", "var/gate0/m3_confidence_probe.json"],
-            "「引用落 gold」= 引用的块确实是该题 gold，**不等于**结论内容正确；"
-            "现在能说的是「出处可信」，不能说「答案可信」——后者等 #40 的 answer_correct。"
-            "（V1.0.14 已另加一道**答案层复核闸**：未复核版本不进答案，但那是准入控制，不是正确性度量，"
-            "不能拿它顶替这一格）"),
+            ["var/gate0/m3_answer_probe.json", "var/gate0/m3_confidence_probe.json",
+             "var/gate0/answer_correct_calibration.json", "scripts/m5_answer_correct_calibration.py"],
+            "这一格现在有**两种不同的可信**：出处可信（引用落 gold）与结论可信（真人判 answer_correct）。"
+            f"后者首次有数：{ap.get('n')} 行给出答案的行里 {ap.get('n_wrong')} 行结论错"
+            f"（错行归因：{cause_short}；明细见 `var/gate0/answer_correct_calibration.json`）。"
+            "边界必须同句说：这只覆盖 67 道可答题里真跑过生成的 62 行，"
+            "**无答案 7 + 敏感 5 题不在标签集内**——那 12 题「该拒却答了」至今没有真人标签，"
+            "所以「幻觉率 ≤ 10%」这半边仍是代理读数（编造数字），不是人判。"
+            "（V1.0.14 的**答案层复核闸**是准入控制，不是正确性度量，不能顶替这一格）"),
         row("4", "校准与结构化", "部分达标", "ECE ≤ 0.10；结构化输出首次成功率 ≥ 90%",
             f"结构化首次成功率 {pct(struct_ok / n_gen) if n_gen else 'NA'}（{struct_ok}/{n_gen}，被截断 {concl.get('被截断数')}）｜ "
-            f"ECE **{calib.get('ece', '无数')}**（n={calib.get('n')}，mean_conf {calib.get('mean_conf')} vs accuracy {calib.get('accuracy')}）",
-            ["var/gate0/m3_conclusion_probe.json", "var/gate0/m3_answer_probe.json", "var/gate0/verdict_05.json"],
-            f"ECE {calib.get('ece')} > 0.10 ⇒ 这一格不达标；且这份 accuracy=1.0 来自**标签零方差**，"
-            "所以它既不是「快校准好了」也不是「校准崩了」，是「拿没有方差的标签算出来的偏差」。"
-            "关闭只有一条路：#40 的 58 行工单（已生成、未填）。"),
+            f"ECE（真人 answer_correct，n={ap.get('n', 0)}）**{ac_ece}**"
+            f"：mean_conf {ap.get('mean_conf')} vs accuracy {ap.get('accuracy')} ｜ "
+            f"旧代理口径（L1 落 gold、标签近全 1）ECE {calib.get('ece', '无数')}",
+            ["var/gate0/m3_conclusion_probe.json", "var/gate0/answer_correct_calibration.json",
+             "scripts/m5_answer_correct_calibration.py", "var/gate0/verdict_05.json",
+             "var/gate0/confidence_calibration.json"],
+            f"ECE {ac_ece} > 0.10 ⇒ **这一格仍不达标**，但读法变了：现在标签有方差（{ap.get('n_correct')} 正 / "
+            f"{ap.get('n_wrong')} 负），所以这个偏差是**真偏差**，不再是「拿没有方差的标签算出来的」那一条。"
+            f"方向是{ap.get('ece_sign', '未定')}——分数说 {ap.get('mean_conf')}、实测 {ap.get('accuracy')}，"
+            "危险的那个方向（错答案顶着高分被放行）没有出现，高置信带内漏的是 "
+            f"{len(ab.get('gate_band', {}).get('wrong_rows_in_high_band', []))} 行贴线过的答案。"
+            "**温度缩放两档都不采纳**（负类太少不可辨识 / 拒答行复合分被钉在 0.0，拟合的是同义反复），"
+            "运行时维持 T=1.0、复合分不进门禁——沿用 2026-10-11 的裁决，本次不改口径。"),
         row("5", "延迟", "待复测", "P95 检索 < 800ms；P95 端到端 < 3s（本地命中路径）",
             f"P95 检索 {bf.get('latency_ms', {}).get('p95')}ms ✓ ｜ 端到端（PG session_turn）n={lat['n']}："
             f"p50 {lat['p50']:.0f}ms / p95 {lat['p95']:.0f}ms / max {lat['max']:.0f}ms"
@@ -159,6 +181,9 @@ def build() -> dict:
         "gate0_verdicts_latest": [{"门禁": f"Gate0 {k}", "结论": v.get("mark"), "实测": v.get("measured"), "ts": v.get("ts")}
                                   for k, v in ver.items() if v],
         "summary": {k: sum(1 for r in rows if r["结论"] == k) for k in STATUSES},
+        "ac": {"ece": ac_ece, "sign": ap.get("ece_sign", "未定"),
+                        "accuracy": ap.get("accuracy", "NA"), "mean_conf": ap.get("mean_conf", "NA"),
+                        "n": ap.get("n", 0), "coverage_boundary": ac.get("coverage_boundary", {})},
     }
 
 
@@ -186,16 +211,22 @@ def to_md(rep: dict) -> str:
           "| 门禁 | 结论 | 实测 | 时点 |", "|---|---|---|---|"]
     for g in rep["gate0_verdicts_latest"]:
         L.append(f"| {g['门禁']} | {g['结论']} | {str(g['实测'])[:150].replace('|', '／')} | {g['ts']} |")
+    ac = rep["ac"]
     L += ["", "> ⑥ 已用 2026-10-12 复跑读数替换（`var/gate0/m4_g06_rerun2.json`）。",
-          "> ⑤ 的 **fail 没有被后续任何一轮改成通过**：M3-04b 把拒答修到 7/7、转人工 5/5，"
-          "但 ECE 那一格至今空（缺有方差的正确性标签）——这是诚实状态，不是笔误。",
+          "> ⑤ 的 **fail 没有被后续任何一轮改成通过**：M3-04b 把拒答修到 7/7、转人工 5/5。"
+          "ECE 那一格此前的原句是「至今空（缺有方差的正确性标签）」——2026-10-12 `answer_correct_fill.csv` 67 行回收后"
+          f"**这句作废**，实测算出 ECE={ac['ece']}（真人标签，有方差），**仍不达标**，方向为{ac['sign']}。"
+          " fail 依旧是 fail，只是从「没测」变成「测了且不合格」——这不是笔误的修正，"
+          "是把敞口关到了可判定的位置上。",
           "", "## 这张表暴露的**口径互相打架**（M5 必须先裁，否则「达标」无定义）", "",
           "1. **P95 完整答案 / 端到端**：DoD#5 写 `< 3s`，《项目定义》第六节写 `< 6s（Gate 0 实测后修订）`，"
           "技术方案 8.1 写 `< 6s`——三处两个值，**且现值两边都过不了**。",
           "2. **首 token 1.2s**：门禁值在、口径没定（信封首字符 / 首可见内容 / 首事件三种读法差一个数量级），"
           "已登记暂缓·待裁决；定案前对外不得声称达标。",
-          "3. **「引用正确率」到底指什么**：DoD#3 的 ≥ 90% 现在只有「引用落 gold」这一种实测，"
-          "而它不等于结论正确；要么改判据文字、要么等 answer_correct，**不能拿落 gold 冒充正确率**。", ""]
+          "3. **「引用正确率」到底指什么**：DoD#3 的 ≥ 90% 原来只有「引用落 gold」一种实测，它不等于结论正确。"
+          f"**2026-10-12 起这一格有两种实测并存**（落 gold 0.9839 / 人判 answer_correct {ac['accuracy']}），"
+          "判据文字仍写「引用正确率」——两个数都能自称 ≥ 90%，"
+          "但说的不是同一件事，**M5 要裁的是把哪个钉成门禁**，建议裁成人判那一列（它才是用户收到的东西）。", ""]
     return "\n".join(L)
 
 

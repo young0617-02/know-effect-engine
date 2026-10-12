@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import shutil
 import sys
 import time
 import zlib
@@ -175,13 +176,28 @@ def main() -> int:
     ap.add_argument("--top-k", type=int, default=5)
     ap.add_argument("--collection", default=None)
     ap.add_argument("--skip-grid", action="store_true", help="只跑基线（回归比对用）")
+    ap.add_argument("--fail-on-gold-defect", action="store_true",
+                    help="关键词命中面 > 3 段且无豁免时直接拒绝跑（改完尺子后的自检用）")
+    ap.add_argument("--prev", default=None,
+                    help="回归对照用的上一轮读数路径（默认 var/gate0/m2_eval_prev.json；"
+                         "换了尺子要指到改前留档那份，由指纹检查判定可不可比）")
+    ap.add_argument("--update-prev", action="store_true",
+                    help="跑完把本轮读数写成对照基线（**只有确认这轮是新尺子的基准时才用**）")
     args = ap.parse_args()
 
     s = get_settings()
     coll = args.collection or s.milvus_collection
     art = Path(s.resolved_artifact_dir())
     pg = AuthoritativeStore()
-    questions = build_eval_set(pg, write_files=False)["questions"]
+    built = build_eval_set(pg, write_files=False, fail_on_gold_defect=args.fail_on_gold_defect)
+    questions = built["questions"]
+    dts = built["stats"]["gold_defects"]
+    if dts:
+        print(f"[gold 缺陷检测] 关键词命中面 > {dts[0]['limit']} 段的题 {len(dts)} 道：" +
+              "、".join(f"{d['qid']}({d['n_strict']})" + ("[已豁免]" if d["waived"] else "[未豁免]") for d in dts))
+        for d in dts:
+            if d["waived"]:
+                print(f"    豁免理由 {d['qid']}：{d['waiver_reason'][:70]}")
     dev = [q for q in questions if split_of(q["qid"]) == "dev"]
     test = [q for q in questions if split_of(q["qid"]) == "test"]
     store = KbStore(coll, "jieba")
@@ -216,27 +232,42 @@ def main() -> int:
                   f"MRR={grid[name].get('mrr')} P95={grid[name]['latency_ms']['p95']}ms "
                   f"({round(time.perf_counter() - t1, 1)}s)")
 
-    prev_path = art / "m2_eval_prev.json"
+    # 尺子指纹：题量、可判行数、gold 块总数。任一项变了，与 prev 的差就**不是回归读数**，
+    # 而是两把不同尺子上的两个数——过去几批 gold 改动后 prev 指针一直没动，
+    # 于是一行「delta=+0.0179 / regressed=false」其实是在跟四批之前、70 题那把尺子比。
+    ruler = {"n_questions": len(questions), "n_graded": base_full.get("n"),
+             "gold_section_total": sum(r.get("n_gold", 0) for r in base_full.get("per_question", []))}
+    prev_path = Path(args.prev) if args.prev else art / "m2_eval_prev.json"
     prev = json.loads(prev_path.read_text(encoding="utf-8")) if prev_path.exists() else None
     regression = None
     if prev:
-        d = round(metric(base_full, "recall", k) - metric(prev["baseline_full"], "recall", k), 4)
-        # 回归比对也用 strict 尺子——section 那把刚被证实在注水，拿它判回归等于用错温度测温
-        ds = round(metric(base_full, "recall", k) - metric(prev["baseline_full"], "recall", k), 4)
+        p_full = prev["baseline_full"] or {}
+        p_ruler = prev.get("ruler") or {}
+        comparable = p_ruler == ruler and bool(p_ruler)
+        reason = None
+        if not p_ruler:
+            reason = "prev 没有尺子指纹（那是加指纹之前留下的快照），不可比"
+        elif not comparable:
+            reason = f"尺子变了：prev {p_ruler} ≠ now {ruler}"
+        d = round(metric(base_full, "recall", k) - metric(p_full, "recall", k), 4)
+        # 回归判定用 strict 那把尺——section 刚被证实在注水，拿它判回归等于用错温度测温。
+        # 上一版这里 `regressed` 实际算的是 section 差，而注释与 note 都写「以 strict 为准」：
+        # 现在判定与文字对齐，section 差留作对照。
         d_strict = round(metric(base_full.get("strict_gold") or {}, "recall", k)
-                         - metric((prev["baseline_full"] or {}).get("strict_gold") or {}, "recall", k), 4)
+                         - metric((p_full or {}).get("strict_gold") or {}, "recall", k), 4)
         regression = {
-            "prev": metric(prev["baseline_full"], "recall", k),
+            "prev_path": prev_path.name, "comparable": comparable, "reason": reason,
+            "ruler_now": ruler, "ruler_prev": p_ruler or None,
+            "prev": metric(p_full, "recall", k),
             "now": metric(base_full, "recall", k),
-            "delta": d,
-            "regressed": d < -0.02,
-            "prev_strict": metric((prev["baseline_full"] or {}).get("strict_gold") or {}, "recall", k),
+            "delta_section": d if comparable else None,
+            "prev_strict": metric((p_full or {}).get("strict_gold") or {}, "recall", k),
             "now_strict": metric(base_full.get("strict_gold") or {}, "recall", k),
-            "delta_strict": d_strict,
-            "regressed_strict": d_strict < -0.02,
-            "note": "section 为报告值；回归判定以 strict 为准（ds 与 d 同为 section 口径，留作对照）",
+            "delta_strict": d_strict if comparable else None,
+            "regressed": (d_strict < -0.02) if comparable else None,
+            "note": ("同尺子对照，判定看 strict 差" if comparable
+                     else f"不可比：{reason} ⇒ 不给 delta、不给 regressed=false"),
         }
-
     # 门禁一律看 full：基线配置是**预先声明**、没在数据上调过，所以全样本判定是干净的；
     # 反过来，若哪天把网格里赢的那格转正，就必须先改这里的声明再重跑，不能直接引用网格数字。
     #
@@ -279,17 +310,23 @@ def main() -> int:
         "gates": gates,
         "reported_not_gated": reported,
         "gates_passed": all(gates.values()),
+        "ruler": ruler,
+        "gold_defects": built["stats"]["gold_defects"],
         "regression": regression,
         "best_grid_cell_is_not_evidence": "网格只在 dev 上跑，用于诊断；门禁只认基线配置的全样本值",
     }
     art.mkdir(parents=True, exist_ok=True)
     (art / "m2_eval.json").write_text(json.dumps(out, ensure_ascii=False, indent=2, default=str), encoding="utf-8")
+    if args.update_prev:
+        # 排在落盘之后：要留作基准的是**本轮**读数，而不是上一轮那份
+        shutil.copyfile(art / "m2_eval.json", prev_path)
+        print(f"[prev 指针] 本轮读数已设为对照基线：{prev_path.name}")
     store.close()
     print("\n判定:", json.dumps(gates, ensure_ascii=False), "→", "通过" if out["gates_passed"] else "不通过")
     if regression:
         print("回归:", json.dumps(regression, ensure_ascii=False))
     print("证据：", art / "m2_eval.json")
-    if regression and regression["regressed"]:
+    if regression and regression["regressed"] is True:
         return 2
     return 0 if out["gates_passed"] else 1
 

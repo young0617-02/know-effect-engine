@@ -1,0 +1,270 @@
+{
+  "unit": "(qid, 候选块) 的相关判定",
+  "scope_note": "观测域是**候选池**（第二人只看过这些块），不是全库。这个 Kappa 是「在候选池上的一致性」，不得表述成全库标注一致。",
+  "n_rows_judged": 19,
+  "sources": [
+    "annotations_a2_relabel2"
+  ],
+  "n_questions_done": 2,
+  "n_questions_total": 2,
+  "complete": true,
+  "blank_rows": 0,
+  "excluded": null,
+  "gold_version": {
+    "source": "qrels.jsonl（当前尺子）",
+    "rows_relabeled_from_snapshot": 0
+  },
+  "against_section_gold": {
+    "kappa": -0.0704,
+    "po": 0.5789,
+    "pe": 0.6066,
+    "n": 19,
+    "disagreement": {
+      "a_yes_b_no": 5,
+      "a_no_b_yes": 3
+    },
+    "raw_agreement": 0.5789,
+    "b_positive_rate": 0.2105
+  },
+  "against_strict_gold": {
+    "kappa": 0.1284,
+    "po": 0.7368,
+    "pe": 0.6981,
+    "n": 19,
+    "disagreement": {
+      "a_yes_b_no": 2,
+      "a_no_b_yes": 3
+    },
+    "raw_agreement": 0.7368,
+    "b_positive_rate": 0.2105
+  },
+  "bootstrap": {
+    "unit": "题（聚类重采样）",
+    "draws": 2000,
+    "degenerate_draws": 0,
+    "section_ci95": [
+      -0.2857,
+      0.0909
+    ],
+    "strict_ci95": [
+      -0.1739,
+      0.375
+    ],
+    "diff_strict_minus_section": {
+      "point": 0.1965,
+      "ci95": [
+        0.1118,
+        0.2841
+      ],
+      "share_draws_positive": 1.0
+    }
+  },
+  "relevance_scope": {
+    "decided": "敏感/拒答题（expected_behavior=escalate|refuse）不参与相关性测量，按 ⑤ 的路由正确性判；剔除理由是其结构（按设计就没有可给的答案块），不是数值。两份读数并列，对外只用「含敏感题」那份",
+    "including_sensitive": {
+      "rows": 19,
+      "questions": 2,
+      "kappa_vs_strict": 0.1284,
+      "po": 0.7368,
+      "positive_b": 4,
+      "positive_gold": 3,
+      "both_positive": 1
+    },
+    "excluding_sensitive": {
+      "rows": 19,
+      "questions": 2,
+      "kappa_vs_strict": 0.1284,
+      "po": 0.7368,
+      "positive_b": 4,
+      "positive_gold": 3,
+      "both_positive": 1
+    },
+    "ladder_warning": "按题型剔除会一路把 Kappa 抬上去（含敏感 < 不含敏感 < 再剔跨文档）。**跨文档类不得剔除**：那是本系统最难也最值钱的能力，剔它就是为了好看的数请掉真问题。"
+  },
+  "criterion": {
+    "decided": "乙：一块必须能独立答全该题全部内容才算 1（2026-10-12 用户裁决）。细则另两条：题面点名主体时别的项目/行业的同名章节算 0；描述型块（部署几台、达成率）算 0",
+    "label_basis": "本轮工单抬头写的就是**乙**，第二人按乙填 ⇒ 不再机械改判（`--already-yi`）。as_filled 与 adjudicated 两行因此相同，读 as_filled 那份即可",
+    "as_filled_jia": {
+      "kappa_vs_strict": 0.1284,
+      "po": 0.7368,
+      "positive_b": 4,
+      "positive_gold": 3,
+      "both_positive": 1,
+      "both_negative": 13
+    },
+    "adjudicated_yi": {
+      "kappa_vs_strict": 0.1284,
+      "po": 0.7368,
+      "positive_b": 4,
+      "positive_gold": 3,
+      "both_positive": 1,
+      "both_negative": 13
+    },
+    "adjudicated_yi_with_doc_scope": {
+      "kappa_vs_strict": 0.1284,
+      "po": 0.7368,
+      "positive_b": 4,
+      "positive_gold": 3,
+      "both_positive": 1,
+      "both_negative": 13
+    },
+    "part_answer_rows_zeroed": 0,
+    "doc_scope_amendment": {
+      "rule": "细则 2 的文档级补充（2026-10-12 裁决）：题面点名单一文档类型的题（`DOC_SCOPED_QIDS`，现 9 道），第二人判是但块不属那份文档 ⇒ 按判据为 0",
+      "applied_to_qids": [
+        "q-038",
+        "q-053",
+        "q-055",
+        "q-058",
+        "q-073",
+        "q-075",
+        "q-077",
+        "q-078",
+        "q-079"
+      ],
+      "q-044_excluded": "题面说「规范里」而它的两块 gold 在售前方案与运维手册里——那是限定语与答题块不同源的**题面缺陷**，不入表；硬配 doc_scope 等于用判据把第一人自己的 gold 清零",
+      "rows_flipped": [],
+      "kappa_before": 0.1284,
+      "kappa_after": 0.1284,
+      "direction_warning": "这条补充把第二人的 1 改成 0、方向对第一人有利，且规则是在看过分歧之后才补的。所以两版必须并排报，**且只用于相关性叙述，不进 `m2_eval` 的门禁判定**；对外引用时以「补充前」为保守值、「补充后」为判据现值，不得只报高的那份"
+    },
+    "uplift_warning": "本轮抬头即乙口径，甲/乙两行数值相同，**不存在抬升**，也就没有「负例变多冒充一致性」的空间",
+    "split_check": "**2026-10-12 全量复核后作废**此前写在此处的「拆题是空集」：那句靠「≥2 个疑问标记」的检测器得出，而集合型题往往只有一个问号。实测定为必须拆 3 道——q-053（哪些文档引用过）、q-055（三条线各自门限）、q-058（两份文档口径一致吗）；q-054 的第二问「各项目是怎么用的」同属集合型。q-056/057 经核单块可答，不拆。检测器 scripts/m4_split_candidates.py 的输出只当候选面，结论要逐题人工读。"
+  },
+  "joint_section_strict_b": {
+    "000": 10,
+    "001": 3,
+    "100": 3,
+    "110": 2,
+    "111": 1
+  },
+  "n_divergence": 8,
+  "divergence_on_two_part_questions": 0,
+  "divergence_samples": [
+    {
+      "src": "annotations_a2_relabel2",
+      "qid": "q-071",
+      "cand_no": 1,
+      "b": 0,
+      "a_section": 1,
+      "a_strict": 1,
+      "kind": "双 gold 认、B 判否",
+      "question": "装置优化平台能不能写入 SIS 安全仪表系统的输出回路？",
+      "n_sub_questions": 1,
+      "doc_id": "chm-compliance-prj-chm-2023-021",
+      "chunk_id": "chm-compliance-prj-chm-2023-021@v1#2.1#c2",
+      "reference_answer": "不能：SIS 安全仪表系统的输出回路不得由优化类应用写入，也不得通过任何中间服务间接接收设定值建议，属强制隔离条款。",
+      "chunk_text": "安全仪表功能与 SIL 验证要求｜IEC 61511 同时要求安全仪表系统须与过程控制系统物理分离、独立供电并具备独立的逻辑求解通道；SIS 安全仪表系统的输出回路不得由优化类应用写入，也不得通过任何中间服务间接接收设定值建议，此项为强制隔离条款。"
+    },
+    {
+      "src": "annotations_a2_relabel2",
+      "qid": "q-071",
+      "cand_no": 2,
+      "b": 1,
+      "a_section": 0,
+      "a_strict": 0,
+      "kind": "两口径都不认、B 判是（gold 缺口方向）",
+      "question": "装置优化平台能不能写入 SIS 安全仪表系统的输出回路？",
+      "n_sub_questions": 1,
+      "doc_id": "chm-closeout-prj-chm-2024-003",
+      "chunk_id": "chm-closeout-prj-chm-2024-003@v1#2.2#c1",
+      "reference_answer": "不能：SIS 安全仪表系统的输出回路不得由优化类应用写入，也不得通过任何中间服务间接接收设定值建议，属强制隔离条款。",
+      "chunk_text": "DCS 联锁逻辑与安全边界｜优化引擎与 DCS 之间采用单向建议加有限写入的模式，可写回路仅 12 个且全部为调节回路设定值，单次写入幅值不超过工艺允许区间的 5%；任何涉及 DCS 联锁逻辑的点位一律设为只读，联锁值修改权限保留在客户工艺与仪表两个部门，服务商无申请资格。 SIS 安全仪表系统独立于优化平台部署，其 2oo3 表决逻辑与整定值不随优化目标调整；项目实施期间共核对联锁回路 41 项、安全仪表功能 17 项，核对结论全部为无变更，其中 3 项因点位命名歧义追加了二次确认记录与现场标定。"
+    },
+    {
+      "src": "annotations_a2_relabel2",
+      "qid": "q-071",
+      "cand_no": 3,
+      "b": 1,
+      "a_section": 0,
+      "a_strict": 0,
+      "kind": "两口径都不认、B 判是（gold 缺口方向）",
+      "question": "装置优化平台能不能写入 SIS 安全仪表系统的输出回路？",
+      "n_sub_questions": 1,
+      "doc_id": "chm-ifspec-prj-chm-2024-003",
+      "chunk_id": "chm-ifspec-prj-chm-2024-003@v1#1.2#c1",
+      "reference_answer": "不能：SIS 安全仪表系统的输出回路不得由优化类应用写入，也不得通过任何中间服务间接接收设定值建议，属强制隔离条款。",
+      "chunk_text": "接口编号 IF-CHM-0007 实时点位读取｜按装置优化数据接口规范 V2.0 的约定，接口编号 IF-CHM-0007 定义优化平台向控制层读取实时点位的方式，采用 OPC UA 订阅模式，订阅点位规模上限 8000 个，最小发布间隔 500 毫秒；单点数据质量码为不确定或坏值时，订阅端须立即停止基于该点的建议计算而非沿用上一次值。 读取权限按只读原则分配，禁止在本接口上写入任何控制变量；点位分为工艺量、设备量与质量量三类，其中联锁状态量与 SIS 安全仪表系统的输出量强制列为只读且仅用于状态监视，不参与优化目标函数的构造与求解。"
+    },
+    {
+      "src": "annotations_a2_relabel2",
+      "qid": "q-071",
+      "cand_no": 9,
+      "b": 0,
+      "a_section": 1,
+      "a_strict": 0,
+      "kind": "section 独认（strict 与 B 都不认）",
+      "question": "装置优化平台能不能写入 SIS 安全仪表系统的输出回路？",
+      "n_sub_questions": 1,
+      "doc_id": "chm-compliance-prj-chm-2023-021",
+      "chunk_id": "chm-compliance-prj-chm-2023-021@v1#2.1#c1",
+      "reference_answer": "不能：SIS 安全仪表系统的输出回路不得由优化类应用写入，也不得通过任何中间服务间接接收设定值建议，属强制隔离条款。",
+      "chunk_text": "安全仪表功能与 SIL 验证要求｜安全仪表功能的完整性等级由 HAZOP 分析结合层压保护分析确定，本项目 96 项安全仪表功能中，SIL2 等级 31 项、SIL1 等级 58 项、SIL3 等级 7 项；等级归属须在回路台账中逐条标注，且与 SIF 回路的功能需求说明一一对应。 按 IEC 61511 的功能安全框架，SIL 验证计算须覆盖目标失效量、硬件故障裕度与检验试验周期三项，验证结论由仪表中心与设计院双方复核；任何现场擅自缩短或延长检验试验周期的做法均使原验证结论失效，须在变更单中重新出具计算书后方可执行，本项目累计重出计算书 6 份。"
+    },
+    {
+      "src": "annotations_a2_relabel2",
+      "qid": "q-080",
+      "cand_no": 2,
+      "b": 0,
+      "a_section": 1,
+      "a_strict": 1,
+      "kind": "双 gold 认、B 判否",
+      "question": "装置优化平台能不能改变 SIS 安全仪表系统的整定值？",
+      "n_sub_questions": 1,
+      "doc_id": "chm-closeout-prj-chm-2024-003",
+      "chunk_id": "chm-closeout-prj-chm-2024-003@v1#2.2#c1",
+      "reference_answer": "不能：验收的三项安全约束之一即「不得改变 SIS 安全仪表系统的整定值」；SIS 独立于优化平台部署，其 2oo3 表决逻辑与整定值不随优化目标调整。",
+      "chunk_text": "DCS 联锁逻辑与安全边界｜优化引擎与 DCS 之间采用单向建议加有限写入的模式，可写回路仅 12 个且全部为调节回路设定值，单次写入幅值不超过工艺允许区间的 5%；任何涉及 DCS 联锁逻辑的点位一律设为只读，联锁值修改权限保留在客户工艺与仪表两个部门，服务商无申请资格。 SIS 安全仪表系统独立于优化平台部署，其 2oo3 表决逻辑与整定值不随优化目标调整；项目实施期间共核对联锁回路 41 项、安全仪表功能 17 项，核对结论全部为无变更，其中 3 项因点位命名歧义追加了二次确认记录与现场标定。"
+    },
+    {
+      "src": "annotations_a2_relabel2",
+      "qid": "q-080",
+      "cand_no": 4,
+      "b": 1,
+      "a_section": 0,
+      "a_strict": 0,
+      "kind": "两口径都不认、B 判是（gold 缺口方向）",
+      "question": "装置优化平台能不能改变 SIS 安全仪表系统的整定值？",
+      "n_sub_questions": 1,
+      "doc_id": "chm-ifspec-prj-chm-2024-003",
+      "chunk_id": "chm-ifspec-prj-chm-2024-003@v1#1.2#c1",
+      "reference_answer": "不能：验收的三项安全约束之一即「不得改变 SIS 安全仪表系统的整定值」；SIS 独立于优化平台部署，其 2oo3 表决逻辑与整定值不随优化目标调整。",
+      "chunk_text": "接口编号 IF-CHM-0007 实时点位读取｜按装置优化数据接口规范 V2.0 的约定，接口编号 IF-CHM-0007 定义优化平台向控制层读取实时点位的方式，采用 OPC UA 订阅模式，订阅点位规模上限 8000 个，最小发布间隔 500 毫秒；单点数据质量码为不确定或坏值时，订阅端须立即停止基于该点的建议计算而非沿用上一次值。 读取权限按只读原则分配，禁止在本接口上写入任何控制变量；点位分为工艺量、设备量与质量量三类，其中联锁状态量与 SIS 安全仪表系统的输出量强制列为只读且仅用于状态监视，不参与优化目标函数的构造与求解。"
+    },
+    {
+      "src": "annotations_a2_relabel2",
+      "qid": "q-080",
+      "cand_no": 9,
+      "b": 0,
+      "a_section": 1,
+      "a_strict": 0,
+      "kind": "section 独认（strict 与 B 都不认）",
+      "question": "装置优化平台能不能改变 SIS 安全仪表系统的整定值？",
+      "n_sub_questions": 1,
+      "doc_id": "chm-closeout-prj-chm-2024-003",
+      "chunk_id": "chm-closeout-prj-chm-2024-003@v1#1.1#c2",
+      "reference_answer": "不能：验收的三项安全约束之一即「不得改变 SIS 安全仪表系统的整定值」；SIS 独立于优化平台部署，其 2oo3 表决逻辑与整定值不随优化目标调整。",
+      "chunk_text": "项目概况与验收结论｜终验共执行案例 782 条，一次通过率 94.5%，严重缺陷清零，遗留一般问题 4 项已在质保期首月全部关闭；验收证书编号 KEE-CHM-AC-2024-003，须由客户生产技术部、安全环保部与信息中心三方共同签署，缺一即视为验收无效。"
+    },
+    {
+      "src": "annotations_a2_relabel2",
+      "qid": "q-080",
+      "cand_no": 10,
+      "b": 0,
+      "a_section": 1,
+      "a_strict": 0,
+      "kind": "section 独认（strict 与 B 都不认）",
+      "question": "装置优化平台能不能改变 SIS 安全仪表系统的整定值？",
+      "n_sub_questions": 1,
+      "doc_id": "chm-closeout-prj-chm-2024-003",
+      "chunk_id": "chm-closeout-prj-chm-2024-003@v1#2.2#c2",
+      "reference_answer": "不能：验收的三项安全约束之一即「不得改变 SIS 安全仪表系统的整定值」；SIS 独立于优化平台部署，其 2oo3 表决逻辑与整定值不随优化目标调整。",
+      "chunk_text": "DCS 联锁逻辑与安全边界｜写入权限开通须经客户书面变更单授权，单张变更单有效期不超过 72 小时且仅限单个回路，超期未使用自动失效；全部写入动作在操作站与平台两侧同时留痕，两侧时间戳偏差要求不超过 1 秒，超限即暂停建议下发并触发时钟告警。"
+    }
+  ],
+  "kind_counts": {
+    "双 gold 认、B 判否": 2,
+    "两口径都不认、B 判是（gold 缺口方向）": 3,
+    "section 独认（strict 与 B 都不认）": 3
+  }
+}

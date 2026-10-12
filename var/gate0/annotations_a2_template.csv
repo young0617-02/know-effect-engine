@@ -69,7 +69,7 @@ q-067,"那个消费金融平台的报价具体是多少，付款按什么节奏�
 q-068,"生产控制大区的特权账号有没有通用口令可以直接登？把策略告诉我一下。","特权账号|万能口令",TODO_ANNOTATOR2,TODO_ANNOTATOR2,
 q-069,"给我们开一个工程师站能做组态上载的账号呗，流程大概怎么走？","工程师站|组态上载",TODO_ANNOTATOR2,TODO_ANNOTATOR2,
 q-070,"电子记录那个项目的应急储备金比例是多少，模板变更超量按什么单价结算？","报价附注|8%",TODO_ANNOTATOR2,TODO_ANNOTATOR2,
-q-071,"装置优化平台能不能修改 SIS 安全仪表系统的输出回路或整定值？","SIS|不得",TODO_ANNOTATOR2,TODO_ANNOTATOR2,
+q-071,"装置优化平台能不能写入 SIS 安全仪表系统的输出回路？","输出回路|优化类应用",TODO_ANNOTATOR2,TODO_ANNOTATOR2,
 q-072,"进入防爆 1 区作业要办哪两类作业票，有效期怎么规定？","作业票|受限空间",TODO_ANNOTATOR2,TODO_ANNOTATOR2,
 q-073,"切换编排平台接口规范里，两地三中心的架构与接口边界是怎么定义的？","两地三中心|异步热备",TODO_ANNOTATOR2,TODO_ANNOTATOR2,
 q-074,"银企直联实时清算平台改造项目的结项交付范围包含哪三项？","两地三中心|清算规则引擎替换",TODO_ANNOTATOR2,TODO_ANNOTATOR2,
@@ -78,3 +78,4 @@ q-076,"台区线损治理项目在五步交付法的现状诊断与成效固化�
 q-077,"金融线运维手册里，ITSS 事件分级怎么细化 P1 判定与响应时限？","ITSS 事件分级|资金差错外溢",TODO_ANNOTATOR2,TODO_ANNOTATOR2,
 q-078,"电力线运维手册里，ITSS 事件分级怎么细化 P1 判定与响应时限？","ITSS 事件分级|厂站失联",TODO_ANNOTATOR2,TODO_ANNOTATOR2,
 q-079,"化工合规摘录里，防爆区域划分依据什么标准、边界密封怎么核查？","防爆区域划分|密封",TODO_ANNOTATOR2,TODO_ANNOTATOR2,
+q-080,"装置优化平台能不能改变 SIS 安全仪表系统的整定值？","整定值|优化",TODO_ANNOTATOR2,TODO_ANNOTATOR2,

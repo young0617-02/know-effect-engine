@@ -1,0 +1,449 @@
+{
+  "unit": "(qid, 候选块) 的相关判定",
+  "scope_note": "观测域是**候选池**（第二人只看过这些块），不是全库。这个 Kappa 是「在候选池上的一致性」，不得表述成全库标注一致。",
+  "n_rows_judged": 133,
+  "sources": [
+    "annotations_a2_relabel",
+    "annotations_a2_relabel2"
+  ],
+  "n_questions_done": 16,
+  "n_questions_total": 16,
+  "complete": true,
+  "blank_rows": 0,
+  "excluded": {
+    "spec": [
+      "annotations_a2_relabel/q-071"
+    ],
+    "rows_dropped": 10,
+    "reason": "q-071 原题面为「输出回路或整定值」双对象题，annotations_a2_relabel 那 10 行判的是旧问法（题面已在 V1.0.18 收窄）；新问法 9 行来自 relabel2，保留"
+  },
+  "gold_version": {
+    "source": "qrels.jsonl（当前尺子）",
+    "rows_relabeled_from_snapshot": 4
+  },
+  "against_section_gold": {
+    "kappa": 0.5997,
+    "po": 0.8571,
+    "pe": 0.6431,
+    "n": 133,
+    "disagreement": {
+      "a_yes_b_no": 15,
+      "a_no_b_yes": 4
+    },
+    "raw_agreement": 0.8571,
+    "b_positive_rate": 0.188
+  },
+  "against_strict_gold": {
+    "kappa": 0.8475,
+    "po": 0.9549,
+    "pe": 0.7041,
+    "n": 133,
+    "disagreement": {
+      "a_yes_b_no": 2,
+      "a_no_b_yes": 4
+    },
+    "raw_agreement": 0.9549,
+    "b_positive_rate": 0.188
+  },
+  "bootstrap": {
+    "unit": "题（聚类重采样）",
+    "draws": 2000,
+    "degenerate_draws": 0,
+    "section_ci95": [
+      0.3804,
+      0.7831
+    ],
+    "strict_ci95": [
+      0.6417,
+      1.0
+    ],
+    "diff_strict_minus_section": {
+      "point": 0.2472,
+      "ci95": [
+        0.1381,
+        0.367
+      ],
+      "share_draws_positive": 1.0
+    }
+  },
+  "relevance_scope": {
+    "decided": "敏感/拒答题（expected_behavior=escalate|refuse）不参与相关性测量，按 ⑤ 的路由正确性判；剔除理由是其结构（按设计就没有可给的答案块），不是数值。两份读数并列，对外只用「含敏感题」那份",
+    "including_sensitive": {
+      "rows": 133,
+      "questions": 16,
+      "kappa_vs_strict": 0.8708,
+      "po": 0.9624,
+      "positive_b": 24,
+      "positive_gold": 23,
+      "both_positive": 21
+    },
+    "excluding_sensitive": {
+      "rows": 133,
+      "questions": 16,
+      "kappa_vs_strict": 0.8708,
+      "po": 0.9624,
+      "positive_b": 24,
+      "positive_gold": 23,
+      "both_positive": 21
+    },
+    "ladder_warning": "按题型剔除会一路把 Kappa 抬上去（含敏感 < 不含敏感 < 再剔跨文档）。**跨文档类不得剔除**：那是本系统最难也最值钱的能力，剔它就是为了好看的数请掉真问题。"
+  },
+  "criterion": {
+    "decided": "乙：一块必须能独立答全该题全部内容才算 1（2026-10-12 用户裁决）。细则另两条：题面点名主体时别的项目/行业的同名章节算 0；描述型块（部署几台、达成率）算 0",
+    "label_basis": "本轮工单抬头写的就是**乙**，第二人按乙填 ⇒ 不再机械改判（`--already-yi`）。as_filled 与 adjudicated 两行因此相同，读 as_filled 那份即可",
+    "as_filled_jia": {
+      "kappa_vs_strict": 0.8475,
+      "po": 0.9549,
+      "positive_b": 25,
+      "positive_gold": 23,
+      "both_positive": 21,
+      "both_negative": 106
+    },
+    "adjudicated_yi": {
+      "kappa_vs_strict": 0.8475,
+      "po": 0.9549,
+      "positive_b": 25,
+      "positive_gold": 23,
+      "both_positive": 21,
+      "both_negative": 106
+    },
+    "adjudicated_yi_with_doc_scope": {
+      "kappa_vs_strict": 0.8708,
+      "po": 0.9624,
+      "positive_b": 24,
+      "positive_gold": 23,
+      "both_positive": 21,
+      "both_negative": 107
+    },
+    "part_answer_rows_zeroed": 0,
+    "doc_scope_amendment": {
+      "rule": "细则 2 的文档级补充（2026-10-12 裁决）：题面点名单一文档类型的题（`DOC_SCOPED_QIDS`，现 9 道），第二人判是但块不属那份文档 ⇒ 按判据为 0",
+      "applied_to_qids": [
+        "q-038",
+        "q-053",
+        "q-055",
+        "q-058",
+        "q-073",
+        "q-075",
+        "q-077",
+        "q-078",
+        "q-079"
+      ],
+      "q-044_excluded": "题面说「规范里」而它的两块 gold 在售前方案与运维手册里——那是限定语与答题块不同源的**题面缺陷**，不入表；硬配 doc_scope 等于用判据把第一人自己的 gold 清零",
+      "rows_flipped": [
+        {
+          "qid": "q-058",
+          "cand_no": 2,
+          "doc_id": "chm-compliance-prj-chm-2023-021",
+          "named": "runbook"
+        }
+      ],
+      "kappa_before": 0.8475,
+      "kappa_after": 0.8708,
+      "direction_warning": "这条补充把第二人的 1 改成 0、方向对第一人有利，且规则是在看过分歧之后才补的。所以两版必须并排报，**且只用于相关性叙述，不进 `m2_eval` 的门禁判定**；对外引用时以「补充前」为保守值、「补充后」为判据现值，不得只报高的那份"
+    },
+    "uplift_warning": "本轮抬头即乙口径，甲/乙两行数值相同，**不存在抬升**，也就没有「负例变多冒充一致性」的空间",
+    "split_check": "**2026-10-12 全量复核后作废**此前写在此处的「拆题是空集」：那句靠「≥2 个疑问标记」的检测器得出，而集合型题往往只有一个问号。实测定为必须拆 3 道——q-053（哪些文档引用过）、q-055（三条线各自门限）、q-058（两份文档口径一致吗）；q-054 的第二问「各项目是怎么用的」同属集合型。q-056/057 经核单块可答，不拆。检测器 scripts/m4_split_candidates.py 的输出只当候选面，结论要逐题人工读。"
+  },
+  "joint_section_strict_b": {
+    "000": 93,
+    "001": 4,
+    "100": 13,
+    "110": 2,
+    "111": 21
+  },
+  "n_divergence": 19,
+  "divergence_on_two_part_questions": 1,
+  "divergence_samples": [
+    {
+      "src": "annotations_a2_relabel",
+      "qid": "q-013",
+      "cand_no": 9,
+      "b": 0,
+      "a_section": 1,
+      "a_strict": 0,
+      "kind": "section 独认（strict 与 B 都不认）",
+      "question": "SIS 安全仪表系统采用的表决逻辑是什么？",
+      "n_sub_questions": 1,
+      "doc_id": "chm-closeout-prj-chm-2024-003",
+      "chunk_id": "chm-closeout-prj-chm-2024-003@v1#2.2#c2",
+      "reference_answer": "采用 2oo3 表决逻辑。",
+      "chunk_text": "DCS 联锁逻辑与安全边界｜写入权限开通须经客户书面变更单授权，单张变更单有效期不超过 72 小时且仅限单个回路，超期未使用自动失效；全部写入动作在操作站与平台两侧同时留痕，两侧时间戳偏差要求不超过 1 秒，超限即暂停建议下发并触发时钟告警。"
+    },
+    {
+      "src": "annotations_a2_relabel",
+      "qid": "q-025",
+      "cand_no": 4,
+      "b": 0,
+      "a_section": 1,
+      "a_strict": 0,
+      "kind": "section 独认（strict 与 B 都不认）",
+      "question": "防爆区域划分依据哪个国家标准执行？",
+      "n_sub_questions": 1,
+      "doc_id": "chm-compliance-prj-chm-2023-021",
+      "chunk_id": "chm-compliance-prj-chm-2023-021@v1#2.2#c2",
+      "reference_answer": "按 GB 50058-2014 的分区原则执行，以释放源位置与通风条件为依据。",
+      "chunk_text": "防爆区域划分与电气装置要求｜区域内的便携检测仪器须每季度做防爆性能与示值误差双项检查，示值误差不超过±5%；检查不合格仪器当场贴停用标识并收回，不得以调零方式继续使用，收回记录与替代仪器编号须在同一台账中闭环登记。"
+    },
+    {
+      "src": "annotations_a2_relabel",
+      "qid": "q-055",
+      "cand_no": 6,
+      "b": 0,
+      "a_section": 1,
+      "a_strict": 0,
+      "kind": "section 独认（strict 与 B 都不认）",
+      "question": "化工线运维手册里，ITSS 事件分级怎么细化 P1 判定与响应时限？",
+      "n_sub_questions": 1,
+      "doc_id": "chm-runbook-prj-chm-2023-021",
+      "chunk_id": "chm-runbook-prj-chm-2023-021@v1#2.1#c2",
+      "reference_answer": "P1 为任一在用 SIS 回路失去保护功能或两条以上可燃气体探测回路同时失效；30 分钟内启动应急响应、2 小时内到场。",
+      "chunk_text": "事件分级与响应时限｜任何 P1 事件在处置完成后 24 小时内须提交初步报告、5 个工作日内提交根因报告，报告中必须包含联锁是否曾被摘除、旁路是否超期未恢复两项强制结论，缺一即视为报告不合格不予归档。"
+    },
+    {
+      "src": "annotations_a2_relabel",
+      "qid": "q-058",
+      "cand_no": 2,
+      "b": 1,
+      "a_section": 0,
+      "a_strict": 0,
+      "kind": "两口径都不认、B 判是（gold 缺口方向）",
+      "question": "化工运维手册里，防爆区域划分为几区、各多少个单元？",
+      "n_sub_questions": 1,
+      "doc_id": "chm-compliance-prj-chm-2023-021",
+      "chunk_id": "chm-compliance-prj-chm-2023-021@v1#2.2#c1",
+      "reference_answer": "划分为 2 区（47 个单元）与 1 区（9 个单元）；进入 1 区须办受限空间与动火两项作业票。",
+      "chunk_text": "防爆区域划分与电气装置要求｜按 GB 50058-2014 的分区原则，防爆区域划分以释放源位置与通风条件为依据，本项目涉及 1 区 9 个单元、2 区 47 个单元与辅助区 22 个单元，区域等级须与设备铭牌防爆标志逐项匹配；防爆区域内的设备新增或替换须提交区域等级证明与选型核对表，两项缺一不得签发作业票。 依据 GB 50058-2014 的配线要求，防爆区域内禁止非认证的中间接线与电缆穿刺做法，穿越区域边界处须做密封隔离；本项目共完成边界密封核查 386 处，发现不合规 21 处并全部整改，整改后由客户安全环保部现场复验通过。"
+    },
+    {
+      "src": "annotations_a2_relabel",
+      "qid": "q-074",
+      "cand_no": 9,
+      "b": 0,
+      "a_section": 1,
+      "a_strict": 0,
+      "kind": "section 独认（strict 与 B 都不认）",
+      "question": "银企直联实时清算平台改造项目的结项交付范围包含哪三项？",
+      "n_sub_questions": 0,
+      "doc_id": "fin-closeout-prj-fin-2024-017",
+      "chunk_id": "fin-closeout-prj-fin-2024-017@v1#1.1#c2",
+      "reference_answer": "银企直联通道改造、清算规则引擎替换、两地三中心灾备链路验证。",
+      "chunk_text": "项目概况与结项结论｜终验测试共执行案例 1468 条，一次性通过 1402 条，通过率 95.5%，其余 66 条在缺陷收敛期内全部关闭，遗留阻断级缺陷为零。结项结论为合格并同意关闭项目，验收报告编号 KEE-FIN-CR-2024-017，由该行信息科技部与运营管理部联合签署确认。 结项后转入运维保障期，质保期 12 个月，服务级别协议编号 SLA-A1，覆盖工作日 8:00 至 20:00 的一阶段支持与 7×24 小时的 P1 级响应。质保期前 90 天统计显示累计受理变更请求 217 项，其中紧急变更 9 项，均在 4 小时内完成回滚预案演练并闭环。"
+    },
+    {
+      "src": "annotations_a2_relabel",
+      "qid": "q-076",
+      "cand_no": 3,
+      "b": 0,
+      "a_section": 1,
+      "a_strict": 0,
+      "kind": "section 独认（strict 与 B 都不认）",
+      "question": "台区线损治理项目在五步交付法的现状诊断与成效固化阶段各交付了什么？",
+      "n_sub_questions": 1,
+      "doc_id": "ene-retro-prj-ene-2024-006",
+      "chunk_id": "ene-retro-prj-ene-2024-006@v1#2.1#c1",
+      "reference_answer": "现状诊断完成 8.4 万个台区线损分布画像；成效固化交付档案核查模板与归因字典并纳入组织过程资产库。",
+      "chunk_text": "抽样口径偏差的教训｜售前阶段以每地市 300 个台区的抽样推断全网档案一致率为 88%，实际全网核查结果为 78.2%，偏差近 10 个百分点；根因是抽样未区分城中村、农村与工业园区三类台区的结构差异，导致低估了城中村类台区的错误集中度。 改进措施为把分层抽样写入五步交付法的现状诊断闸口检查单，要求台区治理类项目按行政区与用电结构双维度分层，最小样本量不低于总量的 1% 且不少于 2000 个台区，抽样方案须由客户营销部书面确认后方可执行。"
+    },
+    {
+      "src": "annotations_a2_relabel",
+      "qid": "q-077",
+      "cand_no": 1,
+      "b": 0,
+      "a_section": 1,
+      "a_strict": 0,
+      "kind": "section 独认（strict 与 B 都不认）",
+      "question": "金融线运维手册里，ITSS 事件分级怎么细化 P1 判定与响应时限？",
+      "n_sub_questions": 1,
+      "doc_id": "ene-runbook-prj-ene-2023-019",
+      "chunk_id": "ene-runbook-prj-ene-2023-019@v1#2.1#c2",
+      "reference_answer": "P1 为清算链路整体中断或资金差错外溢；15 分钟内启动应急响应，并按 ITIL P1 成立事件指挥组。",
+      "chunk_text": "事件分级与响应时限｜本手册的事件分级与金融线、化工线同类手册保持同一 ITSS 事件分级框架，但门限值按行业后果严重度分别设定：电力线 P1 判定含厂站失联数量，金融线 P1 判定含资金差错外溢，化工线 P1 判定含联锁动作与人员暴露风险。"
+    },
+    {
+      "src": "annotations_a2_relabel",
+      "qid": "q-077",
+      "cand_no": 3,
+      "b": 0,
+      "a_section": 1,
+      "a_strict": 0,
+      "kind": "section 独认（strict 与 B 都不认）",
+      "question": "金融线运维手册里，ITSS 事件分级怎么细化 P1 判定与响应时限？",
+      "n_sub_questions": 1,
+      "doc_id": "ene-runbook-prj-ene-2023-019",
+      "chunk_id": "ene-runbook-prj-ene-2023-019@v1#2.1#c1",
+      "reference_answer": "P1 为清算链路整体中断或资金差错外溢；15 分钟内启动应急响应，并按 ITIL P1 成立事件指挥组。",
+      "chunk_text": "事件分级与响应时限｜事件分级采用 ITSS 事件分级标准并结合电力行业调度运行要求细化：P1 为 SCADA 主站功能失效或 30 座以上厂站失联，P2 为单节点冗余失效或 10 至 30 座厂站失联，P3 为单厂站通道中断，P4 为非实时的数据与界面异常。 P1 级故障须在 15 分钟内启动应急响应并同步报告客户调度部门，处置过程中每一关键动作均须口头复述确认并录音留存；P2 级 30 分钟内确认，P3 级 2 小时，P4 级 1 个工作日，响应达成率月度统计并纳入服务考核。"
+    },
+    {
+      "src": "annotations_a2_relabel",
+      "qid": "q-077",
+      "cand_no": 7,
+      "b": 0,
+      "a_section": 1,
+      "a_strict": 0,
+      "kind": "section 独认（strict 与 B 都不认）",
+      "question": "金融线运维手册里，ITSS 事件分级怎么细化 P1 判定与响应时限？",
+      "n_sub_questions": 1,
+      "doc_id": "fin-runbook-prj-fin-2024-017",
+      "chunk_id": "fin-runbook-prj-fin-2024-017@v1#2.1#c2",
+      "reference_answer": "P1 为清算链路整体中断或资金差错外溢；15 分钟内启动应急响应，并按 ITIL P1 成立事件指挥组。",
+      "chunk_text": "事件分级与响应时限｜各级恢复目标：P1 级目标恢复时长 2 小时，P2 级 4 小时，P3 级 1 个工作日；2024 年度实际达成率 P1 为 100%（共 3 起）、P2 为 96.2%（共 26 起），未达成事件均完成书面复盘并纳入知识库。"
+    },
+    {
+      "src": "annotations_a2_relabel",
+      "qid": "q-078",
+      "cand_no": 1,
+      "b": 0,
+      "a_section": 1,
+      "a_strict": 0,
+      "kind": "section 独认（strict 与 B 都不认）",
+      "question": "电力线运维手册里，ITSS 事件分级怎么细化 P1 判定与响应时限？",
+      "n_sub_questions": 1,
+      "doc_id": "ene-runbook-prj-ene-2023-019",
+      "chunk_id": "ene-runbook-prj-ene-2023-019@v1#2.1#c2",
+      "reference_answer": "P1 为 SCADA 主站功能失效或 30 座以上厂站失联；15 分钟内启动并同步报告客户调度部门。",
+      "chunk_text": "事件分级与响应时限｜本手册的事件分级与金融线、化工线同类手册保持同一 ITSS 事件分级框架，但门限值按行业后果严重度分别设定：电力线 P1 判定含厂站失联数量，金融线 P1 判定含资金差错外溢，化工线 P1 判定含联锁动作与人员暴露风险。"
+    },
+    {
+      "src": "annotations_a2_relabel",
+      "qid": "q-079",
+      "cand_no": 4,
+      "b": 0,
+      "a_section": 1,
+      "a_strict": 0,
+      "kind": "section 独认（strict 与 B 都不认）",
+      "question": "化工合规摘录里，防爆区域划分依据什么标准、边界密封怎么核查？",
+      "n_sub_questions": 2,
+      "doc_id": "chm-compliance-prj-chm-2023-021",
+      "chunk_id": "chm-compliance-prj-chm-2023-021@v1#2.2#c2",
+      "reference_answer": "按 GB 50058-2014 分区，以释放源位置与通风条件为依据；穿越边界须做密封隔离，本项目核查 386 处、不合规 21 处全部整改并经客户安全环保部复验通过。",
+      "chunk_text": "防爆区域划分与电气装置要求｜区域内的便携检测仪器须每季度做防爆性能与示值误差双项检查，示值误差不超过±5%；检查不合格仪器当场贴停用标识并收回，不得以调零方式继续使用，收回记录与替代仪器编号须在同一台账中闭环登记。"
+    },
+    {
+      "src": "annotations_a2_relabel2",
+      "qid": "q-071",
+      "cand_no": 1,
+      "b": 0,
+      "a_section": 1,
+      "a_strict": 1,
+      "kind": "双 gold 认、B 判否",
+      "question": "装置优化平台能不能写入 SIS 安全仪表系统的输出回路？",
+      "n_sub_questions": 1,
+      "doc_id": "chm-compliance-prj-chm-2023-021",
+      "chunk_id": "chm-compliance-prj-chm-2023-021@v1#2.1#c2",
+      "reference_answer": "不能：SIS 安全仪表系统的输出回路不得由优化类应用写入，也不得通过任何中间服务间接接收设定值建议，属强制隔离条款。",
+      "chunk_text": "安全仪表功能与 SIL 验证要求｜IEC 61511 同时要求安全仪表系统须与过程控制系统物理分离、独立供电并具备独立的逻辑求解通道；SIS 安全仪表系统的输出回路不得由优化类应用写入，也不得通过任何中间服务间接接收设定值建议，此项为强制隔离条款。"
+    },
+    {
+      "src": "annotations_a2_relabel2",
+      "qid": "q-071",
+      "cand_no": 2,
+      "b": 1,
+      "a_section": 0,
+      "a_strict": 0,
+      "kind": "两口径都不认、B 判是（gold 缺口方向）",
+      "question": "装置优化平台能不能写入 SIS 安全仪表系统的输出回路？",
+      "n_sub_questions": 1,
+      "doc_id": "chm-closeout-prj-chm-2024-003",
+      "chunk_id": "chm-closeout-prj-chm-2024-003@v1#2.2#c1",
+      "reference_answer": "不能：SIS 安全仪表系统的输出回路不得由优化类应用写入，也不得通过任何中间服务间接接收设定值建议，属强制隔离条款。",
+      "chunk_text": "DCS 联锁逻辑与安全边界｜优化引擎与 DCS 之间采用单向建议加有限写入的模式，可写回路仅 12 个且全部为调节回路设定值，单次写入幅值不超过工艺允许区间的 5%；任何涉及 DCS 联锁逻辑的点位一律设为只读，联锁值修改权限保留在客户工艺与仪表两个部门，服务商无申请资格。 SIS 安全仪表系统独立于优化平台部署，其 2oo3 表决逻辑与整定值不随优化目标调整；项目实施期间共核对联锁回路 41 项、安全仪表功能 17 项，核对结论全部为无变更，其中 3 项因点位命名歧义追加了二次确认记录与现场标定。"
+    },
+    {
+      "src": "annotations_a2_relabel2",
+      "qid": "q-071",
+      "cand_no": 3,
+      "b": 1,
+      "a_section": 0,
+      "a_strict": 0,
+      "kind": "两口径都不认、B 判是（gold 缺口方向）",
+      "question": "装置优化平台能不能写入 SIS 安全仪表系统的输出回路？",
+      "n_sub_questions": 1,
+      "doc_id": "chm-ifspec-prj-chm-2024-003",
+      "chunk_id": "chm-ifspec-prj-chm-2024-003@v1#1.2#c1",
+      "reference_answer": "不能：SIS 安全仪表系统的输出回路不得由优化类应用写入，也不得通过任何中间服务间接接收设定值建议，属强制隔离条款。",
+      "chunk_text": "接口编号 IF-CHM-0007 实时点位读取｜按装置优化数据接口规范 V2.0 的约定，接口编号 IF-CHM-0007 定义优化平台向控制层读取实时点位的方式，采用 OPC UA 订阅模式，订阅点位规模上限 8000 个，最小发布间隔 500 毫秒；单点数据质量码为不确定或坏值时，订阅端须立即停止基于该点的建议计算而非沿用上一次值。 读取权限按只读原则分配，禁止在本接口上写入任何控制变量；点位分为工艺量、设备量与质量量三类，其中联锁状态量与 SIS 安全仪表系统的输出量强制列为只读且仅用于状态监视，不参与优化目标函数的构造与求解。"
+    },
+    {
+      "src": "annotations_a2_relabel2",
+      "qid": "q-071",
+      "cand_no": 9,
+      "b": 0,
+      "a_section": 1,
+      "a_strict": 0,
+      "kind": "section 独认（strict 与 B 都不认）",
+      "question": "装置优化平台能不能写入 SIS 安全仪表系统的输出回路？",
+      "n_sub_questions": 1,
+      "doc_id": "chm-compliance-prj-chm-2023-021",
+      "chunk_id": "chm-compliance-prj-chm-2023-021@v1#2.1#c1",
+      "reference_answer": "不能：SIS 安全仪表系统的输出回路不得由优化类应用写入，也不得通过任何中间服务间接接收设定值建议，属强制隔离条款。",
+      "chunk_text": "安全仪表功能与 SIL 验证要求｜安全仪表功能的完整性等级由 HAZOP 分析结合层压保护分析确定，本项目 96 项安全仪表功能中，SIL2 等级 31 项、SIL1 等级 58 项、SIL3 等级 7 项；等级归属须在回路台账中逐条标注，且与 SIF 回路的功能需求说明一一对应。 按 IEC 61511 的功能安全框架，SIL 验证计算须覆盖目标失效量、硬件故障裕度与检验试验周期三项，验证结论由仪表中心与设计院双方复核；任何现场擅自缩短或延长检验试验周期的做法均使原验证结论失效，须在变更单中重新出具计算书后方可执行，本项目累计重出计算书 6 份。"
+    },
+    {
+      "src": "annotations_a2_relabel2",
+      "qid": "q-080",
+      "cand_no": 2,
+      "b": 0,
+      "a_section": 1,
+      "a_strict": 1,
+      "kind": "双 gold 认、B 判否",
+      "question": "装置优化平台能不能改变 SIS 安全仪表系统的整定值？",
+      "n_sub_questions": 1,
+      "doc_id": "chm-closeout-prj-chm-2024-003",
+      "chunk_id": "chm-closeout-prj-chm-2024-003@v1#2.2#c1",
+      "reference_answer": "不能：验收的三项安全约束之一即「不得改变 SIS 安全仪表系统的整定值」；SIS 独立于优化平台部署，其 2oo3 表决逻辑与整定值不随优化目标调整。",
+      "chunk_text": "DCS 联锁逻辑与安全边界｜优化引擎与 DCS 之间采用单向建议加有限写入的模式，可写回路仅 12 个且全部为调节回路设定值，单次写入幅值不超过工艺允许区间的 5%；任何涉及 DCS 联锁逻辑的点位一律设为只读，联锁值修改权限保留在客户工艺与仪表两个部门，服务商无申请资格。 SIS 安全仪表系统独立于优化平台部署，其 2oo3 表决逻辑与整定值不随优化目标调整；项目实施期间共核对联锁回路 41 项、安全仪表功能 17 项，核对结论全部为无变更，其中 3 项因点位命名歧义追加了二次确认记录与现场标定。"
+    },
+    {
+      "src": "annotations_a2_relabel2",
+      "qid": "q-080",
+      "cand_no": 4,
+      "b": 1,
+      "a_section": 0,
+      "a_strict": 0,
+      "kind": "两口径都不认、B 判是（gold 缺口方向）",
+      "question": "装置优化平台能不能改变 SIS 安全仪表系统的整定值？",
+      "n_sub_questions": 1,
+      "doc_id": "chm-ifspec-prj-chm-2024-003",
+      "chunk_id": "chm-ifspec-prj-chm-2024-003@v1#1.2#c1",
+      "reference_answer": "不能：验收的三项安全约束之一即「不得改变 SIS 安全仪表系统的整定值」；SIS 独立于优化平台部署，其 2oo3 表决逻辑与整定值不随优化目标调整。",
+      "chunk_text": "接口编号 IF-CHM-0007 实时点位读取｜按装置优化数据接口规范 V2.0 的约定，接口编号 IF-CHM-0007 定义优化平台向控制层读取实时点位的方式，采用 OPC UA 订阅模式，订阅点位规模上限 8000 个，最小发布间隔 500 毫秒；单点数据质量码为不确定或坏值时，订阅端须立即停止基于该点的建议计算而非沿用上一次值。 读取权限按只读原则分配，禁止在本接口上写入任何控制变量；点位分为工艺量、设备量与质量量三类，其中联锁状态量与 SIS 安全仪表系统的输出量强制列为只读且仅用于状态监视，不参与优化目标函数的构造与求解。"
+    },
+    {
+      "src": "annotations_a2_relabel2",
+      "qid": "q-080",
+      "cand_no": 9,
+      "b": 0,
+      "a_section": 1,
+      "a_strict": 0,
+      "kind": "section 独认（strict 与 B 都不认）",
+      "question": "装置优化平台能不能改变 SIS 安全仪表系统的整定值？",
+      "n_sub_questions": 1,
+      "doc_id": "chm-closeout-prj-chm-2024-003",
+      "chunk_id": "chm-closeout-prj-chm-2024-003@v1#1.1#c2",
+      "reference_answer": "不能：验收的三项安全约束之一即「不得改变 SIS 安全仪表系统的整定值」；SIS 独立于优化平台部署，其 2oo3 表决逻辑与整定值不随优化目标调整。",
+      "chunk_text": "项目概况与验收结论｜终验共执行案例 782 条，一次通过率 94.5%，严重缺陷清零，遗留一般问题 4 项已在质保期首月全部关闭；验收证书编号 KEE-CHM-AC-2024-003，须由客户生产技术部、安全环保部与信息中心三方共同签署，缺一即视为验收无效。"
+    },
+    {
+      "src": "annotations_a2_relabel2",
+      "qid": "q-080",
+      "cand_no": 10,
+      "b": 0,
+      "a_section": 1,
+      "a_strict": 0,
+      "kind": "section 独认（strict 与 B 都不认）",
+      "question": "装置优化平台能不能改变 SIS 安全仪表系统的整定值？",
+      "n_sub_questions": 1,
+      "doc_id": "chm-closeout-prj-chm-2024-003",
+      "chunk_id": "chm-closeout-prj-chm-2024-003@v1#2.2#c2",
+      "reference_answer": "不能：验收的三项安全约束之一即「不得改变 SIS 安全仪表系统的整定值」；SIS 独立于优化平台部署，其 2oo3 表决逻辑与整定值不随优化目标调整。",
+      "chunk_text": "DCS 联锁逻辑与安全边界｜写入权限开通须经客户书面变更单授权，单张变更单有效期不超过 72 小时且仅限单个回路，超期未使用自动失效；全部写入动作在操作站与平台两侧同时留痕，两侧时间戳偏差要求不超过 1 秒，超限即暂停建议下发并触发时钟告警。"
+    }
+  ],
+  "kind_counts": {
+    "section 独认（strict 与 B 都不认）": 13,
+    "两口径都不认、B 判是（gold 缺口方向）": 4,
+    "双 gold 认、B 判否": 2
+  }
+}
