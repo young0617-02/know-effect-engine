@@ -86,3 +86,28 @@ def test_stream_delta_accumulation_does_not_drop_late_keys():
     assert order[-1] == "confidence"
     assert any("secret_level_cited" in n for n in res.notes)
     assert json.dumps(res.as_dict(), ensure_ascii=False, default=str)
+
+
+def test_every_exit_path_carries_e2e_ms():
+    """`e2e_ms` 原先只在 generate 节点里写，于是拒答/转人工这些不进生成的轮次
+    `session_turn.total_ms` 是 NULL——任何从那张表算的 p50/p95 都在悄悄丢掉最快的轮次。
+    这里钉的是「每条结束路径都要有 e2e」，而不是只钉 generate 那条。"""
+    ctx = AccessContext(role="knowledge_owner")
+
+    # ① 敏感题在检索前就结束
+    eng, _ = engine()
+    _, res, _ = collect(eng, "合同金额是多少", ctx)
+    assert res.status == "escalate"
+    assert res.timings_ms.get("e2e_ms") is not None, res.timings_ms
+
+    # ② 弱证据被检索门禁拦下
+    eng, _ = engine()
+    eng.retriever = SpyRetriever([chunk("c1", score=0.03)])
+    _, res, _ = collect(eng, "灾备的 RTO 是多少", ctx)
+    assert res.status == "refuse"
+    assert res.timings_ms.get("e2e_ms") is not None, res.timings_ms
+
+    # ③ 走完生成的路径仍然保留 generate 节点写的那个值（补写只在缺失时发生）
+    eng, _ = engine()
+    _, res, _ = collect(eng, "灾备的 RTO 是多少", ctx)
+    assert res.timings_ms.get("e2e_ms") >= 0

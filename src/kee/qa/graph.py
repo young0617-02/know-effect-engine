@@ -460,6 +460,12 @@ def result_from_state(state: QAState) -> AnswerResult:
     timings = dict(state.get("timings_ms") or {})
     if state.get("rewrite_ms"):
         timings["rewrite_ms"] = state["rewrite_ms"]
+    # e2e_ms 原先只在 generate 节点里写。拒答/转人工/契约失败这些**不进生成**的路径
+    # 就一个耗时都没有，于是 session_turn.total_ms 成 NULL——
+    # 任何从那张表算的 p50/p95 都在悄悄丢掉最快的轮次（此前那份 n=205 就是这么偏的）。
+    # 收口放在这个唯一的出口处：所有结束路径都要有 e2e。
+    if "e2e_ms" not in timings and state.get("t_start"):
+        timings["e2e_ms"] = round((time.perf_counter() - state["t_start"]) * 1000, 1)
     return AnswerResult(
         question=state["question"],
         status=state.get("status", "refuse"),
