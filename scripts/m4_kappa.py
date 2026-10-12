@@ -56,7 +56,31 @@ def load(art: Path) -> tuple[list[dict], dict[tuple[str, int], dict]]:
         rows = list(csv.DictReader(f))
     key = {(r["qid"], int(r["cand_no"])): r
            for r in json.loads((art / "annotations_a2_key.json").read_text(encoding="utf-8"))}
-    return rows, key
+    # key.json 是**出工单那一刻**的第一人标签快照。gold 一旦被修订（#41），继续拿它算 Kappa
+    # 就是在跟一把已经不存在的尺子比——数值不会报错，只会安静地是旧的。
+    # 所以这里按 chunk_id 用**当前 qrels** 重算两个口径的成员关系，并把版本盖进产物。
+    qp = art / "qrels.jsonl"
+    if qp.exists():
+        cur = {}
+        for line in qp.read_text(encoding="utf-8").splitlines():
+            if line.strip():
+                rec = json.loads(line)
+                cur[rec["qid"]] = (set(rec["gold_chunk_ids"]), set(rec.get("gold_strict_ids") or []))
+        stale = 0
+        for k, v in key.items():
+            pair = cur.get(k[0])
+            if not pair:
+                continue
+            cid = v["chunk_id"]
+            new_s, new_t = int(cid in pair[0]), int(cid in pair[1])
+            if (int(v["in_a_section_gold"]), int(v["in_a_strict_gold"])) != (new_s, new_t):
+                stale += 1
+                v["in_a_section_gold"], v["in_a_strict_gold"] = str(new_s), str(new_t)
+        v_gold = {"source": "qrels.jsonl（当前尺子）", "rows_relabeled_from_snapshot": stale}
+    else:
+        v_gold = {"source": "annotations_a2_key.json（工单快照，可能滞后于 gold 修订）",
+                  "rows_relabeled_from_snapshot": 0}
+    return rows, key, v_gold
 
 
 def load_questions(art: Path) -> dict[str, dict]:
@@ -122,7 +146,7 @@ def main() -> int:
     args = ap.parse_args()
 
     art = Path(get_settings().resolved_artifact_dir())
-    rows, key = load(art)
+    rows, key, gold_version = load(art)
     if not rows:
         print("没有工单，先跑 scripts/m4_build_annotation_sheet.py")
         return 2
@@ -158,6 +182,7 @@ def main() -> int:
         "n_questions_total": len(total_qids),
         "complete": complete,
         "blank_rows": len(blank_qids),
+        "gold_version": gold_version,
     }
 
     for name, idx in (("against_section_gold", 3), ("against_strict_gold", 4)):
@@ -317,6 +342,12 @@ def main() -> int:
     print(f"    剔除敏感 {exc['questions']} 题 / {exc['rows']} 行 → vs strict {exc['kappa_vs_strict']}"
           f"（正例 B {exc['positive_b']}／gold {exc['positive_gold']}，双正例 {exc['both_positive']}）")
     print(f"    ⚠ {rs['ladder_warning']}")
+    gv = out["gold_version"]
+    print(f"  gold 来源: {gv['source']}"
+          f"{'；从工单快照改判 ' + str(gv['rows_relabeled_from_snapshot']) + ' 行' if gv['rows_relabeled_from_snapshot'] else ''}")
+    if gv["rows_relabeled_from_snapshot"]:
+        print("    ⚠ 本轮 gold 已修订（#41），修订方向与第二人判断同向 ⇒ 修订后的一致率**不是独立证据**，"
+              "只能读成「第一人按复核收窄了 gold」；独立证据是修订前那份（pre_goldfix/kappa_a2.json）")
     print("  口径提醒:", out["scope_note"])
     print(f"证据： {art / 'kappa_a2.json'}")
 

@@ -23,7 +23,14 @@ gold 判定规则（与下游检索评测一致）：
 问题类别与题量（共 70 题）：术语 14、编号 12、方案名 12、口语化 14、跨文档 6、无答案 7、敏感 5。
 其中前 58 题（术语/编号/方案名/口语化/跨文档）均可在本语料中回查到 gold 段落。
 
-生成时点：2026-10-09。仅使用标准库。
+gold 修订（2026-10-12，按上一条「命中面过宽即缺陷」规则执行，题量与题干不变）：
+- q-008 / q-054 / q-057 的 `gold_keywords` 各补一个**第二人独立确认在块内**的限定词，
+  把 AND 语义收紧；strict gold 100 → 90、section gold 164 → 150，删除量与第二人判否行数逐条对齐。
+- **q-056 本轮不动**：机械补词会把第二人判「相关」的块一起删掉，与复核结论冲突，留待人工裁决。
+- q-012 / q-014 的漏标（应加块）与 q-053 / q-055 / q-058 的拆题**同属结构改动**，未并入本次。
+- 改前实测另存 `var/gate0/pre_goldfix/`（qrels / eval_set / m2_eval / kappa_a2 / 标注 CSV），不覆盖。
+
+生成时点：2026-10-09；gold 关键词修订时点：2026-10-12。仅使用标准库。
 """
 
 import re
@@ -97,7 +104,7 @@ QUESTIONS: list[dict] = [
         "qid": "q-008",
         "question": "按 ITSS 事件分级，清算平台的 P1 级故障多久必须启动应急响应？",
         "category": "术语",
-        "gold_keywords": ["ITSS 事件分级", "15 分钟"],
+        "gold_keywords": ["ITSS 事件分级", "15 分钟", "清算链路"],
         "gold_projects": ["PRJ-FIN-2024-017"],
         "expected_behavior": "answer",
         "reference_answer": "P1 级故障须在 15 分钟内启动应急响应。",
@@ -515,7 +522,7 @@ QUESTIONS: list[dict] = [
         "qid": "q-054",
         "question": "公司的五步交付法是哪五个阶段，各项目是怎么用的？",
         "category": "跨文档",
-        "gold_keywords": ["五步交付法"],
+        "gold_keywords": ["五步交付法", "现状诊断", "成效固化"],
         "gold_projects": ["PRJ-FIN-2024-017", "PRJ-FIN-2023-041", "PRJ-FIN-2025-008", "PRJ-ENE-2024-006",
                           "PRJ-ENE-2025-011", "PRJ-CHM-2024-003", "PRJ-CHM-2023-021", "PRJ-CHM-2025-014"],
         "expected_behavior": "answer",
@@ -543,7 +550,7 @@ QUESTIONS: list[dict] = [
         "qid": "q-057",
         "question": "客户提的数据不出域，公司那四道防线分别是什么？",
         "category": "跨文档",
-        "gold_keywords": ["数据不出域四道防线"],
+        "gold_keywords": ["数据不出域四道防线", "环境隔离", "审计追溯"],
         "gold_projects": ["PRJ-FIN-2023-041", "PRJ-FIN-2025-008", "PRJ-CHM-2024-003", "PRJ-CHM-2023-021"],
         "expected_behavior": "answer",
         "reference_answer": "四道防线为环境隔离、出口管控（审批）、内容识别与审计追溯，任一道未闭环即暂停相关作业。",

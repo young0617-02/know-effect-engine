@@ -8,7 +8,7 @@
   "gradeable": 63,
   "gold_empty_but_answerable": 0,
   "unmatched_qids": [],
-  "mean_gold_per_question": 2.6,
+  "mean_gold_per_question": 2.38,
   "by_category": {
     "术语": 14,
     "编号": 12,
