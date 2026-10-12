@@ -1,0 +1,132 @@
+{
+  "env": {
+    "ts": "2026-10-12T16:56:53",
+    "commit": "ba7bfb4",
+    "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU"
+  },
+  "note": "同一套本地权重、同一份工作，只换 device。这是「容器里只能 CPU」那条路径的**下界**：容器还要多付一层网络与 gRPC，实际只会更慢。",
+  "cuda": {
+    "device": "cuda",
+    "load_embed_ms": 14096.8,
+    "load_rerank_ms": 5387.1,
+    "embed_passages_20": {
+      "per_rep_ms": [
+        456.4,
+        78.6,
+        64.8
+      ],
+      "p50": 78.6,
+      "max": 456.4
+    },
+    "embed_query_per": {
+      "per_rep_ms": [
+        706.9,
+        551.3,
+        682.8
+      ],
+      "p50": 682.8,
+      "max": 706.9,
+      "单条_p50": 31.950000000000003,
+      "单条_p95": 45.5
+    },
+    "rerank_20x1": {
+      "per_rep_ms": [
+        146.2,
+        154.8,
+        104.1
+      ],
+      "p50": 146.2,
+      "max": 154.8
+    },
+    "retrieval_composite_p50_ms": 178.1,
+    "retrieval_composite_worst_ms": 200.3
+  },
+  "cpu": {
+    "device": "cpu",
+    "load_embed_ms": 3731.4,
+    "load_rerank_ms": 5244.6,
+    "embed_passages_20": {
+      "per_rep_ms": [
+        16314.3,
+        16934.4,
+        17393.2
+      ],
+      "p50": 16934.4,
+      "max": 17393.2
+    },
+    "embed_query_per": {
+      "per_rep_ms": [
+        3795.6,
+        3643.3,
+        3572.4
+      ],
+      "p50": 3643.3,
+      "max": 3795.6,
+      "单条_p50": 179.3,
+      "单条_p95": 216.2
+    },
+    "rerank_20x1": {
+      "per_rep_ms": [
+        26481.1,
+        25974.4,
+        23972.6
+      ],
+      "p50": 25974.4,
+      "max": 26481.1
+    },
+    "retrieval_composite_p50_ms": 26153.7,
+    "retrieval_composite_worst_ms": 26697.3
+  },
+  "cpu_float32": {
+    "device": "cpu",
+    "load_embed_ms": 2838.9,
+    "load_rerank_ms": 5355.4,
+    "embed_passages_20": {
+      "per_rep_ms": [
+        3450.0,
+        2953.9,
+        3000.4
+      ],
+      "p50": 3000.4,
+      "max": 3450.0
+    },
+    "embed_query_per": {
+      "per_rep_ms": [
+        2112.2,
+        1996.0,
+        1983.6
+      ],
+      "p50": 1996.0,
+      "max": 2112.2,
+      "单条_p50": 96.4,
+      "单条_p95": 109.1
+    },
+    "rerank_20x1": {
+      "per_rep_ms": [
+        4973.6,
+        5070.5,
+        5115.3
+      ],
+      "p50": 5070.5,
+      "max": 5115.3
+    },
+    "retrieval_composite_p50_ms": 5166.9,
+    "retrieval_composite_worst_ms": 5224.4
+  },
+  "gate_P95_retrieval_ms": 800.0,
+  "cpu_over_gate": {
+    "composite_p50": 26153.7,
+    "worst": 26697.3,
+    "p50_超门禁": true,
+    "worst_超门禁": true
+  },
+  "adr12_measured_facts": {
+    "本地有没有 GPU 基础镜像": false,
+    "CPU 权重装载耗时对比_gpu": {
+      "embed_gpu_ms": 14096.8,
+      "embed_cpu_ms": 3731.4,
+      "rerank_gpu_ms": 5387.1,
+      "rerank_cpu_ms": 5244.6
+    }
+  }
+}
