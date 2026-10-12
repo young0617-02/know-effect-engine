@@ -21,7 +21,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 ART = ROOT / "var" / "gate0"
 OUT_MD = ROOT / "reports" / "m5" / "M5_DoD核对表.md"
-STATUSES = ("达标", "部分达标", "不达标", "不可测", "本次产出")
+STATUSES = ("达标", "部分达标", "不达标", "不可测", "待复测", "本次产出")
 
 
 def load(name: str) -> dict:
@@ -111,14 +111,18 @@ def build() -> dict:
             f"ECE {calib.get('ece')} > 0.10 ⇒ 这一格不达标；且这份 accuracy=1.0 来自**标签零方差**，"
             "所以它既不是「快校准好了」也不是「校准崩了」，是「拿没有方差的标签算出来的偏差」。"
             "关闭只有一条路：#40 的 58 行工单（已生成、未填）。"),
-        row("5", "延迟", "不达标", "P95 检索 < 800ms；P95 端到端 < 3s（本地命中路径）",
+        row("5", "延迟", "待复测", "P95 检索 < 800ms；P95 端到端 < 3s（本地命中路径）",
             f"P95 检索 {bf.get('latency_ms', {}).get('p95')}ms ✓ ｜ 端到端（PG session_turn）n={lat['n']}："
             f"p50 {lat['p50']:.0f}ms / p95 {lat['p95']:.0f}ms / max {lat['max']:.0f}ms"
             f"（>10s 的 {lat['n_over_10s']} 行是模型冷装载）｜ 流式首可见 p50 {stream.get('first_visible_ms', {}).get('p50')}ms",
             ["var/gate0/m2_eval.json", "PostgreSQL:session_turn", "var/gate0/m4_stream_probe.json", "var/gate0/verdict_01.json"],
             "**DoD#5 写 P95 端到端 < 3s，《项目定义》第六节已按 Gate 0 实测改成 < 6s**，技术方案 8.1 也写 < 6s——"
             f"三处两个值，M5 必须先定口径；而现值 p50 就 {lat['p50']:.0f}ms，**照哪一边都过不了**。"
-            f"这批 total_ms 混着验证脚本自己打的流量（{lat['n']} 行），不是纯用户流量。"),
+            f"这批 total_ms 混着验证脚本自己打的流量（{lat['n']} 行），不是纯用户流量；"
+            "且本机当时还跑着别的容器与宿主应用——**这不是净环境**。"
+            "用户 2026-10-12 决定整条延迟线后置复测：清空其他进程后重测，在那之前"
+            "**不得把这一格当成系统延迟结论引用**，DoD#5 的 3s vs 6s 口径也等干净数据出来再定。"
+            "唯一可信的一边是 P95 检索（同轮离线跑、不含生成）——它已达标且不受 7B 干扰。"),
         row("6", "业务指标", "不可测", "自助解答率 ≥ 60%；重复提问占比下降 ≥ 30%；新人上手周期缩短 ≥ 30%",
             f"无真实用户与线上流量 ⇒ 不可测。结构性代理：可答题 {ans.get('n_answerable')} 道里 "
             f"answer {sd.get('answer')} / tentative {sd.get('tentative')} / refuse {sd.get('refuse')} / escalate {sd.get('escalate')}，"
