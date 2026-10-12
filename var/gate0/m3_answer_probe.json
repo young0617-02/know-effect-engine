@@ -1,20 +1,20 @@
 {
   "collection": "kb_chunks",
-  "n_answerable": 58,
+  "n_answerable": 67,
   "status_dist": {
-    "answer": 42,
+    "answer": 53,
     "escalate": 1,
-    "tentative": 11,
+    "tentative": 9,
     "refuse": 4
   },
-  "needs_human": 13,
+  "needs_human": 15,
   "契约拦下的空结论": 0,
-  "行级引用落gold": "53/53 = 1.0",
+  "行级引用落gold": "61/62 = 0.9839",
   "仍被判answer/tentative且结论为空": 0,
-  "可判校准集(有logit)": 53,
+  "可判校准集(有logit)": 62,
   "e2e_ms": {
-    "p50": 3889.9,
-    "max": 10851.4
+    "p50": 3428.7,
+    "max": 12477.8
   },
   "rows": [
     {
@@ -39,29 +39,29 @@
       "notes": [
         "conclusion_derived_from_points:1"
       ],
-      "e2e_ms": 3458.0
+      "e2e_ms": 3150.5
     },
     {
       "qid": "q-002",
       "category": "术语",
       "status": "answer",
       "needs_human": false,
-      "conclusion_len": 32,
+      "conclusion_len": 44,
       "n_points": 1,
       "n_citations": 1,
       "citation_hits_gold": 1,
       "confidence": {
         "retrieval": 0.9946,
         "citation_consistency": 1.0,
-        "self_assessed": 1.0,
-        "composite": 0.9976,
-        "logit": 6.0299,
-        "calibrated": 0.9976,
+        "self_assessed": 0.0,
+        "composite": 0.7976,
+        "logit": 1.3714,
+        "calibrated": 0.7976,
         "temperature": 1.0,
         "score_basis": "rule_composite_not_probability"
       },
       "notes": [],
-      "e2e_ms": 3889.9
+      "e2e_ms": 3638.8
     },
     {
       "qid": "q-003",
@@ -82,7 +82,7 @@
         "model_declared_no_evidence",
         "strong_evidence_but_no_basis_claimed:0.9697>=0.9"
       ],
-      "e2e_ms": 3255.4
+      "e2e_ms": 3092.4
     },
     {
       "qid": "q-004",
@@ -106,7 +106,7 @@
       "notes": [
         "secret_level_cited:1 条需人工复核"
       ],
-      "e2e_ms": 4617.2
+      "e2e_ms": 3998.5
     },
     {
       "qid": "q-005",
@@ -130,7 +130,7 @@
       "notes": [
         "conclusion_derived_from_points:1"
       ],
-      "e2e_ms": 3152.4
+      "e2e_ms": 2679.1
     },
     {
       "qid": "q-006",
@@ -154,7 +154,7 @@
       "notes": [
         "secret_level_cited:1 条需人工复核"
       ],
-      "e2e_ms": 3648.2
+      "e2e_ms": 3053.2
     },
     {
       "qid": "q-007",
@@ -168,24 +168,24 @@
       "confidence": {
         "retrieval": 0.9956,
         "citation_consistency": 1.0,
-        "self_assessed": 0.9,
-        "composite": 0.978,
-        "logit": 3.7945,
-        "calibrated": 0.978,
+        "self_assessed": 0.0,
+        "composite": 0.798,
+        "logit": 1.3738,
+        "calibrated": 0.798,
         "temperature": 1.0,
         "score_basis": "rule_composite_not_probability"
       },
       "notes": [
         "secret_level_cited:1 条需人工复核"
       ],
-      "e2e_ms": 3564.6
+      "e2e_ms": 2862.7
     },
     {
       "qid": "q-008",
       "category": "术语",
       "status": "answer",
       "needs_human": false,
-      "conclusion_len": 35,
+      "conclusion_len": 12,
       "n_points": 1,
       "n_citations": 1,
       "citation_hits_gold": 1,
@@ -199,10 +199,8 @@
         "temperature": 1.0,
         "score_basis": "rule_composite_not_probability"
       },
-      "notes": [
-        "conclusion_derived_from_points:1"
-      ],
-      "e2e_ms": 3474.4
+      "notes": [],
+      "e2e_ms": 3214.1
     },
     {
       "qid": "q-009",
@@ -224,7 +222,7 @@
         "score_basis": "rule_composite_not_probability"
       },
       "notes": [],
-      "e2e_ms": 3147.8
+      "e2e_ms": 2869.5
     },
     {
       "qid": "q-010",
@@ -248,7 +246,7 @@
       "notes": [
         "conclusion_derived_from_points:1"
       ],
-      "e2e_ms": 4473.7
+      "e2e_ms": 4649.0
     },
     {
       "qid": "q-011",
@@ -272,7 +270,7 @@
       "notes": [
         "conclusion_derived_from_points:1"
       ],
-      "e2e_ms": 3445.6
+      "e2e_ms": 3246.6
     },
     {
       "qid": "q-012",
@@ -296,31 +294,31 @@
       "notes": [
         "conclusion_derived_from_points:1"
       ],
-      "e2e_ms": 3375.2
+      "e2e_ms": 3132.9
     },
     {
       "qid": "q-013",
       "category": "术语",
       "status": "answer",
       "needs_human": false,
-      "conclusion_len": 44,
+      "conclusion_len": 67,
       "n_points": 1,
       "n_citations": 1,
-      "citation_hits_gold": 1,
+      "citation_hits_gold": 0,
       "confidence": {
-        "retrieval": 0.9517,
+        "retrieval": 0.9585,
         "citation_consistency": 1.0,
         "self_assessed": 0.0,
-        "composite": 0.7782,
-        "logit": 1.2552,
-        "calibrated": 0.7782,
+        "composite": 0.7813,
+        "logit": 1.2733,
+        "calibrated": 0.7813,
         "temperature": 1.0,
         "score_basis": "rule_composite_not_probability"
       },
       "notes": [
         "conclusion_derived_from_points:1"
       ],
-      "e2e_ms": 3623.3
+      "e2e_ms": 3741.5
     },
     {
       "qid": "q-014",
@@ -344,7 +342,7 @@
       "notes": [
         "conclusion_derived_from_points:1"
       ],
-      "e2e_ms": 3177.9
+      "e2e_ms": 3474.6
     },
     {
       "qid": "q-015",
@@ -368,7 +366,7 @@
       "notes": [
         "conclusion_derived_from_points:1"
       ],
-      "e2e_ms": 3214.5
+      "e2e_ms": 3059.7
     },
     {
       "qid": "q-016",
@@ -392,7 +390,7 @@
       "notes": [
         "conclusion_derived_from_points:1"
       ],
-      "e2e_ms": 3637.7
+      "e2e_ms": 3107.6
     },
     {
       "qid": "q-017",
@@ -416,7 +414,7 @@
       "notes": [
         "conclusion_derived_from_points:2"
       ],
-      "e2e_ms": 3850.5
+      "e2e_ms": 3194.2
     },
     {
       "qid": "q-018",
@@ -430,15 +428,15 @@
       "confidence": {
         "retrieval": 0.9912,
         "citation_consistency": 1.0,
-        "self_assessed": 0.0,
-        "composite": 0.796,
-        "logit": 1.3615,
-        "calibrated": 0.796,
+        "self_assessed": 1.0,
+        "composite": 0.996,
+        "logit": 5.5175,
+        "calibrated": 0.996,
         "temperature": 1.0,
         "score_basis": "rule_composite_not_probability"
       },
       "notes": [],
-      "e2e_ms": 3904.7
+      "e2e_ms": 3679.1
     },
     {
       "qid": "q-019",
@@ -462,7 +460,7 @@
       "notes": [
         "conclusion_derived_from_points:1"
       ],
-      "e2e_ms": 3516.2
+      "e2e_ms": 2832.9
     },
     {
       "qid": "q-020",
@@ -486,7 +484,7 @@
       "notes": [
         "conclusion_derived_from_points:1"
       ],
-      "e2e_ms": 3200.6
+      "e2e_ms": 3070.2
     },
     {
       "qid": "q-021",
@@ -510,7 +508,7 @@
       "notes": [
         "conclusion_derived_from_points:2"
       ],
-      "e2e_ms": 3907.3
+      "e2e_ms": 3641.9
     },
     {
       "qid": "q-022",
@@ -534,7 +532,7 @@
       "notes": [
         "conclusion_derived_from_points:1"
       ],
-      "e2e_ms": 3828.2
+      "e2e_ms": 3001.3
     },
     {
       "qid": "q-023",
@@ -556,7 +554,7 @@
         "score_basis": "rule_composite_not_probability"
       },
       "notes": [],
-      "e2e_ms": 4782.5
+      "e2e_ms": 4142.6
     },
     {
       "qid": "q-024",
@@ -580,32 +578,32 @@
       "notes": [
         "conclusion_derived_from_points:1"
       ],
-      "e2e_ms": 4251.0
+      "e2e_ms": 3601.1
     },
     {
       "qid": "q-025",
       "category": "编号",
       "status": "answer",
       "needs_human": true,
-      "conclusion_len": 80,
-      "n_points": 2,
-      "n_citations": 2,
+      "conclusion_len": 27,
+      "n_points": 1,
+      "n_citations": 1,
       "citation_hits_gold": 1,
       "confidence": {
-        "retrieval": 0.9624,
+        "retrieval": 0.9336,
         "citation_consistency": 1.0,
         "self_assessed": 0.0,
-        "composite": 0.7831,
-        "logit": 1.2838,
-        "calibrated": 0.7831,
+        "composite": 0.7701,
+        "logit": 1.2089,
+        "calibrated": 0.7701,
         "temperature": 1.0,
         "score_basis": "rule_composite_not_probability"
       },
       "notes": [
-        "conclusion_derived_from_points:2",
+        "conclusion_derived_from_points:1",
         "secret_level_cited:1 条需人工复核"
       ],
-      "e2e_ms": 5744.9
+      "e2e_ms": 3421.1
     },
     {
       "qid": "q-026",
@@ -629,7 +627,7 @@
       "notes": [
         "conclusion_derived_from_points:2"
       ],
-      "e2e_ms": 6204.8
+      "e2e_ms": 5236.6
     },
     {
       "qid": "q-027",
@@ -651,7 +649,7 @@
         "score_basis": "rule_composite_not_probability"
       },
       "notes": [],
-      "e2e_ms": 4091.5
+      "e2e_ms": 3373.8
     },
     {
       "qid": "q-028",
@@ -673,7 +671,7 @@
         "score_basis": "rule_composite_not_probability"
       },
       "notes": [],
-      "e2e_ms": 4099.5
+      "e2e_ms": 4371.0
     },
     {
       "qid": "q-029",
@@ -697,7 +695,7 @@
       "notes": [
         "conclusion_derived_from_points:3"
       ],
-      "e2e_ms": 4037.3
+      "e2e_ms": 3700.3
     },
     {
       "qid": "q-030",
@@ -721,14 +719,14 @@
       "notes": [
         "conclusion_derived_from_points:1"
       ],
-      "e2e_ms": 3379.1
+      "e2e_ms": 2665.8
     },
     {
       "qid": "q-031",
       "category": "方案名",
       "status": "answer",
       "needs_human": false,
-      "conclusion_len": 73,
+      "conclusion_len": 45,
       "n_points": 1,
       "n_citations": 1,
       "citation_hits_gold": 1,
@@ -745,7 +743,7 @@
       "notes": [
         "conclusion_derived_from_points:1"
       ],
-      "e2e_ms": 4364.4
+      "e2e_ms": 2922.6
     },
     {
       "qid": "q-032",
@@ -767,7 +765,7 @@
         "score_basis": "rule_composite_not_probability"
       },
       "notes": [],
-      "e2e_ms": 3952.8
+      "e2e_ms": 3323.9
     },
     {
       "qid": "q-033",
@@ -791,7 +789,7 @@
       "notes": [
         "conclusion_derived_from_points:1"
       ],
-      "e2e_ms": 4831.5
+      "e2e_ms": 4614.4
     },
     {
       "qid": "q-034",
@@ -815,14 +813,14 @@
       "notes": [
         "secret_level_cited:1 条需人工复核"
       ],
-      "e2e_ms": 3554.8
+      "e2e_ms": 3428.7
     },
     {
       "qid": "q-035",
       "category": "方案名",
       "status": "answer",
       "needs_human": false,
-      "conclusion_len": 37,
+      "conclusion_len": 39,
       "n_points": 1,
       "n_citations": 1,
       "citation_hits_gold": 1,
@@ -839,7 +837,7 @@
       "notes": [
         "conclusion_derived_from_points:1"
       ],
-      "e2e_ms": 3939.3
+      "e2e_ms": 2866.7
     },
     {
       "qid": "q-036",
@@ -863,7 +861,7 @@
       "notes": [
         "secret_level_cited:1 条需人工复核"
       ],
-      "e2e_ms": 3750.7
+      "e2e_ms": 2715.0
     },
     {
       "qid": "q-037",
@@ -888,7 +886,7 @@
         "conclusion_derived_from_points:1",
         "secret_level_cited:1 条需人工复核"
       ],
-      "e2e_ms": 3800.2
+      "e2e_ms": 2717.5
     },
     {
       "qid": "q-038",
@@ -912,7 +910,7 @@
       "notes": [
         "conclusion_derived_from_points:2"
       ],
-      "e2e_ms": 4028.9
+      "e2e_ms": 3910.0
     },
     {
       "qid": "q-039",
@@ -937,7 +935,7 @@
         "conclusion_derived_from_points:1",
         "初步判断（低置信度显式降级）"
       ],
-      "e2e_ms": 3774.4
+      "e2e_ms": 3191.5
     },
     {
       "qid": "q-040",
@@ -962,7 +960,7 @@
         "conclusion_derived_from_points:1",
         "初步判断（低置信度显式降级）"
       ],
-      "e2e_ms": 4672.4
+      "e2e_ms": 3987.4
     },
     {
       "qid": "q-041",
@@ -987,7 +985,7 @@
         "conclusion_derived_from_points:1",
         "初步判断（低置信度显式降级）"
       ],
-      "e2e_ms": 4315.9
+      "e2e_ms": 4054.6
     },
     {
       "qid": "q-042",
@@ -1012,7 +1010,7 @@
         "conclusion_derived_from_points:1",
         "初步判断（低置信度显式降级）"
       ],
-      "e2e_ms": 4102.0
+      "e2e_ms": 3311.1
     },
     {
       "qid": "q-043",
@@ -1037,7 +1035,7 @@
         "conclusion_derived_from_points:1",
         "初步判断（低置信度显式降级）"
       ],
-      "e2e_ms": 5025.8
+      "e2e_ms": 5221.5
     },
     {
       "qid": "q-044",
@@ -1057,16 +1055,16 @@
       "notes": [
         "no_sufficient_evidence"
       ],
-      "e2e_ms": 338.8
+      "e2e_ms": 302.3
     },
     {
       "qid": "q-045",
       "category": "口语化",
       "status": "tentative",
       "needs_human": true,
-      "conclusion_len": 160,
+      "conclusion_len": 14,
       "n_points": 1,
-      "n_citations": 1,
+      "n_citations": 2,
       "citation_hits_gold": 1,
       "confidence": {
         "retrieval": 0.8628,
@@ -1083,7 +1081,7 @@
         "secret_level_cited:1 条需人工复核",
         "初步判断（低置信度显式降级）"
       ],
-      "e2e_ms": 5596.6
+      "e2e_ms": 4728.2
     },
     {
       "qid": "q-046",
@@ -1108,7 +1106,7 @@
         "conclusion_derived_from_points:1",
         "初步判断（低置信度显式降级）"
       ],
-      "e2e_ms": 4036.9
+      "e2e_ms": 3261.7
     },
     {
       "qid": "q-047",
@@ -1128,7 +1126,7 @@
       "notes": [
         "no_sufficient_evidence"
       ],
-      "e2e_ms": 324.0
+      "e2e_ms": 284.7
     },
     {
       "qid": "q-048",
@@ -1154,14 +1152,14 @@
         "secret_level_cited:1 条需人工复核",
         "初步判断（低置信度显式降级）"
       ],
-      "e2e_ms": 3411.2
+      "e2e_ms": 3659.7
     },
     {
       "qid": "q-049",
       "category": "口语化",
       "status": "tentative",
       "needs_human": false,
-      "conclusion_len": 36,
+      "conclusion_len": 32,
       "n_points": 1,
       "n_citations": 1,
       "citation_hits_gold": 1,
@@ -1179,14 +1177,14 @@
         "conclusion_derived_from_points:1",
         "初步判断（低置信度显式降级）"
       ],
-      "e2e_ms": 3439.1
+      "e2e_ms": 3723.3
     },
     {
       "qid": "q-050",
       "category": "口语化",
       "status": "answer",
       "needs_human": false,
-      "conclusion_len": 74,
+      "conclusion_len": 27,
       "n_points": 1,
       "n_citations": 1,
       "citation_hits_gold": 1,
@@ -1203,7 +1201,7 @@
       "notes": [
         "conclusion_derived_from_points:1"
       ],
-      "e2e_ms": 4361.4
+      "e2e_ms": 3719.9
     },
     {
       "qid": "q-051",
@@ -1223,7 +1221,7 @@
       "notes": [
         "no_sufficient_evidence"
       ],
-      "e2e_ms": 319.7
+      "e2e_ms": 343.6
     },
     {
       "qid": "q-052",
@@ -1243,89 +1241,88 @@
       "notes": [
         "no_sufficient_evidence"
       ],
-      "e2e_ms": 328.4
+      "e2e_ms": 338.3
     },
     {
       "qid": "q-053",
       "category": "跨文档",
-      "status": "tentative",
+      "status": "answer",
       "needs_human": true,
-      "conclusion_len": 12,
+      "conclusion_len": 44,
       "n_points": 1,
       "n_citations": 1,
       "citation_hits_gold": 1,
       "confidence": {
-        "retrieval": 0.4736,
+        "retrieval": 0.9624,
         "citation_consistency": 1.0,
         "self_assessed": 0.0,
-        "composite": 0.5631,
-        "logit": 0.2538,
-        "calibrated": 0.5631,
+        "composite": 0.7831,
+        "logit": 1.2838,
+        "calibrated": 0.7831,
         "temperature": 1.0,
         "score_basis": "rule_composite_not_probability"
       },
       "notes": [
         "conclusion_derived_from_points:1",
-        "secret_level_cited:1 条需人工复核",
-        "初步判断（低置信度显式降级）"
+        "secret_level_cited:1 条需人工复核"
       ],
-      "e2e_ms": 3311.6
+      "e2e_ms": 2865.2
     },
     {
       "qid": "q-054",
       "category": "跨文档",
       "status": "answer",
       "needs_human": true,
-      "conclusion_len": 36,
-      "n_points": 1,
+      "conclusion_len": 24,
+      "n_points": 5,
       "n_citations": 5,
       "citation_hits_gold": 1,
       "confidence": {
-        "retrieval": 0.9536,
+        "retrieval": 0.9678,
         "citation_consistency": 1.0,
         "self_assessed": 0.0,
-        "composite": 0.7791,
-        "logit": 1.2604,
-        "calibrated": 0.7791,
+        "composite": 0.7855,
+        "logit": 1.298,
+        "calibrated": 0.7855,
         "temperature": 1.0,
         "score_basis": "rule_composite_not_probability"
       },
       "notes": [
-        "conclusion_derived_from_points:1",
+        "conclusion_derived_from_points:5",
         "secret_level_cited:3 条需人工复核"
       ],
-      "e2e_ms": 8429.7
+      "e2e_ms": 9117.7
     },
     {
       "qid": "q-055",
       "category": "跨文档",
       "status": "answer",
       "needs_human": false,
-      "conclusion_len": 49,
-      "n_points": 3,
+      "conclusion_len": 50,
+      "n_points": 1,
       "n_citations": 1,
       "citation_hits_gold": 1,
       "confidence": {
-        "retrieval": 0.9546,
+        "retrieval": 0.9888,
         "citation_consistency": 1.0,
         "self_assessed": 0.0,
-        "composite": 0.7796,
-        "logit": 1.2633,
-        "calibrated": 0.7796,
+        "composite": 0.7949,
+        "logit": 1.3547,
+        "calibrated": 0.7949,
         "temperature": 1.0,
         "score_basis": "rule_composite_not_probability"
       },
       "notes": [
-        "conclusion_derived_from_points:3"
+        "conclusion_derived_from_points:1"
       ],
-      "e2e_ms": 5700.9
+      "e2e_ms": 3848.7
     },
     {
       "qid": "q-056",
       "category": "跨文档",
       "status": "answer",
       "needs_human": false,
-      "conclusion_len": 138,
+      "conclusion_len": 143,
       "n_points": 5,
       "n_citations": 5,
       "citation_hits_gold": 1,
@@ -1342,7 +1339,7 @@
       "notes": [
         "conclusion_derived_from_points:5"
       ],
-      "e2e_ms": 10851.4
+      "e2e_ms": 12477.8
     },
     {
       "qid": "q-057",
@@ -1366,40 +1363,255 @@
       "notes": [
         "conclusion_derived_from_points:4"
       ],
-      "e2e_ms": 8594.9
+      "e2e_ms": 9184.8
     },
     {
       "qid": "q-058",
       "category": "跨文档",
-      "status": "tentative",
+      "status": "answer",
+      "needs_human": false,
+      "conclusion_len": 35,
+      "n_points": 1,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "confidence": {
+        "retrieval": 0.9658,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7846,
+        "logit": 1.2927,
+        "calibrated": 0.7846,
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "notes": [
+        "conclusion_derived_from_points:1"
+      ],
+      "e2e_ms": 3315.2
+    },
+    {
+      "qid": "q-071",
+      "category": "术语",
+      "status": "answer",
       "needs_human": true,
-      "conclusion_len": 10,
+      "conclusion_len": 31,
       "n_points": 1,
       "n_citations": 2,
       "citation_hits_gold": 1,
       "confidence": {
-        "retrieval": 0.7617,
+        "retrieval": 0.9243,
         "citation_consistency": 1.0,
         "self_assessed": 0.0,
-        "composite": 0.6928,
-        "logit": 0.8132,
-        "calibrated": 0.6928,
+        "composite": 0.7659,
+        "logit": 1.1853,
+        "calibrated": 0.7659,
         "temperature": 1.0,
         "score_basis": "rule_composite_not_probability"
       },
       "notes": [
         "conclusion_derived_from_points:1",
-        "secret_level_cited:1 条需人工复核",
-        "初步判断（低置信度显式降级）"
+        "secret_level_cited:1 条需人工复核"
       ],
-      "e2e_ms": 4345.4
+      "e2e_ms": 3867.8
+    },
+    {
+      "qid": "q-072",
+      "category": "编号",
+      "status": "answer",
+      "needs_human": false,
+      "conclusion_len": 21,
+      "n_points": 1,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "confidence": {
+        "retrieval": 0.9771,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7897,
+        "logit": 1.3231,
+        "calibrated": 0.7897,
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "notes": [
+        "conclusion_derived_from_points:1"
+      ],
+      "e2e_ms": 3007.3
+    },
+    {
+      "qid": "q-073",
+      "category": "跨文档",
+      "status": "answer",
+      "needs_human": true,
+      "conclusion_len": 154,
+      "n_points": 1,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "confidence": {
+        "retrieval": 0.9888,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7949,
+        "logit": 1.3547,
+        "calibrated": 0.7949,
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "notes": [
+        "conclusion_derived_from_points:1",
+        "secret_level_cited:1 条需人工复核"
+      ],
+      "e2e_ms": 4532.8
+    },
+    {
+      "qid": "q-074",
+      "category": "跨文档",
+      "status": "answer",
+      "needs_human": false,
+      "conclusion_len": 29,
+      "n_points": 3,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "confidence": {
+        "retrieval": 0.9946,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7976,
+        "logit": 1.3714,
+        "calibrated": 0.7976,
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "notes": [
+        "conclusion_derived_from_points:3"
+      ],
+      "e2e_ms": 3783.1
+    },
+    {
+      "qid": "q-075",
+      "category": "跨文档",
+      "status": "answer",
+      "needs_human": false,
+      "conclusion_len": 26,
+      "n_points": 2,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "confidence": {
+        "retrieval": 0.9565,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7804,
+        "logit": 1.268,
+        "calibrated": 0.7804,
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "notes": [],
+      "e2e_ms": 5393.8
+    },
+    {
+      "qid": "q-076",
+      "category": "跨文档",
+      "status": "answer",
+      "needs_human": false,
+      "conclusion_len": 42,
+      "n_points": 2,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "confidence": {
+        "retrieval": 0.894,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7523,
+        "logit": 1.1109,
+        "calibrated": 0.7523,
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "notes": [
+        "conclusion_derived_from_points:2"
+      ],
+      "e2e_ms": 4714.3
+    },
+    {
+      "qid": "q-077",
+      "category": "跨文档",
+      "status": "answer",
+      "needs_human": false,
+      "conclusion_len": 69,
+      "n_points": 2,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "confidence": {
+        "retrieval": 0.9868,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7941,
+        "logit": 1.3498,
+        "calibrated": 0.7941,
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "notes": [
+        "conclusion_derived_from_points:2"
+      ],
+      "e2e_ms": 4891.7
+    },
+    {
+      "qid": "q-078",
+      "category": "跨文档",
+      "status": "answer",
+      "needs_human": false,
+      "conclusion_len": 81,
+      "n_points": 3,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "confidence": {
+        "retrieval": 0.9868,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7941,
+        "logit": 1.3498,
+        "calibrated": 0.7941,
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "notes": [
+        "conclusion_derived_from_points:3"
+      ],
+      "e2e_ms": 5118.3
+    },
+    {
+      "qid": "q-079",
+      "category": "跨文档",
+      "status": "answer",
+      "needs_human": true,
+      "conclusion_len": 48,
+      "n_points": 2,
+      "n_citations": 1,
+      "citation_hits_gold": 1,
+      "confidence": {
+        "retrieval": 0.9697,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7864,
+        "logit": 1.3034,
+        "calibrated": 0.7864,
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "notes": [
+        "conclusion_derived_from_points:2",
+        "secret_level_cited:1 条需人工复核"
+      ],
+      "e2e_ms": 5326.6
     }
   ],
   "calibration_on_gradable": {
-    "ece": 0.2347,
-    "n": 53,
-    "mean_conf": 0.7653,
-    "accuracy": 1.0,
+    "ece": 0.2135,
+    "n": 62,
+    "mean_conf": 0.7703,
+    "accuracy": 0.9839,
     "bins": [
       {
         "bin": 4,
@@ -1409,26 +1621,26 @@
       },
       {
         "bin": 5,
-        "n": 3,
-        "conf": 0.5649,
+        "n": 2,
+        "conf": 0.5658,
         "acc": 1.0
       },
       {
         "bin": 6,
-        "n": 4,
-        "conf": 0.6299,
+        "n": 3,
+        "conf": 0.6089,
         "acc": 1.0
       },
       {
         "bin": 7,
-        "n": 40,
-        "conf": 0.7868,
-        "acc": 1.0
+        "n": 52,
+        "conf": 0.7866,
+        "acc": 0.9808
       },
       {
         "bin": 9,
-        "n": 4,
-        "conf": 0.9866,
+        "n": 3,
+        "conf": 0.9889,
         "acc": 1.0
       }
     ]
