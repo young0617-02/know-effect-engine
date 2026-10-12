@@ -187,6 +187,7 @@ class AnswerEngine:
         strong_evidence_floor: float = 0.90,
         temperature: float = 0.0,
         max_tokens: int = 700,
+        unreviewed_provider=None,
     ) -> None:
         self.settings = get_settings()
         self.retriever = retriever
@@ -199,6 +200,28 @@ class AnswerEngine:
         self.temperature = temperature
         self.max_tokens = max_tokens
         self.calibration_temperature: float = 1.0
+        # 复核闸（处置 C）：可调用者返回「未复核版本 id 集合」。None = 不设闸（离线复跑与老测试保持原行为）。
+        self.unreviewed_provider = unreviewed_provider
+
+    # ---- 复核闸 ----
+    def gate_unreviewed(self, res) -> int:
+        """把**未经复核版本**的证据从答案的证据面里摘掉，返回摘掉的条数。
+
+        为什么摘在答案层而不是检索层（用户 2026-10-12 选定 C）：
+        真正有害的是「被当成答案对外作答」，不是「被检索到」——知识库管理页与复核人
+        本来就该看得见未复核内容，否则没人能去复核它。
+        摘掉之后若一条不剩，下游走的是既有的「无充分依据」拒答路径，不新造出口。
+        """
+        if self.unreviewed_provider is None:
+            return 0
+        drop = self.unreviewed_provider() or set()
+        if not drop:
+            return 0
+        kept = [c for c in res.chunks if c.chunk_id.split("#", 1)[0] not in drop]
+        n = len(res.chunks) - len(kept)
+        if n:
+            res.chunks = kept
+        return n
 
     # ---- 校验 ----
     @staticmethod

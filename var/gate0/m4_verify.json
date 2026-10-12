@@ -1,71 +1,215 @@
 {
  "base": "http://127.0.0.1:38080",
  "question": "SIS 安全仪表系统采用的表决逻辑是什么？",
- "first_delta_ms": 1371,
+ "first_delta_ms": 21804,
  "events": [
   [
    "retrieval",
-   843
+   20890
   ],
   [
    "delta",
-   1371
+   21804
   ],
   [
    "delta",
-   1401
+   21825
   ],
   [
    "delta",
-   1459
+   21846
   ],
   [
    "delta",
-   1497
+   21867
   ],
   [
    "delta",
-   1529
+   21889
   ],
   [
    "delta",
-   1557
+   21910
   ],
   [
    "delta",
-   1581
+   21932
   ],
   [
    "delta",
-   1608
+   21953
   ],
   [
    "delta",
-   1635
+   21974
   ],
   [
    "delta",
-   1675
+   21995
   ],
   [
    "delta",
-   1703
+   22016
   ],
   [
    "delta",
-   1761
+   22038
   ],
   [
    "delta",
-   1788
+   22059
   ],
   [
    "delta",
-   1818
+   22080
+  ],
+  [
+   "delta",
+   22101
+  ],
+  [
+   "delta",
+   22122
+  ],
+  [
+   "delta",
+   22143
+  ],
+  [
+   "delta",
+   22164
+  ],
+  [
+   "delta",
+   22185
+  ],
+  [
+   "delta",
+   22206
+  ],
+  [
+   "delta",
+   22227
+  ],
+  [
+   "delta",
+   22250
+  ],
+  [
+   "delta",
+   22290
+  ],
+  [
+   "delta",
+   22310
+  ],
+  [
+   "delta",
+   22331
+  ],
+  [
+   "delta",
+   22352
+  ],
+  [
+   "delta",
+   22372
+  ],
+  [
+   "delta",
+   22394
+  ],
+  [
+   "delta",
+   22414
+  ],
+  [
+   "delta",
+   22434
+  ],
+  [
+   "delta",
+   22455
+  ],
+  [
+   "delta",
+   22475
+  ],
+  [
+   "delta",
+   22496
+  ],
+  [
+   "delta",
+   22516
+  ],
+  [
+   "delta",
+   22536
+  ],
+  [
+   "delta",
+   22559
+  ],
+  [
+   "delta",
+   22579
+  ],
+  [
+   "delta",
+   22599
+  ],
+  [
+   "delta",
+   22621
+  ],
+  [
+   "delta",
+   22642
+  ],
+  [
+   "delta",
+   22662
+  ],
+  [
+   "delta",
+   22682
+  ],
+  [
+   "delta",
+   22702
+  ],
+  [
+   "delta",
+   22722
+  ],
+  [
+   "delta",
+   22743
+  ],
+  [
+   "delta",
+   22766
+  ],
+  [
+   "delta",
+   22786
+  ],
+  [
+   "delta",
+   22807
+  ],
+  [
+   "delta",
+   22827
+  ],
+  [
+   "delta",
+   22848
   ],
   [
    "answer",
-   4364
+   24564
   ]
  ],
  "checks": [
@@ -103,7 +247,7 @@
    "clause": "面",
    "name": "流式确有增量（delta 数 > 1，代理没把整段攒成一次）",
    "ok": true,
-   "detail": "delta 14 条"
+   "detail": "delta 50 条"
   },
   {
    "clause": "第五节",
@@ -133,7 +277,7 @@
    "clause": "第五节",
    "name": "引用片段读取留了审计（chunks_read）",
    "ok": true,
-   "detail": "['answer_generated', 'chunks_read', 'session_read']"
+   "detail": "['answer_generated', 'chunks_read']"
   },
   {
    "clause": "C-1",

@@ -248,6 +248,11 @@ class IngestionService:
         # 否则被驳回的内容仍会被检索命中，这是知识准入的最后一道闸
         if decision == "pass":
             self.pg.set_document_status(doc_id, "active")
+            # 盖复核章（处置 C 的凭据）：章落在**版本**上，不落在文档上——
+            # 否则一次复核就把这个 doc 以后所有新版本都自动放行了，那正是投毒路径要防的形状。
+            for ver in self.pg.versions_of(doc_id):
+                if ver["status"] == "effective":
+                    self.pg.mark_reviewed(ver["id"], actor)
         else:
             self.pg.set_document_status(doc_id, "rejected")
             for ver in self.pg.versions_of(doc_id):

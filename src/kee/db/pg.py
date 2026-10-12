@@ -128,8 +128,24 @@ CREATE TABLE IF NOT EXISTS session_turn (
 CREATE INDEX IF NOT EXISTS session_turn_idx ON session_turn(session_id, turn_no);
 """
 
-IMMUTABLE_SQL = """
-CREATE OR REPLACE FUNCTION kee_forbid_audit_mutation() RETURNS trigger AS $$
+# 复核闸（用户 2026-10-12 选定处置 C）：复核状态必须**独立于** effective/superseded。
+# 此前版本一上传就 effective，「复核」只是事后撤销，没有「未复核」这个可判断的状态可言。
+REVIEW_GATE_SQL = """DO $mig$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+                 WHERE table_name = 'document_version' AND column_name = 'reviewed_by') THEN
+    ALTER TABLE document_version ADD COLUMN reviewed_by text;
+    ALTER TABLE document_version ADD COLUMN reviewed_at timestamptz;
+    -- 回填是必须的，而且必须写明是迁移给的、不是人复核的：
+    -- 不回填就等于让现存 24 篇语料在一夜之间全部「无依据可答」——那是断服务，不是加闸。
+    UPDATE document_version SET reviewed_by = 'migration:pre-review-gate', reviewed_at = now()
+      WHERE reviewed_by IS NULL;
+  END IF;
+END
+$mig$;
+"""
+
+IMMUTABLE_SQL = """CREATE OR REPLACE FUNCTION kee_forbid_audit_mutation() RETURNS trigger AS $$
 BEGIN
     RAISE EXCEPTION 'audit_log 为追加表，禁止 % 操作', TG_OP
         USING ERRCODE = 'insufficient_privilege';
@@ -153,6 +169,7 @@ class AuthoritativeStore:
     def init_schema(self) -> None:
         with self.connect() as conn:
             conn.execute(SCHEMA_SQL)
+            conn.execute(REVIEW_GATE_SQL)   # 一次性迁移：列已存在时整块 DO 什么都不做
             conn.execute(IMMUTABLE_SQL)
 
     def truncate_all(self, include_audit: bool = True) -> None:
@@ -391,10 +408,27 @@ class AuthoritativeStore:
     def versions_of(self, doc_id: str) -> list[dict[str, Any]]:
         with self.connect() as conn:
             return conn.execute(
-                "SELECT id, version, chunk_scheme, checksum, status, effective_at "
+                "SELECT id, version, chunk_scheme, checksum, status, effective_at, reviewed_by, reviewed_at "
                 "FROM document_version WHERE doc_id=%s ORDER BY version DESC",
                 (doc_id,),
             ).fetchall()
+
+    def mark_reviewed(self, version_id: str, actor: str) -> None:
+        """复核通过 = 给这一个版本盖上复核章。章与状态分开：回滚/下线都不该顺手把章擦掉。"""
+        with self.connect() as conn:
+            n = conn.execute(
+                "UPDATE document_version SET reviewed_by=%s, reviewed_at=now() WHERE id=%s",
+                (actor, version_id),
+            ).rowcount
+        if not n:
+            raise KeyError(f"版本不存在：{version_id}")
+
+    def unreviewed_versions(self) -> set[str]:
+        """未复核版本 id 集合，答案层用它过滤证据。空集是常态（存量已回填），
+        但取不到不代表没闸——闸在答案层按这个集合生效。"""
+        with self.connect() as conn:
+            return {r["id"] for r in conn.execute(
+                "SELECT id FROM document_version WHERE reviewed_by IS NULL").fetchall()}
 
     def set_document_status(self, doc_id: str, status: str) -> None:
         if status not in ("active", "offline", "rejected"):

@@ -103,7 +103,9 @@ def build() -> dict:
             f"含编造数字的题 {len(invented)} 道 ｜ 零引用结论 {ans.get('契约拦下的空结论')} 条",
             ["var/gate0/m3_answer_probe.json", "var/gate0/m3_confidence_probe.json"],
             "「引用落 gold」= 引用的块确实是该题 gold，**不等于**结论内容正确；"
-            "现在能说的是「出处可信」，不能说「答案可信」——后者等 #40 的 answer_correct。"),
+            "现在能说的是「出处可信」，不能说「答案可信」——后者等 #40 的 answer_correct。"
+            "（V1.0.14 已另加一道**答案层复核闸**：未复核版本不进答案，但那是准入控制，不是正确性度量，"
+            "不能拿它顶替这一格）"),
         row("4", "校准与结构化", "部分达标", "ECE ≤ 0.10；结构化输出首次成功率 ≥ 90%",
             f"结构化首次成功率 {pct(struct_ok / n_gen) if n_gen else 'NA'}（{struct_ok}/{n_gen}，被截断 {concl.get('被截断数')}）｜ "
             f"ECE **{calib.get('ece', '无数')}**（n={calib.get('n')}，mean_conf {calib.get('mean_conf')} vs accuracy {calib.get('accuracy')}）",

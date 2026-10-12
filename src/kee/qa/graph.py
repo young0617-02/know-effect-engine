@@ -162,9 +162,12 @@ def build_qa_graph(engine):
         res = engine.retriever.retrieve(
             query, state["ctx"], top_k=state.get("top_k"), already_rewritten=resolved
         )
+        dropped_unreviewed = engine.gate_unreviewed(res)
         timings["retrieval_ms"] = res.timings_ms.get("retrieval_total_ms", 0.0)
         timings.update({f"stage_{k}": v for k, v in res.timings_ms.items() if k != "retrieval_total_ms"})
+        extra_notes = [f"unreviewed_evidence_dropped:{dropped_unreviewed}"] if dropped_unreviewed else []
         return {
+            "notes": _n(state, *extra_notes),
             "retrieval_res": res,
             "timings_ms": timings,
             "retrieval": {

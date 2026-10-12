@@ -416,7 +416,9 @@ def create_app(*, skip_embedding: bool = False, scheduler: Any | None = None, co
             rewriter=QueryRewriter(cache=cache) if rewrite else None,
             rewrite_mode="sparse" if rewrite else "off",
         )
-        eng = AnswerEngine(retriever=retriever, llm=OllamaClient())
+        # unreviewed_provider：答案层的复核闸（处置 C）。检索接口不带这个 provider，
+        # 所以未复核内容仍然「看得见、查得到」，但不会被组织进答案的证据面。
+        eng = AnswerEngine(retriever=retriever, llm=OllamaClient(), unreviewed_provider=pg.unreviewed_versions)
         eng.calibration_temperature = float(cal.get("temperature", 1.0)) or 1.0
         setattr(app.state, key, eng)
         return eng

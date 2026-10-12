@@ -113,6 +113,8 @@ def main() -> int:
         f = ROOT / "var" / ".upload_probe.md"
         f.write_text(DOC, encoding="utf-8")
         try:
+
+
             code, body = curl(["-X", "POST", f"{base}/api/v1/documents/upload", *eng,
                                "-F", f"file=@{f};type=text/markdown",
                                "-F", "doc_id=upload-http-probe", "-F", "industry=能源",
@@ -141,8 +143,11 @@ def main() -> int:
             leaked = [h for h in pre_review_hits if h and h.startswith(f"{doc_id}@v1")]
             code2, body2 = curl([f"{base}/api/v1/documents/{doc_id}", *owner])
             vers = {(v["id"], v["status"]) for v in (json.loads(body2).get("versions", []) if code2 == 200 else [])}
-            ck("复核**之前**未生效版本不进检索（准入闸真的拦索引）", not leaked,
+            # C 的边界：**未复核也允许被检索到**（复核人得看得见才能去复核），
+            # 所以这一条断言的是「检索照旧命中」，不是「检索挡住」。
+            ck("复核**之前**仍可被检索命中（C 的边界：闸不在检索层）", bool(leaked),
                {"版本状态": sorted(vers), "复核前命中": pre_review_hits})
+            assert leaked, "C 语义下未复核内容应当仍可检索；查不到说明闸装错层了"
 
             # 检索命中只是半句；真正要紧的是「未经复核的内容能不能直接被引用作答」。
             # 用一个只存在于刚上传文档里的问法，看答案是否引用了那个未复核版本。
@@ -157,6 +162,7 @@ def main() -> int:
             ck("复核**之前**不得被引用作答（未复核内容不进答案）", not answered_unreviewed,
                {"status": a.get("status"), "结论": (a.get("conclusion") or "")[:90], "引用": cited})
 
+
             code, body = curl(["-X", "POST", f"{base}/api/v1/documents/{doc_id}/review", *owner,
                                "-H", "Content-Type: application/json", "-d", json.dumps({"decision": "pass", "note": "UI 等价操作"})])
             ck("复核 pass 生效（角色合法、actor 与 uploader 不同）", code == 200, {"http": code, "body": body[:200]})
@@ -167,6 +173,17 @@ def main() -> int:
             hits = [h.get("chunk_id") for h in (json.loads(body).get("hits", []) if code == 200 else [])]
             ck("复核**之后**可被检索命中（索引真的写进去了）", any(h and h.startswith(f"{doc_id}@v1") for h in hits),
                {"http": code, "hits": hits[:5]})
+
+            # C 的另一半：复核**之后**同一条内容必须立刻可被引用作答，否则闸是死的。
+            code, body = curl(["-X", "POST", f"{base}/api/v1/answers", *owner,
+                               "-H", "Content-Type: application/json",
+                               "-d", json.dumps({"question": "采集网关心跳连续缺失几次要开工单，工单多久内响应？"}, ensure_ascii=False)],
+                              timeout=300)
+            a2 = json.loads(body) if code == 200 else {}
+            cited2 = [c.get("chunk_id") for c in (a2.get("citations") or [])]
+            ck("复核**之后**可被引用作答（闸不是永久封死）",
+               a2.get("status") in ("answer", "tentative") and any(x and x.startswith(f"{doc_id}@v1") for x in cited2),
+               {"status": a2.get("status"), "结论": (a2.get("conclusion") or "")[:90], "引用": cited2})
 
             code, body = curl(["-X", "POST", f"{base}/api/v1/documents/upload", *eng,
                                "-F", f"file=@{f};type=text/markdown",

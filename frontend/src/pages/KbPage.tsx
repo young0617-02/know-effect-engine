@@ -253,7 +253,7 @@ function DetailRow({
             <table className={s.table}>
               <thead>
                 <tr>
-                  {["版本 id", "版本号", "状态", "操作"].map((h) => (
+                  {["版本 id", "版本号", "状态", "复核", "操作"].map((h) => (
                     <th key={h}>{h}</th>
                   ))}
                 </tr>
@@ -264,6 +264,9 @@ function DetailRow({
                     <td>{String(v.id)}</td>
                     <td>{String(v.version)}</td>
                     <td>{String(v.status)}</td>
+                    {/* 复核闸（V1.0.14 处置 C）：章在版本上。未复核的版本仍可被检索到，但不会进答案——
+                        这句话必须显示在界面上，否则复核人无法解释「为什么搜得到却答不出」。 */}
+                    <td>{v.reviewed_by ? `已复核（${String(v.reviewed_by)}）` : "未复核（不进答案）"}</td>
                     <td>
                       <button
                         type="button"

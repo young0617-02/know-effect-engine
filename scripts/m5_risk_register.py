@@ -66,7 +66,7 @@ DISPOSITION: dict[str, tuple[str, str]] = {
 
 # 原表里没单列、但本轮新登记/仍未闭的三条，补进定稿
 ADDED = [
-    ("未复核内容即时可被引用作答（复核不是前闸）", PENDING,
+    ("未复核内容即时可被引用作答（复核不是前闸）", CLOSED,
      "实测（scratch 后端，生产未动）：以 delivery_engineer 上传未复核文档后，复核**之前** /retrieval/search 命中、"
      "/answers 直接 status=answer 并引用该块；版本一上传即 effective。当前复核=事后撤销（reject 才 superseded+删索引），"
      "而 Must#1 写「上传→准入审核→分块→落库」，顺序相反且「准入审核」未定义是机械准入还是人工复核。"

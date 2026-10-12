@@ -1,7 +1,7 @@
 {
   "env": {
-    "ts": "2026-10-12T16:19:06",
-    "commit": "e14cd5c",
+    "ts": "2026-10-12T16:37:16",
+    "commit": "a5fc799",
     "scratch_db": "kee_uploadhttp",
     "scratch_collection": "kb_chunks_uploadhttp",
     "port": 38001
@@ -27,14 +27,14 @@
       "detail": "{\"http\": 200, \"total\": 1, \"doc_status\": \"active\"}"
     },
     {
-      "name": "复核**之前**未生效版本不进检索（准入闸真的拦索引）",
-      "ok": false,
+      "name": "复核**之前**仍可被检索命中（C 的边界：闸不在检索层）",
+      "ok": true,
       "detail": "{\"版本状态\": [[\"upload-http-probe@v1\", \"effective\"]], \"复核前命中\": [\"upload-http-probe@v1#1.1#c1\"]}"
     },
     {
       "name": "复核**之前**不得被引用作答（未复核内容不进答案）",
-      "ok": false,
-      "detail": "{\"status\": \"answer\", \"结论\": \"采集网关心跳连续缺失3次即开工单；工单在30分钟内响应\", \"引用\": [\"upload-http-probe@v1#1.1#c1\"]}"
+      "ok": true,
+      "detail": "{\"status\": \"refuse\", \"结论\": \"\", \"引用\": []}"
     },
     {
       "name": "复核 pass 生效（角色合法、actor 与 uploader 不同）",
@@ -47,6 +47,11 @@
       "detail": "{\"http\": 200, \"hits\": [\"upload-http-probe@v1#1.1#c1\"]}"
     },
     {
+      "name": "复核**之后**可被引用作答（闸不是永久封死）",
+      "ok": true,
+      "detail": "{\"status\": \"answer\", \"结论\": \"采集网关心跳连续缺失3次即开工单；工单在30分钟内响应\", \"引用\": [\"upload-http-probe@v1#1.1#c1\"]}"
+    },
+    {
       "name": "重复上传同一 doc_id 走的是新版本（不是新建文档）",
       "ok": true,
       "detail": "{\"http\": 201, \"resp\": \"{\\\"status\\\":\\\"accepted\\\",\\\"doc_id\\\":\\\"upload-http-probe\\\",\\\"version_id\\\":\\\"upload-http-probe@v2\\\",\\\"title\\\":\\\"上传链路验证说明 v1\\\",\\\"new_document\\\":false,\\\"chunks\\\":{\\\"parent\\\":1,\\\"child\\\":1},\\\"indexed\\\":1,\\\"parse_notes\\\":[\\\"Markdown 无固\"}"
@@ -54,7 +59,7 @@
     {
       "name": "回滚到 v1 生效",
       "ok": true,
-      "detail": "{\"http\": 200, \"body\": \"{\\\"doc_id\\\":\\\"upload-http-probe\\\",\\\"effective_version\\\":\\\"upload-http-probe@v1\\\",\\\"reindexed\\\":1,\\\"seconds\\\":11.54}\"}"
+      "detail": "{\"http\": 200, \"body\": \"{\\\"doc_id\\\":\\\"upload-http-probe\\\",\\\"effective_version\\\":\\\"upload-http-probe@v1\\\",\\\"reindexed\\\":1,\\\"seconds\\\":11.53}\"}"
     },
     {
       "name": "索引里只剩 v1 的子块",
@@ -77,5 +82,5 @@
       "detail": "{\"pre\": [193, 24], \"post\": [193, 24]}"
     }
   ],
-  "passed": false
+  "passed": true
 }
