@@ -130,6 +130,8 @@ def main() -> int:
         "ollama": {"raw": ollama_models, "digest_fixed": False,
                    "note": "`ollama list` 不输出权重 sha256 ⇒ **生成模型未被真正锁定**。"
                            "同 tag 被 `ollama pull` 覆盖后本机不会报错，换机可能拿到不同权重。M6 前要用 `ollama show --format json` 补 digest。"},
+        "dtype": os.environ.get("KEE_MODEL_DTYPE", "float16（.env 未覆盖时取 config 默认）"),
+        "device": os.environ.get("KEE_DEVICE", "cuda（.env 未覆盖时取 config 默认）"),
         "env_keys": env_present,
         "unfixed": [],
     }
@@ -169,6 +171,15 @@ def main() -> int:
         L.append(f"| {m['项']} | `{m['路径']}` | {m['状态']} | `{m['摘要']}` |")
     L += ["", "摘要算法：目录内 `文件名:字节数` 排序后取 sha256 前 12 位——**不含内容哈希**，"
           "同名同尺寸被替换是查不出来的；这条限制写在这儿而不是藏在脚本里。", "",
+          "## API 宿主环境要求（ADR-12 定案后必列：API **不在容器里**，这些就是它的部署前提）", "",
+          "- 宿主 Python：`" + rep["host"]["python"] + "`；虚拟环境 `" + rep["host"]["python_prefix"] + "`",
+          "- torch / transformers / sentence-transformers **不在 `pyproject` 依赖里**，由本机 CUDA 底座经 `.pth` 挂载提供"
+          "（换机必须复刻这一步，否则 API 直接起不来）",
+          f"- dtype `{rep['dtype']}`、设备 `{rep['device']}`：改成 CPU 会打穿 P95 检索门禁，"
+          "见 `docs/ADR-12_容器化代价实测.md`",
+          "- 显存：8GB 要容纳「嵌入 + 重排 +（分时）7B」；同时跑别的 GPU 应用会污染延迟读数",
+          "- 端口只绑 127.0.0.1（`serve_api.py` 拒绝非回环绑定）：API 38000、Demo web 38080、Vite dev 38173",
+          "- 身份走请求头且**可伪造**，仅内网 Demo 可用；生产必须换真实身份源（《技术方案》7.2.1）", "",
           "## Ollama 生成模型", "", "```", rep["ollama"]["raw"] or "（未取到）", "```", "",
           f"⚠ {rep['ollama']['note']}", "", "## 未固定项（M6 前逐条销或明写接受）", ""]
     L += [f"{i + 1}. {u}" for i, u in enumerate(rep["unfixed"])]

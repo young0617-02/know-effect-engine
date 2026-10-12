@@ -142,8 +142,10 @@ def build() -> dict:
             "RBAC 密级/行业过滤、审计追加禁改各有实测",
             ["var/gate0/m4_g06_rerun2.json", "var/gate0/m4_verify.json", "reports/m4/M4_前端与一键Demo.md"],
             "「断网下核心链路可运行」这句**没被端到端证明**：`internal: true` 把宿主↔容器通路一起切断，"
-            "而 API 在宿主（ADR-12 待裁决）；替代路 `enable_ip_masquerade=false` 实测在 Docker Desktop 上不成立。"
-            "三条里 RBAC 与审计禁改是硬的，这一条悬着。"),
+            "而 API 在宿主。**ADR-12 已定案（2026-10-12）：维持现状，「整机断网下端到端问答」划出承诺范围**——"
+            "替代路 `enable_ip_masquerade=false` 实测切不掉容器出网，GPU 容器化要么拉 GB 级镜像、"
+            "要么把检索门禁做成不可达（cpu+float32 合成检索 5167ms vs 门禁 800ms）。"
+            "所以这一格是「四条结构性证据支撑的合规」，不是「断网已验证」——对外只能引用前者。"),
         row("8", "交付物", "本次产出", "版本锁定清单 + 风险登记册定稿",
             "本脚本 + `scripts/m5_version_lock.py` + `reports/m5/M5_风险登记册定稿.md`",
             ["reports/m5/M5_DoD核对表.md", "reports/m5/M5_版本锁定清单.md", "reports/m5/M5_风险登记册定稿.md"],

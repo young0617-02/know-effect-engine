@@ -66,6 +66,11 @@ DISPOSITION: dict[str, tuple[str, str]] = {
 
 # 原表里没单列、但本轮新登记/仍未闭的三条，补进定稿
 ADDED = [
+    ("「整机断网下端到端问答」不在承诺范围", CLOSED,
+     "ADR-12 定案的直接后果：这一项**从验证清单划掉**而不是留着当待办。原因：`internal: true` 一切宿主↔容器"
+     "通路同断；替代路 `enable_ip_masquerade=false` 实测在 Docker Desktop 上切不掉容器出网"
+     "（负结果 `var/gate0/m4_airgap_nodev.json`）；GPU 容器化要么拉 nvidia/cuda（GB 级）要么让检索门禁不可达。"
+     "⑥ 的无外呼判定改由四条结构性证据支撑：容器封公网 / 仅绑定回环 / 宿主连接审计 0 出网 / 云端兜底 false"),
     ("未复核内容即时可被引用作答（复核不是前闸）", CLOSED,
      "实测（scratch 后端，生产未动）：以 delivery_engineer 上传未复核文档后，复核**之前** /retrieval/search 命中、"
      "/answers 直接 status=answer 并引用该块；版本一上传即 effective。当前复核=事后撤销（reject 才 superseded+删索引），"
@@ -76,7 +81,7 @@ ADDED = [
      "p50 4003ms / p95 20700ms 只能说「这台机器此刻这个样子要等多久」，**不能当 DoD#5 的判定数据**。"
      "用户 2026-10-12 决定：清空其他进程后复测；在那之前所有延迟类结论（P95 端到端、首 token 1.2s）"
      "一律挂『待复测』，3s vs 6s 的口径冲突也一并挂起——没有干净数据就先定口径，定完还得重测"),
-    ("ADR-12 API 未容器化", PENDING,
+    ("ADR-12 API 未容器化", CLOSED,
      "pyproject 刻意不声明 torch（由本机 CUDA 环境 .pth 挂载）→ 容器化要么拉 GB 级轮子要么再要一份 CUDA 运行时。"
      "它同时挡住「断网端到端」与 M6 版本锁定，是本轮唯一还卡着两条验收的裁决"),
     ("DoD#5 与《项目定义》第六节的 3s/6s 口径冲突", PENDING,
