@@ -10,10 +10,21 @@
     "label_variance_gradable_set": "L1 任一引用落 section gold = 53/53 全 1；L2 落 strict gold = 53/53 全 1；L3 条目级比例 52/53 = 1.0；L4 ref 数字召回 21/44 正类（唯一有方差）",
     "component_distributions": "citation_consistency 恒为 1.0（权重 0.35）；self_assessed 仅 {0.0, 0.9}、均值 0.034（权重 0.20）；retrieval 均值 0.8911、79% ≥ 0.9（权重 0.45）",
     "composite_auc_vs_L4": 0.346,
-    "composite_auc_ci95": [0.194, 0.512],
+    "composite_auc_ci95": [
+      0.194,
+      0.512
+    ],
     "derived_ece_on_L1": 0.4541,
     "note": "以上见 var/gate0/m3_confidence_probe.json 与 reports/m3 第七节"
   },
-  "revisit_when": "出现有方差且真正在意的标签（例如人工标注的 answer_correct），届时才谈缩放；在此之前 ECE 维持报告值，不进门禁。",
-  "ts": "2026-10-11T00:00:00+08:00"
+  "revisit_when": "出现有方差且真正在意的标签（例如人工标注的 answer_correct），届时才谈缩放；在此之前 ECE 维持报告值，不进门禁。［2026-10-12 该条件已出现，结果见 revisit_outcome］",
+  "ts": "2026-10-11T00:00:00+08:00",
+  "revisit_outcome": {
+    "when": "2026-10-12",
+    "label_source": "var/gate0/answer_correct_fill.csv（67 行，60 正 / 7 负）",
+    "reading": "var/gate0/answer_correct_calibration.json：answer_prod n=62 accuracy 0.9677 / mean_conf 0.7671 / ECE 0.2006（欠置信）",
+    "decision": "仍不缩放，T 维持 1.0，composite 继续是规则分、不进门禁",
+    "why": "两档拟合都不可采纳：answer_prod 负类仅 2 例，T 由极少数点决定；all_behav 的 7 个负类里 5 行是拒答/转人工，其 composite 被规则钉死为 0.0，T<1 的 NLL 收益几乎全来自把这批行压到 0 —— 拟合的是「没作答当然不算答对」这条同义反复，不是校准。且按层归因后 7 行错行为没有一行是校准能救的（4 检索漏召 / 1 判定层 / 1 生成层 / 1 证据层）。",
+    "next_label_needed": "要谈缩放，缺的不是「有标签」而是「有足够负例且负例含义单一」：先补无答案/敏感 12 题的人判标签"
+  }
 }
