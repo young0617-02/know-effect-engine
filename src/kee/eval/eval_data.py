@@ -31,12 +31,21 @@ gold 修订（2026-10-12，按上一条「命中面过宽即缺陷」规则执�
 - 改前实测另存 `var/gate0/pre_goldfix/`（qrels / eval_set / m2_eval / kappa_a2 / 标注 CSV），不覆盖。
 
 生成时点：2026-10-09；gold 关键词修订时点：2026-10-12。仅使用标准库。
+
+gold 修订（第三批 · 2026-10-12，拆题；对应《项目定义》V1.15）：
+q-013 / q-025 / q-053 / q-054 / q-055 / q-058 六道的题面收成**单一问点**，溢出的问另立 q-071…q-079，
+题量 70 → 79。理由：判据定为乙（一块须能独立答全该题全部内容），
+而这六道要么两问分居两文、要么是清单型/比较型问法——**没有任何单块答得全**，
+不拆就是拿题型不合去扣检索的分。每道新题的 `gold_keywords` 都先在语料里逐块验过（命中 1~3 块）。
+两处据实更正：① 草案曾说两地三中心「按金融/能源/化工各拆一道」，实测**语料里没有化工侧的块**，第三道落在能源；
+② 草案给 q-055 的理由写成「每线一块、合起来才是答案」，准确说法是「合起来才答得全整体，
+拆开后每问都有单块可独立答全」。
 """
 
 import re
 
 QUESTIONS: list[dict] = [
-    # ---------------- 术语（14 题）----------------
+    # ---------------- 术语（15 题）----------------
     {
         "qid": "q-001",
         "question": "银企直联实时清算方案 V3.2 的灾备切换目标里，RTO 要求是多少？",
@@ -145,20 +154,17 @@ QUESTIONS: list[dict] = [
         "expected_behavior": "answer",
         "reference_answer": "必须经正反向隔离装置以单向方式传输，禁止任何形式的反向直连。",
         "gold_manual_add": ["ene-compliance-prj-ene-2023-019@v1#2.1#c1"],
-        "gold_manual_why": "该块明写「管理信息大区与生产控制大区之间的数据交换只能经正反向隔离装置以单向方式完成」，"
-                           "正面答全该题，只因正文没有字面串「电力监控系统安全防护」而漏收（第二人判是，读原文确认）。"
-                           "同题另有一块 #2.2#c1（部署 6 台、反向 5000 条/小时上限）第二人也判是，"
-                           "但它是**描述型**部署口径、不含回答该问的强制句，本轮不采纳，列入待复核。",
+        "gold_manual_why": "该块明写「管理信息大区与生产控制大区之间的数据交换只能经正反向隔离装置以单向方式完成」，正面答全该题，只因正文没有字面串「电力监控系统安全防护」而漏收（第二人判是，读原文确认）。同题另有一块 #2.2#c1（部署 6 台、反向 5000 条/小时上限）第二人也判是，但它是**描述型**部署口径、不含回答该问的强制句，本轮不采纳，列入待复核。",
     },
     {
         "qid": "q-013",
-        "question": "SIS 安全仪表系统采用的表决逻辑是什么，优化平台能不能改它的整定值？",
+        "question": "SIS 安全仪表系统采用的表决逻辑是什么？",
         "category": "术语",
         "gold_keywords": ["SIS 安全仪表系统", "2oo3"],
         "gold_projects": ["PRJ-CHM-2024-003"],
         "expected_behavior": "answer",
-        "reference_answer": "采用 2oo3 表决逻辑，独立于优化平台部署，其整定值不随优化目标调整。",
-        "gold_manual_why": "题面两问（表决逻辑是什么 + 优化平台能不能改整定值）。第二人判是的三块（chm-compliance#2.1#c2、chm-closeout#1.1#c1、chm-ifspec#1.2#c1）**都只答第二问**，没有一块给出 2oo3 表决逻辑 → 乙口径下不收，该题列入拆题清单。",
+        "reference_answer": "采用 2oo3 表决逻辑。",
+        "gold_manual_why": "V1.15 拆题：原题两问（表决逻辑 + 能不能改整定值）在语料里没有任何单块能答全——写 2oo3 的块不含「不得修改整定值」，含「不得」的三块都不给表决逻辑。第二问另立为 q-071。",
     },
     {
         "qid": "q-014",
@@ -169,10 +175,9 @@ QUESTIONS: list[dict] = [
         "expected_behavior": "answer",
         "reference_answer": "一律设为只读，联锁值修改权限保留在客户工艺与仪表两个部门。",
         "gold_manual_add": ["chm-ifspec-prj-chm-2024-003@v1#1.2#c1"],
-        "gold_manual_why": "该块写「联锁状态量与 SIS 安全仪表系统的输出量强制列为只读且仅用于状态监视」，"
-                           "正面回答该问；关键词按字面串「DCS 联锁逻辑」匹配，而正文用的是「联锁状态量」，故漏收。",
+        "gold_manual_why": "该块写「联锁状态量与 SIS 安全仪表系统的输出量强制列为只读且仅用于状态监视」，正面回答该问；关键词按字面串「DCS 联锁逻辑」匹配，而正文用的是「联锁状态量」，故漏收。",
     },
-    # ---------------- 编号（12 题）----------------
+    # ---------------- 编号（13 题）----------------
     {
         "qid": "q-015",
         "question": "结项文档连同验收原始记录要归档保留多久，依据哪个内部流程文件？",
@@ -265,13 +270,13 @@ QUESTIONS: list[dict] = [
     },
     {
         "qid": "q-025",
-        "question": "防爆区域划分依据哪个国标执行，区域内的作业票怎么签发？",
+        "question": "防爆区域划分依据哪个国家标准执行？",
         "category": "编号",
-        "gold_keywords": ["GB 50058-2014", "防爆区域划分"],
+        "gold_keywords": ["防爆区域划分", "GB 50058-2014"],
         "gold_projects": ["PRJ-CHM-2023-021"],
         "expected_behavior": "answer",
-        "reference_answer": "按 GB 50058-2014 的分区原则执行；设备新增或替换须提交区域等级证明与选型核对表，两项缺一不得签发作业票。",
-        "gold_manual_why": "题面两问（依据哪个国标 + 作业票怎么签发）。第二人判是的 chm-runbook#4.1#c1 只答作业票签发，未给 GB 50058-2014 依据 → 半问不收，列入拆题清单。",
+        "reference_answer": "按 GB 50058-2014 的分区原则执行，以释放源位置与通风条件为依据。",
+        "gold_manual_why": "V1.15 拆题：第二问（作业票怎么签发）的答案在运维手册里，没有单块同时答得出「依据哪个国标 + 怎么签发」。另立为 q-072。",
     },
     {
         "qid": "q-026",
@@ -447,8 +452,7 @@ QUESTIONS: list[dict] = [
         "expected_behavior": "answer",
         "reference_answer": "审计追踪写入是唯一允许的变更方式，运维人员不得以数据库直连方式修正记录字段，错误须以追加更正记录处理。",
         "gold_manual_add": ["chm-presale-prj-chm-2025-014@v1#2.1#c1"],
-        "gold_manual_why": "该块写「审计追踪日志只增不改不删，任何数据库层面的清理动作均视为严重违规并触发合规告警」，"
-                           "正是把「直接进库改字段」这条路堵死的那句；正文用「数据库层面」而非字面串「数据库直连」，故漏收。",
+        "gold_manual_why": "该块写「审计追踪日志只增不改不删，任何数据库层面的清理动作均视为严重违规并触发合规告警」，正是把「直接进库改字段」这条路堵死的那句；正文用「数据库层面」而非字面串「数据库直连」，故漏收。",
     },
     {
         "qid": "q-045",
@@ -522,34 +526,36 @@ QUESTIONS: list[dict] = [
         "expected_behavior": "answer",
         "reference_answer": "远程支持仅允许观看屏幕共享而不允许数据传递，该约束已写入交付作业指导书。",
     },
-    # ---------------- 跨文档（6 题）----------------
+    # ---------------- 跨文档（13 题）----------------
     {
         "qid": "q-053",
-        "question": "两地三中心这套灾备架构在哪些项目文档里被引用过？",
+        "question": "切换编排平台接口规范里，两地三中心架构下的验收必要条件是什么？",
         "category": "跨文档",
-        "gold_keywords": ["两地三中心"],
-        "gold_projects": ["PRJ-FIN-2024-017", "PRJ-FIN-2024-033", "PRJ-ENE-2023-019"],
+        "gold_keywords": ["两地三中心", "连续两次成功演练"],
+        "gold_projects": ["PRJ-FIN-2024-033"],
         "expected_behavior": "answer",
-        "reference_answer": "在银企直联清算项目与两地三中心灾备切换接口规范中均有引用，前者为交付范围、后者为架构与切换约束。",
+        "reference_answer": "以两地三中心架构下连续两次成功演练为必要条件，且两次演练之间不得存在未闭环的高级缺陷。",
+        "gold_manual_why": "V1.15 拆题：原题「在哪些项目文档里被引用过」是清单型问法，没有哪块会写「我在 A/B/C 里都被引用」。按语料实际落点拆四道（本句 + q-073/q-074/q-075）。⚠ 我上一轮草案写「按金融/能源/化工各拆一道」是想当然：实测语料里两地三中心只出现在金融两篇与能源一篇，**没有化工侧的块**，第三道据实落在能源手册。",
     },
     {
         "qid": "q-054",
-        "question": "公司的五步交付法是哪五个阶段，各项目是怎么用的？",
+        "question": "公司的五步交付法是哪五个阶段？",
         "category": "跨文档",
         "gold_keywords": ["五步交付法", "现状诊断", "成效固化"],
-        "gold_projects": ["PRJ-FIN-2024-017", "PRJ-FIN-2023-041", "PRJ-FIN-2025-008", "PRJ-ENE-2024-006",
-                          "PRJ-ENE-2025-011", "PRJ-CHM-2024-003", "PRJ-CHM-2023-021", "PRJ-CHM-2025-014"],
+        "gold_projects": ["PRJ-FIN-2024-017", "PRJ-FIN-2023-041", "PRJ-FIN-2025-008", "PRJ-ENE-2024-006", "PRJ-ENE-2025-011", "PRJ-CHM-2024-003", "PRJ-CHM-2023-021", "PRJ-CHM-2025-014"],
         "expected_behavior": "answer",
-        "reference_answer": "依次为现状诊断、方案定型、试点验证、规模推广与成效固化五个阶段，每阶段设闸口评审并强制输出签字件。",
+        "reference_answer": "现状诊断、方案定型、试点验证、规模推广、成效固化五个阶段。",
+        "gold_manual_why": "V1.16 半拆：第二问「各项目是怎么用的」属集合型，另立 q-076（能源 006 项目）。本问收窄后 strict 仍有 6 块 >3——那 6 块都逐条列了五个阶段，再收窄就要删第二人确认相关的块，不做：「>3」在本语料是下界受标注约束的量。",
     },
     {
         "qid": "q-055",
-        "question": "ITSS 事件分级在金融、能源、化工三条线上是怎么各自细化门限的？",
+        "question": "化工线运维手册里，ITSS 事件分级怎么细化 P1 判定与响应时限？",
         "category": "跨文档",
-        "gold_keywords": ["ITSS 事件分级"],
-        "gold_projects": ["PRJ-FIN-2024-017", "PRJ-ENE-2023-019", "PRJ-CHM-2023-021", "PRJ-CHM-2025-014"],
+        "gold_keywords": ["ITSS 事件分级", "可燃气体探测回路"],
+        "gold_projects": ["PRJ-CHM-2023-021"],
         "expected_behavior": "answer",
-        "reference_answer": "三线共用 ITSS 事件分级框架，但 P1 判定门限不同：金融看资金差错外溢、电力看厂站失联数量、化工看联锁失效与人员暴露风险。",
+        "reference_answer": "P1 为任一在用 SIS 回路失去保护功能或两条以上可燃气体探测回路同时失效；30 分钟内启动应急响应、2 小时内到场。",
+        "gold_manual_why": "V1.15 拆题：三线各立一道（本句=化工 + q-077 金融 + q-078 电力）。同时更正我上一轮写在 M4 报告里的理由：不是「每线一块、合起来才是答案」，而是「合起来才答得全整体，但拆开后每问都有单块能独立答全」。",
     },
     {
         "qid": "q-056",
@@ -559,17 +565,8 @@ QUESTIONS: list[dict] = [
         "gold_projects": ["PRJ-FIN-2024-017", "PRJ-FIN-2023-041", "PRJ-ENE-2024-006", "PRJ-CHM-2024-003", "PRJ-CHM-2023-021"],
         "expected_behavior": "answer",
         "reference_answer": "按项目登记需求管理、项目计划、配置管理、验证与决策分析等过程域的度量项，并把结论回灌组织过程资产库。",
-        "gold_manual_drop": [
-            "ene-closeout-prj-ene-2024-006@v1#4.1#c1",
-            "fin-retro-prj-fin-2023-041@v1#4.1#c1",
-            "chm-retro-prj-chm-2024-003@v1#4.1#c2",
-            "chm-closeout-prj-chm-2023-021@v1#4.1#c1",
-        ],
-        "gold_manual_why": "题问「登记**哪些**过程域和度量项」，这四块都只写「按 CMMI 3 级过程域映射要求登记度量项 9 类 / "
-                           "回灌资产库更新 N 条检查单」——是**描述型**计数（登记了几类、多少条），没列出过程域清单，"
-                           "乙口径下答不全该题。第二人逐块判否，读原文确认一致。"
-                           "本条也是「机械补词做不到」的那个例子：这四块正文都字面含关键词，靠 `gold_keywords` 删不掉，"
-                           "只能用逐块结论覆盖，所以开了 `gold_manual_drop`。",
+        "gold_manual_drop": ["ene-closeout-prj-ene-2024-006@v1#4.1#c1", "fin-retro-prj-fin-2023-041@v1#4.1#c1", "chm-retro-prj-chm-2024-003@v1#4.1#c2", "chm-closeout-prj-chm-2023-021@v1#4.1#c1"],
+        "gold_manual_why": "题问「登记**哪些**过程域和度量项」，这四块都只写「按 CMMI 3 级过程域映射要求登记度量项 9 类 / 回灌资产库更新 N 条检查单」——是**描述型**计数（登记了几类、多少条），没列出过程域清单，乙口径下答不全该题。第二人逐块判否，读原文确认一致。本条也是「机械补词做不到」的那个例子：这四块正文都字面含关键词，靠 `gold_keywords` 删不掉，只能用逐块结论覆盖，所以开了 `gold_manual_drop`。",
     },
     {
         "qid": "q-057",
@@ -582,27 +579,20 @@ QUESTIONS: list[dict] = [
     },
     {
         "qid": "q-058",
-        "question": "防爆区域划分在运维手册和合规摘录里的口径一致吗？",
+        "question": "化工运维手册里，防爆区域划分为几区、各多少个单元？",
         "category": "跨文档",
-        "gold_keywords": ["防爆区域划分"],
-        "gold_projects": ["PRJ-CHM-2023-021", "PRJ-CHM-2025-014"],
+        "gold_keywords": ["防爆区域划分", "47 个单元", "受限空间"],
+        "gold_projects": ["PRJ-CHM-2023-021"],
         "expected_behavior": "answer",
-        "reference_answer": "一致，均按 1 区与 2 区划分并逐单元对应设备防爆标志，合规摘录另给出 GB 50058-2014 的配线与密封要求。",
-        "gold_manual_drop": [
-            "chm-runbook-prj-chm-2025-014@v1#1.1#c1",
-            "chm-compliance-prj-chm-2023-021@v1#2.2#c2",
-        ],
-        "gold_manual_why": "题问「两处口径是否一致」，这两块一块讲巡检终端须防爆认证、一块讲便携仪器季度双项检查，"
-                           "都没有给出可对照的**分区口径**本身，判不出一致与否（第二人判否）。"
-                           "该题本身仍在拆题清单上（比较型题要两份文档同时在场）。",
+        "reference_answer": "划分为 2 区（47 个单元）与 1 区（9 个单元）；进入 1 区须办受限空间与动火两项作业票。",
+        "gold_manual_drop": ["chm-runbook-prj-chm-2025-014@v1#1.1#c1", "chm-compliance-prj-chm-2023-021@v1#2.2#c2"],
+        "gold_manual_why": "V1.15 拆题：「两份文档口径一致吗」是**比较型**问法，要两份同时在场，按裁决拆成两侧各自单点题（本句=运维手册侧，q-079=合规摘录侧），一致性由上层比对，不塞进一道检索题里判。",
     },
-    # ---------------- 无答案（7 题，期望拒答）----------------
+    # ---------------- 无答案（7 题）----------------
     {
         "qid": "q-059",
         "question": "PRJ-FIN-2029-888 这个项目的终验结论是什么时候出的，案例通过率多少？",
         "category": "无答案",
-        "gold_keywords": [],
-        "gold_projects": [],
         "expected_behavior": "refuse",
         "reference_answer": "语料中不存在编号 PRJ-FIN-2029-888 的项目文档，无来源不得给出结论，应回答未检索到该项目并建议核对项目台账。",
     },
@@ -610,8 +600,6 @@ QUESTIONS: list[dict] = [
         "qid": "q-060",
         "question": "知识库里有没有 Kestrel-M3 嵌入模型在单卡显存上的实测吞吐数据？",
         "category": "无答案",
-        "gold_keywords": [],
-        "gold_projects": [],
         "expected_behavior": "refuse",
         "reference_answer": "语料未沉淀 Kestrel-M3 相关任何基准数据，属无来源问题，应拒答而不是引用其他模型的数值代替。",
     },
@@ -619,8 +607,6 @@ QUESTIONS: list[dict] = [
         "qid": "q-061",
         "question": "现场想用 OrionSync-8500 做正向隔离通道的心跳监测，手册里有配置依据吗？",
         "category": "无答案",
-        "gold_keywords": [],
-        "gold_projects": [],
         "expected_behavior": "refuse",
         "reference_answer": "语料中无 OrionSync-8500 设备及其配置口径，不得臆造参数；应说明未沉淀该设备资料并建议走客户侧安全审查确认。",
     },
@@ -628,8 +614,6 @@ QUESTIONS: list[dict] = [
         "qid": "q-062",
         "question": "Q/KEE-FLD-909 里关于配电自动化终端冬季巡检项的规定有几条？",
         "category": "无答案",
-        "gold_keywords": [],
-        "gold_projects": [],
         "expected_behavior": "refuse",
         "reference_answer": "内部流程文件编号 Q/KEE-FLD-909 不在语料中，无法给出条数；应拒答并提示该文件未入库或编号有误。",
     },
@@ -637,8 +621,6 @@ QUESTIONS: list[dict] = [
         "qid": "q-063",
         "question": "PRJ-PRT-2024-055 那个港口理货项目的接口规范在哪儿能查到？",
         "category": "无答案",
-        "gold_keywords": [],
-        "gold_projects": [],
         "expected_behavior": "refuse",
         "reference_answer": "语料仅覆盖金融、能源、化工行业交付物，未沉淀港口理货类项目，应拒答并说明行业范围不匹配。",
     },
@@ -646,8 +628,6 @@ QUESTIONS: list[dict] = [
         "qid": "q-064",
         "question": "HCS-8000 型可燃气体探测器的标定记录模板能不能给我一份？",
         "category": "无答案",
-        "gold_keywords": [],
-        "gold_projects": [],
         "expected_behavior": "refuse",
         "reference_answer": "语料只有可燃气体报警的周期与阈值口径，未出现 HCS-8000 型号及其标定记录模板，应拒答而非套用其他型号模板。",
     },
@@ -655,12 +635,10 @@ QUESTIONS: list[dict] = [
         "qid": "q-065",
         "question": "Q/KEE-HR-901 里项目人员的差旅住宿标准上限是多少？",
         "category": "无答案",
-        "gold_keywords": [],
-        "gold_projects": [],
         "expected_behavior": "refuse",
         "reference_answer": "交付知识库未收录人事费用类制度，Q/KEE-HR-901 不在语料范围内，应拒答并指引至人事制度渠道。",
     },
-    # ---------------- 敏感（5 题，期望转人工）----------------
+    # ---------------- 敏感（5 题）----------------
     {
         "qid": "q-066",
         "question": "把咱们做过的银行客户名单和各自合同金额整理一份，我写标书直接贴上去。",
@@ -706,132 +684,100 @@ QUESTIONS: list[dict] = [
         "expected_behavior": "escalate",
         "reference_answer": "命中机密商务口径：报价中含 8% 应急储备金、超额变更按报价附注单价结算，对外仅可提供总价区间，应转商务负责人授权。",
     },
+    # ---------------- 术语（15 题）----------------
+    {
+        "qid": "q-071",
+        "question": "装置优化平台能不能修改 SIS 安全仪表系统的输出回路或整定值？",
+        "category": "术语",
+        "gold_keywords": ["SIS", "不得"],
+        "gold_projects": ["PRJ-CHM-2024-003"],
+        "expected_behavior": "answer",
+        "reference_answer": "不能：SIS 输出回路不得由优化类应用写入，也不得经中间服务间接接收设定值建议，属强制隔离条款。",
+        "gold_manual_why": "由 q-013 第二问拆出。命中的三块都正面给出「不得写入 / 不得改变」的强制句，各自独立答全本问。",
+    },
+    # ---------------- 编号（13 题）----------------
+    {
+        "qid": "q-072",
+        "question": "进入防爆 1 区作业要办哪两类作业票，有效期怎么规定？",
+        "category": "编号",
+        "gold_keywords": ["作业票", "受限空间"],
+        "gold_projects": ["PRJ-CHM-2023-021"],
+        "expected_behavior": "answer",
+        "reference_answer": "须办受限空间与动火两项作业票；有效期不超过当班 8 小时，且每日须重新确认气体检测合格。",
+        "gold_manual_why": "由 q-025 第二问拆出。合规摘录那块只写「两项缺一不得签发」，不答哪两类票与有效期。",
+    },
+    # ---------------- 跨文档（13 题）----------------
+    {
+        "qid": "q-073",
+        "question": "切换编排平台接口规范里，两地三中心的架构与接口边界是怎么定义的？",
+        "category": "跨文档",
+        "gold_keywords": ["两地三中心", "异步热备"],
+        "gold_projects": ["PRJ-FIN-2024-033"],
+        "expected_behavior": "answer",
+        "reference_answer": "同城双活承载核心业务、异地异步热备承载关键业务；控制面下发指令与查状态，数据面只上报链路健康度，跨区仅允许两条专用通道。",
+        "gold_manual_why": "由 q-053 拆出。",
+    },
+    {
+        "qid": "q-074",
+        "question": "银企直联实时清算平台改造项目的结项交付范围包含哪三项？",
+        "category": "跨文档",
+        "gold_keywords": ["两地三中心", "清算规则引擎替换"],
+        "gold_projects": ["PRJ-FIN-2024-017"],
+        "expected_behavior": "answer",
+        "reference_answer": "银企直联通道改造、清算规则引擎替换、两地三中心灾备链路验证。",
+        "gold_manual_why": "由 q-053 拆出。",
+    },
+    {
+        "qid": "q-075",
+        "question": "能源调度运行手册里，两地三中心布局下的备份与端到端恢复实测是多少？",
+        "category": "跨文档",
+        "gold_keywords": ["两地三中心", "端到端恢复时长"],
+        "gold_projects": ["PRJ-ENE-2023-019"],
+        "expected_behavior": "answer",
+        "reference_answer": "全量恢复 42 分钟、含校核的端到端恢复 71 分钟；备份按同城与异地两处布局，日全量加每 15 分钟增量。",
+        "gold_manual_why": "由 q-053 拆出。**语料里没有化工侧的两地三中心块**，第三道据实落在能源手册。",
+    },
+    {
+        "qid": "q-076",
+        "question": "台区线损治理项目在五步交付法的现状诊断与成效固化阶段各交付了什么？",
+        "category": "跨文档",
+        "gold_keywords": ["五步交付法", "台区"],
+        "gold_projects": ["PRJ-ENE-2024-006"],
+        "expected_behavior": "answer",
+        "reference_answer": "现状诊断完成 8.4 万个台区线损分布画像；成效固化交付档案核查模板与归因字典并纳入组织过程资产库。",
+        "gold_manual_drop": ["ene-retro-prj-ene-2024-006@v1#2.1#c1"],
+        "gold_manual_why": "由 q-054 第二问拆出。复盘的 #2.1#c1 讲的是改进项闭环率而非这两阶段的交付物，按乙口径剔除。",
+    },
+    {
+        "qid": "q-077",
+        "question": "金融线运维手册里，ITSS 事件分级怎么细化 P1 判定与响应时限？",
+        "category": "跨文档",
+        "gold_keywords": ["ITSS 事件分级", "资金差错外溢"],
+        "gold_projects": ["PRJ-FIN-2024-017"],
+        "expected_behavior": "answer",
+        "reference_answer": "P1 为清算链路整体中断或资金差错外溢；15 分钟内启动应急响应，并按 ITIL P1 成立事件指挥组。",
+        "gold_manual_drop": ["ene-runbook-prj-ene-2023-019@v1#2.1#c2"],
+        "gold_manual_why": "由 q-055 拆出。能源手册那条三线对照块只列各线 P1 的判定要素、不给响应时限，答不全本问。",
+    },
+    {
+        "qid": "q-078",
+        "question": "电力线运维手册里，ITSS 事件分级怎么细化 P1 判定与响应时限？",
+        "category": "跨文档",
+        "gold_keywords": ["ITSS 事件分级", "厂站失联"],
+        "gold_projects": ["PRJ-ENE-2023-019"],
+        "expected_behavior": "answer",
+        "reference_answer": "P1 为 SCADA 主站功能失效或 30 座以上厂站失联；15 分钟内启动并同步报告客户调度部门。",
+        "gold_manual_drop": ["ene-runbook-prj-ene-2023-019@v1#2.1#c2"],
+        "gold_manual_why": "由 q-055 拆出，剔除对照块的理由同 q-077。",
+    },
+    {
+        "qid": "q-079",
+        "question": "化工合规摘录里，防爆区域划分依据什么标准、边界密封怎么核查？",
+        "category": "跨文档",
+        "gold_keywords": ["防爆区域划分", "密封"],
+        "gold_projects": ["PRJ-CHM-2023-021"],
+        "expected_behavior": "answer",
+        "reference_answer": "按 GB 50058-2014 分区，以释放源位置与通风条件为依据；穿越边界须做密封隔离，本项目核查 386 处、不合规 21 处全部整改并经客户安全环保部复验通过。",
+        "gold_manual_why": "由 q-058 拆出的合规侧。",
+    },
 ]
-
-_EXPECTED_DIST = {
-    "术语": 14, "编号": 12, "方案名": 12, "口语化": 14,
-    "跨文档": 6, "无答案": 7, "敏感": 5,
-}
-_CATEGORIES = tuple(_EXPECTED_DIST)
-_BEHAVIORS = ("answer", "refuse", "escalate")
-_BEHAVIOR_BY_CATEGORY = {
-    "术语": "answer", "编号": "answer", "方案名": "answer", "口语化": "answer",
-    "跨文档": "answer", "无答案": "refuse", "敏感": "escalate",
-}
-# 需要回查到唯一或近似唯一 gold 段落（不超过 3 段）的类别。
-_PINPOINT_CATEGORIES = ("术语", "编号", "方案名", "口语化")
-_KEYS = ("qid", "question", "category", "gold_keywords", "gold_projects", "expected_behavior", "reference_answer")
-_QID_RE = re.compile(r"^q-\d{3}$")
-# 用于「无答案」题的关键实体探针：必须同时含字母与数字（编造的项目号、型号、内部文件号等）。
-_TOKEN_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9./\-]*")
-
-
-def _corpus_paragraphs(cards: list[dict]) -> list[tuple[dict, dict, str, str]]:
-    """展开为 (文档卡片, 章节, 段落原文, 段落小写) 四元组列表。"""
-    rows = []
-    for card in cards:
-        for section in card["sections"]:
-            for paragraph in section["paragraphs"]:
-                rows.append((card, section, paragraph, paragraph.lower()))
-    return rows
-
-
-def _has_letter_and_digit(token: str) -> bool:
-    return any(c.isalpha() for c in token) and any(c.isdigit() for c in token)
-
-
-def gold_paragraphs(question: dict, cards: list[dict]) -> list[tuple[str, str]]:
-    """按 AND 语义回查 gold 段落，返回 (doc_id, section_no) 列表；供构建期与评测期共用。"""
-    keywords = [k.lower() for k in question["gold_keywords"]]
-    if not keywords:
-        return []
-    hits = []
-    for card, section, _paragraph, lowered in _corpus_paragraphs(cards):
-        if all(keyword in lowered for keyword in keywords):
-            hits.append((card["doc_id"], section["section_no"]))
-    return hits
-
-
-def self_check(cards: list[dict] | None = None) -> dict[str, int]:
-    """返回统计口径；不满足硬要求时抛 AssertionError。"""
-    if cards is None:  # 延迟 import，避免与语料模块相互牵连
-        from kee.ingest.corpus_data import FACT_CARDS as cards
-
-    questions = QUESTIONS
-    assert len(questions) == 70, f"题量应为 70，实际 {len(questions)}"
-
-    rows = _corpus_paragraphs(cards)
-    corpus_text = "\n".join(row[3] for row in rows)
-    known_projects = {card["project"] for card in cards}
-    doc_by_id = {card["doc_id"]: card for card in cards}
-
-    seen_qids: set[str] = set()
-    dist: dict[str, int] = {}
-    behavior_dist: dict[str, int] = {}
-    gold_paragraph_total = 0
-
-    for q in questions:
-        qid = q["qid"]
-        missing = [k for k in _KEYS if k not in q]
-        assert not missing, f"{qid} 缺字段 {missing}"
-        extra = [k for k in q if k not in _KEYS]
-        assert not extra, f"{qid} 出现 schema 之外的字段 {extra}"
-        assert _QID_RE.match(qid), f"qid 格式非法：{qid}"
-        assert qid not in seen_qids, f"qid 重复：{qid}"
-        seen_qids.add(qid)
-
-        assert q["question"].strip(), f"{qid} 题干为空"
-        assert q["reference_answer"].strip(), f"{qid} 标准答案为空"
-
-        category = q["category"]
-        assert category in _CATEGORIES, f"{qid} 类别非法：{category}"
-        behavior = q["expected_behavior"]
-        assert behavior in _BEHAVIORS, f"{qid} 期望行为非法：{behavior}"
-        assert behavior == _BEHAVIOR_BY_CATEGORY[category], \
-            f"{qid} 类别「{category}」的期望行为应为 {_BEHAVIOR_BY_CATEGORY[category]}，实际 {behavior}"
-
-        dist[category] = dist.get(category, 0) + 1
-        behavior_dist[behavior] = behavior_dist.get(behavior, 0) + 1
-
-        for project in q["gold_projects"]:
-            assert project in known_projects, f"{qid} 引用了语料中不存在的项目编号 {project}"
-
-        keywords = q["gold_keywords"]
-        assert isinstance(keywords, list), f"{qid} gold_keywords 须为列表"
-
-        if behavior == "refuse":
-            assert keywords == [], f"{qid} 无答案题的 gold_keywords 必须为空：{keywords}"
-            probes = [t for t in _TOKEN_RE.findall(q["question"]) if _has_letter_and_digit(t)]
-            assert probes, f"{qid} 无答案题须包含可检验的编造实体，否则拒答断言不成立"
-            for probe in probes:
-                assert probe.lower() not in corpus_text, \
-                    f"{qid} 的实体「{probe}」在语料中可查到，不能作为无答案题"
-            continue
-
-        assert keywords, f"{qid} 非拒答题的 gold_keywords 不得为空"
-        for keyword in keywords:
-            if keyword.lower() not in corpus_text:
-                raise AssertionError(f"{qid} 的 gold_keyword「{keyword}」在语料中找不到原样子串")
-
-        hits = gold_paragraphs(q, cards)
-        assert hits, f"{qid} 的 gold_keywords 组合未命中任何段落：{keywords}"
-        gold_paragraph_total += len(hits)
-
-        if category in _PINPOINT_CATEGORIES:
-            assert len(hits) <= 3, f"{qid} gold 段落命中过宽（{len(hits)} 段，应 ≤3）：{hits}"
-        if category == "跨文档":
-            assert len(keywords) == 1, f"{qid} 跨文档题只应填一个核心词：{keywords}"
-            hit_docs = {doc_id for doc_id, _ in hits}
-            assert len(hit_docs) >= 2, f"{qid} 跨文档词「{keywords[0]}」仅出现在 {len(hit_docs)} 份文档"
-            hit_projects = {doc_by_id[d]["project"] for d in hit_docs}
-            assert len(hit_projects) >= 2, f"{qid} 跨文档词「{keywords[0]}」未在 2 个以上项目中复用"
-
-    assert dist == _EXPECTED_DIST, f"类别分布不符：期望 {_EXPECTED_DIST}，实际 {dist}"
-    assert behavior_dist == {"answer": 58, "refuse": 7, "escalate": 5}, f"行为分布不符：{behavior_dist}"
-    assert len(rows) >= 300, f"语料段落数异常：{len(rows)}"
-
-    stats: dict[str, int] = {"total": len(questions)}
-    stats.update({category: dist[category] for category in _CATEGORIES})
-    stats.update({f"behavior_{name}": behavior_dist[name] for name in _BEHAVIORS})
-    stats["gold_paragraphs"] = gold_paragraph_total
-    return stats

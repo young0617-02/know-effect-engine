@@ -101,6 +101,10 @@ def main() -> int:
     ap.add_argument("--top-k", type=int, default=8, help="每题给第二人看的检索候选数")
     ap.add_argument("--hybrid", action="store_true", help="候选改用稠密+词法（要加载嵌入模型，吃显存）")
     ap.add_argument("--limit", type=int, default=0, help="只出前 N 题的工单（试标用；建议先做 25 题）")
+    ap.add_argument("--only-qids", default="",
+                    help="只出这些题号的工单，逗号分隔（拆题后重标用：题面一改，原来那几行的判断就不再是同一件事了）")
+    ap.add_argument("--out-prefix", default="annotations_a2",
+                    help="输出文件名前缀；重标轮要另起一套，别覆盖已收 full 的那份证据")
     args = ap.parse_args()
 
     s = get_settings()
@@ -108,6 +112,13 @@ def main() -> int:
     pg = AuthoritativeStore()
     rows = build_eval_set(pg, write_files=False)["questions"]
     pool = [q for q in rows if q["gold_chunk_ids"]]
+    if args.only_qids:
+        want = {x.strip() for x in args.only_qids.split(",") if x.strip()}
+        pool = [q for q in pool if q["qid"] in want]
+        missing = want - {q["qid"] for q in pool}
+        if missing:
+            print(f"[拒绝生成] 这些题号没有可标的 gold 块或不存在：{sorted(missing)}")
+            return 2
     if args.limit:
         pool = pool[: args.limit]
 
@@ -164,7 +175,7 @@ def main() -> int:
         kb.close()
         return 3
 
-    csv_path = art / "annotations_a2_fill.csv"
+    csv_path = art / f"{args.out_prefix}_fill.csv"
     blocked = _guard_existing_fill(csv_path, force=args.force)
     if blocked:
         print(f"[拒绝覆盖] {blocked}")
@@ -176,13 +187,13 @@ def main() -> int:
         w.writeheader()
         w.writerows(fill_rows)
 
-    (art / "annotations_a2_key.json").write_text(json.dumps(key_rows, ensure_ascii=False, indent=1),
+    (art / f"{args.out_prefix}_key.json").write_text(json.dumps(key_rows, ensure_ascii=False, indent=1),
                                                  encoding="utf-8")
-    (art / "annotations_a2_worksheet.md").write_text(_worksheet(fill_rows, pool, outside_share, args.hybrid),
+    (art / f"{args.out_prefix}_worksheet.md").write_text(_worksheet(fill_rows, pool, outside_share, args.hybrid),
                                                      encoding="utf-8")
     print(f"工单：{len(pool)} 题 / {len(fill_rows)} 个候选块，待填列「{FILL_COL}」全为 TODO")
     print(f"含「第一人未标」候选的题占比：{outside_share:.0%}（闸值 {MIN_OUTSIDE_A_GOLD_SHARE:.0%}）")
-    print(f"人读：{art / 'annotations_a2_worksheet.md'}")
+    print(f"人读：{art / f'{args.out_prefix}_worksheet.md'}")
     print(f"机填：{csv_path}")
     kb.close()
     return 0
