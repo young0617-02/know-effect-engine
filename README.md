@@ -170,6 +170,38 @@ M3-05 已落地：在线链路搬进 `src/kee/qa/graph.py` 的 LangGraph 状态�
 检索层面救回 1 道 / 丢掉 0 道——**这不足以支撑「多轮有收益」的一般性主张**。
 详见 `reports/m3/M3_编排引用与置信度.md` 第八节。
 
+## M4 交付 · 前端与一键 Demo（进行中）
+
+| 入口 | 作用 |
+|---|---|
+| `frontend/` | Vite + React + TS 独立前端（**无 UI 框架、无路由库**）：问答页 / 知识库管理页 / 审计页 / 身份条 |
+| `scripts/serve_api.py` | 宿主 API 入口（127.0.0.1:38000；**拒绝非回环绑定**） |
+| `infra/docker-compose.m4.yml` | 一键 Demo：`include` 存储栈 + `kee-web`（Nginx 静态 + 同源反代） |
+| `infra/nginx.m4.conf` | SSE 关缓冲（`proxy_buffering off`）——否则 token 级流式在浏览器里退化成一次性出答案 |
+| `scripts/verify_m4.py` | 端到端 12 项：事件顺序 / `answer` 恰好一次 / 流不被攒 / 密级与行业过滤 / 审计角色门与留痕 |
+| `docs/前端流式渲染契约.md` | 三态渲染的可断言规格（C-1…C-8），并写明**哪些条款还没有断言** |
+| `reports/m4/M4_前端与一键Demo.md` | 本轮实测结论 + 四处「差点写成假绿」的记录 + 已验证/未验证分栏 |
+
+```bash
+uv run python scripts/serve_api.py                 # 宿主 API
+cd frontend && npm install && npm run build        # 产出 frontend/dist
+docker compose -f infra/docker-compose.m4.yml up -d   # 一键：存储 + Nginx → http://127.0.0.1:38080/
+KEE_BASE=http://127.0.0.1:38080 uv run python scripts/verify_m4.py   # 12 项端到端
+cd frontend && npm run test                        # 13 条组件/分帧断言
+```
+
+M4 新增两个后端读接口：`POST /api/v1/chunks/batch`（引用片段正文，**与检索层同口径过滤**、只返回生效版本、
+越权与不存在合并成 `hidden`、每次读取落 `chunks_read` 审计）与 `GET /api/v1/audit`（限管理角色，按 id 倒序）。
+**身份头的取值必须百分号编码**——HTTP 头只允许 latin-1，而行业取值就是中文（金融/能源/化工），
+真浏览器实测直接发中文会拒发整个请求（约定见《技术方案》7.2.1，断言在 `sse.test.ts`）。
+
+⚠ **一条明示偏离**：方案把「应用与 Nginx 容器化」列入 M4，本轮**只做到 Nginx + 前端进容器、API 仍在宿主**。
+原因是 `pyproject` 刻意不声明 torch/transformers（由本机 `D:\py312-torch` 经 .pth 挂载、用宿主 8GiB 显存），
+容器化要么拉 GB 级轮子、要么在容器里再要一份 CUDA 运行时。已登记为 `ADR-12`（偏离方案·待裁决）。
+另：⑥ 的「真断网 + 无外呼」重验**本轮没跑**（`g06 --from-scratch` 会连数据卷一起抹），
+本轮只有结构性证据（Nginx 单一 upstream、前端全走同源相对路径），**这不等于断网实测通过**。
+① 的「流式首 token < 1.2s」仍按**未达标·待裁决**处理，本报告任何数字都不作为该门禁达标的依据。
+
 ## 目录（M1 新增）
 
 ```

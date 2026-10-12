@@ -1,0 +1,113 @@
+/* 全局样式：内网工具型界面，不引 UI 框架（少一层供应链，也少一层「Demo 里好看、接了真数据就散」的风险）。
+ * 三态里 provisional 与 confirmed 的差别必须一眼看得出——那是流式渲染契约的可验证面。 */
+
+:root {
+  --ink: #1c2230;
+  --ink-2: #4a5568;
+  --line: #d9dee7;
+  --bg: #f6f7fa;
+  --card: #ffffff;
+  --accent: #1f5fbf;
+  --warn: #b45309;
+  --bad: #b02a2a;
+  --provisional: #8a6d1b;
+  --provisional-bg: #fdf6dd;
+  --retracted-bg: #fbeaea;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font: 14px/1.6 "Segoe UI", "Microsoft YaHei", system-ui, sans-serif;
+  color: var(--ink);
+  background: var(--bg);
+}
+
+button, input, select { font: inherit; color: inherit; }
+
+.kee-shell { max-width: 1180px; margin: 0 auto; padding: 18px 20px 60px; }
+.kee-brand { display: flex; align-items: baseline; gap: 12px; margin: 0 0 12px; }
+.kee-brand h1 { font-size: 20px; margin: 0; }
+.kee-brand span { color: var(--ink-2); font-size: 12px; }
+
+.kee-tabs { display: flex; gap: 6px; border-bottom: 1px solid var(--line); margin-bottom: 14px; }
+.kee-tab {
+  background: none; border: 0; border-bottom: 2px solid transparent;
+  padding: 8px 14px; cursor: pointer; color: var(--ink-2);
+}
+.kee-tab--on { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
+.kee-panel { display: block; }
+
+.kee-identity {
+  display: flex; flex-wrap: wrap; gap: 14px 18px; align-items: flex-end;
+  background: var(--card); border: 1px solid var(--line); border-radius: 6px; padding: 12px 14px;
+}
+.kee-field { display: flex; flex-direction: column; gap: 4px; min-width: 150px; }
+.kee-field > span { font-size: 12px; color: var(--ink-2); }
+.kee-field input, .kee-field select { border: 1px solid var(--line); border-radius: 4px; padding: 5px 7px; }
+.kee-chips { display: flex; gap: 6px; }
+.kee-chip { border: 1px solid var(--line); background: #fff; border-radius: 999px; padding: 3px 10px; cursor: pointer; }
+.kee-chip--on { background: var(--accent); border-color: var(--accent); color: #fff; }
+.kee-link { background: none; border: 0; color: var(--accent); cursor: pointer; text-decoration: underline; }
+.kee-scope-note { flex-basis: 100%; margin: 0; color: var(--ink-2); font-size: 12px; }
+.kee-scope-note code { background: #eef1f6; padding: 1px 5px; border-radius: 3px; }
+
+.kee-health { display: flex; gap: 10px; align-items: center; margin: 10px 0 0; font-size: 12px; }
+.kee-health--ok { color: #14532d; }
+.kee-health--bad { color: var(--bad); }
+
+.kee-ask-form { display: flex; gap: 10px; margin: 14px 0; }
+.kee-ask-form input[type="search"] { flex: 1; padding: 9px 11px; border: 1px solid var(--line); border-radius: 5px; }
+
+.kee-turns { display: flex; flex-direction: column; gap: 12px; }
+.kee-turn { background: var(--card); border: 1px solid var(--line); border-radius: 6px; padding: 12px 14px; }
+.kee-turn__question { font-weight: 600; margin: 0 0 8px; }
+.kee-turn__answer { margin: 0; }
+
+/* 未完成态：虚线左边条 + 暗黄底 + 光标提示，与最终答案（实线、白底）一眼可分 */
+.kee-state--provisional {
+  border-left: 3px dashed var(--provisional);
+  background: var(--provisional-bg);
+  padding: 6px 10px;
+  white-space: pre-wrap;
+}
+.kee-state--provisional::after { content: " ▍"; color: var(--provisional); }
+.kee-state--confirmed {
+  border-left: 3px solid var(--accent);
+  background: #fff;
+  padding: 6px 10px;
+  white-space: pre-wrap;
+}
+/* 撤回：文字保留但视觉上明确作废，绝不静默删除 */
+.kee-state--retracted {
+  border-left: 3px solid var(--bad);
+  background: var(--retracted-bg);
+  padding: 6px 10px;
+  text-decoration: line-through;
+  color: #6b2020;
+  white-space: pre-wrap;
+}
+.kee-retraction { color: var(--bad); font-size: 12px; font-weight: 600; }
+
+.kee-conclusion { margin: 0 0 8px; }
+.kee-points { margin: 0 0 10px; padding-left: 20px; }
+.kee-point { margin: 2px 0; }
+.kee-cites { display: flex; flex-direction: column; gap: 6px; margin: 8px 0; }
+.kee-cite { border: 1px solid var(--line); border-radius: 5px; padding: 7px 9px; background: #fbfcfe; font-size: 13px; }
+.kee-badge { display: inline-block; border-radius: 4px; padding: 1px 8px; font-size: 12px; background: #eef1f6; color: var(--ink-2); }
+.kee-badge--warn { background: #fff2e8; color: var(--warn); }
+.kee-badge--refuse { background: var(--retracted-bg); color: var(--bad); }
+.kee-conf { display: flex; flex-wrap: wrap; gap: 10px; font-size: 12px; color: var(--ink-2); margin: 6px 0; }
+.kee-meta { font-size: 12px; color: var(--ink-2); }
+.kee-error { border: 1px solid var(--bad); background: var(--retracted-bg); color: #7a1c1c; border-radius: 5px; padding: 8px 10px; margin: 10px 0; }
+
+.kee-toolbar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 12px 0; }
+.kee-table { width: 100%; border-collapse: collapse; background: var(--card); }
+.kee-table th, .kee-table td { border-bottom: 1px solid var(--line); padding: 6px 8px; text-align: left; vertical-align: top; }
+.kee-table th { font-size: 12px; color: var(--ink-2); background: #f2f4f8; }
+.kee-btn { border: 1px solid var(--line); background: #fff; border-radius: 4px; padding: 4px 10px; cursor: pointer; }
+.kee-btn--primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.kee-btn--danger { color: var(--bad); border-color: #e6b3b3; }
+.kee-empty { color: var(--ink-2); padding: 18px; border: 1px dashed var(--line); background: var(--card); }
+.kee-hit { background: #fff3c4; box-shadow: inset 0 -2px 0 #e6c14a; }

@@ -84,7 +84,9 @@ def main() -> int:
     out["unit"] = "(qid, chunk_id) 相关判定"
     out["n_positive_a"] = sum(la)
     out["n_positive_b"] = sum(lb)
-    art.joinpath("kappa.json").write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
+    # 文件名与 m4_kappa 的双口径产物分开：两者都写 kappa.json 时，
+    # 跑一次旧 CLI 就会静默覆盖掉双人标注的证据（Gate 0 的产物本来就是这张）。
+    art.joinpath("kappa_gate0_single.json").write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
     print(json.dumps(out, ensure_ascii=False, indent=2))
     return 0
 

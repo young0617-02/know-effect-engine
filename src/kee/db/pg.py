@@ -222,6 +222,38 @@ class AuthoritativeStore:
                 (actor, action, target, trace_id, json.dumps(payload, ensure_ascii=False)),
             )
 
+    def list_audit(
+        self,
+        *,
+        actor: str | None = None,
+        action: str | None = None,
+        target: str | None = None,
+        trace_id: str | None = None,
+        limit: int = 50,
+        offset: int = 0,
+    ) -> dict[str, Any]:
+        """审计读路径：只有 SELECT，没有任何改写方法——`audit_log` 的 UPDATE/DELETE 由触发器一律拒绝，
+        所以「追加禁改」这件事在这层是靠不存在的写路径保证的，不是靠约定。
+
+        按 `id DESC` 而不是 `ts DESC`：ts 有并列（同一批操作落在同一时间戳），
+        并列时顺序不稳定，翻页会出现重复行或漏行。id 是 bigserial，单调。
+        """
+        where, params = [], {"limit": limit, "offset": offset}
+        for col, val in (("actor", actor), ("action", action), ("target", target), ("trace_id", trace_id)):
+            if val:
+                where.append(f"{col} = %({col})s")
+                params[col] = val
+        clause = ("WHERE " + " AND ".join(where)) if where else ""
+        with self.connect() as conn:
+            total = conn.execute(f"SELECT count(*) AS c FROM audit_log {clause}",
+                                 {k: v for k, v in params.items() if k not in ("limit", "offset")}).fetchone()["c"]
+            rows = conn.execute(
+                f"SELECT id, actor, action, target, trace_id, payload, ts FROM audit_log {clause} "
+                "ORDER BY id DESC LIMIT %(limit)s OFFSET %(offset)s",
+                params,
+            ).fetchall()
+        return {"total": int(total), "limit": limit, "offset": offset, "items": rows}
+
     def enqueue_outbox(self, events: Iterable[dict[str, Any]]) -> int:
         rows = list(events)
         if not rows:
@@ -427,6 +459,46 @@ class AuthoritativeStore:
                 "FROM chunk WHERE version_id = %s ORDER BY order_no",
                 (version_id,),
             ).fetchall()
+
+    def chunks_visible(
+        self,
+        ids: list[str],
+        *,
+        max_security_level: int = 3,
+        industries: list[str] | None = None,
+        projects: list[str] | None = None,
+    ) -> dict[str, Any]:
+        """按 id 批量读分块正文，**过滤口径与检索层一致**（密级 / 行业 / 项目）。
+
+        这是前端展示「引用片段」的唯一读取通道，所以它必须和 `build_filter_expr` 收敛同样三个维度：
+        按 id 直取而不判权限，等于给检索层过滤开了一个后门——chunk id 是会出现在响应里给客户端的。
+
+        只返回**当前生效版本**的内容：文档回滚或驳回后，旧版本的正文不该再被引用出来。
+        `hidden` 里是「越权或不存在或已非生效版本」的 id，三者在这一层刻意不区分——
+        告诉调用者哪个 id 属于哪一类，本身就是信息泄露。
+        """
+        if not ids:
+            return {"items": [], "hidden": [], "requested": 0}
+        where = ["c.id = ANY(%(ids)s)", "d.security_level <= %(max_level)s"]
+        params: dict[str, Any] = {"ids": ids, "max_level": max_security_level}
+        if industries:
+            where.append("d.industry = ANY(%(industries)s)")
+            params["industries"] = industries
+        if projects:
+            where.append("d.project = ANY(%(projects)s)")
+            params["projects"] = projects
+        sql = (
+            "SELECT c.id AS chunk_id, c.content, c.doc_id, c.section_no, c.page, c.parent_id, "
+            "       c.is_parent, d.industry, d.project, d.security_level, v.id AS version_id "
+            "FROM chunk c "
+            "JOIN document d ON d.id = c.doc_id "
+            "JOIN document_version v ON v.id = c.version_id AND v.status = 'effective' "
+            f"WHERE {' AND '.join(where)}"
+        )
+        with self.connect() as conn:
+            rows = conn.execute(sql, params).fetchall()
+        seen = {r["chunk_id"] for r in rows}
+        return {"items": rows, "hidden": [i for i in ids if i not in seen], "requested": len(ids)}
 
     def chunk_ids(self, version_ids: list[str] | None = None) -> set[str]:
         with self.connect() as conn:

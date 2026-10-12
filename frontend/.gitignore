@@ -1,0 +1,6 @@
+node_modules/
+dist/
+# tsc -b 的增量编译缓存：`npm run build` 会产出它，是构建副产物而不是源码
+tsconfig.tsbuildinfo
+*.local
+.DS_Store

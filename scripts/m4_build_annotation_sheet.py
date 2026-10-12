@@ -36,7 +36,9 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import shutil
 import sys
+import time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -57,13 +59,45 @@ FILL_COL = "b_directly_answers__fill_1_or_0"
 # 截短了会逼标注人猜，那测出来的就不是他的判断。全文可用 qid#编号 现场取。
 TEXT_HEAD_CHARS = 320
 JUDGEMENT_LINE = (
-    "判据只有一条：**这一块的正文里是否直接含有能回答该问题的内容。**\n"
+    "判据只有一条：**这一块的正文里，是否直接含有能答全该问题的内容。**\n"
     "同主题、同章节、相关但不含答案 → 填 0。别按「相关吗」判——那测的就又变回 gold 口径差异了。\n"
+    "三条细则（由首轮 25 题的 9 行真分歧裁决得出，2026-10-12 用户选定乙口径）：\n"
+    "1. 题面有两问时（例：「表决逻辑是什么，**能不能改整定值**」），必须**同一块内答全所有问**才算 1；"
+    "只答其中一问 → 0。\n"
+    "2. 题面点名了主体（清算平台 / 某装置 / 某条线）时，**其他行业或别的项目**的同名章节即使数字相同也算 0；"
+    "题面未点名主体、把几条线并列问到时，各线的块都算。\n"
+    "3. **描述型**块（部署了几台、达成率多少、周期几天）不算直接可答，除非正文里有带强制性"
+    "（必须 / 不得 / 只能 / 一律）的句子正面回答该问。\n"
 )
+
+
+def _guard_existing_fill(csv_path: Path, *, force: bool) -> str | None:
+    """**不许无声覆盖已填的标注。**
+
+    这张 CSV 是人工劳动的唯一载体，重跑生成器会把它整表刷回 TODO。
+    首轮的 210 行就是靠这条守卫才没被后面任何一次「顺手重跑」抹掉。
+    确实要重来时必须显式 `--force`，且先把旧表另存一份带时间戳的备份。
+    """
+    if not csv_path.exists():
+        return None
+    with csv_path.open(encoding="utf-8-sig", newline="") as f:
+        filled = sum(1 for r in csv.DictReader(f) if (r.get(FILL_COL) or "").strip() in ("0", "1"))
+    if not filled:
+        return None
+    if not force:
+        return (f"已填 {filled} 行的工单已存在：{csv_path}\n"
+                "        重跑会整表刷回 TODO、抹掉人工标注。要继续填这张表就直接填；\n"
+                "        确实要重建请加 --force（会先备份已填表）。")
+    bak = csv_path.with_name(f"{csv_path.stem}.filled-{time.strftime('%Y%m%dT%H%M%S')}.csv")
+    shutil.copyfile(csv_path, bak)
+    print(f"[--force] 已填表先备份到：{bak.name}（{filled} 行）")
+    return None
 
 
 def main() -> int:
     ap = argparse.ArgumentParser()
+    ap.add_argument("--force", action="store_true",
+                    help="已填工单存在时先备份再重建（默认拒绝，防止抹掉人工标注）")
     ap.add_argument("--top-k", type=int, default=8, help="每题给第二人看的检索候选数")
     ap.add_argument("--hybrid", action="store_true", help="候选改用稠密+词法（要加载嵌入模型，吃显存）")
     ap.add_argument("--limit", type=int, default=0, help="只出前 N 题的工单（试标用；建议先做 25 题）")
@@ -131,6 +165,12 @@ def main() -> int:
         return 3
 
     csv_path = art / "annotations_a2_fill.csv"
+    blocked = _guard_existing_fill(csv_path, force=args.force)
+    if blocked:
+        print(f"[拒绝覆盖] {blocked}")
+        kb.close()
+        return 4
+
     with csv_path.open("w", encoding="utf-8-sig", newline="") as f:
         w = csv.DictWriter(f, fieldnames=list(fill_rows[0].keys()))
         w.writeheader()

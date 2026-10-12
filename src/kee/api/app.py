@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import uuid
 from typing import Any
+from urllib.parse import unquote
 
 import psycopg
 from fastapi import FastAPI, File, Form, Header, Request, UploadFile
@@ -29,6 +30,9 @@ from kee.retrieval.milvus_store import KbStore
 from kee.retrieval.rbac import AccessContext, build_filter_expr
 
 REVIEW_ROLES = {"knowledge_owner", "system_admin"}
+# 审计读权限单独命名：它今天恰好和复核角色同集合，但语义不同——
+# 「能复核文档」与「能看谁查了什么」是两件事，合并成一个常量以后迟早会被其中一边改动带偏。
+AUDIT_READ_ROLES = {"knowledge_owner", "system_admin"}
 RETRYABLE_PREFIXES = ("E9", "E5")
 
 
@@ -79,6 +83,11 @@ class RollbackRequest(BaseModel):
 class SearchRequest(BaseModel):
     query: str
     top_k: int = Field(default=5, ge=1, le=20)
+
+
+class ChunksRequest(BaseModel):
+    # 上限 50：引用块最多 top_k 条，一次问答用不到更多；不设上限等于让人能一次拉走整库正文
+    ids: list[str] = Field(min_length=1, max_length=50)
 
 
 class AnswerRequest(BaseModel):
@@ -151,12 +160,19 @@ def create_app(*, skip_embedding: bool = False, scheduler: Any | None = None, co
     ) -> tuple[AccessContext, str]:
         if not role:
             raise ApiError("E401", 401, "缺少 X-Kee-Role：检索层权限过滤要求显式身份", "")
+        # 行业与项目取值是中文（金融/能源/化工），而 HTTP 头只允许 latin-1 字节：
+        # 浏览器会直接拒发含中文的头，所以约定**两端都做百分号编码**（前端 encodeURIComponent、
+        # 这里 unquote）。编码后逗号变成 %2C，因此按 ',' 切分仍然安全。
+        # 解码发生在 `_safe()` 白名单校验之前——校验的必须是最终进表达式的那个值。
+        def decode(raw: str | None) -> list[str]:
+            return [unquote(x) for x in (raw or "").split(",") if x]
+
         ctx = AccessContext(
             role=role,
-            industries=[x for x in (industries or "").split(",") if x],
-            projects=[x for x in (projects or "").split(",") if x],
+            industries=decode(industries),
+            projects=decode(projects),
         )
-        return ctx, actor or role
+        return ctx, unquote(actor) if actor else role
 
     @app.get("/healthz")
     def healthz() -> dict[str, Any]:
@@ -324,6 +340,37 @@ def create_app(*, skip_embedding: bool = False, scheduler: Any | None = None, co
             "timings_ms": res.timings_ms,
             "hits": [c.as_dict() for c in res.chunks],
         }
+
+    @app.post("/api/v1/chunks/batch")
+    def chunks_batch(
+        body: ChunksRequest,
+        request: Request,
+        x_kee_role: str | None = Header(None),
+        x_kee_actor: str | None = Header(None),
+        x_kee_industries: str | None = Header(None),
+        x_kee_projects: str | None = Header(None),
+    ) -> dict[str, Any]:
+        """按 id 取引用片段正文，供答案页展示「文档/章节/页码/片段」。
+
+        这条通道**必须与检索层同口径过滤**（密级/行业/项目）：chunk id 会出现在响应里给客户端，
+        如果按 id 直取不判权限，检索层那套 `build_filter_expr` 就成了可以绕开的前置装饰。
+        越权与不存在的 id 合并进 `hidden`，不告诉调用者属于哪一类——那本身就是信息泄露。
+        """
+        ctx, actor = context_of(x_kee_role, x_kee_actor, x_kee_industries, x_kee_projects)
+        out = pg.chunks_visible(
+            body.ids,
+            max_security_level=ctx.effective_max_level,
+            industries=ctx.industries or None,
+            projects=ctx.projects or None,
+        )
+        pg.append_audit(
+            actor,
+            "chunks_read",
+            "kb_chunks",
+            request.state.trace_id,
+            {"requested": out["requested"], "returned": len(out["items"]), "hidden": len(out["hidden"])},
+        )
+        return out
 
     def _answer_engine(rewrite: bool):
         """按 rewrite 开关复用两个引擎实例：改写器带 Redis 缓存，重建一次要重连。"""
@@ -553,6 +600,32 @@ def create_app(*, skip_embedding: bool = False, scheduler: Any | None = None, co
                 yield f"event: answer\ndata: {_json.dumps(payload, ensure_ascii=False, default=str)}\n\n"
 
         return StreamingResponse(events(), media_type="text/event-stream")
+
+    @app.get("/api/v1/audit")
+    def audit(
+        request: Request,
+        limit: int = 50,
+        offset: int = 0,
+        actor: str | None = None,
+        action: str | None = None,
+        target: str | None = None,
+        trace_id: str | None = None,
+        x_kee_role: str | None = Header(None),
+        x_kee_actor: str | None = Header(None),
+    ) -> dict[str, Any]:
+        """审计读接口：治理流（登录→问答/查询→复核→升版→全操作审计）里「看得见」的那一半。
+
+        限管理角色——审计面暴露的是「谁在查什么」，本身敏感。
+        这里**只有读**：`audit_log` 的 UPDATE/DELETE 被触发器一律拒绝，所以没有任何一条路径能改历史。
+        """
+        ctx, reader = context_of(x_kee_role, x_kee_actor, None, None)
+        if ctx.role not in AUDIT_READ_ROLES:
+            raise ApiError("E403", 403, "审计读取需 knowledge_owner 或 system_admin 角色", request.state.trace_id)
+        if not 1 <= limit <= 200:
+            raise ApiError("E400", 400, "limit 取值范围 1~200", request.state.trace_id)
+        out = pg.list_audit(actor=actor, action=action, target=target, trace_id=trace_id, limit=limit, offset=offset)
+        out["scope"] = {"role": ctx.role, "reader": reader}
+        return out
 
     @app.get("/api/v1/sessions/{session_id}")
     def session_history(
