@@ -111,3 +111,37 @@ def test_every_exit_path_carries_e2e_ms():
     eng, _ = engine()
     _, res, _ = collect(eng, "灾备的 RTO 是多少", ctx)
     assert res.timings_ms.get("e2e_ms") >= 0
+
+
+def test_every_exit_path_carries_score_basis():
+    """拒答/转人工这些**不进生成**的出口，置信度块必须和作答出口同形状。
+
+    真机走查抓到的是这一格：作答轮带 `score_basis=rule_composite_not_probability`，
+    拒答轮不带——前端只能显示「score_basis 缺失」，而下游拿到的是 `composite=0` 却没有一句话
+    说明这个 0 的性质。0 比 0.79 更容易被读成概率（"系统自评 0% 正确"），
+    所以缺字段的恰好是最需要它的那批行。与 `e2e_ms` 那次是同一类错：**出口形状少一个字段，
+    单测覆盖不到，前端兜住了就没人当 bug**。
+    """
+    from kee.qa.graph import _gate
+
+    # ① 单元层：三个契约出口共用同一个构造子，那就把它钉死一次
+    g = _gate({"retrieval": 0.4, "citation_consistency": 0.0, "self_assessed": 0.0,
+               "composite_candidate": 0.4}, "contract_empty_conclusion", 1.0)
+    assert g["score_basis"] == "rule_composite_not_probability"
+    assert g["temperature"] == 1.0
+    assert g["composite"] == 0.0 and g["calibrated"] == 0.0
+
+    # ② 通路层：弱证据被检索门禁拦下的那条（完全不走生成）
+    ctx = AccessContext(role="knowledge_owner")
+    eng, _ = engine()
+    eng.retriever = SpyRetriever([chunk("c1", score=0.03)])
+    _, res, _ = collect(eng, "灾备的 RTO 是多少", ctx)
+    assert res.status == "refuse", res.status
+    assert res.confidence.get("score_basis") == "rule_composite_not_probability", res.confidence
+    assert res.confidence.get("temperature") is not None, res.confidence
+
+    # ③ 通路层：敏感题在检索前就结束的那条
+    eng, _ = engine()
+    _, res, _ = collect(eng, "合同金额是多少", ctx)
+    assert res.status in ("escalate", "refuse"), res.status
+    assert res.confidence.get("score_basis") == "rule_composite_not_probability", res.confidence

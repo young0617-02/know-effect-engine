@@ -75,7 +75,9 @@ export interface DeltaPayload {
 export interface RetrievalEvent {
   query_used?: string;
   mode?: string;
-  degraded?: boolean | string;
+  /** 后端发的是**原因数组**（`Res.degraded: list[str]`）。类型曾写成 `boolean | string`，
+   *  于是 `degraded: []` 在 JSX 三元里被判成真值——「检索降级」挂在每一轮上，与有没有降级无关。 */
+  degraded?: string[];
   n_chunks?: number;
   chunk_ids?: string[];
   timings_ms?: Record<string, number>;

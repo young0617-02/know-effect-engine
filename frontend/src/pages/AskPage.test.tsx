@@ -160,6 +160,43 @@ describe("问答页的三态渲染", () => {
     expect(conf.textContent).not.toMatch(/置信度\s*78%/);
   });
 
+  it("degraded 是**空数组**时不许显示「检索降级」——JS 里 [] 是真值，这类假信号等于永远在报降级", async () => {
+    stubFetch([
+      { event: "retrieval", data: { n_chunks: 5, mode: "hybrid", degraded: [] } },
+      { event: "answer", data: { ...ANSWER_BASE, conclusion: "结论" } },
+    ]);
+    renderPage();
+    ask();
+    const skel = await screen.findByTestId("retrieval-skeleton");
+    expect(skel.textContent).not.toContain("检索降级");
+  });
+
+  it("真降级时要把**原因**显示出来，只写「检索降级」等于把可行动的信息压成一个灯", async () => {
+    stubFetch([
+      { event: "retrieval", data: { n_chunks: 5, mode: "hybrid", degraded: ["dense_timeout>700ms"] } },
+      { event: "answer", data: { ...ANSWER_BASE, conclusion: "结论" } },
+    ]);
+    renderPage();
+    ask();
+    const skel = await screen.findByTestId("retrieval-skeleton");
+    expect(skel.textContent).toContain("检索降级");
+    expect(skel.textContent).toContain("dense_timeout");
+  });
+
+  it("拒答轮也要带 score_basis：0 分最容易被读成概率，缺这句说明就最危险", async () => {
+    stubFetch([
+      { event: "retrieval", data: { n_chunks: 3 } },
+      { event: "answer", data: { ...ANSWER_BASE, status: "refuse", conclusion: "", key_points: [], citations: [],
+        confidence: { composite: 0, calibrated: 0, temperature: 1, retrieval: 0.0073,
+                      score_basis: "rule_composite_not_probability", rule: "retrieval_gate" } } },
+    ]);
+    renderPage();
+    ask();
+    const conf = await screen.findByTestId("confidence");
+    expect(conf.textContent).toContain("rule_composite_not_probability");
+    expect(conf.textContent).not.toContain("缺失");
+  });
+
   it("needs_human 与拒答都要显式可见；拒答时结论区不为空话", async () => {
     const frames = [
       { event: "retrieval", data: { n_chunks: 3 } },

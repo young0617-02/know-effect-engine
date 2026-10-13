@@ -362,7 +362,7 @@ function RetrievalSkeleton({ ev, firstDeltaMs }: { ev: RetrievalEvent; firstDelt
     <p className={s.meta} data-testid="retrieval-skeleton">
       检索 {n} 块{ev.mode ? ` · 模式 ${String(ev.mode)}` : ""}
       {ev.query_used ? ` · 实际查询「${String(ev.query_used)}」` : ""}
-      {ev.degraded ? " · 检索降级" : ""}
+      {Array.isArray(ev.degraded) && ev.degraded.length > 0 ? ` · 检索降级（${ev.degraded.join("；")}）` : ""}
       {ms ? ` · ${Math.round(ms)}ms` : ""}
       {firstDeltaMs ? ` · 首个可见增量 ${firstDeltaMs}ms` : ""}
     </p>

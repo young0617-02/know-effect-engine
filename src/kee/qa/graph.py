@@ -106,9 +106,16 @@ def _public(comp: dict[str, float]) -> dict[str, float]:
     return {k: v for k, v in comp.items() if k != "composite_candidate"}
 
 
-def _gate(comp: dict[str, float], rule: str) -> dict[str, Any]:
-    """契约出口的置信度块：成分照登，但 composite/calibrated 记 0——这条答案没成立。"""
-    return {**_public(comp), "composite": 0.0, "calibrated": 0.0, "rule": rule}
+def _gate(comp: dict[str, float], rule: str, temperature: float) -> dict[str, Any]:
+    """契约出口的置信度块：成分照登，但 composite/calibrated 记 0——这条答案没成立。
+
+    `score_basis` 与 `temperature` 必须与作答出口**同形状**带出。此前这两个字段只在作答出口有，
+    于是拒答轮给的是「composite=0 但没有一句说明这个 0 是什么」——而 0 恰恰最容易被下游读成
+    「系统自评 0% 正确率」。《前端流式渲染契约》第 4 条写的是「原样带出 score_basis」，没分出口，
+    所以这不是前端要兜的边界，是后端少发了字段（2026-10-13 真机走查抓到，前端当时显示「score_basis 缺失」）。
+    """
+    return {**_public(comp), "composite": 0.0, "calibrated": 0.0, "rule": rule,
+            "temperature": temperature, "score_basis": "rule_composite_not_probability"}
 
 
 def build_qa_graph(engine):
@@ -127,7 +134,7 @@ def build_qa_graph(engine):
             "status": "escalate",
             "needs_human": True,
             "notes": _n(state, f"sensitive_pattern:{hit}"),
-            "confidence": {"composite": 0.0, "calibrated": 0.0, "rule": "sensitive_block"},
+            "confidence": _gate({}, "sensitive_block", engine.calibration_temperature),
         }
 
     def rewrite(state: QAState) -> dict[str, Any]:
@@ -192,12 +199,8 @@ def build_qa_graph(engine):
             "status": "refuse",
             "needs_human": top_score >= engine.min_retrieval_score,
             "notes": _n(state, "no_sufficient_evidence"),
-            "confidence": {
-                "retrieval": round(top_score, 4),
-                "composite": 0.0,
-                "calibrated": 0.0,
-                "rule": "retrieval_gate",
-            },
+            "confidence": _gate({"retrieval": round(top_score, 4)},
+                                "retrieval_gate", engine.calibration_temperature),
         }
 
     # ---------- 生成与出口 ----------
@@ -307,12 +310,8 @@ def build_qa_graph(engine):
                 "status": "escalate" if strong else "refuse",
                 "needs_human": True,
                 "notes": _n(state, *notes),
-                "confidence": {
-                    "retrieval": round(top_score, 4),
-                    "composite": 0.0,
-                    "calibrated": 0.0,
-                    "rule": "declared_no_evidence",
-                },
+                "confidence": _gate({"retrieval": round(top_score, 4)},
+                                    "declared_no_evidence", engine.calibration_temperature),
             }
 
         points, cites, dropped = engine._enforce_citations(obj, state["evidence_index"])
@@ -324,7 +323,7 @@ def build_qa_graph(engine):
                 "gated": "no_citation",
                 "status": "refuse",
                 "notes": _n(state, "citation_enforcement_rejected"),
-                "confidence": _gate(comp, "contract_no_citation"),
+                "confidence": _gate(comp, "contract_no_citation", engine.calibration_temperature),
             }
         conclusion = str(obj.get("conclusion", "") or "").strip()
         carried: list[str] = []
@@ -349,7 +348,7 @@ def build_qa_graph(engine):
                     "needs_human": False,
                     "notes": _n(state, "refused_low_confidence_no_basis",
                                 f"composite<{engine.settings.confidence_low} 且模型未给结论，不代为补全"),
-                    "confidence": _gate(comp, "marginal_evidence_refusal"),
+                    "confidence": _gate(comp, "marginal_evidence_refusal", engine.calibration_temperature),
                 }
             derived = "；".join(
                 str(p.get("point", "")).strip() for p in points if str(p.get("point", "")).strip()
@@ -364,7 +363,7 @@ def build_qa_graph(engine):
                 "status": "degraded",
                 "needs_human": True,
                 "notes": _n(state, *carried, "contract_violation:empty_conclusion"),
-                "confidence": _gate(comp, "contract_empty_conclusion"),
+                "confidence": _gate(comp, "contract_empty_conclusion", engine.calibration_temperature),
             }
         out["conclusion"] = conclusion
         if carried:
