@@ -133,7 +133,11 @@ def build() -> dict:
             "小于它的 Δ 不得写成改善或恶化。旧的那份 `session_turn` 全表读数（混着验证脚本自身流量、"
             f"且当时拒答轮次 total_ms 恒为 NULL）自本轮起**不作引用源**。"
             f"e2e 漏计已修：{rep.get('e2e_fix_verification', {}).get('rows_covered')} 行里 "
-            f"{rep.get('e2e_fix_verification', {}).get('rows_without_total_ms')} 行缺 total_ms。")
+            f"{rep.get('e2e_fix_verification', {}).get('rows_without_total_ms')} 行缺 total_ms。"
+            "**而且这条裁决其实有两问**（#56 第七节量到的）：除了「3s 还是 6s」，还得定**门禁算哪批轮次**——"
+            "拒答有两条路径且成本差 18 倍（闸前拒答 ~0.4s，过闸后模型自宣无依据 ~7s），"
+            "「仅作答轮次」与「含拒答轮次」的 p95 只差 123.7ms、max 却差 3306.1ms，"
+            "不是同一件事。")
 
     rows = [
         row("1", "Must 链端到端可演示", "达标", "9 条 Must 全链路可跑通",

@@ -32,7 +32,7 @@
           "索引条数": 4,
           "解析告警": 1,
           "元数据告警": 0,
-          "耗时s": 11.505
+          "耗时s": 15.476
         },
         "txt": {
           "doc_id": "m1-xunjian-prj-ene-2025-008",
@@ -44,7 +44,7 @@
           "索引条数": 3,
           "解析告警": 1,
           "元数据告警": 0,
-          "耗时s": 11.727
+          "耗时s": 11.726
         },
         "docx": {
           "doc_id": "m1-shishi-prj-fin-2024-017",
@@ -56,7 +56,7 @@
           "索引条数": 2,
           "解析告警": 2,
           "元数据告警": 0,
-          "耗时s": 11.965
+          "耗时s": 9.099
         },
         "pdf": {
           "doc_id": "m1-anquan-prj-mfg-2024-001",
@@ -68,7 +68,7 @@
           "索引条数": 21,
           "解析告警": 4,
           "元数据告警": 0,
-          "耗时s": 9.896
+          "耗时s": 11.912
         },
         "secret": {
           "doc_id": "m1-mi-mfg-2024-002",
@@ -80,7 +80,7 @@
           "索引条数": 2,
           "解析告警": 1,
           "元数据告警": 0,
-          "耗时s": 11.905
+          "耗时s": 11.854
         }
       }
     },
@@ -206,7 +206,7 @@
           "短段并入前段：16｜经销商。",
           "触发原因：文本层过薄（1 页）"
         ],
-        "耗时s": 10.228,
+        "耗时s": 36.319,
         "检索命中": [
           {
             "doc": "m1-saomiao-prj-mfg-2024-003",
@@ -272,7 +272,7 @@
           "doc_id": "m1-fupan-prj-ene-2025-008",
           "effective_version": "m1-fupan-prj-ene-2025-008@v1",
           "reindexed": 4,
-          "seconds": 11.53
+          "seconds": 11.54
         },
         "v1 索引条数": 4,
         "v2 索引条数": 0
@@ -321,12 +321,15 @@
       "ok": true,
       "detail": {
         "动作分布": {
+          "answer_generated": 477,
+          "chunks_read": 274,
           "document_admitted": 48,
-          "document_ingested": 143,
-          "document_review_pass": 8,
-          "document_review_reject": 7,
-          "document_rollback": 8,
-          "reconciliation_run": 12
+          "document_ingested": 151,
+          "document_review_pass": 9,
+          "document_review_reject": 8,
+          "document_rollback": 9,
+          "reconciliation_run": 13,
+          "session_read": 28
         },
         "篡改被拒": "audit_log 为追加表，禁止 UPDATE 操作"
       }
@@ -342,10 +345,10 @@
     }
   ],
   "timings_sec": {
-    "upload_5_docs": 57.11,
-    "retrieval_probes": 5.46,
-    "reconcile_run": 12.44,
-    "whole_run": 264.39
+    "upload_5_docs": 60.26,
+    "retrieval_probes": 9.01,
+    "reconcile_run": 12.61,
+    "whole_run": 300.16
   },
   "baseline": {
     "collection": "kb_chunks",
@@ -382,12 +385,12 @@
         },
         "timings_sec": {
           "parse": 0.0,
-          "authoritative_write": 0.104,
-          "embed": 9.831,
-          "index": 1.57,
-          "total": 11.505
+          "authoritative_write": 0.094,
+          "embed": 13.778,
+          "index": 1.603,
+          "total": 15.476
         },
-        "trace_id": "api-7080fb8b6589"
+        "trace_id": "api-5536cde046a5"
       }
     },
     "txt": {
@@ -419,12 +422,12 @@
         },
         "timings_sec": {
           "parse": 0.0,
-          "authoritative_write": 0.082,
-          "embed": 0.026,
-          "index": 11.618,
-          "total": 11.727
+          "authoritative_write": 0.08,
+          "embed": 0.02,
+          "index": 11.625,
+          "total": 11.726
         },
-        "trace_id": "api-b49b599d61ae"
+        "trace_id": "api-c5ffdd1e464b"
       }
     },
     "docx": {
@@ -456,13 +459,13 @@
           "remaining_pending": 0
         },
         "timings_sec": {
-          "parse": 0.064,
-          "authoritative_write": 0.144,
-          "embed": 0.117,
-          "index": 11.64,
-          "total": 11.965
+          "parse": 0.234,
+          "authoritative_write": 0.119,
+          "embed": 0.138,
+          "index": 8.608,
+          "total": 9.099
         },
-        "trace_id": "api-b5e8c95bc8e1"
+        "trace_id": "api-c36135095372"
       }
     },
     "pdf": {
@@ -496,13 +499,13 @@
           "remaining_pending": 0
         },
         "timings_sec": {
-          "parse": 0.742,
-          "authoritative_write": 0.084,
-          "embed": 0.426,
-          "index": 8.644,
-          "total": 9.896
+          "parse": 2.607,
+          "authoritative_write": 0.194,
+          "embed": 0.505,
+          "index": 8.605,
+          "total": 11.912
         },
-        "trace_id": "api-f070de7ee94d"
+        "trace_id": "api-3e2129e01d4a"
       }
     },
     "secret": {
@@ -534,12 +537,12 @@
         },
         "timings_sec": {
           "parse": 0.0,
-          "authoritative_write": 0.076,
-          "embed": 0.186,
-          "index": 11.642,
-          "total": 11.905
+          "authoritative_write": 0.096,
+          "embed": 0.176,
+          "index": 11.582,
+          "total": 11.854
         },
-        "trace_id": "api-26c699b7514a"
+        "trace_id": "api-629f9def00c4"
       }
     }
   },
@@ -620,14 +623,14 @@
           "doc": "m1-anquan-prj-mfg-2024-001",
           "section": "1",
           "page": 1,
-          "score": 0.756348
+          "score": 0.637695
         },
         {
-          "chunk_id": "m1-anquan-prj-mfg-2024-001@v1#1#c16",
+          "chunk_id": "m1-anquan-prj-mfg-2024-001@v1#1#c12",
           "doc": "m1-anquan-prj-mfg-2024-001",
           "section": "1",
           "page": 1,
-          "score": 0.15332
+          "score": 0.424805
         }
       ],
       "degraded": []

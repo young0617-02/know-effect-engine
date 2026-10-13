@@ -34,10 +34,10 @@
           "composite": 0.7971,
           "logit": 1.3683
         },
-        "session_id": "s-1a489411c5bb",
+        "session_id": "s-ed5df50f6ce4",
         "turn_no": 1,
         "new_session": true,
-        "耗时s": 5.28
+        "耗时s": 24.37
       }
     },
     {
@@ -71,7 +71,7 @@
           [
             2,
             "answer",
-            "采集数据质量与计量异常｜用电信息采集成功率由治理前的"
+            "采集数据质量与计量异常治理前的用电信息采集成功率由治"
           ]
         ]
       }
@@ -146,19 +146,19 @@
       "ok": true,
       "detail": {
         "会话轮数": 4,
-        "流式那轮的耗时ms": 3054.7
+        "流式那轮的耗时ms": 4533.3
       }
     },
     {
       "name": "答案链每次问答与每次会话读取都进审计",
       "ok": true,
       "detail": {
-        "session_read": 22,
-        "answer_generated": 74
+        "session_read": 28,
+        "answer_generated": 94
       }
     }
   ],
   "timings_sec": {
-    "whole_run": 121.51
+    "whole_run": 63.55
   }
 }

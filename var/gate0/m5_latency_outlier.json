@@ -1,0 +1,342 @@
+{
+  "generated_at": "2026-10-13T10:33:09+0800",
+  "healthz": {
+    "status": "ok",
+    "deps": {
+      "milvus": {
+        "ok": true,
+        "collection": "kb_chunks",
+        "chunks": 193
+      },
+      "postgres": {
+        "ok": true,
+        "documents": 24
+      }
+    }
+  },
+  "cases": {
+    "q-063": {
+      "question": "PRJ-PRT-2024-055 那个港口理货项目的接口规范在哪儿能查到？",
+      "category": "无答案",
+      "cache_flushed_before_each_rep": true,
+      "expected_behavior": "refuse",
+      "n_gold": 0,
+      "reps": [
+        {
+          "session_id": "s-out-523d635c2d",
+          "client_ms": 7390.9,
+          "status": "refuse",
+          "needs_human": true,
+          "conclusion_chars": 0,
+          "n_citations": 0,
+          "e2e_ms": 7355.5,
+          "retrieval_ms": 535.7,
+          "generate_ms": 6806.7,
+          "first_token_ms": null,
+          "stages": {
+            "stage_embed_ms": 98.4,
+            "stage_dense_ms": 4.3,
+            "stage_sparse_ms": 3.0,
+            "stage_fuse_ms": 0.0,
+            "stage_rerank_ms": 429.4
+          },
+          "notes": [
+            "model_declared_no_evidence"
+          ],
+          "degraded": [],
+          "expected_behavior": "refuse",
+          "category": "无答案"
+        },
+        {
+          "session_id": "s-out-859975f9e3",
+          "client_ms": 7216.4,
+          "status": "refuse",
+          "needs_human": true,
+          "conclusion_chars": 0,
+          "n_citations": 0,
+          "e2e_ms": 7163.7,
+          "retrieval_ms": 285.4,
+          "generate_ms": 6861.4,
+          "first_token_ms": null,
+          "stages": {
+            "stage_embed_ms": 13.3,
+            "stage_dense_ms": 3.7,
+            "stage_sparse_ms": 3.3,
+            "stage_fuse_ms": 0.0,
+            "stage_rerank_ms": 264.4
+          },
+          "notes": [
+            "model_declared_no_evidence"
+          ],
+          "degraded": [],
+          "expected_behavior": "refuse",
+          "category": "无答案"
+        },
+        {
+          "session_id": "s-out-79d3a16cea",
+          "client_ms": 7234.5,
+          "status": "refuse",
+          "needs_human": true,
+          "conclusion_chars": 0,
+          "n_citations": 0,
+          "e2e_ms": 7130.2,
+          "retrieval_ms": 303.5,
+          "generate_ms": 6816.3,
+          "first_token_ms": null,
+          "stages": {
+            "stage_embed_ms": 28.9,
+            "stage_dense_ms": 4.4,
+            "stage_sparse_ms": 3.5,
+            "stage_fuse_ms": 0.0,
+            "stage_rerank_ms": 266.2
+          },
+          "notes": [
+            "model_declared_no_evidence"
+          ],
+          "degraded": [],
+          "expected_behavior": "refuse",
+          "category": "无答案"
+        },
+        {
+          "session_id": "s-out-22d12730e9",
+          "client_ms": 7307.7,
+          "status": "refuse",
+          "needs_human": true,
+          "conclusion_chars": 0,
+          "n_citations": 0,
+          "e2e_ms": 7206.9,
+          "retrieval_ms": 299.0,
+          "generate_ms": 6894.5,
+          "first_token_ms": null,
+          "stages": {
+            "stage_embed_ms": 18.2,
+            "stage_dense_ms": 3.8,
+            "stage_sparse_ms": 2.9,
+            "stage_fuse_ms": 0.0,
+            "stage_rerank_ms": 273.6
+          },
+          "notes": [
+            "model_declared_no_evidence"
+          ],
+          "degraded": [],
+          "expected_behavior": "refuse",
+          "category": "无答案"
+        },
+        {
+          "session_id": "s-out-b2c5011a01",
+          "client_ms": 6968.5,
+          "status": "refuse",
+          "needs_human": true,
+          "conclusion_chars": 0,
+          "n_citations": 0,
+          "e2e_ms": 6931.7,
+          "retrieval_ms": 291.8,
+          "generate_ms": 6624.3,
+          "first_token_ms": null,
+          "stages": {
+            "stage_embed_ms": 26.3,
+            "stage_dense_ms": 3.5,
+            "stage_sparse_ms": 2.7,
+            "stage_fuse_ms": 0.0,
+            "stage_rerank_ms": 258.9
+          },
+          "notes": [
+            "model_declared_no_evidence"
+          ],
+          "degraded": [],
+          "expected_behavior": "refuse",
+          "category": "无答案"
+        }
+      ],
+      "summary": {
+        "client_ms": {
+          "n": 5,
+          "min": 6968.5,
+          "median": 7234.5,
+          "max": 7390.9
+        },
+        "e2e_ms": {
+          "n": 5,
+          "min": 6931.7,
+          "median": 7163.7,
+          "max": 7355.5
+        },
+        "retrieval_ms": {
+          "n": 5,
+          "min": 285.4,
+          "median": 299.0,
+          "max": 535.7
+        },
+        "generate_ms": {
+          "n": 5,
+          "min": 6624.3,
+          "median": 6816.3,
+          "max": 6894.5
+        },
+        "first_token_ms": {
+          "n": 0
+        }
+      }
+    },
+    "q-060": {
+      "question": "知识库里有没有 Kestrel-M3 嵌入模型在单卡显存上的实测吞吐数据？",
+      "category": "无答案",
+      "cache_flushed_before_each_rep": true,
+      "expected_behavior": "refuse",
+      "n_gold": 0,
+      "reps": [
+        {
+          "session_id": "s-out-0c443e83f9",
+          "client_ms": 341.1,
+          "status": "refuse",
+          "needs_human": false,
+          "conclusion_chars": 0,
+          "n_citations": 0,
+          "e2e_ms": 291.3,
+          "retrieval_ms": 277.1,
+          "generate_ms": null,
+          "first_token_ms": null,
+          "stages": {
+            "stage_embed_ms": 14.2,
+            "stage_dense_ms": 3.5,
+            "stage_sparse_ms": 2.8,
+            "stage_fuse_ms": 0.0,
+            "stage_rerank_ms": 256.1
+          },
+          "notes": [
+            "no_sufficient_evidence"
+          ],
+          "degraded": [],
+          "expected_behavior": "refuse",
+          "category": "无答案"
+        },
+        {
+          "session_id": "s-out-05057e25c7",
+          "client_ms": 401.4,
+          "status": "refuse",
+          "needs_human": false,
+          "conclusion_chars": 0,
+          "n_citations": 0,
+          "e2e_ms": 310.3,
+          "retrieval_ms": 296.1,
+          "generate_ms": null,
+          "first_token_ms": null,
+          "stages": {
+            "stage_embed_ms": 27.7,
+            "stage_dense_ms": 3.5,
+            "stage_sparse_ms": 3.0,
+            "stage_fuse_ms": 0.0,
+            "stage_rerank_ms": 261.2
+          },
+          "notes": [
+            "no_sufficient_evidence"
+          ],
+          "degraded": [],
+          "expected_behavior": "refuse",
+          "category": "无答案"
+        },
+        {
+          "session_id": "s-out-adfa5c724b",
+          "client_ms": 401.8,
+          "status": "refuse",
+          "needs_human": false,
+          "conclusion_chars": 0,
+          "n_citations": 0,
+          "e2e_ms": 311.3,
+          "retrieval_ms": 299.7,
+          "generate_ms": null,
+          "first_token_ms": null,
+          "stages": {
+            "stage_embed_ms": 35.5,
+            "stage_dense_ms": 4.2,
+            "stage_sparse_ms": 3.3,
+            "stage_fuse_ms": 0.0,
+            "stage_rerank_ms": 255.9
+          },
+          "notes": [
+            "no_sufficient_evidence"
+          ],
+          "degraded": [],
+          "expected_behavior": "refuse",
+          "category": "无答案"
+        },
+        {
+          "session_id": "s-out-c8e32867c0",
+          "client_ms": 400.1,
+          "status": "refuse",
+          "needs_human": false,
+          "conclusion_chars": 0,
+          "n_citations": 0,
+          "e2e_ms": 292.5,
+          "retrieval_ms": 282.6,
+          "generate_ms": null,
+          "first_token_ms": null,
+          "stages": {
+            "stage_embed_ms": 20.5,
+            "stage_dense_ms": 4.0,
+            "stage_sparse_ms": 2.8,
+            "stage_fuse_ms": 0.0,
+            "stage_rerank_ms": 254.8
+          },
+          "notes": [
+            "no_sufficient_evidence"
+          ],
+          "degraded": [],
+          "expected_behavior": "refuse",
+          "category": "无答案"
+        },
+        {
+          "session_id": "s-out-be251a752a",
+          "client_ms": 501.2,
+          "status": "refuse",
+          "needs_human": false,
+          "conclusion_chars": 0,
+          "n_citations": 0,
+          "e2e_ms": 319.3,
+          "retrieval_ms": 309.0,
+          "generate_ms": null,
+          "first_token_ms": null,
+          "stages": {
+            "stage_embed_ms": 36.1,
+            "stage_dense_ms": 5.7,
+            "stage_sparse_ms": 3.5,
+            "stage_fuse_ms": 0.0,
+            "stage_rerank_ms": 263.2
+          },
+          "notes": [
+            "no_sufficient_evidence"
+          ],
+          "degraded": [],
+          "expected_behavior": "refuse",
+          "category": "无答案"
+        }
+      ],
+      "summary": {
+        "client_ms": {
+          "n": 5,
+          "min": 341.1,
+          "median": 401.4,
+          "max": 501.2
+        },
+        "e2e_ms": {
+          "n": 5,
+          "min": 291.3,
+          "median": 310.3,
+          "max": 319.3
+        },
+        "retrieval_ms": {
+          "n": 5,
+          "min": 277.1,
+          "median": 296.1,
+          "max": 309.0
+        },
+        "generate_ms": {
+          "n": 0
+        },
+        "first_token_ms": {
+          "n": 0
+        }
+      }
+    }
+  }
+}
