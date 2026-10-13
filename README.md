@@ -182,7 +182,7 @@ M3-05 已落地：在线链路搬进 `src/kee/qa/graph.py` 的 LangGraph 状态�
 | `infra/nginx.m4.conf` | SSE 关缓冲（`proxy_buffering off`）——否则 token 级流式在浏览器里退化成一次性出答案 |
 | `scripts/verify_m4.py` | 端到端 12 项：事件顺序 / `answer` 恰好一次 / 流不被攒 / 密级与行业过滤 / 审计角色门与留痕 |
 | `docs/前端流式渲染契约.md` | 三态渲染的可断言规格（C-1…C-8），并写明**哪些条款还没有断言** |
-| `reports/m4/M4_前端与一键Demo.md` | 本轮实测结论 + 四处「差点写成假绿」的记录 + 已验证/未验证分栏 |
+| `reports/m4/M4_前端与一键部署.md` | 本轮实测结论 + 四处「差点写成假绿」的记录 + 已验证/未验证分栏 |
 
 ```bash
 uv run python scripts/serve_api.py                 # 宿主 API

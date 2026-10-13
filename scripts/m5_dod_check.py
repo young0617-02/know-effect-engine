@@ -290,7 +290,7 @@ def build() -> dict:
             f"云端兜底={g6s.get('cloud_switch', {}).get('cloud_fallback_enabled')} ｜ "
             f"静态扫描运行期出域 {len(g6s.get('static_scan', {}).get('runtime_data_egress', []))} ｜ "
             "RBAC 密级/行业过滤、审计追加禁改各有实测",
-            ["var/gate0/m4_g06_rerun2.json", "var/gate0/m4_verify.json", "reports/m4/M4_前端与一键Demo.md"],
+            ["var/gate0/m4_g06_rerun2.json", "var/gate0/m4_verify.json", "reports/m4/M4_前端与一键部署.md"],
             "「断网下核心链路可运行」这句**没被端到端证明**：`internal: true` 把宿主↔容器通路一起切断，"
             "而 API 在宿主。**ADR-12 已定案（2026-10-12）：维持现状，「整机断网下端到端问答」划出承诺范围**——"
             "替代路 `enable_ip_masquerade=false` 实测切不掉容器出网，GPU 容器化要么拉 GB 级镜像、"

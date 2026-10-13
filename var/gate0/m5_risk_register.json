@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-13T18:24:56",
+  "generated_at": "2026-10-13T19:04:17",
   "principle": "逐行解析原表，缺一条处置就拒绝生成；状态显式给定，不按散文猜",
   "risk_rows": [
     {
@@ -227,7 +227,7 @@
     {
       "风险": "未复核内容即时可被引用作答（复核不是前闸）",
       "定稿状态": "已闭合",
-      "定稿依据": "实测（scratch 后端，生产未动）：以 delivery_engineer 上传未复核文档后，复核**之前** /retrieval/search 命中、/answers 直接 status=answer 并引用该块；版本一上传即 effective。当前复核=事后撤销（reject 才 superseded+删索引），而 Must#1 写「上传→准入审核→分块→落库」，顺序相反且「准入审核」未定义是机械准入还是人工复核。**三条处置路见 reports/m4/M4_前端与一键Demo.md 第十节，须用户选定并改需求原文**；选定前不得声称「入库有审核闸」"
+      "定稿依据": "实测（scratch 后端，生产未动）：以 delivery_engineer 上传未复核文档后，复核**之前** /retrieval/search 命中、/answers 直接 status=answer 并引用该块；版本一上传即 effective。当前复核=事后撤销（reject 才 superseded+删索引），而 Must#1 写「上传→准入审核→分块→落库」，顺序相反且「准入审核」未定义是机械准入还是人工复核。**三条处置路见 reports/m4/M4_前端与一键部署.md 第十节，须用户选定并改需求原文**；选定前不得声称「入库有审核闸」"
     },
     {
       "风险": "延迟读数不在净环境",
