@@ -107,37 +107,47 @@ def build() -> dict:
         lat_reading = "净环境复测产物缺失（先跑 m5_latency_clean.py --tag … 再跑 m5_latency_merge.py）"
         lat_say = "没有这一格的数据就不要写结论——旧的那份 session_turn 全表读数混着脚本自身流量，已不作引用源。"
     else:
-        lat_verdict = "部分达标"
+        # 状态**由门禁推导**（V1.21 定案口径），不手写词：手写错过一次
+        # （把「检索达标；端到端不达标」按 startswith 数成达标），所以留显式判据字典。
+        retr_p95 = bf.get("latency_ms", {}).get("p95") or 0
+        lat_gate = {"检索 p95 < 800ms": retr_p95 < 800,
+                    "作答轮次端到端 p95 < 6s": cg["p95"] < 6000,
+                    "首可读字 p95 < 1200ms": (fvv.get("p95") or 9e9) < 1200}
+        lat_failed = [k for k, v in lat_gate.items() if not v]
+        lat_verdict = "达标" if not lat_failed else "不达标"
         lat_reading = (
-            f"**端到端 3s/6s 取哪个待裁** ｜ P95 检索 {bf.get('latency_ms', {}).get('p95')}ms ✓ ｜ "
-            f"**净环境复测（#56）**"
-            f"{rep.get('spread_across_runs', {}).get('client_generating_p50', {})} 四轮合并："
-            f"端到端（仅进生成、未命中缓存，n={cg['n']}）客户端 p50 {cg['p50']} / p95 {cg['p95']} / max {cg['max']}ms，"
-            f">3s {pct(cg['share_over_3s'])} / >6s {pct(cg['share_over_6s'])} ｜ "
-            f"服务端 p95 {sg2.get('p95')}ms ｜ 含拒答轮次（n={pu.get('n_rows')}）>6s "
-            f"{pct(pu.get('client_all', {}).get('share_over_6s'))}（q-063 一道无答案题 7.8s） ｜ "
-            f"轮间 p50 极差 {rep.get('spread_across_runs', {}).get('p50_range_ms')}ms ｜ "
-            f"首 token（n={fvv.get('n')}，SSE 真通路）信封/首事件 p50 "
-            f"{ftb.get('first_event_ms', {}).get('p50')}ms、首个可读字 p50 {fvv.get('p50')} / "
-            f"p95 {fvv.get('p95')} / max {fvv.get('max')}ms ｜ 冷装载 {rep.get('sources', {}).get('transcribed', {}).get('cold_start_ms')}ms 单列")
+            f"**门禁（V1.21 定案）{'全过' if not lat_failed else '未过：' + '、'.join(lat_failed)}** ｜ "
+            f"P95 检索 {retr_p95}ms ｜ 作答轮次端到端 p50 {cg['p50']} / **p95 {cg['p95']}ms** / max {cg['max']}ms"
+            f"（n={cg['n']}，>3s {pct(cg['share_over_3s'])}、>6s {pct(cg['share_over_6s'])}）｜ "
+            f"服务端 p95 {sg2.get('p95')}ms ｜ **含拒答轮次另并报**（n={pu.get('n_rows')}）"
+            f"p95 {pu.get('client_all', {}).get('p95')} / max {pu.get('client_all', {}).get('max')}ms、"
+            f">6s {pct(pu.get('client_all', {}).get('share_over_6s'))} ｜ "
+            f"首可读字 p50 {fvv.get('p50')} / p95 {fvv.get('p95')} / max {fvv.get('max')}ms（n={fvv.get('n')}）｜ "
+            f"轮间 p50 极差 {rep.get('spread_across_runs', {}).get('p50_range_ms')}ms（噪声地板）｜ "
+            f"冷装载 {rep.get('sources', {}).get('transcribed', {}).get('cold_start_ms')}ms 单列")
         lat_say = (
-            "**三个口径互相打架的问题，这批数把它拆成了两个独立问题**："
-            f"①「3s 还是 6s」不再是『两边都过不了』——净环境下 p95 {cg['p95']}ms，**<6s 过、<3s 不过**"
-            f"（{pct(cg['share_over_3s'])} 的轮次超 3s）。这是口径裁决，不是系统改善，等用户裁后按三件套改需求原文。"
-            f"②「首 token 1.2s」现在按**最严的那把**（首个可读字）也过：p95 {fvv.get('p95')}ms、max {fvv.get('max')}ms，"
-            "V1.7 那句『按可见内容口径达不到（p50 1642.7ms）』是**非净环境 + 缓存状态未记录**条件下的读数，已被本轮取代。"
-            "③ 引用这一格必须同句带的边界：分位数只取**未命中检索缓存**的轮次（命中轮次检索腿被短路，"
-            f"实测快 {round(cg['p50'] - rep.get('pooled_cached', {}).get('client_all', {}).get('p50', 0))}ms，单列不合并）；"
-            f"冷装载 {rep.get('sources', {}).get('transcribed', {}).get('cold_start_ms')}ms 与热态差一个量级，不许混进同一个数；"
-            f"轮间 p50 极差 {rep.get('spread_across_runs', {}).get('p50_range_ms')}ms 就是这台机器的噪声地板，"
-            "小于它的 Δ 不得写成改善或恶化。旧的那份 `session_turn` 全表读数（混着验证脚本自身流量、"
-            f"且当时拒答轮次 total_ms 恒为 NULL）自本轮起**不作引用源**。"
-            f"e2e 漏计已修：{rep.get('e2e_fix_verification', {}).get('rows_covered')} 行里 "
-            f"{rep.get('e2e_fix_verification', {}).get('rows_without_total_ms')} 行缺 total_ms。"
-            "**而且这条裁决其实有两问**（#56 第七节量到的）：除了「3s 还是 6s」，还得定**门禁算哪批轮次**——"
-            "拒答有两条路径且成本差 18 倍（闸前拒答 ~0.4s，过闸后模型自宣无依据 ~7s），"
-            "「仅作答轮次」与「含拒答轮次」的 p95 只差 123.7ms、max 却差 3306.1ms，"
-            "不是同一件事。")
+            "**口径已于 V1.21 定案（用户 2026-10-13 裁决），三件套**："
+            "①原口径 DoD#5 `< 3s`；②修订口径 `P95 端到端 < 6s 且只统计作答轮次`"
+            "（拒答/转人工不计入门禁但须另并报），首 token 口径钉 `first_visible_ms`；"
+            f"③实测依据：净环境 4 轮 {cg['n']} 个作答轮次 p95 {cg['p95']}ms、0% 超 6s"
+            f"（含拒答则 max {pu.get('client_all', {}).get('max')}ms、"
+            f"{pct(pu.get('client_all', {}).get('share_over_6s'))} 超 6s）。"
+            "**剔拒答的理由是结构性的、先于数值**：拒答轮次没有『答案』可等，耗时由判定层决定，"
+            "混进门禁会让 p95 随语料里『证据勉强过线』的题占比漂移——那不是延迟性质。"
+            "**代价必须同句报**：不得据此声称『每次请求都 <6s』。"
+            "那条尾巴的真实身份已查清（`m5_latency_outlier_probe.py`，同题连跑 5 次、每跑前清缓存）："
+            "拒答有两条路径且成本差 18 倍——闸前拒答中位 401.4ms（不进生成）、"
+            "过闸后模型自宣无依据中位 7234.5ms（整趟 LLM 跑完才空结论，5/5 全在 6.97–7.39s，"
+            "不是抖动：噪声地板 93.6ms）。这不是缺陷、走既有出口、行为正确。"
+            "另一半：`3s` 那一边不是『差一点』而是**不可达**——90% 时间在生成段，"
+            "要达 3s 须砍 1.1s 以上，可动的只有生成预算 256→96 token（Gate 0 实测该档 P95 2477ms 可达）"
+            "或换更小模型（与『7B 是本地下限』的既有裁决冲突），那是实现改动不是措辞改动。"
+            f"引用这一格的最低配置：分位数只取未命中检索缓存的作答轮次（命中轮次实测快 "
+            f"{round(cg['p50'] - rep.get('pooled_cached', {}).get('client_all', {}).get('p50', 0))}ms，单列不合并）、"
+            f"冷装载与热态分开报、小于 {rep.get('spread_across_runs', {}).get('p50_range_ms')}ms 的 Δ "
+            "不得写成改善或恶化。旧的 `session_turn` 全表读数已作废为引用源"
+            f"（当时拒答轮次 total_ms 恒 NULL；现在 {rep.get('e2e_fix_verification', {}).get('rows_covered')} 行里 "
+            f"缺 total_ms 的 {rep.get('e2e_fix_verification', {}).get('rows_without_total_ms')} 行）。")
 
     rows = [
         row("1", "Must 链端到端可演示", "达标", "9 条 Must 全链路可跑通",
@@ -194,7 +204,8 @@ def build() -> dict:
             "**温度缩放两档都不采纳**（负类太少不可辨识 / 拒答行复合分被钉在 0.0，拟合的是同义反复），"
             "运行时维持 T=1.0、复合分不进门禁——沿用 2026-10-11 的裁决，本次不改口径。"),
         row("5", "延迟", lat_verdict,
-            "P95 检索 < 800ms；P95 端到端 < 3s（DoD 原文）/ < 6s（《项目定义》第六节 V1.14 现行）",
+            "**V1.21 定案**：P95 检索 < 800ms；P95 端到端 < 6s 且**只统计作答轮次**（status ∈ answer/tentative）；"
+            "流式首 token < 1.2s，口径 = `first_visible_ms`（首个可读字）。拒答/转人工不计入门禁但须另并报",
             lat_reading,
             ["var/gate0/m2_eval.json", "var/gate0/m5_latency_replicates.json",
              "scripts/m5_latency_clean.py", "scripts/m5_latency_merge.py"],
@@ -271,7 +282,8 @@ def to_md(rep: dict) -> str:
           "| 停止条件 | 现在能不能说满足 | 依据 |", "|---|---|---|",
           "| ① Must 链端到端可演示 | **能**，但要同段说明写路径跑在 scratch 命名空间 | DoD#1 |",
           "| ② ≥ 3 项量化指标达标 | **能**：Hit@5(strict)、Recall@5(strict)、P95 检索、结构化首次成功率——"
-          "四项各有同轮可复算读数；但端到端延迟与 ECE 两格不过 | DoD#2、#4、#5 |",
+          "四项各有同轮可复算读数；端到端延迟于 V1.21 口径定案后达标（<6s、只算作答轮次），"
+          "唯 ECE 那一格仍不过（校准是报告值，门禁由四条机制承担） | DoD#2、#4、#5 |",
           "| ③ 版本锁定清单 + 风险登记册定稿 | 本次产出 | DoD#8 |", "",
           "## Gate 0 六项门禁的最新状态（不是只看 2026-10-09 那份）", "",
           "| 门禁 | 结论 | 实测 | 时点 |", "|---|---|---|---|"]
@@ -284,17 +296,17 @@ def to_md(rep: dict) -> str:
           f"**这句作废**，实测算出 ECE={ac['ece']}（真人标签，有方差），**仍不达标**，方向为{ac['sign']}。"
           " fail 依旧是 fail，只是从「没测」变成「测了且不合格」——这不是笔误的修正，"
           "是把敞口关到了可判定的位置上。",
-          "", "## 这张表暴露的**口径互相打架**（M5 必须先裁，否则「达标」无定义）", "",
-          "1. **P95 完整答案 / 端到端**：DoD#5 写 `< 3s`，《项目定义》第六节写 `< 6s（Gate 0 实测后修订）`，"
-          "技术方案 8.1 写 `< 6s`——三处两个值。**#56 净环境复测后这一条从『两边都过不了』变成『一边过一边不过』**："
-          f"四轮合并 p95 {lc['p95_client']}ms ⇒ <6s 过、<3s 不过（{pct(lc['over_3s'])} 的轮次超 3s）。"
-          "所以剩下的**只是口径裁决**：裁 3s 就要改实现（当前生成预算下不可达），裁 6s 只需按三件套把 DoD#5 的原文改过来。",
-          "2. **首 token 1.2s**：门禁值在、口径没定（信封首字符 / 首事件 / 首可见内容三种读法差一个数量级）。"
-          f"#56 已把三种读法**在同一次 SSE 跑里都量了**（n={lc['ft_n']}）："
-          f"信封与首事件 p50 {lc['event_p50']}ms、"
-          f"首个可读字 p50 {lc['ft_p50']} / p95 {lc['ft_p95']} / max {lc['ft_max']}ms。"
-          "结论：**取最严的那把也达标**，这一格不再需要裁「认哪个口径」——需要裁的是 DoD 文字要不要把口径写死，"
-          f"免得下次有人拿信封那 {lc['event_p50']}ms 对外说『首 token 0.3s』。",
+          "", "## 这张表暴露的口径冲突：**第 1、2 条已定案（V1.21 / V1.0.23），第 3 条见下**", "",
+          "1. **P95 完整答案 / 端到端**：曾三处两个值（DoD#5 `< 3s`、《项目定义》第六节与本文 8.1 `< 6s`）。"
+          f"**已定案：门禁 = P95 < 6s 且只统计作答轮次**——净环境 4 轮 {lc['n']} 个作答轮次 "
+          f"p95 {lc['p95_client']}ms、0% 超 6s（>3s 是 {pct(lc['over_3s'])} ⇒ 3s 那一边在 256 token "
+          "完整答案档**不可达**，要达就得改生成预算或换模型，那是实现改动不是措辞改动）。"
+          "**含拒答轮次仍须另并报**（max 7854.6ms、4% 超 6s）——两条拒答路径成本差 18 倍，"
+          "这就是它不能与被测对象混进同一个分位数的理由。",
+          "2. **首 token 1.2s**：口径已钉死为 **`first_visible_ms`（首个可读字）**。"
+          f"三种读法同轮量齐（n={lc['ft_n']}）：信封与首事件 p50 {lc['event_p50']}ms、"
+          f"首个可读字 p50 {lc['ft_p50']} / p95 {lc['ft_p95']} / max {lc['ft_max']}ms ⇒ 按最严那把达标。"
+          "信封那个数只是 `{`，**不得当达标依据**——这句现在写在门禁文字里，不靠谁记得。",
           "3. **「引用正确率」到底指什么**：DoD#3 的 ≥ 90% 原来只有「引用落 gold」一种实测，它不等于结论正确。"
           f"**2026-10-12 起这一格有两种实测并存**（落 gold 0.9839 / 人判 answer_correct {ac['accuracy']}），"
           "判据文字仍写「引用正确率」——两个数都能自称 ≥ 90%，"
