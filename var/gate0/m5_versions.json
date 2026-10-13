@@ -1,12 +1,24 @@
 {
-  "generated_at": "2026-10-12T20:51:12",
+  "generated_at": "2026-10-13T14:21:27",
   "principle": "取不到就标 未固定 并写原因；未固定项 = 可移植性缺口，MVP 收口前逐条销掉或明写接受",
   "host": {
     "os": "Windows 11",
+    "os_补丁级": {
+      "状态": "已固定（取到 DisplayVersion + BuildLabEx + UBR）",
+      "取值": {
+        "ProductName": "Windows 10 Pro",
+        "DisplayVersion": "25H2",
+        "ReleaseId": "2009",
+        "BuildLabEx": "26100.1.amd64fre.ge_release.240331-1435",
+        "CurrentBuild": "26200",
+        "UBR": 7171
+      },
+      "注意": "ProductName / ReleaseId 在 Windows 11 上是遗留值（仍写 Windows 10 / 2009），以 DisplayVersion + CurrentBuild + UBR 为准"
+    },
     "machine": "AMD64",
     "python": "3.12.8",
     "python_prefix": "D:\\project\\know-effect-engine\\.venv",
-    "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU, 8188 MiB",
+    "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU, 8188 MiB, 616.56",
     "shell": "C:\\Program Files\\Git\\bin\\bash.exe"
   },
   "toolchain": {
@@ -14,12 +26,244 @@
     "docker": "Docker version 29.6.2, build dfc4efb",
     "docker_compose": "5.3.1",
     "node": "v24.19.0",
-    "npm": "__ERR__ FileNotFoundError: [WinError 2] 系统找不到指定的文件。"
+    "npm": "11.17.0（经 `npm.cmd` 取到）"
   },
   "python_lock": {
     "file": "uv.lock",
     "sha256_head": "6b7dcdc079d1",
     "pyproject": "f4ea615cca0e"
+  },
+  "declared_dep_usage": {
+    "pymilvus": {
+      "判定": "在用",
+      "前缀": [
+        "pymilvus"
+      ],
+      "前缀来源": "已安装文件树首层模块名",
+      "命中文件": [
+        "scripts\\check_stack.py",
+        "scripts\\m5_version_lock.py",
+        "src\\kee\\api\\app.py",
+        "src\\kee\\gate0\\common.py",
+        "src\\kee\\gate0\\g06_localization.py",
+        "src\\kee\\retrieval\\milvus_store.py"
+      ]
+    },
+    "psycopg": {
+      "判定": "在用",
+      "前缀": [
+        "psycopg"
+      ],
+      "前缀来源": "包元数据 top_level.txt",
+      "命中文件": [
+        "scripts\\check_stack.py",
+        "scripts\\m5_dod_check.py",
+        "scripts\\m5_version_lock.py",
+        "src\\kee\\api\\app.py",
+        "src\\kee\\db\\pg.py",
+        "src\\kee\\gate0\\g06_localization.py"
+      ]
+    },
+    "redis": {
+      "判定": "在用",
+      "前缀": [
+        "redis"
+      ],
+      "前缀来源": "已安装文件树首层模块名",
+      "命中文件": [
+        "scripts\\check_stack.py",
+        "scripts\\m5_latency_clean.py",
+        "src\\kee\\gate0\\g06_localization.py",
+        "src\\kee\\retrieval\\cache.py"
+      ]
+    },
+    "httpx": {
+      "判定": "在用",
+      "前缀": [
+        "httpx"
+      ],
+      "前缀来源": "已安装文件树首层模块名",
+      "命中文件": [
+        "scripts\\check_stack.py",
+        "scripts\\m2_eval.py",
+        "scripts\\verify_m4.py",
+        "src\\kee\\llm\\ollama.py"
+      ]
+    },
+    "pydantic": {
+      "判定": "在用",
+      "前缀": [
+        "pydantic"
+      ],
+      "前缀来源": "已安装文件树首层模块名",
+      "命中文件": [
+        "src\\kee\\api\\app.py",
+        "src\\kee\\config.py"
+      ]
+    },
+    "pydantic-settings": {
+      "判定": "在用",
+      "前缀": [
+        "pydantic_settings"
+      ],
+      "前缀来源": "已安装文件树首层模块名",
+      "命中文件": [
+        "src\\kee\\config.py"
+      ]
+    },
+    "numpy": {
+      "判定": "在用",
+      "前缀": [
+        "numpy"
+      ],
+      "前缀来源": "已安装文件树首层模块名",
+      "命中文件": [
+        "scripts\\m5_alias_probe.py",
+        "scripts\\probe_slanet.py",
+        "src\\kee\\db\\vector_store.py",
+        "src\\kee\\gate0\\g04_consistency.py",
+        "src\\kee\\ingest\\build.py",
+        "src\\kee\\ingest\\docimg.py",
+        "src\\kee\\ingest\\mineru_onnx.py",
+        "src\\kee\\ingest\\service.py",
+        "src\\kee\\models\\embedder.py",
+        "tests\\test_table_structure.py"
+      ]
+    },
+    "jieba": {
+      "判定": "在用",
+      "前缀": [
+        "jieba"
+      ],
+      "前缀来源": "包元数据 top_level.txt",
+      "命中文件": [
+        "scripts\\m2_retrieval_gap.py"
+      ]
+    },
+    "PyYAML": {
+      "判定": "在用",
+      "前缀": [
+        "_yaml",
+        "yaml"
+      ],
+      "前缀来源": "包元数据 top_level.txt",
+      "命中文件": [
+        "src\\kee\\ingest\\mineru_onnx.py"
+      ]
+    },
+    "fastapi": {
+      "判定": "在用",
+      "前缀": [
+        "fastapi"
+      ],
+      "前缀来源": "已安装文件树首层模块名",
+      "命中文件": [
+        "scripts\\m3_multiturn_probe.py",
+        "scripts\\m4_kb_write_path.py",
+        "scripts\\verify_m1.py",
+        "scripts\\verify_m3.py",
+        "src\\kee\\api\\app.py",
+        "tests\\test_api_answers_contract.py",
+        "tests\\test_api_chunks_audit.py"
+      ]
+    },
+    "uvicorn": {
+      "判定": "在用",
+      "前缀": [
+        "uvicorn"
+      ],
+      "前缀来源": "已安装文件树首层模块名",
+      "命中文件": [
+        "scripts\\serve_api.py"
+      ]
+    },
+    "python-multipart": {
+      "判定": "隐式使用（框架按需 import）",
+      "前缀": [
+        "multipart",
+        "python_multipart"
+      ],
+      "前缀来源": "已安装文件树首层模块名",
+      "命中文件": [],
+      "依据": "FastAPI 在参数里出现 `UploadFile = File(...)` / `Form(...)` 时才去 import `multipart`，调用点在 `src/kee/api/app.py:209`（文档上传）。**摘掉它上传端点直接 500**，所以它不属于「零导入」。"
+    },
+    "pypdf": {
+      "判定": "在用",
+      "前缀": [
+        "pypdf"
+      ],
+      "前缀来源": "已安装文件树首层模块名",
+      "命中文件": [
+        "src\\kee\\ingest\\parsers.py"
+      ]
+    },
+    "python-docx": {
+      "判定": "在用",
+      "前缀": [
+        "docx"
+      ],
+      "前缀来源": "包元数据 top_level.txt",
+      "命中文件": [
+        "src\\kee\\ingest\\parsers.py"
+      ]
+    },
+    "onnxruntime": {
+      "判定": "在用",
+      "前缀": [
+        "onnxruntime"
+      ],
+      "前缀来源": "包元数据 top_level.txt",
+      "命中文件": [
+        "scripts\\probe_slanet.py",
+        "src\\kee\\ingest\\mineru_onnx.py"
+      ]
+    },
+    "pypdfium2": {
+      "判定": "在用",
+      "前缀": [
+        "pypdfium2",
+        "pypdfium2_cfg",
+        "pypdfium2_cli",
+        "pypdfium2_raw"
+      ],
+      "前缀来源": "包元数据 top_level.txt",
+      "命中文件": [
+        "scripts\\verify_m1.py",
+        "src\\kee\\ingest\\docimg.py"
+      ]
+    },
+    "pillow": {
+      "判定": "在用",
+      "前缀": [
+        "PIL"
+      ],
+      "前缀来源": "包元数据 top_level.txt",
+      "命中文件": [
+        "scripts\\probe_slanet.py",
+        "scripts\\table_fixtures.py",
+        "scripts\\verify_m1.py",
+        "src\\kee\\ingest\\docimg.py",
+        "src\\kee\\ingest\\mineru_onnx.py"
+      ]
+    },
+    "langgraph": {
+      "判定": "在用",
+      "前缀": [
+        "langgraph"
+      ],
+      "前缀来源": "已安装文件树首层模块名",
+      "命中文件": [
+        "src\\kee\\qa\\graph.py"
+      ]
+    },
+    "langgraph-checkpoint-postgres": {
+      "判定": "声明了但零导入",
+      "前缀": [
+        "langgraph.checkpoint.postgres"
+      ],
+      "前缀来源": "脚本内人工映射（命名空间包，元数据会误导）",
+      "命中文件": []
+    }
   },
   "key_packages": {
     "fastapi": "0.143.0",
@@ -38,7 +282,22 @@
     "pytest": "9.1.1"
   },
   "not_declared_in_pyproject": {
-    "torch / transformers / sentence-transformers": "**pyproject 刻意不声明**，由本机 D:\\py312-torch 的 CUDA 环境经 .pth 挂载提供——这是 ADR-12（API 未容器化）的根因，也是这张清单上最大的可移植性缺口。"
+    "torch / transformers / sentence-transformers": "**pyproject 刻意不声明**，由本机 D:\\py312-torch 的 CUDA 环境经 .pth 挂载提供——这是 ADR-12（API 未容器化）的根因，也是这张清单上最大的可移植性缺口。缺口没被「销掉」，但已从『不知道装的是哪个』变成「换机要复刻的精确指纹」见 host_cuda_runtime。"
+  },
+  "host_cuda_runtime": {
+    "状态": "已固定（实测指纹，非 pyproject 声明）",
+    "torch": {
+      "导入": "成功",
+      "torch": "2.14.0+cu130",
+      "cuda_编译版本": "13.0",
+      "cuDNN": 92400,
+      "CUDA 可用": true,
+      "设备名": "NVIDIA GeForce RTX 4060 Laptop GPU",
+      "说明": "由本机 CUDA 底座经 .pth 挂载提供，`uv sync` 不会装上它"
+    },
+    "transformers": "5.19.0",
+    "sentence_transformers": "6.1.0",
+    "复刻方法": "D:\\py312-torch 建 CUDA 环境 + 在 .venv 的 site-packages 放 .pth 指向它（ADR-12 第 3 节）"
   },
   "frontend_lock": {
     "file": "frontend/package-lock.json",
@@ -89,6 +348,14 @@
       "swr.cn-east-2.myhuaweicloud.com/kuboard/kuboard-agent:v3\tdc94b0fc47af",
       "swr.cn-east-2.myhuaweicloud.com/library/nginx:latest\tc0b69559d28f"
     ],
+    "required_by_compose": [
+      "milvusdb/milvus:v3.0.0",
+      "minio/minio:RELEASE.2024-12-18T13-15-44Z",
+      "nginx:1.27-alpine",
+      "postgres:18",
+      "quay.io/coreos/etcd:v3.5.25",
+      "redis:8"
+    ],
     "compose_files": {
       "docker-compose.gate0.yml": "0feafc8850ec",
       "docker-compose.m4.yml": "5f9eecfe8632",
@@ -123,11 +390,27 @@
   ],
   "ollama": {
     "raw": "NAME              ID              SIZE      MODIFIED    \nqwen2.5:7b        845dbda0ea48    4.7 GB    3 weeks ago    \ndeepseek-r1:7b    755ced02ce7b    4.7 GB    3 weeks ago",
-    "digest_fixed": false,
-    "note": "`ollama list` 不输出权重 sha256 ⇒ **生成模型未被真正锁定**。同 tag 被 `ollama pull` 覆盖后本机不会报错，换机可能拿到不同权重。MVP 收口前要用 `ollama show --format json` 补 digest。"
+    "digest_fixed": true,
+    "digests": {
+      "状态": "已固定（按 digest 认权重，不按 tag 认）",
+      "来源": "http://127.0.0.1:11434/api/tags",
+      "模型": {
+        "qwen2.5:7b": {
+          "digest": "845dbda0ea48ed749caafd9e6037047aa19acfcfd82e704d7ca97d631a0b697e",
+          "大小_GB": 4.683,
+          "modified_at": "2026-09-18T19:45:01.3142994+08:00"
+        },
+        "deepseek-r1:7b": {
+          "digest": "755ced02ce7befdb13b7ca74e1e4d08cddba4986afdb63a480f2c93d3140383f",
+          "大小_GB": 4.683,
+          "modified_at": "2026-09-18T14:59:29.0754252+08:00"
+        }
+      }
+    },
+    "note": "`ollama list` 不输出权重 sha256 ⇒ 单靠它没锁定。改取 `/api/tags` 的 digest：**按 digest 认权重，不按 tag 认**（同 tag 被 `ollama pull` 覆盖后本机不报错，换机可能拿到不同权重）。"
   },
-  "dtype": "float16（.env 未覆盖时取 config 默认）",
-  "device": "cuda（.env 未覆盖时取 config 默认）",
+  "dtype": "float16",
+  "device": "cuda",
   "env_keys": {
     "KEE_BGE_M3_PATH": true,
     "KEE_BGE_RERANKER_PATH": true,
@@ -143,9 +426,5 @@
     "KEE_RERANK_TOP_N": false,
     "KEE_REWRITE_MODE": false
   },
-  "unfixed": [
-    "生成模型 qwen2.5:7b 无 digest（见 ollama 项）",
-    "torch/transformers 未进 pyproject 依赖声明（见 not_declared_in_pyproject）",
-    "宿主 OS 补丁级别未登记（Windows 11 26200 只到 build 号）"
-  ]
+  "unfixed": []
 }
