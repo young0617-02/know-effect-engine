@@ -1,0 +1,615 @@
+{
+  "generated_at": "2026-10-13T11:45:33+0800",
+  "purpose": "小样本验证「书面语别名」，**生产集合未写一行**；只给 14 道口语化题的 gold 块加别名，其余块与生产逐字相同 ⇒ 变化只可能来自别名",
+  "hard_constraints": {
+    "chunk_id 不变": "别名写进同一行的 text，不重新分块 ⇒ 人工标注与 gold 映射不作废",
+    "生产集合只读": "写入目标 kb_chunks_alias_probe，与 kb_chunks 不同名（脚本开头断言）",
+    "别名必须落地": "别名里的数字若在正文中不存在 ⇒ 该块不注入（fail-closed）"
+  },
+  "aliases": {
+    "chm-closeout-prj-chm-2023-021@v1#3.1#c1": {
+      "alias": "现场阶段验证了多少项功能？",
+      "grounded": true,
+      "ungrounded_digits": [],
+      "ms": 659.6
+    },
+    "chm-compliance-prj-chm-2023-021@v1#3.1#c1": {
+      "alias": "联锁摘除的授权规则是什么",
+      "grounded": true,
+      "ungrounded_digits": [],
+      "ms": 326.4
+    },
+    "chm-compliance-prj-chm-2023-021@v1#3.1#c2": {
+      "alias": "本章节涉及哪些内容？",
+      "grounded": true,
+      "ungrounded_digits": [],
+      "ms": 291.2
+    },
+    "chm-ifspec-prj-chm-2024-003@v1#2.1#c1": {
+      "alias": "接口IF-CHM-0009的建议有效期是多少",
+      "grounded": true,
+      "ungrounded_digits": [],
+      "ms": 497.4
+    },
+    "chm-presale-prj-chm-2025-014@v1#2.1#c1": {
+      "alias": "四级可归因记录包含哪些内容",
+      "grounded": true,
+      "ungrounded_digits": [],
+      "ms": 382.0
+    },
+    "chm-retro-prj-chm-2024-003@v1#2.2#c1": {
+      "alias": "出域审批最长周期是多少",
+      "grounded": true,
+      "ungrounded_digits": [],
+      "ms": 344.0
+    },
+    "chm-runbook-prj-chm-2023-021@v1#2.1#c1": {
+      "alias": "P1级别事件的响应时限是多少？",
+      "grounded": true,
+      "ungrounded_digits": [],
+      "ms": 413.1
+    },
+    "chm-runbook-prj-chm-2023-021@v1#2.1#c2": {
+      "alias": "P1事件的报告时限是多少？",
+      "grounded": true,
+      "ungrounded_digits": [],
+      "ms": 333.3
+    },
+    "chm-runbook-prj-chm-2023-021@v1#5.1#c1": {
+      "alias": "变更单CR-CHM-2024-118涉及多久",
+      "grounded": true,
+      "ungrounded_digits": [],
+      "ms": 563.4
+    },
+    "chm-runbook-prj-chm-2025-014@v1#2.2#c1": {
+      "alias": "GMP数据完整性核查每周执行几次？",
+      "grounded": true,
+      "ungrounded_digits": [],
+      "ms": 390.8
+    },
+    "chm-runbook-prj-chm-2025-014@v1#2.2#c2": {
+      "alias": "2025年时间偏差事件发生几次？",
+      "grounded": true,
+      "ungrounded_digits": [],
+      "ms": 402.3
+    },
+    "chm-runbook-prj-chm-2025-014@v1#4.1#c1": {
+      "alias": "断电后缓存容量支持多长时间",
+      "grounded": true,
+      "ungrounded_digits": [],
+      "ms": 390.2
+    },
+    "ene-closeout-prj-ene-2024-006@v1#3.1#c1": {
+      "alias": "采集失败主因变化是多少",
+      "grounded": true,
+      "ungrounded_digits": [],
+      "ms": 342.9
+    },
+    "ene-closeout-prj-ene-2024-006@v1#3.1#c2": {
+      "alias": "同期率低于95%的台区数量是多少",
+      "grounded": true,
+      "ungrounded_digits": [],
+      "ms": 391.9
+    },
+    "ene-ifspec-prj-ene-2025-011@v1#2.1#c1": {
+      "alias": "接口IF-ENE-0047抄读周期是多少",
+      "grounded": true,
+      "ungrounded_digits": [],
+      "ms": 482.8
+    },
+    "ene-ifspec-prj-ene-2025-011@v1#2.1#c2": {
+      "alias": "月冻结数据的上送时间要求",
+      "grounded": true,
+      "ungrounded_digits": [],
+      "ms": 351.0
+    },
+    "fin-ifspec-prj-fin-2024-017@v1#1.2#c1": {
+      "alias": "IF-FIN-0012接口的超时处理是如何规定的？",
+      "grounded": true,
+      "ungrounded_digits": [],
+      "ms": 535.3
+    },
+    "fin-ifspec-prj-fin-2024-017@v1#1.2#c2": {
+      "alias": "汇款指令接口的日终批量窗口是什么时间？",
+      "grounded": true,
+      "ungrounded_digits": [],
+      "ms": 410.7
+    },
+    "fin-ifspec-prj-fin-2024-017@v1#2.2#c1": {
+      "alias": "链路中断判定条件是什么",
+      "grounded": true,
+      "ungrounded_digits": [],
+      "ms": 334.7
+    },
+    "fin-ifspec-prj-fin-2024-017@v1#2.2#c2": {
+      "alias": "查询类接口重试次数是多少？",
+      "grounded": true,
+      "ungrounded_digits": [],
+      "ms": 330.5
+    },
+    "fin-ifspec-prj-fin-2024-033@v1#2.1#c1": {
+      "alias": "IF-FIN-0028的同步延迟门限是多少",
+      "grounded": true,
+      "ungrounded_digits": [],
+      "ms": 504.1
+    },
+    "fin-ifspec-prj-fin-2024-033@v1#2.1#c2": {
+      "alias": "链路恢复后的增量校验条目数是多少",
+      "grounded": true,
+      "ungrounded_digits": [],
+      "ms": 407.2
+    },
+    "fin-presale-prj-fin-2023-041@v1#1.1#c1": {
+      "alias": "客户现有信贷资产风险分类依赖人工认定的比例是多少",
+      "grounded": true,
+      "ungrounded_digits": [],
+      "ms": 436.2
+    },
+    "fin-presale-prj-fin-2023-041@v1#1.1#c2": {
+      "alias": "方案中样本验证环节如何实施？",
+      "grounded": true,
+      "ungrounded_digits": [],
+      "ms": 335.8
+    },
+    "fin-runbook-prj-fin-2024-017@v1#2.1#c1": {
+      "alias": "ITSS事件分级标准是什么",
+      "grounded": true,
+      "ungrounded_digits": [],
+      "ms": 359.2
+    },
+    "fin-runbook-prj-fin-2024-017@v1#2.1#c2": {
+      "alias": "2024年P2级目标恢复时长是多少",
+      "grounded": true,
+      "ungrounded_digits": [],
+      "ms": 446.8
+    },
+    "fin-runbook-prj-fin-2024-017@v1#2.2#c1": {
+      "alias": "链路中断判定的超时阈值是多少",
+      "grounded": true,
+      "ungrounded_digits": [],
+      "ms": 423.0
+    }
+  },
+  "usable_aliases": 27,
+  "questions": {
+    "before": {
+      "q-039": {
+        "hit_any": true,
+        "hit_strict": true,
+        "n_found": 1,
+        "top_ids": [
+          "fin-runbook-prj-fin-2024-017@v1#2.1#c1",
+          "fin-closeout-prj-fin-2024-017@v1#2.1#c1",
+          "fin-closeout-prj-fin-2024-017@v1#2.1#c2",
+          "fin-closeout-prj-fin-2024-017@v1#3.1#c2",
+          "ene-runbook-prj-ene-2025-011@v1#3.1#c1"
+        ],
+        "ms": 6238.4,
+        "degraded": [],
+        "cache_hit": false
+      },
+      "q-040": {
+        "hit_any": true,
+        "hit_strict": true,
+        "n_found": 2,
+        "top_ids": [
+          "chm-runbook-prj-chm-2023-021@v1#2.1#c2",
+          "ene-runbook-prj-ene-2023-019@v1#2.1#c2",
+          "chm-closeout-prj-chm-2023-021@v1#2.1#c2",
+          "chm-runbook-prj-chm-2023-021@v1#2.1#c1",
+          "chm-compliance-prj-chm-2023-021@v1#3.1#c1"
+        ],
+        "ms": 315.0,
+        "degraded": [],
+        "cache_hit": false
+      },
+      "q-041": {
+        "hit_any": true,
+        "hit_strict": true,
+        "n_found": 2,
+        "top_ids": [
+          "fin-runbook-prj-fin-2024-017@v1#2.2#c1",
+          "fin-ifspec-prj-fin-2024-017@v1#2.2#c1",
+          "ene-ifspec-prj-ene-2024-006@v1#2.2#c1",
+          "fin-ifspec-prj-fin-2024-033@v1#3.1#c2",
+          "fin-retro-prj-fin-2023-041@v1#3.1#c2"
+        ],
+        "ms": 307.3,
+        "degraded": [],
+        "cache_hit": false
+      },
+      "q-042": {
+        "hit_any": true,
+        "hit_strict": true,
+        "n_found": 2,
+        "top_ids": [
+          "ene-closeout-prj-ene-2024-006@v1#3.1#c2",
+          "ene-closeout-prj-ene-2024-006@v1#2.1#c2",
+          "ene-closeout-prj-ene-2024-006@v1#3.1#c1",
+          "ene-closeout-prj-ene-2024-006@v1#2.2#c1",
+          "ene-closeout-prj-ene-2024-006@v1#4.2#c1"
+        ],
+        "ms": 287.0,
+        "degraded": [],
+        "cache_hit": false
+      },
+      "q-043": {
+        "hit_any": true,
+        "hit_strict": true,
+        "n_found": 1,
+        "top_ids": [
+          "chm-closeout-prj-chm-2023-021@v1#3.1#c1",
+          "chm-closeout-prj-chm-2023-021@v1#2.1#c2",
+          "chm-closeout-prj-chm-2024-003@v1#1.1#c1",
+          "chm-closeout-prj-chm-2024-003@v1#5.1#c1",
+          "chm-runbook-prj-chm-2023-021@v1#1.1#c1"
+        ],
+        "ms": 291.7,
+        "degraded": [],
+        "cache_hit": false
+      },
+      "q-044": {
+        "hit_any": false,
+        "hit_strict": false,
+        "n_found": 0,
+        "top_ids": [
+          "fin-presale-prj-fin-2025-008@v1#5.1#c1",
+          "fin-ifspec-prj-fin-2024-033@v1#4.1#c1",
+          "ene-runbook-prj-ene-2025-011@v1#4.1#c1",
+          "fin-retro-prj-fin-2023-041@v1#4.1#c1",
+          "chm-compliance-prj-chm-2023-021@v1#3.1#c2"
+        ],
+        "ms": 281.7,
+        "degraded": [],
+        "cache_hit": false
+      },
+      "q-045": {
+        "hit_any": true,
+        "hit_strict": true,
+        "n_found": 3,
+        "top_ids": [
+          "chm-compliance-prj-chm-2023-021@v1#3.1#c1",
+          "chm-runbook-prj-chm-2023-021@v1#5.1#c1",
+          "chm-compliance-prj-chm-2023-021@v1#3.1#c2",
+          "chm-closeout-prj-chm-2024-003@v1#2.2#c2",
+          "fin-ifspec-prj-fin-2024-017@v1#2.2#c1"
+        ],
+        "ms": 299.6,
+        "degraded": [],
+        "cache_hit": false
+      },
+      "q-046": {
+        "hit_any": true,
+        "hit_strict": true,
+        "n_found": 1,
+        "top_ids": [
+          "chm-runbook-prj-chm-2025-014@v1#4.1#c1",
+          "ene-closeout-prj-ene-2024-006@v1#3.1#c1",
+          "chm-runbook-prj-chm-2025-014@v1#1.1#c1",
+          "ene-runbook-prj-ene-2023-019@v1#3.1#c2",
+          "chm-presale-prj-chm-2025-014@v1#2.1#c1"
+        ],
+        "ms": 291.4,
+        "degraded": [],
+        "cache_hit": false
+      },
+      "q-047": {
+        "hit_any": true,
+        "hit_strict": true,
+        "n_found": 1,
+        "top_ids": [
+          "fin-ifspec-prj-fin-2024-033@v1#2.1#c1",
+          "ene-runbook-prj-ene-2023-019@v1#3.1#c2",
+          "fin-ifspec-prj-fin-2024-033@v1#2.2#c1",
+          "ene-closeout-prj-ene-2024-006@v1#3.1#c2",
+          "fin-ifspec-prj-fin-2024-033@v1#5.1#c1"
+        ],
+        "ms": 271.6,
+        "degraded": [],
+        "cache_hit": false
+      },
+      "q-048": {
+        "hit_any": true,
+        "hit_strict": true,
+        "n_found": 1,
+        "top_ids": [
+          "fin-presale-prj-fin-2023-041@v1#1.1#c1",
+          "fin-presale-prj-fin-2023-041@v1#4.1#c1",
+          "chm-presale-prj-chm-2025-014@v1#3.1#c2",
+          "fin-retro-prj-fin-2023-041@v1#4.2#c1",
+          "fin-presale-prj-fin-2023-041@v1#3.1#c1"
+        ],
+        "ms": 268.7,
+        "degraded": [],
+        "cache_hit": false
+      },
+      "q-049": {
+        "hit_any": true,
+        "hit_strict": true,
+        "n_found": 1,
+        "top_ids": [
+          "fin-ifspec-prj-fin-2024-017@v1#1.2#c1",
+          "fin-ifspec-prj-fin-2024-017@v1#2.1#c2",
+          "fin-ifspec-prj-fin-2024-017@v1#1.1#c1",
+          "fin-ifspec-prj-fin-2024-017@v1#2.2#c2",
+          "fin-closeout-prj-fin-2024-017@v1#3.1#c1"
+        ],
+        "ms": 272.7,
+        "degraded": [],
+        "cache_hit": false
+      },
+      "q-050": {
+        "hit_any": true,
+        "hit_strict": true,
+        "n_found": 1,
+        "top_ids": [
+          "chm-ifspec-prj-chm-2024-003@v1#2.1#c1",
+          "chm-closeout-prj-chm-2024-003@v1#2.1#c2",
+          "chm-closeout-prj-chm-2024-003@v1#4.1#c1",
+          "ene-presale-prj-ene-2025-011@v1#1.1#c2",
+          "chm-closeout-prj-chm-2024-003@v1#2.2#c1"
+        ],
+        "ms": 283.1,
+        "degraded": [],
+        "cache_hit": false
+      },
+      "q-051": {
+        "hit_any": true,
+        "hit_strict": true,
+        "n_found": 1,
+        "top_ids": [
+          "ene-ifspec-prj-ene-2025-011@v1#2.1#c1",
+          "ene-closeout-prj-ene-2024-006@v1#3.1#c2",
+          "ene-runbook-prj-ene-2025-011@v1#2.2#c1",
+          "fin-runbook-prj-fin-2024-017@v1#1.1#c1",
+          "ene-runbook-prj-ene-2023-019@v1#1.1#c1"
+        ],
+        "ms": 283.4,
+        "degraded": [],
+        "cache_hit": false
+      },
+      "q-052": {
+        "hit_any": true,
+        "hit_strict": true,
+        "n_found": 1,
+        "top_ids": [
+          "chm-retro-prj-chm-2024-003@v1#2.2#c1",
+          "ene-presale-prj-ene-2025-011@v1#1.1#c2",
+          "fin-presale-prj-fin-2023-041@v1#1.1#c2",
+          "ene-runbook-prj-ene-2023-019@v1#5.1#c1",
+          "ene-compliance-prj-ene-2023-019@v1#2.2#c2"
+        ],
+        "ms": 292.9,
+        "degraded": [],
+        "cache_hit": false
+      }
+    },
+    "after": {
+      "q-039": {
+        "hit_any": true,
+        "hit_strict": true,
+        "n_found": 1,
+        "top_ids": [
+          "fin-runbook-prj-fin-2024-017@v1#2.1#c1",
+          "fin-ifspec-prj-fin-2024-033@v1#2.1#c2",
+          "fin-closeout-prj-fin-2024-017@v1#2.1#c1",
+          "fin-ifspec-prj-fin-2024-017@v1#2.2#c1",
+          "fin-closeout-prj-fin-2024-017@v1#2.1#c2"
+        ],
+        "ms": 323.6,
+        "degraded": [],
+        "cache_hit": false
+      },
+      "q-040": {
+        "hit_any": true,
+        "hit_strict": false,
+        "n_found": 1,
+        "top_ids": [
+          "chm-runbook-prj-chm-2023-021@v1#2.1#c2",
+          "ene-runbook-prj-ene-2023-019@v1#2.1#c2",
+          "chm-closeout-prj-chm-2023-021@v1#3.1#c1",
+          "chm-compliance-prj-chm-2023-021@v1#3.1#c1",
+          "chm-closeout-prj-chm-2023-021@v1#2.1#c2"
+        ],
+        "ms": 315.4,
+        "degraded": [],
+        "cache_hit": false
+      },
+      "q-041": {
+        "hit_any": true,
+        "hit_strict": true,
+        "n_found": 3,
+        "top_ids": [
+          "fin-ifspec-prj-fin-2024-017@v1#2.2#c1",
+          "fin-runbook-prj-fin-2024-017@v1#2.2#c1",
+          "fin-ifspec-prj-fin-2024-017@v1#1.2#c1",
+          "ene-ifspec-prj-ene-2024-006@v1#2.2#c1",
+          "fin-ifspec-prj-fin-2024-017@v1#2.2#c2"
+        ],
+        "ms": 291.3,
+        "degraded": [],
+        "cache_hit": false
+      },
+      "q-042": {
+        "hit_any": true,
+        "hit_strict": true,
+        "n_found": 2,
+        "top_ids": [
+          "ene-closeout-prj-ene-2024-006@v1#3.1#c2",
+          "ene-closeout-prj-ene-2024-006@v1#2.1#c2",
+          "ene-closeout-prj-ene-2024-006@v1#3.1#c1",
+          "fin-ifspec-prj-fin-2024-017@v1#1.2#c2",
+          "ene-closeout-prj-ene-2024-006@v1#2.2#c1"
+        ],
+        "ms": 299.2,
+        "degraded": [],
+        "cache_hit": false
+      },
+      "q-043": {
+        "hit_any": true,
+        "hit_strict": true,
+        "n_found": 1,
+        "top_ids": [
+          "chm-closeout-prj-chm-2023-021@v1#3.1#c1",
+          "chm-compliance-prj-chm-2023-021@v1#3.1#c2",
+          "chm-closeout-prj-chm-2023-021@v1#2.1#c2",
+          "chm-closeout-prj-chm-2024-003@v1#1.1#c1",
+          "chm-runbook-prj-chm-2023-021@v1#2.1#c2"
+        ],
+        "ms": 292.7,
+        "degraded": [],
+        "cache_hit": false
+      },
+      "q-044": {
+        "hit_any": true,
+        "hit_strict": true,
+        "n_found": 1,
+        "top_ids": [
+          "chm-runbook-prj-chm-2025-014@v1#2.2#c1",
+          "fin-ifspec-prj-fin-2024-033@v1#4.1#c1",
+          "ene-runbook-prj-ene-2025-011@v1#4.1#c1",
+          "fin-retro-prj-fin-2023-041@v1#4.1#c1",
+          "fin-ifspec-prj-fin-2024-017@v1#1.2#c1"
+        ],
+        "ms": 300.8,
+        "degraded": [],
+        "cache_hit": false
+      },
+      "q-045": {
+        "hit_any": true,
+        "hit_strict": true,
+        "n_found": 3,
+        "top_ids": [
+          "chm-compliance-prj-chm-2023-021@v1#3.1#c1",
+          "chm-compliance-prj-chm-2023-021@v1#3.1#c2",
+          "chm-runbook-prj-chm-2023-021@v1#5.1#c1",
+          "chm-runbook-prj-chm-2023-021@v1#2.1#c2",
+          "fin-ifspec-prj-fin-2024-017@v1#2.2#c2"
+        ],
+        "ms": 305.6,
+        "degraded": [],
+        "cache_hit": false
+      },
+      "q-046": {
+        "hit_any": true,
+        "hit_strict": true,
+        "n_found": 1,
+        "top_ids": [
+          "chm-runbook-prj-chm-2025-014@v1#4.1#c1",
+          "ene-closeout-prj-ene-2024-006@v1#3.1#c1",
+          "chm-runbook-prj-chm-2025-014@v1#2.2#c2",
+          "chm-runbook-prj-chm-2025-014@v1#1.1#c1",
+          "ene-runbook-prj-ene-2023-019@v1#3.1#c2"
+        ],
+        "ms": 297.3,
+        "degraded": [],
+        "cache_hit": false
+      },
+      "q-047": {
+        "hit_any": true,
+        "hit_strict": true,
+        "n_found": 1,
+        "top_ids": [
+          "ene-runbook-prj-ene-2023-019@v1#3.1#c2",
+          "chm-runbook-prj-chm-2025-014@v1#2.2#c2",
+          "fin-ifspec-prj-fin-2024-033@v1#2.1#c1",
+          "fin-ifspec-prj-fin-2024-033@v1#2.2#c1",
+          "chm-runbook-prj-chm-2023-021@v1#2.1#c2"
+        ],
+        "ms": 299.2,
+        "degraded": [],
+        "cache_hit": false
+      },
+      "q-048": {
+        "hit_any": true,
+        "hit_strict": true,
+        "n_found": 1,
+        "top_ids": [
+          "fin-presale-prj-fin-2023-041@v1#1.1#c1",
+          "fin-presale-prj-fin-2023-041@v1#4.1#c1",
+          "chm-presale-prj-chm-2025-014@v1#3.1#c2",
+          "chm-compliance-prj-chm-2023-021@v1#3.1#c2",
+          "fin-retro-prj-fin-2023-041@v1#4.2#c1"
+        ],
+        "ms": 266.4,
+        "degraded": [],
+        "cache_hit": false
+      },
+      "q-049": {
+        "hit_any": true,
+        "hit_strict": true,
+        "n_found": 2,
+        "top_ids": [
+          "fin-ifspec-prj-fin-2024-017@v1#1.2#c1",
+          "fin-ifspec-prj-fin-2024-017@v1#1.2#c2",
+          "fin-ifspec-prj-fin-2024-017@v1#2.2#c2",
+          "chm-runbook-prj-chm-2023-021@v1#2.1#c2",
+          "fin-ifspec-prj-fin-2024-017@v1#2.1#c2"
+        ],
+        "ms": 277.2,
+        "degraded": [],
+        "cache_hit": false
+      },
+      "q-050": {
+        "hit_any": true,
+        "hit_strict": true,
+        "n_found": 1,
+        "top_ids": [
+          "chm-ifspec-prj-chm-2024-003@v1#2.1#c1",
+          "chm-closeout-prj-chm-2024-003@v1#2.1#c2",
+          "chm-closeout-prj-chm-2024-003@v1#4.1#c1",
+          "chm-runbook-prj-chm-2023-021@v1#5.1#c1",
+          "ene-presale-prj-ene-2025-011@v1#1.1#c2"
+        ],
+        "ms": 313.0,
+        "degraded": [],
+        "cache_hit": false
+      },
+      "q-051": {
+        "hit_any": false,
+        "hit_strict": false,
+        "n_found": 0,
+        "top_ids": [
+          "ene-runbook-prj-ene-2025-011@v1#2.2#c1",
+          "fin-runbook-prj-fin-2024-017@v1#1.1#c1",
+          "chm-compliance-prj-chm-2023-021@v1#3.1#c2",
+          "ene-runbook-prj-ene-2023-019@v1#1.1#c1",
+          "fin-closeout-prj-fin-2024-017@v1#3.1#c2"
+        ],
+        "ms": 295.5,
+        "degraded": [],
+        "cache_hit": false
+      },
+      "q-052": {
+        "hit_any": true,
+        "hit_strict": true,
+        "n_found": 1,
+        "top_ids": [
+          "ene-presale-prj-ene-2025-011@v1#1.1#c2",
+          "fin-presale-prj-fin-2023-041@v1#1.1#c2",
+          "chm-retro-prj-chm-2024-003@v1#2.2#c1",
+          "ene-runbook-prj-ene-2023-019@v1#5.1#c1",
+          "ene-compliance-prj-ene-2023-019@v1#2.2#c2"
+        ],
+        "ms": 282.5,
+        "degraded": [],
+        "cache_hit": false
+      }
+    }
+  },
+  "summary": {
+    "n_questions": 14,
+    "hit_strict_before": 13,
+    "hit_strict_after": 12,
+    "flips_up": [
+      "q-044"
+    ],
+    "flips_down": [
+      "q-040",
+      "q-051"
+    ],
+    "p50_ms_before": 291.4,
+    "p50_ms_after": 299.2
+  },
+  "scope_limits": "这是**上界探针，不是可上线的效果**：别名是从 gold 块自己的正文生成的（等于知道答案在哪块再给它写问法），全库推广时必须由文档侧独立生成、并另做一轮盲测。本轮只回答一个问题：'块面上多一层书面语问法，检索认不认'。"
+}
