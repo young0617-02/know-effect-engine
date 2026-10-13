@@ -278,3 +278,43 @@ describe("问答页的三态渲染", () => {
     expect(err.textContent).toContain("未收到 answer");
   });
 });
+
+describe("一问一答的版式（正文在上、输入在下，历史在正文区内部滚）", () => {
+  it("提问栏排在正文容器之后：DOM 顺序即视觉顺序，滚动的是 .kee-turns 而不是整页", () => {
+    stubFetch([]);
+    renderPage();
+    const scroller = document.querySelector(".kee-turns") as HTMLElement;
+    const dock = document.querySelector(".kee-ask-dock") as HTMLElement;
+    expect(scroller).toBeTruthy();
+    expect(dock).toBeTruthy();
+    // 「下面」在测试里只能靠 DOM 关系证明：紧随正文之后、且输入框确实在这一坨里
+    expect(scroller.compareDocumentPosition(dock) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(dock.contains(screen.getByRole("searchbox", { name: "问题" }))).toBe(true);
+  });
+
+  it("每一问配一条答案气泡，追问不覆盖前答", async () => {
+    stubFetch([
+      { event: "retrieval", data: { n_chunks: 5 } },
+      { event: "answer", data: { ...ANSWER_BASE, conclusion: "第一答", turn_no: 1 } },
+    ]);
+    renderPage();
+    ask("第一问？");
+    await screen.findByTestId("conclusion-final");
+
+    stubFetch([
+      { event: "retrieval", data: { n_chunks: 4 } },
+      { event: "answer", data: { ...ANSWER_BASE, conclusion: "第二答", turn_no: 2 } },
+    ]);
+    ask("第二问？");
+    await waitFor(() => expect(screen.getAllByTestId("conclusion-final")).toHaveLength(2));
+
+    const pairs = screen.getAllByTestId("turn");
+    expect(pairs).toHaveLength(2);
+    pairs.forEach((pair) => {
+      // 一问一答：一个 .kee-turn 里恰好一条问题、一条答案，成对而不是两叠列表
+      expect(pair.querySelectorAll(".kee-turn__question")).toHaveLength(1);
+      expect(pair.querySelectorAll(".kee-turn__answer")).toHaveLength(1);
+    });
+    expect(screen.getAllByTestId("conclusion-final").map((n) => n.textContent)).toEqual(["第一答", "第二答"]);
+  });
+});

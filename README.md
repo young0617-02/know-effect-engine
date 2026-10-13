@@ -176,7 +176,7 @@ M3-05 已落地：在线链路搬进 `src/kee/qa/graph.py` 的 LangGraph 状态�
 
 | 入口 | 作用 |
 |---|---|
-| `frontend/` | Vite + React + TS 独立前端（**无 UI 框架、无路由库**）：问答页 / 知识库管理页 / 审计页 / 身份条 |
+| `frontend/` | Vite + React + TS 独立前端（**无 UI 框架、无路由库**）：登录/注册页 / 问答页 / 知识库管理页 / 审计页 / 账号条 / 账号授权页 |
 | `scripts/serve_api.py` | 宿主 API 入口（127.0.0.1:38000；**拒绝非回环绑定**） |
 | `infra/docker-compose.m4.yml` | 一键部署：`include` 存储栈 + `kee-web`（Nginx 静态 + 同源反代） |
 | `infra/nginx.m4.conf` | SSE 关缓冲（`proxy_buffering off`）——否则 token 级流式在浏览器里退化成一次性出答案 |
@@ -189,8 +189,15 @@ uv run python scripts/serve_api.py                 # 宿主 API
 cd frontend && npm install && npm run build        # 产出 frontend/dist
 docker compose -f infra/docker-compose.m4.yml up -d   # 一键：存储 + Nginx → http://127.0.0.1:38080/
 KEE_BASE=http://127.0.0.1:38080 uv run python scripts/verify_m4.py   # 12 项端到端
-cd frontend && npm run test                        # 13 条组件/分帧断言
+cd frontend && npm run test                        # 29 条组件/分帧/登录闸门断言
 ```
+
+**登录与鉴权（V1.31 起的主身份通道）**：`src/kee/api/auth.py` + 两张表（`app_user` / `user_session`）
++ 六个 `/api/v1/auth/*` 端点（register / login / logout / me / users / users/{name}/role）。
+口令 scrypt 散列、会话服务端可撤销（库里只存令牌 SHA-256 摘要，默认 12h）、注册不得自授治理角色
+（唯一例外：库里为空时的首个注册者）。**有令牌时请求头不参与判定**；无令牌才回落到
+`X-Kee-Role` 那条内网脚本通道（`KEE_ALLOW_HEADER_IDENTITY=false` 可关）。
+界面上未登录只有登录页，登录后**没有角色选择器**——范围由账号推导并只读显示。
 
 M4 新增两个后端读接口：`POST /api/v1/chunks/batch`（引用片段正文，**与检索层同口径过滤**、只返回生效版本、
 越权与不存在合并成 `hidden`、每次读取落 `chunks_read` 审计）与 `GET /api/v1/audit`（限管理角色，按 id 倒序）。

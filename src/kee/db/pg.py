@@ -145,6 +145,31 @@ END
 $mig$;
 """
 
+# 账号与会话表。DDL 放在 DB 层而不是 api 层：`kee.api` 的包初始化会拉 app.py，
+# 从这儿 import 常量会绕成循环导入（真踩过一次）。
+AUTH_SCHEMA_SQL = """
+CREATE TABLE IF NOT EXISTS app_user (
+    username     text PRIMARY KEY,
+    display_name text NOT NULL,
+    pass_hash    text NOT NULL,
+    role         text NOT NULL,
+    industries   text NOT NULL DEFAULT '',
+    projects     text NOT NULL DEFAULT '',
+    is_active    boolean NOT NULL DEFAULT true,
+    created_at   timestamptz NOT NULL DEFAULT now(),
+    last_login_at timestamptz,
+    failed_count integer NOT NULL DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS user_session (
+    token_hash text PRIMARY KEY,
+    username   text NOT NULL REFERENCES app_user(username) ON DELETE CASCADE,
+    expires_at timestamptz NOT NULL,
+    created_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS user_session_user_idx ON user_session(username);
+"""
+
 IMMUTABLE_SQL = """CREATE OR REPLACE FUNCTION kee_forbid_audit_mutation() RETURNS trigger AS $$
 BEGIN
     RAISE EXCEPTION 'audit_log 为追加表，禁止 % 操作', TG_OP
@@ -169,6 +194,7 @@ class AuthoritativeStore:
     def init_schema(self) -> None:
         with self.connect() as conn:
             conn.execute(SCHEMA_SQL)
+            conn.execute(AUTH_SCHEMA_SQL)
             conn.execute(REVIEW_GATE_SQL)   # 一次性迁移：列已存在时整块 DO 什么都不做
             conn.execute(IMMUTABLE_SQL)
 

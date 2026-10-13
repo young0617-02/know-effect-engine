@@ -17,6 +17,8 @@
 
 * { box-sizing: border-box; }
 
+html, body { height: 100%; }
+
 body {
   margin: 0;
   font: 14px/1.6 "Segoe UI", "Microsoft YaHei", system-ui, sans-serif;
@@ -26,18 +28,24 @@ body {
 
 button, input, select { font: inherit; color: inherit; }
 
-.kee-shell { max-width: 1180px; margin: 0 auto; padding: 18px 20px 60px; }
+/* 外壳占满一屏且自己不滚：滚的只可能是面板（列表页）或问答页的正文区（.kee-turns）。
+ * 这条是「提问栏固定在下方、超出的历史在内部滚动」的实现前提——一旦整页能滚，
+ * 输入框就会被顶出视口，那正是这次要改掉的行为。 */
+.kee-shell {
+  max-width: 1180px; margin: 0 auto; padding: 18px 20px 16px;
+  height: 100dvh; max-height: 100dvh; display: flex; flex-direction: column; min-height: 0;
+}
 .kee-brand { display: flex; align-items: baseline; gap: 12px; margin: 0 0 12px; }
 .kee-brand h1 { font-size: 20px; margin: 0; }
 .kee-brand span { color: var(--ink-2); font-size: 12px; }
 
-.kee-tabs { display: flex; gap: 6px; border-bottom: 1px solid var(--line); margin-bottom: 14px; }
+.kee-tabs { display: flex; gap: 6px; border-bottom: 1px solid var(--line); margin-bottom: 14px; flex: none; }
 .kee-tab {
   background: none; border: 0; border-bottom: 2px solid transparent;
   padding: 8px 14px; cursor: pointer; color: var(--ink-2);
 }
 .kee-tab--on { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
-.kee-panel { display: block; }
+.kee-panel { flex: 1 1 auto; min-height: 0; overflow-y: auto; }
 
 .kee-identity {
   display: flex; flex-wrap: wrap; gap: 14px 18px; align-items: flex-end;
@@ -53,17 +61,59 @@ button, input, select { font: inherit; color: inherit; }
 .kee-scope-note { flex-basis: 100%; margin: 0; color: var(--ink-2); font-size: 12px; }
 .kee-scope-note code { background: #eef1f6; padding: 1px 5px; border-radius: 3px; }
 
+.kee-identity, .kee-health { flex: none; }
+
+/* 登录 / 注册：全屏居中一张卡，没有其他入口——未认证时界面本身就该只有一件事可做 */
+.kee-auth {
+  min-height: 100dvh; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 18px; padding: 24px;
+}
+.kee-auth .kee-brand { flex-direction: column; align-items: center; gap: 4px; margin: 0; text-align: center; }
+.kee-auth__card {
+  width: min(430px, 100%); background: var(--card);
+  border: 1px solid var(--line); border-radius: 8px; padding: 18px 20px 20px;
+}
+.kee-auth__tabs { display: flex; gap: 6px; border-bottom: 1px solid var(--line); margin-bottom: 16px; }
+.kee-auth__form { display: flex; flex-direction: column; gap: 12px; }
+.kee-auth__form .kee-field { min-width: 0; }
+.kee-auth__form .kee-field input, .kee-auth__form .kee-field select { width: 100%; }
+.kee-auth__form .kee-btn { align-self: stretch; padding: 9px 14px; cursor: pointer; }
+.kee-auth__hint { font-size: 12px; color: var(--ink-2); margin: 0; }
+.kee-auth__error {
+  border: 1px solid var(--bad); background: var(--retracted-bg);
+  color: #7a1c1c; border-radius: 5px; padding: 8px 10px; margin: 0; font-size: 13px;
+}
+
+.kee-row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin: 12px 0; }
+.kee-muted { color: var(--ink-2); }
+.kee-form-msg { background: #eef1f6; border-radius: 5px; padding: 8px 10px; font-size: 13px; margin: 0 0 10px; }
+
 .kee-health { display: flex; gap: 10px; align-items: center; margin: 10px 0 0; font-size: 12px; }
 .kee-health--ok { color: #14532d; }
 .kee-health--bad { color: var(--bad); }
 
-.kee-ask-form { display: flex; gap: 10px; margin: 14px 0; }
+/* 问答页：正文在上、输入在下。`.kee-turns` 是唯一的滚动容器，
+ * `min-height: 0` 不是可省的——flex 子项默认 min-height:auto，不写它它就永远撑到内容高度、
+ * 把滚动顶回外层，表现为「页面变长、输入框被推走」，正是这次要修的那个毛病。 */
+.kee-ask { display: flex; flex-direction: column; height: 100%; min-height: 0; }
+.kee-turns {
+  flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain;
+  scrollbar-gutter: stable; display: flex; flex-direction: column; gap: 14px; padding: 2px 6px 10px 0;
+}
+.kee-ask-dock { flex: none; border-top: 1px solid var(--line); padding-top: 10px; background: var(--bg); }
+.kee-ask-form { display: flex; gap: 10px; margin: 0 0 8px; }
 .kee-ask-form input[type="search"] { flex: 1; padding: 9px 11px; border: 1px solid var(--line); border-radius: 5px; }
 
-.kee-turns { display: flex; flex-direction: column; gap: 12px; }
-.kee-turn { background: var(--card); border: 1px solid var(--line); border-radius: 6px; padding: 12px 14px; }
-.kee-turn__question { font-weight: 600; margin: 0 0 8px; }
-.kee-turn__answer { margin: 0; }
+/* 一问一答：问题靠右、答案靠左，成对出现，读起来是一次对话而不是一叠报告 */
+.kee-turn { display: flex; flex-direction: column; gap: 8px; }
+.kee-turn__question {
+  align-self: flex-end; max-width: 78%; margin: 0; font-weight: 600;
+  background: var(--accent); color: #fff; padding: 6px 12px; border-radius: 10px 10px 2px 10px;
+}
+.kee-turn__answer {
+  align-self: flex-start; width: 100%; max-width: 96%; margin: 0;
+  background: var(--card); border: 1px solid var(--line); border-radius: 10px 10px 10px 2px; padding: 12px 14px;
+}
 
 /* 未完成态：虚线左边条 + 暗黄底 + 光标提示，与最终答案（实线、白底）一眼可分 */
 .kee-state--provisional {

@@ -68,6 +68,12 @@ class Settings(BaseSettings):
     confidence_low: float = 0.45
     temperature_scaling_dir: Path = Field(default=PROJECT_ROOT / "var/calibration")
 
+    # ---- 账号与登录态 ----
+    session_ttl_hours: int = 12
+    # 请求头身份（X-Kee-Role 等）是内网工具与验收脚本的通道；关掉它就必须带 Bearer 令牌。
+    # 默认 True 是**如实反映现状**：现有一批脚本走的就是头。收紧为 False 的代价与步骤登记在风险册。
+    allow_header_identity: bool = True
+
     # ---- 运行产物 ----
     artifact_dir: Path = Field(default=PROJECT_ROOT / "var/gate0")
 

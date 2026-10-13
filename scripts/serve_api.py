@@ -28,7 +28,8 @@ PORT = int(os.environ.get("KEE_API_PORT", "38000"))
 
 def main() -> int:
     print(f"KEE API  http://{HOST}:{PORT}")
-    print("  身份走请求头（X-Kee-Role / X-Kee-Actor），**可伪造** ⇒ 限内网部署；接生产必须换真实身份源。")
+    print("  身份以登录令牌为准（/api/v1/auth/*）；无令牌时回落到请求头身份，"
+          "KEE_ALLOW_HEADER_IDENTITY=false 可关闭该回落。")
     print("  前端：docker compose -f infra/docker-compose.m4.yml up -d  →  http://127.0.0.1:38080/")
     # 绑定地址只允许回环：非回环绑定等于把可伪造身份的接口开放给局域网
     if HOST not in ("127.0.0.1", "localhost", "::1"):

@@ -20,6 +20,15 @@ from pydantic import BaseModel, Field
 from pymilvus.exceptions import MilvusException
 
 from kee.config import get_settings
+from kee.api.auth import (
+    authenticate,
+    bearer_of,
+    current_user,
+    drop_session,
+    register,
+    resolve,
+    set_role,
+)
 from kee.db.outbox import OutboxDispatcher
 from kee.db.pg import AuthoritativeStore
 from kee.db.reconcile import Reconciler
@@ -83,6 +92,27 @@ class RollbackRequest(BaseModel):
 class SearchRequest(BaseModel):
     query: str
     top_k: int = Field(default=5, ge=1, le=20)
+
+
+# 请求模型必须定义在**模块级**：本文件开了 `from __future__ import annotations`，
+# 注解是字符串，FastAPI 用 get_type_hints 解析不到函数内定义的类，
+# 会把 `body: AuthRequest` 当成查询参数——症状是 400「Field required (query, body)」，
+# 看起来像前端没传 body。踩过一次，记在这儿。
+class AuthRequest(BaseModel):
+    username: str = Field(min_length=3, max_length=32)
+    password: str = Field(min_length=1, max_length=128)
+    display_name: str = Field(default="", max_length=64)
+    role: str = Field(default="delivery_engineer", max_length=32)
+    industries: list[str] = Field(default_factory=list, max_length=8)
+    projects: list[str] = Field(default_factory=list, max_length=8)
+
+
+class RoleGrantRequest(BaseModel):
+    # 不设 min_length：合法角色里有 `pm`（两个字符），长度下限会把真人能授的角色判成非法输入。
+    # 「是不是合法角色」由 `auth.set_role` 判，它给的是一句人话；这里的下限只会把答案压成校验噪声。
+    role: str = Field(max_length=32)
+    industries: list[str] = Field(default_factory=list, max_length=8)
+    projects: list[str] = Field(default_factory=list, max_length=8)
 
 
 class ChunksRequest(BaseModel):
@@ -173,6 +203,14 @@ def create_app(*, skip_embedding: bool = False, scheduler: Any | None = None, co
         industries: str | None,
         projects: str | None,
     ) -> tuple[AccessContext, str]:
+        user = current_user.get()
+        if user:
+            # 登录态是**权威身份**：行业/项目范围取自账号本身，不接受请求头覆盖。
+            # 否则「已登录」只是装饰——带个头就能改自己的可见范围。
+            return (AccessContext(role=user["role"], industries=user["industries"],
+                                  projects=user["projects"]), user["username"])
+        if not settings.allow_header_identity:
+            raise ApiError("E401", 401, "本实例已关闭请求头身份，请携带 Authorization: Bearer <令牌>", "")
         if not role:
             raise ApiError("E401", 401, "缺少 X-Kee-Role：检索层权限过滤要求显式身份", "")
         # 行业与项目取值是中文（金融/能源/化工），而 HTTP 头只允许 latin-1 字节：
@@ -188,6 +226,106 @@ def create_app(*, skip_embedding: bool = False, scheduler: Any | None = None, co
             projects=decode(projects),
         )
         return ctx, unquote(actor) if actor else role
+
+    @app.middleware("http")
+    async def resolve_login_state(request: Request, call_next):
+        """把 Bearer 令牌解析成 `current_user`，供 `context_of` 用。
+
+        用中间件而不是给 10 个端点各加一个 `request` 形参：**改动面越大，漏改一处「某端点忘了判权限」
+        的机会越大**。解析失败不在这里报错——未登录时走各端点原有的 E401 分支，错误体格式才统一。
+        """
+        token = bearer_of(request.headers.get("authorization"))
+        if token:
+            try:
+                with pg.connect() as conn:
+                    current_user.set(resolve(conn, token))
+            except Exception:  # noqa: BLE001
+                current_user.set(None)
+        else:
+            current_user.set(None)
+        return await call_next(request)
+
+    def _audit(actor: str, action: str, target: str, payload: dict, trace_id: str = "") -> None:
+        pg.append_audit(actor=actor, action=action, target=target, trace_id=trace_id, payload=payload)
+
+    @app.post("/api/v1/auth/register", status_code=201)
+    def auth_register(body: AuthRequest, request: Request) -> dict[str, Any]:
+        """自助注册。口令/用户名规则与「不得自授治理角色」都在 `validate_registration` 里，
+        错误说明原样回给界面——这些文案是给用户看的，不是日志。"""
+        try:
+            with pg.connect() as conn:
+                # 引导例外：库里一个账号都没有时，第一个注册者可以是治理角色。
+                # 否则「注册不能自授管理员」会变成鸡生蛋——没人能当上第一个管理员。
+                first = conn.execute("SELECT count(*) AS n FROM app_user").fetchone()["n"] == 0
+                row = register(conn, username=body.username, password=body.password, role=body.role,
+                               display_name=body.display_name, industries=body.industries,
+                               projects=body.projects, is_first_account=first)
+        except ValueError as e:
+            raise ApiError("E400", 400, str(e), request.state.trace_id)
+        _audit(row["username"], "user_registered", row["username"], {"role": row["role"]}, request.state.trace_id)
+        return {"user": row, "note": "注册即可登录；治理角色（knowledge_owner / system_admin）须由现有管理员授予"}
+
+    @app.post("/api/v1/auth/login")
+    def auth_login(body: AuthRequest, request: Request) -> dict[str, Any]:
+        with pg.connect() as conn:
+            token, why = authenticate(conn, username=body.username, password=body.password,
+                                      ttl_hours=settings.session_ttl_hours)
+        if not token:
+            _audit(body.username, "login_failed", body.username, {}, request.state.trace_id)
+            raise ApiError("E401", 401, why, request.state.trace_id)
+        _audit(body.username, "login", body.username, {"ttl_hours": settings.session_ttl_hours}, request.state.trace_id)
+        return {"token": token, "expires_in_hours": settings.session_ttl_hours,
+                "user": {"username": body.username}}
+
+    @app.post("/api/v1/auth/logout")
+    def auth_logout(request: Request, authorization: str | None = Header(None)) -> dict[str, Any]:
+        token = bearer_of(authorization)
+        user = current_user.get()
+        with pg.connect() as conn:
+            n = drop_session(conn, token) if token else 0
+        if user:
+            _audit(user["username"], "logout", user["username"], {"revoked": n}, request.state.trace_id)
+        return {"revoked": n}
+
+    @app.get("/api/v1/auth/me")
+    def auth_me() -> dict[str, Any]:
+        user = current_user.get()
+        if not user:
+            raise ApiError("E401", 401, "未登录或会话已过期", "")
+        from kee.retrieval.rbac import ROLE_MAX_LEVEL, build_filter_expr
+
+        ctx = AccessContext(role=user["role"], industries=user["industries"], projects=user["projects"])
+        return {"user": user, "max_security_level": ROLE_MAX_LEVEL.get(user["role"], 1),
+                "filter_expr": build_filter_expr(ctx),
+                "header_identity_allowed": settings.allow_header_identity}
+
+    @app.get("/api/v1/auth/users")
+    def auth_users(request: Request, x_kee_role: str | None = Header(None),
+                   x_kee_actor: str | None = Header(None)) -> dict[str, Any]:
+        ctx, actor = context_of(x_kee_role, x_kee_actor, None, None)
+        if ctx.role not in ("knowledge_owner", "system_admin"):
+            raise ApiError("E403", 403, "账号列表仅治理角色可读", request.state.trace_id)
+        with pg.connect() as conn:
+            rows = conn.execute("SELECT username, display_name, role, industries, projects, is_active, "
+                                "created_at, last_login_at, failed_count FROM app_user "
+                                "ORDER BY created_at DESC LIMIT 200").fetchall()
+        return {"total": len(rows), "items": [dict(r) for r in rows]}
+
+    @app.post("/api/v1/auth/users/{username}/role")
+    def auth_grant(username: str, body: RoleGrantRequest, request: Request,
+                   x_kee_role: str | None = Header(None), x_kee_actor: str | None = Header(None)) -> dict[str, Any]:
+        """授予/调整角色。这条是特权动作：必须已登录且是治理角色，且**它自己进审计**。"""
+        ctx, actor = context_of(x_kee_role, x_kee_actor, None, None)
+        if ctx.role not in ("knowledge_owner", "system_admin"):
+            raise ApiError("E403", 403, "授予角色需 knowledge_owner 或 system_admin", request.state.trace_id)
+        try:
+            with pg.connect() as conn:
+                row = set_role(conn, actor=actor, username=username, role=body.role,
+                               industries=body.industries, projects=body.projects)
+        except ValueError as e:
+            raise ApiError("E400", 400, str(e), request.state.trace_id)
+        _audit(actor, "user_role_granted", username, {"role": body.role}, request.state.trace_id)
+        return {"user": row, "granted_by": actor}
 
     @app.get("/healthz")
     def healthz() -> dict[str, Any]:

@@ -8,6 +8,7 @@
  *    前端若统一显示「请求失败」就把最要紧的那条信息抹掉了。
  */
 
+import { authHeaders } from "./auth";
 import type { ApiErrorBody, AnswerPayload, AnswerRequest } from "./types";
 
 export interface Identity {
@@ -39,11 +40,18 @@ export class ApiError extends Error {
   }
 }
 
+/** 身份相关的头，一次构造：有登录令牌就带 Bearer，没有才退回请求头身份（内网/脚本通道）。
+ *
+ * 放在这一个函数里，是因为 `apiFetch` 与 `postSse` 都走它——
+ * 分两处加令牌迟早出现「普通接口认登录、流式接口不认」这种半吊子状态。
+ */
 export function identityHeaders(id: Identity): Record<string, string> {
   // HTTP 头只允许 latin-1 字节，而行业/项目/actor 会是中文（金融、张三）。
   // 直接塞中文浏览器当场拒发，所以这里按契约做百分号编码，后端 `context_of` 对应 unquote。
   const enc = (v: string) => encodeURIComponent(v);
-  const h: Record<string, string> = { "X-Kee-Role": id.role };
+  const h: Record<string, string> = { ...authHeaders() };
+  if (!h["Authorization"] && id.role) h["X-Kee-Role"] = id.role;   // 没登录才发头身份
+  else if (id.role) h["X-Kee-Role"] = id.role;                     // 服务端以令牌为准，这个头只是冗余
   // actor 缺省时后端回落到 role；这里显式送出是为了让审计里的 actor 可区分（多人共用一个角色时仍能分人留痕）
   if (id.actor) h["X-Kee-Actor"] = enc(id.actor);
   if (id.industries.length) h["X-Kee-Industries"] = id.industries.map(enc).join(",");

@@ -20,10 +20,23 @@ export const styles = {
   link: "kee-link",
   scopeNote: "kee-scope-note",
 
+  authWrap: "kee-auth",
+  authCard: "kee-auth__card",
+  authTabs: "kee-auth__tabs",
+  authForm: "kee-auth__form",
+  authHint: "kee-auth__hint",
+  authError: "kee-auth__error",
+
+  row: "kee-row",
+  muted: "kee-muted",
+  formMsg: "kee-form-msg",
+
   health: "kee-health",
   healthOk: "kee-health--ok",
   healthBad: "kee-health--bad",
 
+  ask: "kee-ask",
+  askDock: "kee-ask-dock",
   askForm: "kee-ask-form",
   turns: "kee-turns",
   turn: "kee-turn",

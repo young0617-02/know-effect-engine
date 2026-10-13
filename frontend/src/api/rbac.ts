@@ -35,3 +35,21 @@ export const SECURITY_LEVEL_LABEL: Record<number, string> = {
   2: "机密",
   3: "绝密（强制转人工）",
 };
+
+/** 与 kee/retrieval/rbac.py:build_filter_expr 同口径的**展示用**表达式。
+ *  它只用来解释「为什么搜不到」，不参与任何权限判断——强制点在检索层。 */
+export function scopeExpr(role: string, industries: string[], projects: string[]): string {
+  const max = roleSpec(role)?.maxLevel ?? 1;
+  const parts = [`security_level <= ${max}`];
+  if (role !== "knowledge_owner" && role !== "system_admin") {
+    if (industries.length) parts.push(`industry in [${industries.join(", ")}]`);
+    if (projects.length) parts.push(`project in [${projects.join(", ")}]`);
+  }
+  return parts.join(" and ");
+}
+
+/** 注册页能自选的角色：治理角色不在其中（服务端同样拒绝，见 auth.py）。 */
+export const SELF_SERVICE_ROLES = ROLES.filter((r) =>
+  ["delivery_engineer", "presales_architect", "pm", "ops_support", "newcomer"].includes(r.role));
+
+export const isGovernance = (role: string) => role === "knowledge_owner" || role === "system_admin";

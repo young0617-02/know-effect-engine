@@ -69,6 +69,21 @@ export function AskPage() {
   const [busy, setBusy] = useState(false);
   const [activeEvidence, setActiveEvidence] = useState<string | null>(null);
   const sessionRef = useRef<string | null>(null);
+  const scrollerRef = useRef<HTMLDivElement | null>(null);
+  /** 是否跟随到最新一轮。用户往上翻看历史时必须停住——否则流式每来一帧就把视口拽回底部，
+   *  「边生成边核对上一条引用」这件事就做不成了。回到靠近底部时自动恢复跟随。 */
+  const [followTail, setFollowTail] = useState(true);
+
+  const onScroll = () => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    setFollowTail(el.scrollHeight - el.scrollTop - el.clientHeight < 40);
+  };
+
+  useEffect(() => {
+    const el = scrollerRef.current;
+    if (el && followTail) el.scrollTop = el.scrollHeight;
+  }, [turns, followTail]);
 
   const patch = useCallback((id: number, fn: (t: Turn) => Turn) => {
     setTurns((prev) => prev.map((t) => (t.id === id ? fn(t) : t)));
@@ -85,6 +100,7 @@ export function AskPage() {
       ]);
       setQuestion("");
       setBusy(true);
+      setFollowTail(true);
       const controller = new AbortController();
 
       // 追问才开改写：首轮字面查询本来就自足，为它多花一次模型调用不划算
@@ -151,49 +167,8 @@ export function AskPage() {
   );
 
   return (
-    <div>
-      <form
-        className={s.askForm}
-        onSubmit={(e) => {
-          e.preventDefault();
-          void ask(question);
-        }}
-      >
-        <input
-          type="search"
-          value={question}
-          placeholder="就知识库提问，例如：SIS 安全仪表系统采用的表决逻辑是什么？"
-          onChange={(e) => setQuestion(e.target.value)}
-          aria-label="问题"
-        />
-        <button type="submit" className={`${s.btn} ${s.btnPrimary}`} disabled={busy || !question.trim()}>
-          {busy ? "生成中…" : "提问"}
-        </button>
-        <button
-          type="button"
-          className={s.btn}
-          onClick={() => {
-            sessionRef.current = null;
-            setTurns([]);
-          }}
-        >
-          新会话
-        </button>
-      </form>
-
-      <div className={s.toolbar}>
-        <label>
-          <input type="checkbox" checked={tokenStream} onChange={(e) => setTokenStream(e.target.checked)} />
-          token 级流式（关掉退回阶段级两事件，用于对照）
-        </label>
-        <label>
-          <input type="checkbox" checked={rewriteOnFollowup} onChange={(e) => setRewriteOnFollowup(e.target.checked)} />
-          追问时启用查询改写（实测单次 P95 843ms）
-        </label>
-        {sessionRef.current ? <span className={s.meta}>会话 {sessionRef.current}</span> : null}
-      </div>
-
-      <div className={s.turns}>
+    <section className={s.ask}>
+      <div className={s.turns} ref={scrollerRef} onScroll={onScroll} data-testid="transcript">
         {!turns.length ? (
           <p className={s.empty}>还没有提问。答案的结论、要点、引用落点、规则分与降级原因都会显示在这里。</p>
         ) : null}
@@ -208,7 +183,50 @@ export function AskPage() {
           />
         ))}
       </div>
-    </div>
+
+      <div className={s.askDock}>
+        <form
+          className={s.askForm}
+          onSubmit={(e) => {
+            e.preventDefault();
+            void ask(question);
+          }}
+        >
+          <input
+            type="search"
+            value={question}
+            placeholder="就知识库提问，例如：SIS 安全仪表系统采用的表决逻辑是什么？"
+            onChange={(e) => setQuestion(e.target.value)}
+            aria-label="问题"
+          />
+          <button type="submit" className={`${s.btn} ${s.btnPrimary}`} disabled={busy || !question.trim()}>
+            {busy ? "生成中…" : "提问"}
+          </button>
+          <button
+            type="button"
+            className={s.btn}
+            onClick={() => {
+              sessionRef.current = null;
+              setTurns([]);
+            }}
+          >
+            新会话
+          </button>
+        </form>
+
+        <div className={s.toolbar}>
+          <label>
+            <input type="checkbox" checked={tokenStream} onChange={(e) => setTokenStream(e.target.checked)} />
+            token 级流式（关掉退回阶段级两事件，用于对照）
+          </label>
+          <label>
+            <input type="checkbox" checked={rewriteOnFollowup} onChange={(e) => setRewriteOnFollowup(e.target.checked)} />
+            追问时启用查询改写（实测单次 P95 843ms）
+          </label>
+          {sessionRef.current ? <span className={s.meta}>会话 {sessionRef.current}</span> : null}
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -269,85 +287,87 @@ function AnswerView({
   const lostStreamedText = Boolean(answer) && !finalConclusion && streamedConclusion.length > 0;
 
   return (
-    <article className={s.turn} data-phase={turn.phase}>
+    <article className={s.turn} data-phase={turn.phase} data-testid="turn">
       <h3 className={s.turnQuestion}>{turn.question}</h3>
 
-      {turn.retrieval ? <RetrievalSkeleton ev={turn.retrieval} firstDeltaMs={turn.firstDeltaMs} /> : null}
-      {turn.error ? <p className={s.error} data-testid="turn-error">{turn.error}</p> : null}
+      <div className={s.turnAnswer}>
+        {turn.retrieval ? <RetrievalSkeleton ev={turn.retrieval} firstDeltaMs={turn.firstDeltaMs} /> : null}
+        {turn.error ? <p className={s.error} data-testid="turn-error">{turn.error}</p> : null}
 
-      {finalConclusion ? (
-        <p className={`${s.conclusion} ${s.confirmed}`} data-slot="conclusion" data-testid="conclusion-final">
-          {finalConclusion}
-        </p>
-      ) : retracted || lostStreamedText ? (
-        <div data-slot="conclusion">
-          <p className={`${s.conclusion} ${s.retracted}`} data-testid="conclusion-retracted">
+        {finalConclusion ? (
+          <p className={`${s.conclusion} ${s.confirmed}`} data-slot="conclusion" data-testid="conclusion-final">
+            {finalConclusion}
+          </p>
+        ) : retracted || lostStreamedText ? (
+          <div data-slot="conclusion">
+            <p className={`${s.conclusion} ${s.retracted}`} data-testid="conclusion-retracted">
+              {streamedConclusion}
+            </p>
+            <p className={s.retracted} data-testid="retraction-notice">
+              已撤回：流出的 {turn.streamedChars} 字未成为对外答案
+              {answer ? `（出口状态 ${answer.status}）` : ""}。原文保留在此，不静默删除。
+            </p>
+          </div>
+        ) : streamedConclusion && turn.phase === "streaming" ? (
+          <p className={`${s.conclusion} ${s.provisional}`} data-slot="conclusion" data-testid="conclusion-provisional">
             {streamedConclusion}
           </p>
-          <p className={s.retracted} data-testid="retraction-notice">
-            已撤回：流出的 {turn.streamedChars} 字未成为对外答案
-            {answer ? `（出口状态 ${answer.status}）` : ""}。原文保留在此，不静默删除。
+        ) : answer && !finalConclusion ? (
+          <p className={`${s.conclusion} ${s.confirmed}`} data-slot="conclusion" data-testid="no-conclusion">
+            <span className={`${s.badge} ${s.badgeRefuse}`}>{STATUS_LABEL[answer.status] ?? answer.status}</span>{" "}
+            本轮没有可给出的结论
+            {answer.status === "refuse" ? "（语料内无依据 → 拒答）" : ""}
+            {answer.status === "escalate" ? "（已转人工）" : ""}
           </p>
-        </div>
-      ) : streamedConclusion && turn.phase === "streaming" ? (
-        <p className={`${s.conclusion} ${s.provisional}`} data-slot="conclusion" data-testid="conclusion-provisional">
-          {streamedConclusion}
-        </p>
-      ) : answer && !finalConclusion ? (
-        <p className={`${s.conclusion} ${s.confirmed}`} data-slot="conclusion" data-testid="no-conclusion">
-          <span className={`${s.badge} ${s.badgeRefuse}`}>{STATUS_LABEL[answer.status] ?? answer.status}</span>{" "}
-          本轮没有可给出的结论
-          {answer.status === "refuse" ? "（语料内无依据 → 拒答）" : ""}
-          {answer.status === "escalate" ? "（已转人工）" : ""}
-        </p>
-      ) : null}
+        ) : null}
 
-      {answer?.key_points.length ? (
-        <ul className={s.points}>
-          {answer.key_points.map((p, i) => (
-            <li className={s.point} key={`${i}-${p.point}`}>
-              <span className={hitClass(p, activeEvidence)}>{p.point}</span>{" "}
-              {p.evidence_ids.map((e) => (
-                <button type="button" className={s.link} key={e} onClick={() => onEvidence(e)}>
-                  [{e}]
-                </button>
-              ))}
-            </li>
-          ))}
-        </ul>
-      ) : turn.phase === "streaming" && pointSlots.length ? (
-        <ul className={s.points}>
-          {pointSlots.map((k) => (
-            <li className={`${s.point} ${s.provisional}`} key={k}>
-              {turn.slots[k].text}
-            </li>
-          ))}
-        </ul>
-      ) : null}
+        {answer?.key_points.length ? (
+          <ul className={s.points}>
+            {answer.key_points.map((p, i) => (
+              <li className={s.point} key={`${i}-${p.point}`}>
+                <span className={hitClass(p, activeEvidence)}>{p.point}</span>{" "}
+                {p.evidence_ids.map((e) => (
+                  <button type="button" className={s.link} key={e} onClick={() => onEvidence(e)}>
+                    [{e}]
+                  </button>
+                ))}
+              </li>
+            ))}
+          </ul>
+        ) : turn.phase === "streaming" && pointSlots.length ? (
+          <ul className={s.points}>
+            {pointSlots.map((k) => (
+              <li className={`${s.point} ${s.provisional}`} key={k}>
+                {turn.slots[k].text}
+              </li>
+            ))}
+          </ul>
+        ) : null}
 
-      {answer?.dropped_points.length ? (
-        <p className={s.retracted}>
-          引用强制丢掉 {answer.dropped_points.length} 条要点（无对应出处）：
-          {answer.dropped_points.map((d, i) => (
-            <span key={i}>「{d}」</span>
-          ))}
-        </p>
-      ) : null}
+        {answer?.dropped_points.length ? (
+          <p className={s.retracted}>
+            引用强制丢掉 {answer.dropped_points.length} 条要点（无对应出处）：
+            {answer.dropped_points.map((d, i) => (
+              <span key={i}>「{d}」</span>
+            ))}
+          </p>
+        ) : null}
 
-      {answer ? (
-        <AnswerMeta answer={answer} cites={cites} texts={texts} hidden={hidden} settled={settled} onEvidence={onEvidence} />
-      ) : null}
+        {answer ? (
+          <AnswerMeta answer={answer} cites={cites} texts={texts} hidden={hidden} settled={settled} onEvidence={onEvidence} />
+        ) : null}
 
-      {answer?.status === "answer" ? (
-        <div className={s.toolbar}>
-          <span className={s.meta}>追问建议：</span>
-          {["这个结论的适用边界与例外是什么？", "依据的是哪份文档的哪一版？", "上游依赖不满足时会怎样降级？"].map((q) => (
-            <button type="button" className={s.btn} key={q} onClick={() => void onAsk(q)}>
-              {q}
-            </button>
-          ))}
-        </div>
-      ) : null}
+        {answer?.status === "answer" ? (
+          <div className={s.toolbar}>
+            <span className={s.meta}>追问建议：</span>
+            {["这个结论的适用边界与例外是什么？", "依据的是哪份文档的哪一版？", "上游依赖不满足时会怎样降级？"].map((q) => (
+              <button type="button" className={s.btn} key={q} onClick={() => void onAsk(q)}>
+                {q}
+              </button>
+            ))}
+          </div>
+        ) : null}
+      </div>
     </article>
   );
 }
