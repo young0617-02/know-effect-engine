@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-13T14:21:27",
+  "generated_at": "2026-10-13T16:57:27",
   "principle": "取不到就标 未固定 并写原因；未固定项 = 可移植性缺口，MVP 收口前逐条销掉或明写接受",
   "host": {
     "os": "Windows 11",
@@ -73,6 +73,7 @@
       "命中文件": [
         "scripts\\check_stack.py",
         "scripts\\m5_latency_clean.py",
+        "scripts\\m5_test_user_run.py",
         "src\\kee\\gate0\\g06_localization.py",
         "src\\kee\\retrieval\\cache.py"
       ]
@@ -306,6 +307,7 @@
   },
   "containers": {
     "images": [
+      "neo4j:2026.09.0\t6f3f17e72d69",
       "crm-api:0.1.0\t6d0670abfca6",
       "crm-pg:16\t360a1868088a",
       "hawkeye/rag-adapter:local\t27cd9b23c45f",
@@ -358,11 +360,11 @@
     ],
     "compose_files": {
       "docker-compose.gate0.yml": "0feafc8850ec",
-      "docker-compose.m4.yml": "5f9eecfe8632",
+      "docker-compose.m4.yml": "f2a4bd6f2439",
       "docker-compose.gate0.iso.yml": "5e19ef937df8",
       "docker-compose.gate0.nodev.yml": "cec446d18e21"
     },
-    "nginx_conf": "408fb36c8af4"
+    "nginx_conf": "5e294de5ee15"
   },
   "servers": {
     "milvus": "3.0.0",
