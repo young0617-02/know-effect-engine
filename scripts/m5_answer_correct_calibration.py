@@ -176,6 +176,34 @@ def describe(name: str, rows: list[dict], labels: dict[str, int], fit_admissible
     }
 
 
+def non_answer_boundary(hall: dict) -> str:
+    """非作答 12 题那一半边的边界**由 #57 的产物推导**，不写死。
+
+    原先这里是一句硬编码「没有真人标签，仍是空白」——标签回收后产物仍在谎报空白；
+    写死的方向错了两次，所以把它变成读数：标签判完就说判完，缺分母就说缺分母。
+    """
+    head = ("无答案 7 题 + 敏感 5 题——它们的**正确行为本就是拒答/升级**，"
+            "所以「误拒率 7.5%」只描述该答却拒的那一面，不能当系统总体拒答行为；反过来，")
+    if not hall:
+        return head + "这 12 题上「该拒却答了」**还没有真人标签**（`hallucination_rate.json` 不在），仍是空白。"
+    if not hall.get("complete"):
+        judged = hall.get("n_rows_judged", 0)
+        return (head + f"这 12 题的标签**只判完 {judged}/{hall.get('n_rows_total', '?')} 行**（空格 "
+                f"{hall.get('blank_rows', [])}），「该拒却答了」这一格此时既不是 0% 也不是读数。")
+    h_rate = (hall.get("metrics") or {}).get("hallucination_unsupported_conclusion", {})
+    with_face = (hall.get("system_behavior_shape") or {}).get("rows_with_conclusion", 0)
+    lead = (head + f"这 12 题的真人标签**已回收并全部判完**（{hall.get('n_rows_judged', '?')} 行），")
+    if h_rate.get("value") is None:
+        return (lead + f"但真幻觉率的**读数是「{h_rate.get('reading', '无数')}」**——"
+                f"本轮系统在这 12 题上有结论的行 {with_face} 行，"
+                "所以「该拒却答了」这一格是**按构造不可判**，不是没标，也不是 0%。"
+                f"要它出数必须有「非作答题上系统真给出过结论」的样本（题面哈希 {hall.get('question_hash')} 那一代产物）。")
+    return (lead + f"真幻觉率（无依据却出结论）已有分母：**{h_rate.get('reading')}**"
+            f"（n={h_rate.get('n')}，来自本轮有结论的 {with_face} 行）。"
+            f"引用它必须同句带上产物代次（题面哈希 {hall.get('question_hash')}）——"
+            "换一代生成就要整套重测，不能与旧标签混算。")
+
+
 def main() -> int:
     import argparse
 
@@ -274,14 +302,17 @@ def main() -> int:
 
     pool = {q["qid"] for q in QUESTIONS if q.get("expected_behavior") == "answer"}
     out_of_scope = sorted({q["qid"] for q in QUESTIONS} - pool)
+    hall = {}
+    hall_path = ART / "hallucination_rate.json"
+    if hall_path.exists():
+        hall = json.loads(hall_path.read_text(encoding="utf-8"))
     out["coverage_boundary"] = {
         "评测集总数": len(QUESTIONS),
         "本标签集覆盖": len(rows),
         "覆盖范围": "仅 `expected_behavior == answer` 的 67 题（探针的取题口径就是这条过滤）",
         "未覆盖": out_of_scope,
-        "未覆盖的是什么": "无答案 7 题 + 敏感 5 题——它们的**正确行为本就是拒答/升级**，"
-                    "所以「误拒率 7.5%」只描述该答却拒的那一面，不能当系统总体拒答行为；"
-                    "反过来，这 12 题上「该拒却答了」没有真人标签，仍是空白。",
+        "未覆盖的是什么": non_answer_boundary(hall),
+        "非作答题标签源": hall_path.name if hall else "缺文件（未跑 m5_hallucination_rate.py）",
     }
     cause = {}
     for r in rows:
