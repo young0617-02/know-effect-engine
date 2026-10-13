@@ -7,7 +7,7 @@ import { styles as s } from "../styles";
  * 两条刻意的呈现：
  * 1. 权限**不在这里实施**。下面那行过滤表达式是后端 `build_filter_expr` 的口径镜像，
  *    用来解释「为什么搜不到」，不是前端在过滤结果。
- * 2. 明写这是可伪造的请求头占位身份。Demo 可以，生产必须换真实身份源。
+ * 2. 明写这是可伪造的请求头占位身份：内网部署可用，接生产必须换真实身份源。
  */
 export function IdentityBar() {
   const { identity, set, reset } = useIdentity();
@@ -76,7 +76,7 @@ export function IdentityBar() {
         {" · "}
         <code>{scopeExpr(identity.role, identity.industries, identity.projects)}</code>
         {" · "}
-        过滤发生在<em>检索层</em>，不是前端把结果遮住；本条身份走请求头，<strong>可伪造</strong>，仅内网 Demo 可用。
+        过滤发生在<em>检索层</em>，不是前端把结果遮住；本条身份走请求头，<strong>可伪造</strong>，因此<strong>限内网部署</strong>——接生产必须替换为真实身份源。
       </p>
     </section>
   );

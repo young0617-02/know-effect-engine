@@ -44,7 +44,7 @@ export function identityHeaders(id: Identity): Record<string, string> {
   // 直接塞中文浏览器当场拒发，所以这里按契约做百分号编码，后端 `context_of` 对应 unquote。
   const enc = (v: string) => encodeURIComponent(v);
   const h: Record<string, string> = { "X-Kee-Role": id.role };
-  // actor 缺省时后端回落到 role；这里显式送出是为了让审计里的 actor 可区分（Demo 里多人共用一个角色）
+  // actor 缺省时后端回落到 role；这里显式送出是为了让审计里的 actor 可区分（多人共用一个角色时仍能分人留痕）
   if (id.actor) h["X-Kee-Actor"] = enc(id.actor);
   if (id.industries.length) h["X-Kee-Industries"] = id.industries.map(enc).join(",");
   if (id.projects.length) h["X-Kee-Projects"] = id.projects.map(enc).join(",");

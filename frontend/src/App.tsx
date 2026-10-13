@@ -21,7 +21,7 @@ export function App() {
     <div className={s.shell}>
       <header className={s.brand}>
         <h1>知效引擎 KEE</h1>
-        <span>企业知识服务 · 内网 Demo（模拟语料，本地推理，数据不出域）</span>
+        <span>企业知识服务 · 内网部署版（本地推理，数据不出域）</span>
       </header>
 
       <IdentityBar />
