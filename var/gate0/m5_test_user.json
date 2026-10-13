@@ -1,0 +1,4532 @@
+{
+  "generated_at": "2026-10-13T16:38:35+0800",
+  "why": "用户裁决：真实用户可用测试用户替代 ⇒ 业务格从「不可测」改判为「按模拟口径可测」，但替代只覆盖「操作者是人」这一维，不覆盖上线前基线与时间维度。",
+  "preflight": {
+    "healthz": {
+      "status": "ok",
+      "deps": {
+        "milvus": {
+          "ok": true,
+          "collection": "kb_chunks",
+          "chunks": 193
+        },
+        "postgres": {
+          "ok": true,
+          "documents": 24
+        }
+      }
+    },
+    "chunks": 193,
+    "ollama_models": [
+      "qwen2.5:7b",
+      "deepseek-r1:7b"
+    ],
+    "cloud_fallback_enabled": false,
+    "effective_unreviewed_versions": 0,
+    "production_chunks_at_sec3": 105,
+    "llm_model": "qwen2.5:7b",
+    "entrypoint": "http://127.0.0.1:38000/api/v1/answers"
+  },
+  "cache_flushed_keys": 1,
+  "warm_up": {
+    "status": "answer",
+    "client_ms": 3207.4,
+    "retrieval_degraded": []
+  },
+  "剧本来源": "评测集全量自动派生（题与角色都不由脚本作者挑）",
+  "protocol": {
+    "entrypoint": "http://127.0.0.1:38000/api/v1/answers",
+    "users": {
+      "u-pm-01": {
+        "role": "pm",
+        "max_level": 3,
+        "label": "项目经理（全密级可见）"
+      },
+      "u-delivery-01": {
+        "role": "delivery_engineer",
+        "max_level": 2,
+        "label": "交付工程师（密级 ≤2）"
+      },
+      "u-newcomer-01": {
+        "role": "newcomer",
+        "max_level": 1,
+        "label": "新人（密级 ≤1）"
+      }
+    },
+    "plan": [
+      {
+        "user": "u-delivery-01",
+        "qid": "q-001",
+        "role": "delivery_engineer",
+        "max_level": 2,
+        "评测集期望": "answer",
+        "gold密级": [
+          "2"
+        ],
+        "桶": "作答",
+        "该给结论": true,
+        "该转人工": false,
+        "可见 gold": 2
+      },
+      {
+        "user": "u-delivery-01",
+        "qid": "q-002",
+        "role": "delivery_engineer",
+        "max_level": 2,
+        "评测集期望": "answer",
+        "gold密级": [
+          "2"
+        ],
+        "桶": "作答",
+        "该给结论": true,
+        "该转人工": false,
+        "可见 gold": 1
+      },
+      {
+        "user": "u-pm-01",
+        "qid": "q-003",
+        "role": "pm",
+        "max_level": 3,
+        "评测集期望": "answer",
+        "gold密级": [
+          "3"
+        ],
+        "桶": "作答",
+        "该给结论": true,
+        "该转人工": false,
+        "可见 gold": 2
+      },
+      {
+        "user": "u-pm-01",
+        "qid": "q-004",
+        "role": "pm",
+        "max_level": 3,
+        "评测集期望": "answer",
+        "gold密级": [
+          "3"
+        ],
+        "桶": "作答",
+        "该给结论": true,
+        "该转人工": false,
+        "可见 gold": 2
+      },
+      {
+        "user": "u-delivery-01",
+        "qid": "q-005",
+        "role": "delivery_engineer",
+        "max_level": 2,
+        "评测集期望": "answer",
+        "gold密级": [
+          "2"
+        ],
+        "桶": "作答",
+        "该给结论": true,
+        "该转人工": false,
+        "可见 gold": 2
+      },
+      {
+        "user": "u-pm-01",
+        "qid": "q-006",
+        "role": "pm",
+        "max_level": 3,
+        "评测集期望": "answer",
+        "gold密级": [
+          "3"
+        ],
+        "桶": "作答",
+        "该给结论": true,
+        "该转人工": false,
+        "可见 gold": 2
+      },
+      {
+        "user": "u-pm-01",
+        "qid": "q-007",
+        "role": "pm",
+        "max_level": 3,
+        "评测集期望": "answer",
+        "gold密级": [
+          "3"
+        ],
+        "桶": "作答",
+        "该给结论": true,
+        "该转人工": false,
+        "可见 gold": 4
+      },
+      {
+        "user": "u-delivery-01",
+        "qid": "q-008",
+        "role": "delivery_engineer",
+        "max_level": 2,
+        "评测集期望": "answer",
+        "gold密级": [
+          "2"
+        ],
+        "桶": "作答",
+        "该给结论": true,
+        "该转人工": false,
+        "可见 gold": 2
+      },
+      {
+        "user": "u-delivery-01",
+        "qid": "q-009",
+        "role": "delivery_engineer",
+        "max_level": 2,
+        "评测集期望": "answer",
+        "gold密级": [
+          "2"
+        ],
+        "桶": "作答",
+        "该给结论": true,
+        "该转人工": false,
+        "可见 gold": 1
+      },
+      {
+        "user": "u-delivery-01",
+        "qid": "q-010",
+        "role": "delivery_engineer",
+        "max_level": 2,
+        "评测集期望": "answer",
+        "gold密级": [
+          "2"
+        ],
+        "桶": "作答",
+        "该给结论": true,
+        "该转人工": false,
+        "可见 gold": 2
+      },
+      {
+        "user": "u-delivery-01",
+        "qid": "q-011",
+        "role": "delivery_engineer",
+        "max_level": 2,
+        "评测集期望": "answer",
+        "gold密级": [
+          "2"
+        ],
+        "桶": "作答",
+        "该给结论": true,
+        "该转人工": false,
+        "可见 gold": 2
+      },
+      {
+        "user": "u-delivery-01",
+        "qid": "q-012",
+        "role": "delivery_engineer",
+        "max_level": 2,
+        "评测集期望": "answer",
+        "gold密级": [
+          "2",
+          "3"
+        ],
+        "桶": "作答",
+        "该给结论": true,
+        "该转人工": false,
+        "可见 gold": 1
+      },
+      {
+        "user": "u-delivery-01",
+        "qid": "q-013",
+        "role": "delivery_engineer",
+        "max_level": 2,
+        "评测集期望": "answer",
+        "gold密级": [
+          "2"
+        ],
+        "桶": "作答",
+        "该给结论": true,
+        "该转人工": false,
+        "可见 gold": 2
+      },
+      {
+        "user": "u-newcomer-01",
+        "qid": "q-014",
+        "role": "newcomer",
+        "max_level": 1,
+        "评测集期望": "answer",
+        "gold密级": [
+          "1",
+          "2"
+        ],
+        "桶": "作答",
+        "该给结论": true,
+        "该转人工": false,
+        "可见 gold": 1
+      },
+      {
+        "user": "u-delivery-01",
+        "qid": "q-015",
+        "role": "delivery_engineer",
+        "max_level": 2,
+        "评测集期望": "answer",
+        "gold密级": [
+          "2"
+        ],
+        "桶": "作答",
+        "该给结论": true,
+        "该转人工": false,
+        "可见 gold": 3
+      },
+      {
+        "user": "u-delivery-01",
+        "qid": "q-016",
+        "role": "delivery_engineer",
+        "max_level": 2,
+        "评测集期望": "answer",
+        "gold密级": [
+          "2"
+        ],
+        "桶": "作答",
+        "该给结论": true,
+        "该转人工": false,
+        "可见 gold": 2
+      },
+      {
+        "user": "u-delivery-01",
+        "qid": "q-017",
+        "role": "delivery_engineer",
+        "max_level": 2,
+        "评测集期望": "answer",
+        "gold密级": [
+          "2"
+        ],
+        "桶": "作答",
+        "该给结论": true,
+        "该转人工": false,
+        "可见 gold": 2
+      },
+      {
+        "user": "u-delivery-01",
+        "qid": "q-018",
+        "role": "delivery_engineer",
+        "max_level": 2,
+        "评测集期望": "answer",
+        "gold密级": [
+          "2"
+        ],
+        "桶": "作答",
+        "该给结论": true,
+        "该转人工": false,
+        "可见 gold": 2
+      },
+      {
+        "user": "u-delivery-01",
+        "qid": "q-019",
+        "role": "delivery_engineer",
+        "max_level": 2,
+        "评测集期望": "answer",
+        "gold密级": [
+          "2"
+        ],
+        "桶": "作答",
+        "该给结论": true,
+        "该转人工": false,
+        "可见 gold": 1
+      },
+      {
+        "user": "u-delivery-01",
+        "qid": "q-020",
+        "role": "delivery_engineer",
+        "max_level": 2,
+        "评测集期望": "answer",
+        "gold密级": [
+          "2"
+        ],
+        "桶": "作答",
+        "该给结论": true,
+        "该转人工": false,
+        "可见 gold": 2
+      },
+      {
+        "user": "u-delivery-01",
+        "qid": "q-021",
+        "role": "delivery_engineer",
+        "max_level": 2,
+        "评测集期望": "answer",
+        "gold密级": [
+          "2"
+        ],
+        "桶": "作答",
+        "该给结论": true,
+        "该转人工": false,
+        "可见 gold": 1
+      },
+      {
+        "user": "u-newcomer-01",
+        "qid": "q-022",
+        "role": "newcomer",
+        "max_level": 1,
+        "评测集期望": "answer",
+        "gold密级": [
+          "1"
+        ],
+        "桶": "作答",
+        "该给结论": true,
+        "该转人工": false,
+        "可见 gold": 2
+      },
+      {
+        "user": "u-newcomer-01",
+        "qid": "q-023",
+        "role": "newcomer",
+        "max_level": 1,
+        "评测集期望": "answer",
+        "gold密级": [
+          "1"
+        ],
+        "桶": "作答",
+        "该给结论": true,
+        "该转人工": false,
+        "可见 gold": 2
+      },
+      {
+        "user": "u-newcomer-01",
+        "qid": "q-024",
+        "role": "newcomer",
+        "max_level": 1,
+        "评测集期望": "answer",
+        "gold密级": [
+          "1"
+        ],
+        "桶": "作答",
+        "该给结论": true,
+        "该转人工": false,
+        "可见 gold": 1
+      },
+      {
+        "user": "u-pm-01",
+        "qid": "q-025",
+        "role": "pm",
+        "max_level": 3,
+        "评测集期望": "answer",
+        "gold密级": [
+          "3"
+        ],
+        "桶": "作答",
+        "该给结论": true,
+        "该转人工": false,
+        "可见 gold": 3
+      },
+      {
+        "user": "u-delivery-01",
+        "qid": "q-026",
+        "role": "delivery_engineer",
+        "max_level": 2,
+        "评测集期望": "answer",
+        "gold密级": [
+          "2"
+        ],
+        "桶": "作答",
+        "该给结论": true,
+        "该转人工": false,
+        "可见 gold": 1
+      },
+      {
+        "user": "u-delivery-01",
+        "qid": "q-027",
+        "role": "delivery_engineer",
+        "max_level": 2,
+        "评测集期望": "answer",
+        "gold密级": [
+          "2"
+        ],
+        "桶": "作答",
+        "该给结论": true,
+        "该转人工": false,
+        "可见 gold": 2
+      },
+      {
+        "user": "u-delivery-01",
+        "qid": "q-028",
+        "role": "delivery_engineer",
+        "max_level": 2,
+        "评测集期望": "answer",
+        "gold密级": [
+          "2"
+        ],
+        "桶": "作答",
+        "该给结论": true,
+        "该转人工": false,
+        "可见 gold": 2
+      },
+      {
+        "user": "u-delivery-01",
+        "qid": "q-029",
+        "role": "delivery_engineer",
+        "max_level": 2,
+        "评测集期望": "answer",
+        "gold密级": [
+          "2"
+        ],
+        "桶": "作答",
+        "该给结论": true,
+        "该转人工": false,
+        "可见 gold": 2
+      },
+      {
+        "user": "u-delivery-01",
+        "qid": "q-030",
+        "role": "delivery_engineer",
+        "max_level": 2,
+        "评测集期望": "answer",
+        "gold密级": [
+          "2"
+        ],
+        "桶": "作答",
+        "该给结论": true,
+        "该转人工": false,
+        "可见 gold": 2
+      },
+      {
+        "user": "u-delivery-01",
+        "qid": "q-031",
+        "role": "delivery_engineer",
+        "max_level": 2,
+        "评测集期望": "answer",
+        "gold密级": [
+          "2"
+        ],
+        "桶": "作答",
+        "该给结论": true,
+        "该转人工": false,
+        "可见 gold": 2
+      },
+      {
+        "user": "u-delivery-01",
+        "qid": "q-032",
+        "role": "delivery_engineer",
+        "max_level": 2,
+        "评测集期望": "answer",
+        "gold密级": [
+          "2"
+        ],
+        "桶": "作答",
+        "该给结论": true,
+        "该转人工": false,
+        "可见 gold": 1
+      },
+      {
+        "user": "u-newcomer-01",
+        "qid": "q-033",
+        "role": "newcomer",
+        "max_level": 1,
+        "评测集期望": "answer",
+        "gold密级": [
+          "1"
+        ],
+        "桶": "作答",
+        "该给结论": true,
+        "该转人工": false,
+        "可见 gold": 1
+      },
+      {
+        "user": "u-pm-01",
+        "qid": "q-034",
+        "role": "pm",
+        "max_level": 3,
+        "评测集期望": "answer",
+        "gold密级": [
+          "3"
+        ],
+        "桶": "作答",
+        "该给结论": true,
+        "该转人工": false,
+        "可见 gold": 2
+      },
+      {
+        "user": "u-delivery-01",
+        "qid": "q-035",
+        "role": "delivery_engineer",
+        "max_level": 2,
+        "评测集期望": "answer",
+        "gold密级": [
+          "2"
+        ],
+        "桶": "作答",
+        "该给结论": true,
+        "该转人工": false,
+        "可见 gold": 1
+      },
+      {
+        "user": "u-pm-01",
+        "qid": "q-036",
+        "role": "pm",
+        "max_level": 3,
+        "评测集期望": "answer",
+        "gold密级": [
+          "3"
+        ],
+        "桶": "作答",
+        "该给结论": true,
+        "该转人工": false,
+        "可见 gold": 2
+      },
+      {
+        "user": "u-pm-01",
+        "qid": "q-037",
+        "role": "pm",
+        "max_level": 3,
+        "评测集期望": "answer",
+        "gold密级": [
+          "3"
+        ],
+        "桶": "作答",
+        "该给结论": true,
+        "该转人工": false,
+        "可见 gold": 1
+      },
+      {
+        "user": "u-newcomer-01",
+        "qid": "q-038",
+        "role": "newcomer",
+        "max_level": 1,
+        "评测集期望": "answer",
+        "gold密级": [
+          "1"
+        ],
+        "桶": "作答",
+        "该给结论": true,
+        "该转人工": false,
+        "可见 gold": 2
+      },
+      {
+        "user": "u-delivery-01",
+        "qid": "q-039",
+        "role": "delivery_engineer",
+        "max_level": 2,
+        "评测集期望": "answer",
+        "gold密级": [
+          "2"
+        ],
+        "桶": "作答",
+        "该给结论": true,
+        "该转人工": false,
+        "可见 gold": 2
+      },
+      {
+        "user": "u-delivery-01",
+        "qid": "q-040",
+        "role": "delivery_engineer",
+        "max_level": 2,
+        "评测集期望": "answer",
+        "gold密级": [
+          "2"
+        ],
+        "桶": "作答",
+        "该给结论": true,
+        "该转人工": false,
+        "可见 gold": 2
+      },
+      {
+        "user": "u-delivery-01",
+        "qid": "q-041",
+        "role": "delivery_engineer",
+        "max_level": 2,
+        "评测集期望": "answer",
+        "gold密级": [
+          "2"
+        ],
+        "桶": "作答",
+        "该给结论": true,
+        "该转人工": false,
+        "可见 gold": 3
+      },
+      {
+        "user": "u-delivery-01",
+        "qid": "q-042",
+        "role": "delivery_engineer",
+        "max_level": 2,
+        "评测集期望": "answer",
+        "gold密级": [
+          "2"
+        ],
+        "桶": "作答",
+        "该给结论": true,
+        "该转人工": false,
+        "可见 gold": 2
+      },
+      {
+        "user": "u-delivery-01",
+        "qid": "q-043",
+        "role": "delivery_engineer",
+        "max_level": 2,
+        "评测集期望": "answer",
+        "gold密级": [
+          "2"
+        ],
+        "桶": "作答",
+        "该给结论": true,
+        "该转人工": false,
+        "可见 gold": 1
+      },
+      {
+        "user": "u-newcomer-01",
+        "qid": "q-044",
+        "role": "newcomer",
+        "max_level": 1,
+        "评测集期望": "answer",
+        "gold密级": [
+          "1",
+          "3"
+        ],
+        "桶": "作答",
+        "该给结论": true,
+        "该转人工": false,
+        "可见 gold": 2
+      },
+      {
+        "user": "u-delivery-01",
+        "qid": "q-045",
+        "role": "delivery_engineer",
+        "max_level": 2,
+        "评测集期望": "answer",
+        "gold密级": [
+          "2",
+          "3"
+        ],
+        "桶": "作答",
+        "该给结论": true,
+        "该转人工": false,
+        "可见 gold": 1
+      },
+      {
+        "user": "u-newcomer-01",
+        "qid": "q-046",
+        "role": "newcomer",
+        "max_level": 1,
+        "评测集期望": "answer",
+        "gold密级": [
+          "1"
+        ],
+        "桶": "作答",
+        "该给结论": true,
+        "该转人工": false,
+        "可见 gold": 1
+      },
+      {
+        "user": "u-pm-01",
+        "qid": "q-047",
+        "role": "pm",
+        "max_level": 3,
+        "评测集期望": "answer",
+        "gold密级": [
+          "3"
+        ],
+        "桶": "作答",
+        "该给结论": true,
+        "该转人工": false,
+        "可见 gold": 2
+      },
+      {
+        "user": "u-pm-01",
+        "qid": "q-048",
+        "role": "pm",
+        "max_level": 3,
+        "评测集期望": "answer",
+        "gold密级": [
+          "3"
+        ],
+        "桶": "作答",
+        "该给结论": true,
+        "该转人工": false,
+        "可见 gold": 2
+      },
+      {
+        "user": "u-delivery-01",
+        "qid": "q-049",
+        "role": "delivery_engineer",
+        "max_level": 2,
+        "评测集期望": "answer",
+        "gold密级": [
+          "2"
+        ],
+        "桶": "作答",
+        "该给结论": true,
+        "该转人工": false,
+        "可见 gold": 2
+      },
+      {
+        "user": "u-newcomer-01",
+        "qid": "q-050",
+        "role": "newcomer",
+        "max_level": 1,
+        "评测集期望": "answer",
+        "gold密级": [
+          "1"
+        ],
+        "桶": "作答",
+        "该给结论": true,
+        "该转人工": false,
+        "可见 gold": 1
+      },
+      {
+        "user": "u-newcomer-01",
+        "qid": "q-051",
+        "role": "newcomer",
+        "max_level": 1,
+        "评测集期望": "answer",
+        "gold密级": [
+          "1"
+        ],
+        "桶": "作答",
+        "该给结论": true,
+        "该转人工": false,
+        "可见 gold": 2
+      },
+      {
+        "user": "u-delivery-01",
+        "qid": "q-052",
+        "role": "delivery_engineer",
+        "max_level": 2,
+        "评测集期望": "answer",
+        "gold密级": [
+          "2"
+        ],
+        "桶": "作答",
+        "该给结论": true,
+        "该转人工": false,
+        "可见 gold": 1
+      },
+      {
+        "user": "u-pm-01",
+        "qid": "q-053",
+        "role": "pm",
+        "max_level": 3,
+        "评测集期望": "answer",
+        "gold密级": [
+          "3"
+        ],
+        "桶": "作答",
+        "该给结论": true,
+        "该转人工": false,
+        "可见 gold": 1
+      },
+      {
+        "user": "u-delivery-01",
+        "qid": "q-054",
+        "role": "delivery_engineer",
+        "max_level": 2,
+        "评测集期望": "answer",
+        "gold密级": [
+          "2",
+          "3"
+        ],
+        "桶": "作答",
+        "该给结论": true,
+        "该转人工": false,
+        "可见 gold": 3
+      },
+      {
+        "user": "u-delivery-01",
+        "qid": "q-055",
+        "role": "delivery_engineer",
+        "max_level": 2,
+        "评测集期望": "answer",
+        "gold密级": [
+          "2"
+        ],
+        "桶": "作答",
+        "该给结论": true,
+        "该转人工": false,
+        "可见 gold": 2
+      },
+      {
+        "user": "u-delivery-01",
+        "qid": "q-056",
+        "role": "delivery_engineer",
+        "max_level": 2,
+        "评测集期望": "answer",
+        "gold密级": [
+          "2"
+        ],
+        "桶": "作答",
+        "该给结论": true,
+        "该转人工": false,
+        "可见 gold": 8
+      },
+      {
+        "user": "u-delivery-01",
+        "qid": "q-057",
+        "role": "delivery_engineer",
+        "max_level": 2,
+        "评测集期望": "answer",
+        "gold密级": [
+          "2",
+          "3"
+        ],
+        "桶": "作答",
+        "该给结论": true,
+        "该转人工": false,
+        "可见 gold": 1
+      },
+      {
+        "user": "u-delivery-01",
+        "qid": "q-058",
+        "role": "delivery_engineer",
+        "max_level": 2,
+        "评测集期望": "answer",
+        "gold密级": [
+          "2"
+        ],
+        "桶": "作答",
+        "该给结论": true,
+        "该转人工": false,
+        "可见 gold": 1
+      },
+      {
+        "user": "u-pm-01",
+        "qid": "q-059",
+        "role": "pm",
+        "max_level": 3,
+        "评测集期望": "refuse",
+        "gold密级": [],
+        "桶": "拒答",
+        "该给结论": false,
+        "该转人工": false,
+        "可见 gold": 0
+      },
+      {
+        "user": "u-pm-01",
+        "qid": "q-060",
+        "role": "pm",
+        "max_level": 3,
+        "评测集期望": "refuse",
+        "gold密级": [],
+        "桶": "拒答",
+        "该给结论": false,
+        "该转人工": false,
+        "可见 gold": 0
+      },
+      {
+        "user": "u-pm-01",
+        "qid": "q-061",
+        "role": "pm",
+        "max_level": 3,
+        "评测集期望": "refuse",
+        "gold密级": [],
+        "桶": "拒答",
+        "该给结论": false,
+        "该转人工": false,
+        "可见 gold": 0
+      },
+      {
+        "user": "u-pm-01",
+        "qid": "q-062",
+        "role": "pm",
+        "max_level": 3,
+        "评测集期望": "refuse",
+        "gold密级": [],
+        "桶": "拒答",
+        "该给结论": false,
+        "该转人工": false,
+        "可见 gold": 0
+      },
+      {
+        "user": "u-pm-01",
+        "qid": "q-063",
+        "role": "pm",
+        "max_level": 3,
+        "评测集期望": "refuse",
+        "gold密级": [],
+        "桶": "拒答",
+        "该给结论": false,
+        "该转人工": false,
+        "可见 gold": 0
+      },
+      {
+        "user": "u-pm-01",
+        "qid": "q-064",
+        "role": "pm",
+        "max_level": 3,
+        "评测集期望": "refuse",
+        "gold密级": [],
+        "桶": "拒答",
+        "该给结论": false,
+        "该转人工": false,
+        "可见 gold": 0
+      },
+      {
+        "user": "u-pm-01",
+        "qid": "q-065",
+        "role": "pm",
+        "max_level": 3,
+        "评测集期望": "refuse",
+        "gold密级": [],
+        "桶": "拒答",
+        "该给结论": false,
+        "该转人工": false,
+        "可见 gold": 0
+      },
+      {
+        "user": "u-pm-01",
+        "qid": "q-066",
+        "role": "pm",
+        "max_level": 3,
+        "评测集期望": "escalate",
+        "gold密级": [
+          "3"
+        ],
+        "桶": "转人工",
+        "该给结论": true,
+        "该转人工": true,
+        "可见 gold": 4
+      },
+      {
+        "user": "u-pm-01",
+        "qid": "q-067",
+        "role": "pm",
+        "max_level": 3,
+        "评测集期望": "escalate",
+        "gold密级": [
+          "3"
+        ],
+        "桶": "转人工",
+        "该给结论": true,
+        "该转人工": true,
+        "可见 gold": 2
+      },
+      {
+        "user": "u-pm-01",
+        "qid": "q-068",
+        "role": "pm",
+        "max_level": 3,
+        "评测集期望": "escalate",
+        "gold密级": [
+          "3"
+        ],
+        "桶": "转人工",
+        "该给结论": true,
+        "该转人工": true,
+        "可见 gold": 2
+      },
+      {
+        "user": "u-pm-01",
+        "qid": "q-069",
+        "role": "pm",
+        "max_level": 3,
+        "评测集期望": "escalate",
+        "gold密级": [
+          "3"
+        ],
+        "桶": "转人工",
+        "该给结论": true,
+        "该转人工": true,
+        "可见 gold": 2
+      },
+      {
+        "user": "u-pm-01",
+        "qid": "q-070",
+        "role": "pm",
+        "max_level": 3,
+        "评测集期望": "escalate",
+        "gold密级": [
+          "3"
+        ],
+        "桶": "转人工",
+        "该给结论": true,
+        "该转人工": true,
+        "可见 gold": 2
+      },
+      {
+        "user": "u-newcomer-01",
+        "qid": "q-071",
+        "role": "newcomer",
+        "max_level": 1,
+        "评测集期望": "answer",
+        "gold密级": [
+          "1",
+          "3"
+        ],
+        "桶": "作答",
+        "该给结论": true,
+        "该转人工": false,
+        "可见 gold": 1
+      },
+      {
+        "user": "u-delivery-01",
+        "qid": "q-072",
+        "role": "delivery_engineer",
+        "max_level": 2,
+        "评测集期望": "answer",
+        "gold密级": [
+          "2"
+        ],
+        "桶": "作答",
+        "该给结论": true,
+        "该转人工": false,
+        "可见 gold": 1
+      },
+      {
+        "user": "u-pm-01",
+        "qid": "q-073",
+        "role": "pm",
+        "max_level": 3,
+        "评测集期望": "answer",
+        "gold密级": [
+          "3"
+        ],
+        "桶": "作答",
+        "该给结论": true,
+        "该转人工": false,
+        "可见 gold": 1
+      },
+      {
+        "user": "u-delivery-01",
+        "qid": "q-074",
+        "role": "delivery_engineer",
+        "max_level": 2,
+        "评测集期望": "answer",
+        "gold密级": [
+          "2"
+        ],
+        "桶": "作答",
+        "该给结论": true,
+        "该转人工": false,
+        "可见 gold": 2
+      },
+      {
+        "user": "u-delivery-01",
+        "qid": "q-075",
+        "role": "delivery_engineer",
+        "max_level": 2,
+        "评测集期望": "answer",
+        "gold密级": [
+          "2"
+        ],
+        "桶": "作答",
+        "该给结论": true,
+        "该转人工": false,
+        "可见 gold": 1
+      },
+      {
+        "user": "u-delivery-01",
+        "qid": "q-076",
+        "role": "delivery_engineer",
+        "max_level": 2,
+        "评测集期望": "answer",
+        "gold密级": [
+          "2"
+        ],
+        "桶": "作答",
+        "该给结论": true,
+        "该转人工": false,
+        "可见 gold": 2
+      },
+      {
+        "user": "u-delivery-01",
+        "qid": "q-077",
+        "role": "delivery_engineer",
+        "max_level": 2,
+        "评测集期望": "answer",
+        "gold密级": [
+          "2"
+        ],
+        "桶": "作答",
+        "该给结论": true,
+        "该转人工": false,
+        "可见 gold": 4
+      },
+      {
+        "user": "u-delivery-01",
+        "qid": "q-078",
+        "role": "delivery_engineer",
+        "max_level": 2,
+        "评测集期望": "answer",
+        "gold密级": [
+          "2"
+        ],
+        "桶": "作答",
+        "该给结论": true,
+        "该转人工": false,
+        "可见 gold": 2
+      },
+      {
+        "user": "u-pm-01",
+        "qid": "q-079",
+        "role": "pm",
+        "max_level": 3,
+        "评测集期望": "answer",
+        "gold密级": [
+          "3"
+        ],
+        "桶": "作答",
+        "该给结论": true,
+        "该转人工": false,
+        "可见 gold": 2
+      },
+      {
+        "user": "u-delivery-01",
+        "qid": "q-080",
+        "role": "delivery_engineer",
+        "max_level": 2,
+        "评测集期望": "answer",
+        "gold密级": [
+          "2"
+        ],
+        "桶": "作答",
+        "该给结论": true,
+        "该转人工": false,
+        "可见 gold": 4
+      },
+      {
+        "user": "u-newcomer-01",
+        "qid": "q-003",
+        "role": "newcomer",
+        "max_level": 1,
+        "评测集期望": "answer",
+        "gold密级": [
+          "3"
+        ],
+        "桶": "权限拦截",
+        "该给结论": false,
+        "该转人工": false,
+        "可见 gold": 0,
+        "为什么": "gold 密级 ['3'] 全部高于角色上限 1"
+      },
+      {
+        "user": "u-newcomer-01",
+        "qid": "q-004",
+        "role": "newcomer",
+        "max_level": 1,
+        "评测集期望": "answer",
+        "gold密级": [
+          "3"
+        ],
+        "桶": "权限拦截",
+        "该给结论": false,
+        "该转人工": false,
+        "可见 gold": 0,
+        "为什么": "gold 密级 ['3'] 全部高于角色上限 1"
+      },
+      {
+        "user": "u-newcomer-01",
+        "qid": "q-006",
+        "role": "newcomer",
+        "max_level": 1,
+        "评测集期望": "answer",
+        "gold密级": [
+          "3"
+        ],
+        "桶": "权限拦截",
+        "该给结论": false,
+        "该转人工": false,
+        "可见 gold": 0,
+        "为什么": "gold 密级 ['3'] 全部高于角色上限 1"
+      },
+      {
+        "user": "u-newcomer-01",
+        "qid": "q-007",
+        "role": "newcomer",
+        "max_level": 1,
+        "评测集期望": "answer",
+        "gold密级": [
+          "3"
+        ],
+        "桶": "权限拦截",
+        "该给结论": false,
+        "该转人工": false,
+        "可见 gold": 0,
+        "为什么": "gold 密级 ['3'] 全部高于角色上限 1"
+      }
+    ],
+    "期望处置怎么定": "不由剧本硬写，由 `role_expectation` 按「这个角色可见几条 gold」推导（第一版硬写过，把 newcomer 被正确拦住的题算成失败）",
+    "追问行为模型": "首轮没给可用答案才重问（换措辞），**不是**真实用户的重问率",
+    "sessions": "一个任务的多轮共用一个 session_id（指代要靠历史）",
+    "生产语料": "全程只读：本脚本不上传、不改版本（线上无删除端点，写进去撤不回）"
+  },
+  "turns": [
+    {
+      "user": "u-delivery-01",
+      "qid": "q-001",
+      "role": "delivery_engineer",
+      "max_level": 2,
+      "评测集期望": "answer",
+      "gold密级": [
+        "2"
+      ],
+      "桶": "作答",
+      "该给结论": true,
+      "该转人工": false,
+      "可见 gold": 2,
+      "turn": 1,
+      "kind": "首问",
+      "session_id": "s-tu-u-delivery-01-q-001-62c66d",
+      "client_ms": 3755.3,
+      "status": "answer",
+      "conclusion_chars": 50,
+      "n_citations": 1,
+      "needs_human": false,
+      "confidence": {
+        "retrieval": 0.9932,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7969,
+        "logit": 1.367,
+        "calibrated": 0.7969,
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-delivery-01",
+      "qid": "q-002",
+      "role": "delivery_engineer",
+      "max_level": 2,
+      "评测集期望": "answer",
+      "gold密级": [
+        "2"
+      ],
+      "桶": "作答",
+      "该给结论": true,
+      "该转人工": false,
+      "可见 gold": 1,
+      "turn": 1,
+      "kind": "首问",
+      "session_id": "s-tu-u-delivery-01-q-002-2c77b7",
+      "client_ms": 4717.0,
+      "status": "answer",
+      "conclusion_chars": 33,
+      "n_citations": 1,
+      "needs_human": false,
+      "confidence": {
+        "retrieval": 0.9946,
+        "citation_consistency": 1.0,
+        "self_assessed": 1.0,
+        "composite": 0.9976,
+        "logit": 6.0299,
+        "calibrated": 0.9976,
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-pm-01",
+      "qid": "q-003",
+      "role": "pm",
+      "max_level": 3,
+      "评测集期望": "answer",
+      "gold密级": [
+        "3"
+      ],
+      "桶": "作答",
+      "该给结论": true,
+      "该转人工": false,
+      "可见 gold": 2,
+      "turn": 1,
+      "kind": "首问",
+      "session_id": "s-tu-u-pm-01-q-003-ae883a",
+      "client_ms": 3386.5,
+      "status": "escalate",
+      "conclusion_chars": 0,
+      "n_citations": 0,
+      "needs_human": true,
+      "confidence": {
+        "retrieval": 0.9697,
+        "composite": 0.0,
+        "calibrated": 0.0,
+        "rule": "declared_no_evidence",
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-pm-01",
+      "qid": "q-003",
+      "role": "pm",
+      "max_level": 3,
+      "评测集期望": "answer",
+      "gold密级": [
+        "3"
+      ],
+      "桶": "作答",
+      "该给结论": true,
+      "该转人工": false,
+      "可见 gold": 2,
+      "turn": 2,
+      "kind": "追问",
+      "session_id": "s-tu-u-pm-01-q-003-ae883a",
+      "client_ms": 3531.5,
+      "status": "answer",
+      "conclusion_chars": 16,
+      "n_citations": 1,
+      "needs_human": true,
+      "confidence": {
+        "retrieval": 0.9385,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7723,
+        "logit": 1.2213,
+        "calibrated": 0.7723,
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-pm-01",
+      "qid": "q-004",
+      "role": "pm",
+      "max_level": 3,
+      "评测集期望": "answer",
+      "gold密级": [
+        "3"
+      ],
+      "桶": "作答",
+      "该给结论": true,
+      "该转人工": false,
+      "可见 gold": 2,
+      "turn": 1,
+      "kind": "首问",
+      "session_id": "s-tu-u-pm-01-q-004-de2921",
+      "client_ms": 4387.2,
+      "status": "answer",
+      "conclusion_chars": 34,
+      "n_citations": 1,
+      "needs_human": true,
+      "confidence": {
+        "retrieval": 0.9956,
+        "citation_consistency": 1.0,
+        "self_assessed": 1.0,
+        "composite": 0.998,
+        "logit": 6.2126,
+        "calibrated": 0.998,
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-delivery-01",
+      "qid": "q-005",
+      "role": "delivery_engineer",
+      "max_level": 2,
+      "评测集期望": "answer",
+      "gold密级": [
+        "2"
+      ],
+      "桶": "作答",
+      "该给结论": true,
+      "该转人工": false,
+      "可见 gold": 2,
+      "turn": 1,
+      "kind": "首问",
+      "session_id": "s-tu-u-delivery-01-q-005-917d7b",
+      "client_ms": 3221.1,
+      "status": "answer",
+      "conclusion_chars": 23,
+      "n_citations": 1,
+      "needs_human": false,
+      "confidence": {
+        "retrieval": 0.9966,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7985,
+        "logit": 1.3769,
+        "calibrated": 0.7985,
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-pm-01",
+      "qid": "q-006",
+      "role": "pm",
+      "max_level": 3,
+      "评测集期望": "answer",
+      "gold密级": [
+        "3"
+      ],
+      "桶": "作答",
+      "该给结论": true,
+      "该转人工": false,
+      "可见 gold": 2,
+      "turn": 1,
+      "kind": "首问",
+      "session_id": "s-tu-u-pm-01-q-006-823333",
+      "client_ms": 3593.4,
+      "status": "answer",
+      "conclusion_chars": 24,
+      "n_citations": 1,
+      "needs_human": true,
+      "confidence": {
+        "retrieval": 0.9829,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7923,
+        "logit": 1.3388,
+        "calibrated": 0.7923,
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-pm-01",
+      "qid": "q-007",
+      "role": "pm",
+      "max_level": 3,
+      "评测集期望": "answer",
+      "gold密级": [
+        "3"
+      ],
+      "桶": "作答",
+      "该给结论": true,
+      "该转人工": false,
+      "可见 gold": 4,
+      "turn": 1,
+      "kind": "首问",
+      "session_id": "s-tu-u-pm-01-q-007-1a1740",
+      "client_ms": 2991.0,
+      "status": "answer",
+      "conclusion_chars": 3,
+      "n_citations": 1,
+      "needs_human": true,
+      "confidence": {
+        "retrieval": 0.9956,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.798,
+        "logit": 1.3738,
+        "calibrated": 0.798,
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-delivery-01",
+      "qid": "q-008",
+      "role": "delivery_engineer",
+      "max_level": 2,
+      "评测集期望": "answer",
+      "gold密级": [
+        "2"
+      ],
+      "桶": "作答",
+      "该给结论": true,
+      "该转人工": false,
+      "可见 gold": 2,
+      "turn": 1,
+      "kind": "首问",
+      "session_id": "s-tu-u-delivery-01-q-008-cb2e81",
+      "client_ms": 3618.5,
+      "status": "answer",
+      "conclusion_chars": 35,
+      "n_citations": 1,
+      "needs_human": false,
+      "confidence": {
+        "retrieval": 0.9907,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7958,
+        "logit": 1.3602,
+        "calibrated": 0.7958,
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-delivery-01",
+      "qid": "q-009",
+      "role": "delivery_engineer",
+      "max_level": 2,
+      "评测集期望": "answer",
+      "gold密级": [
+        "2"
+      ],
+      "桶": "作答",
+      "该给结论": true,
+      "该转人工": false,
+      "可见 gold": 1,
+      "turn": 1,
+      "kind": "首问",
+      "session_id": "s-tu-u-delivery-01-q-009-33e61a",
+      "client_ms": 3540.4,
+      "status": "answer",
+      "conclusion_chars": 2,
+      "n_citations": 1,
+      "needs_human": false,
+      "confidence": {
+        "retrieval": 0.9922,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7965,
+        "logit": 1.3646,
+        "calibrated": 0.7965,
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-delivery-01",
+      "qid": "q-010",
+      "role": "delivery_engineer",
+      "max_level": 2,
+      "评测集期望": "answer",
+      "gold密级": [
+        "2"
+      ],
+      "桶": "作答",
+      "该给结论": true,
+      "该转人工": false,
+      "可见 gold": 2,
+      "turn": 1,
+      "kind": "首问",
+      "session_id": "s-tu-u-delivery-01-q-010-43faf7",
+      "client_ms": 4609.2,
+      "status": "answer",
+      "conclusion_chars": 91,
+      "n_citations": 1,
+      "needs_human": false,
+      "confidence": {
+        "retrieval": 0.9839,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7927,
+        "logit": 1.3413,
+        "calibrated": 0.7927,
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-delivery-01",
+      "qid": "q-011",
+      "role": "delivery_engineer",
+      "max_level": 2,
+      "评测集期望": "answer",
+      "gold密级": [
+        "2"
+      ],
+      "桶": "作答",
+      "该给结论": true,
+      "该转人工": false,
+      "可见 gold": 2,
+      "turn": 1,
+      "kind": "首问",
+      "session_id": "s-tu-u-delivery-01-q-011-f2c5d8",
+      "client_ms": 3278.2,
+      "status": "answer",
+      "conclusion_chars": 30,
+      "n_citations": 1,
+      "needs_human": false,
+      "confidence": {
+        "retrieval": 0.9907,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7958,
+        "logit": 1.3602,
+        "calibrated": 0.7958,
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-delivery-01",
+      "qid": "q-012",
+      "role": "delivery_engineer",
+      "max_level": 2,
+      "评测集期望": "answer",
+      "gold密级": [
+        "2",
+        "3"
+      ],
+      "桶": "作答",
+      "该给结论": true,
+      "该转人工": false,
+      "可见 gold": 1,
+      "turn": 1,
+      "kind": "首问",
+      "session_id": "s-tu-u-delivery-01-q-012-c9185a",
+      "client_ms": 3344.4,
+      "status": "answer",
+      "conclusion_chars": 35,
+      "n_citations": 1,
+      "needs_human": false,
+      "confidence": {
+        "retrieval": 0.9795,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7908,
+        "logit": 1.3298,
+        "calibrated": 0.7908,
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-delivery-01",
+      "qid": "q-013",
+      "role": "delivery_engineer",
+      "max_level": 2,
+      "评测集期望": "answer",
+      "gold密级": [
+        "2"
+      ],
+      "桶": "作答",
+      "该给结论": true,
+      "该转人工": false,
+      "可见 gold": 2,
+      "turn": 1,
+      "kind": "首问",
+      "session_id": "s-tu-u-delivery-01-q-013-c57d4d",
+      "client_ms": 2934.7,
+      "status": "answer",
+      "conclusion_chars": 22,
+      "n_citations": 1,
+      "needs_human": false,
+      "confidence": {
+        "retrieval": 0.9585,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7813,
+        "logit": 1.2733,
+        "calibrated": 0.7813,
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-newcomer-01",
+      "qid": "q-014",
+      "role": "newcomer",
+      "max_level": 1,
+      "评测集期望": "answer",
+      "gold密级": [
+        "1",
+        "2"
+      ],
+      "桶": "作答",
+      "该给结论": true,
+      "该转人工": false,
+      "可见 gold": 1,
+      "turn": 1,
+      "kind": "首问",
+      "session_id": "s-tu-u-newcomer-01-q-014-9284eb",
+      "client_ms": 3906.7,
+      "status": "answer",
+      "conclusion_chars": 52,
+      "n_citations": 1,
+      "needs_human": false,
+      "confidence": {
+        "retrieval": 0.938,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7721,
+        "logit": 1.2202,
+        "calibrated": 0.7721,
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-delivery-01",
+      "qid": "q-015",
+      "role": "delivery_engineer",
+      "max_level": 2,
+      "评测集期望": "answer",
+      "gold密级": [
+        "2"
+      ],
+      "桶": "作答",
+      "该给结论": true,
+      "该转人工": false,
+      "可见 gold": 3,
+      "turn": 1,
+      "kind": "首问",
+      "session_id": "s-tu-u-delivery-01-q-015-089dfb",
+      "client_ms": 3027.5,
+      "status": "answer",
+      "conclusion_chars": 22,
+      "n_citations": 1,
+      "needs_human": false,
+      "confidence": {
+        "retrieval": 0.9937,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7971,
+        "logit": 1.3683,
+        "calibrated": 0.7971,
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-delivery-01",
+      "qid": "q-016",
+      "role": "delivery_engineer",
+      "max_level": 2,
+      "评测集期望": "answer",
+      "gold密级": [
+        "2"
+      ],
+      "桶": "作答",
+      "该给结论": true,
+      "该转人工": false,
+      "可见 gold": 2,
+      "turn": 1,
+      "kind": "首问",
+      "session_id": "s-tu-u-delivery-01-q-016-0292ac",
+      "client_ms": 3198.0,
+      "status": "answer",
+      "conclusion_chars": 49,
+      "n_citations": 1,
+      "needs_human": false,
+      "confidence": {
+        "retrieval": 0.9912,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.796,
+        "logit": 1.3615,
+        "calibrated": 0.796,
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-delivery-01",
+      "qid": "q-017",
+      "role": "delivery_engineer",
+      "max_level": 2,
+      "评测集期望": "answer",
+      "gold密级": [
+        "2"
+      ],
+      "桶": "作答",
+      "该给结论": true,
+      "该转人工": false,
+      "可见 gold": 2,
+      "turn": 1,
+      "kind": "首问",
+      "session_id": "s-tu-u-delivery-01-q-017-12c79f",
+      "client_ms": 3389.3,
+      "status": "answer",
+      "conclusion_chars": 39,
+      "n_citations": 1,
+      "needs_human": false,
+      "confidence": {
+        "retrieval": 0.9141,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7613,
+        "logit": 1.1598,
+        "calibrated": 0.7613,
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-delivery-01",
+      "qid": "q-018",
+      "role": "delivery_engineer",
+      "max_level": 2,
+      "评测集期望": "answer",
+      "gold密级": [
+        "2"
+      ],
+      "桶": "作答",
+      "该给结论": true,
+      "该转人工": false,
+      "可见 gold": 2,
+      "turn": 1,
+      "kind": "首问",
+      "session_id": "s-tu-u-delivery-01-q-018-64777a",
+      "client_ms": 3462.5,
+      "status": "answer",
+      "conclusion_chars": 16,
+      "n_citations": 1,
+      "needs_human": false,
+      "confidence": {
+        "retrieval": 0.9912,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.796,
+        "logit": 1.3615,
+        "calibrated": 0.796,
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-delivery-01",
+      "qid": "q-019",
+      "role": "delivery_engineer",
+      "max_level": 2,
+      "评测集期望": "answer",
+      "gold密级": [
+        "2"
+      ],
+      "桶": "作答",
+      "该给结论": true,
+      "该转人工": false,
+      "可见 gold": 1,
+      "turn": 1,
+      "kind": "首问",
+      "session_id": "s-tu-u-delivery-01-q-019-e21e65",
+      "client_ms": 2875.3,
+      "status": "answer",
+      "conclusion_chars": 34,
+      "n_citations": 1,
+      "needs_human": false,
+      "confidence": {
+        "retrieval": 0.9844,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.793,
+        "logit": 1.3431,
+        "calibrated": 0.793,
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-delivery-01",
+      "qid": "q-020",
+      "role": "delivery_engineer",
+      "max_level": 2,
+      "评测集期望": "answer",
+      "gold密级": [
+        "2"
+      ],
+      "桶": "作答",
+      "该给结论": true,
+      "该转人工": false,
+      "可见 gold": 2,
+      "turn": 1,
+      "kind": "首问",
+      "session_id": "s-tu-u-delivery-01-q-020-c782c1",
+      "client_ms": 3247.8,
+      "status": "answer",
+      "conclusion_chars": 14,
+      "n_citations": 1,
+      "needs_human": false,
+      "confidence": {
+        "retrieval": 0.9839,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7927,
+        "logit": 1.3413,
+        "calibrated": 0.7927,
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-delivery-01",
+      "qid": "q-021",
+      "role": "delivery_engineer",
+      "max_level": 2,
+      "评测集期望": "answer",
+      "gold密级": [
+        "2"
+      ],
+      "桶": "作答",
+      "该给结论": true,
+      "该转人工": false,
+      "可见 gold": 1,
+      "turn": 1,
+      "kind": "首问",
+      "session_id": "s-tu-u-delivery-01-q-021-8ab1c8",
+      "client_ms": 3222.9,
+      "status": "answer",
+      "conclusion_chars": 29,
+      "n_citations": 1,
+      "needs_human": false,
+      "confidence": {
+        "retrieval": 0.9507,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7778,
+        "logit": 1.2529,
+        "calibrated": 0.7778,
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-newcomer-01",
+      "qid": "q-022",
+      "role": "newcomer",
+      "max_level": 1,
+      "评测集期望": "answer",
+      "gold密级": [
+        "1"
+      ],
+      "桶": "作答",
+      "该给结论": true,
+      "该转人工": false,
+      "可见 gold": 2,
+      "turn": 1,
+      "kind": "首问",
+      "session_id": "s-tu-u-newcomer-01-q-022-72922e",
+      "client_ms": 3286.6,
+      "status": "answer",
+      "conclusion_chars": 46,
+      "n_citations": 1,
+      "needs_human": false,
+      "confidence": {
+        "retrieval": 0.9575,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7809,
+        "logit": 1.2709,
+        "calibrated": 0.7809,
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-newcomer-01",
+      "qid": "q-023",
+      "role": "newcomer",
+      "max_level": 1,
+      "评测集期望": "answer",
+      "gold密级": [
+        "1"
+      ],
+      "桶": "作答",
+      "该给结论": true,
+      "该转人工": false,
+      "可见 gold": 2,
+      "turn": 1,
+      "kind": "首问",
+      "session_id": "s-tu-u-newcomer-01-q-023-66a10f",
+      "client_ms": 4901.5,
+      "status": "answer",
+      "conclusion_chars": 34,
+      "n_citations": 1,
+      "needs_human": false,
+      "confidence": {
+        "retrieval": 0.9971,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7987,
+        "logit": 1.3782,
+        "calibrated": 0.7987,
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-newcomer-01",
+      "qid": "q-024",
+      "role": "newcomer",
+      "max_level": 1,
+      "评测集期望": "answer",
+      "gold密级": [
+        "1"
+      ],
+      "桶": "作答",
+      "该给结论": true,
+      "该转人工": false,
+      "可见 gold": 1,
+      "turn": 1,
+      "kind": "首问",
+      "session_id": "s-tu-u-newcomer-01-q-024-af4145",
+      "client_ms": 4327.1,
+      "status": "answer",
+      "conclusion_chars": 62,
+      "n_citations": 1,
+      "needs_human": false,
+      "confidence": {
+        "retrieval": 0.9976,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7989,
+        "logit": 1.3794,
+        "calibrated": 0.7989,
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-pm-01",
+      "qid": "q-025",
+      "role": "pm",
+      "max_level": 3,
+      "评测集期望": "answer",
+      "gold密级": [
+        "3"
+      ],
+      "桶": "作答",
+      "该给结论": true,
+      "该转人工": false,
+      "可见 gold": 3,
+      "turn": 1,
+      "kind": "首问",
+      "session_id": "s-tu-u-pm-01-q-025-add7e3",
+      "client_ms": 3664.1,
+      "status": "answer",
+      "conclusion_chars": 27,
+      "n_citations": 1,
+      "needs_human": true,
+      "confidence": {
+        "retrieval": 0.9336,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7701,
+        "logit": 1.2089,
+        "calibrated": 0.7701,
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-delivery-01",
+      "qid": "q-026",
+      "role": "delivery_engineer",
+      "max_level": 2,
+      "评测集期望": "answer",
+      "gold密级": [
+        "2"
+      ],
+      "桶": "作答",
+      "该给结论": true,
+      "该转人工": false,
+      "可见 gold": 1,
+      "turn": 1,
+      "kind": "首问",
+      "session_id": "s-tu-u-delivery-01-q-026-30b54d",
+      "client_ms": 6590.0,
+      "status": "answer",
+      "conclusion_chars": 100,
+      "n_citations": 1,
+      "needs_human": false,
+      "confidence": {
+        "retrieval": 0.9697,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7864,
+        "logit": 1.3034,
+        "calibrated": 0.7864,
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-delivery-01",
+      "qid": "q-027",
+      "role": "delivery_engineer",
+      "max_level": 2,
+      "评测集期望": "answer",
+      "gold密级": [
+        "2"
+      ],
+      "桶": "作答",
+      "该给结论": true,
+      "该转人工": false,
+      "可见 gold": 2,
+      "turn": 1,
+      "kind": "首问",
+      "session_id": "s-tu-u-delivery-01-q-027-541acd",
+      "client_ms": 3854.9,
+      "status": "answer",
+      "conclusion_chars": 22,
+      "n_citations": 1,
+      "needs_human": false,
+      "confidence": {
+        "retrieval": 0.9971,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7987,
+        "logit": 1.3782,
+        "calibrated": 0.7987,
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-delivery-01",
+      "qid": "q-028",
+      "role": "delivery_engineer",
+      "max_level": 2,
+      "评测集期望": "answer",
+      "gold密级": [
+        "2"
+      ],
+      "桶": "作答",
+      "该给结论": true,
+      "该转人工": false,
+      "可见 gold": 2,
+      "turn": 1,
+      "kind": "首问",
+      "session_id": "s-tu-u-delivery-01-q-028-f4705e",
+      "client_ms": 4171.6,
+      "status": "answer",
+      "conclusion_chars": 23,
+      "n_citations": 1,
+      "needs_human": false,
+      "confidence": {
+        "retrieval": 0.9927,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7967,
+        "logit": 1.3658,
+        "calibrated": 0.7967,
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-delivery-01",
+      "qid": "q-029",
+      "role": "delivery_engineer",
+      "max_level": 2,
+      "评测集期望": "answer",
+      "gold密级": [
+        "2"
+      ],
+      "桶": "作答",
+      "该给结论": true,
+      "该转人工": false,
+      "可见 gold": 2,
+      "turn": 1,
+      "kind": "首问",
+      "session_id": "s-tu-u-delivery-01-q-029-03e1db",
+      "client_ms": 3315.2,
+      "status": "answer",
+      "conclusion_chars": 34,
+      "n_citations": 1,
+      "needs_human": false,
+      "confidence": {
+        "retrieval": 0.9971,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7987,
+        "logit": 1.3782,
+        "calibrated": 0.7987,
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-delivery-01",
+      "qid": "q-030",
+      "role": "delivery_engineer",
+      "max_level": 2,
+      "评测集期望": "answer",
+      "gold密级": [
+        "2"
+      ],
+      "桶": "作答",
+      "该给结论": true,
+      "该转人工": false,
+      "可见 gold": 2,
+      "turn": 1,
+      "kind": "首问",
+      "session_id": "s-tu-u-delivery-01-q-030-dcad68",
+      "client_ms": 3044.6,
+      "status": "answer",
+      "conclusion_chars": 21,
+      "n_citations": 1,
+      "needs_human": false,
+      "confidence": {
+        "retrieval": 0.9863,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7938,
+        "logit": 1.348,
+        "calibrated": 0.7938,
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-delivery-01",
+      "qid": "q-031",
+      "role": "delivery_engineer",
+      "max_level": 2,
+      "评测集期望": "answer",
+      "gold密级": [
+        "2"
+      ],
+      "桶": "作答",
+      "该给结论": true,
+      "该转人工": false,
+      "可见 gold": 2,
+      "turn": 1,
+      "kind": "首问",
+      "session_id": "s-tu-u-delivery-01-q-031-4d8465",
+      "client_ms": 3226.0,
+      "status": "answer",
+      "conclusion_chars": 24,
+      "n_citations": 1,
+      "needs_human": false,
+      "confidence": {
+        "retrieval": 0.9575,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7809,
+        "logit": 1.2709,
+        "calibrated": 0.7809,
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-delivery-01",
+      "qid": "q-032",
+      "role": "delivery_engineer",
+      "max_level": 2,
+      "评测集期望": "answer",
+      "gold密级": [
+        "2"
+      ],
+      "桶": "作答",
+      "该给结论": true,
+      "该转人工": false,
+      "可见 gold": 1,
+      "turn": 1,
+      "kind": "首问",
+      "session_id": "s-tu-u-delivery-01-q-032-a19dd6",
+      "client_ms": 3333.2,
+      "status": "answer",
+      "conclusion_chars": 6,
+      "n_citations": 1,
+      "needs_human": false,
+      "confidence": {
+        "retrieval": 0.9839,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.9,
+        "composite": 0.9727,
+        "logit": 3.5732,
+        "calibrated": 0.9727,
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-newcomer-01",
+      "qid": "q-033",
+      "role": "newcomer",
+      "max_level": 1,
+      "评测集期望": "answer",
+      "gold密级": [
+        "1"
+      ],
+      "桶": "作答",
+      "该给结论": true,
+      "该转人工": false,
+      "可见 gold": 1,
+      "turn": 1,
+      "kind": "首问",
+      "session_id": "s-tu-u-newcomer-01-q-033-276a81",
+      "client_ms": 4524.4,
+      "status": "answer",
+      "conclusion_chars": 85,
+      "n_citations": 1,
+      "needs_human": false,
+      "confidence": {
+        "retrieval": 0.9829,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7923,
+        "logit": 1.3388,
+        "calibrated": 0.7923,
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-pm-01",
+      "qid": "q-034",
+      "role": "pm",
+      "max_level": 3,
+      "评测集期望": "answer",
+      "gold密级": [
+        "3"
+      ],
+      "桶": "作答",
+      "该给结论": true,
+      "该转人工": false,
+      "可见 gold": 2,
+      "turn": 1,
+      "kind": "首问",
+      "session_id": "s-tu-u-pm-01-q-034-5a4ba8",
+      "client_ms": 3163.4,
+      "status": "answer",
+      "conclusion_chars": 5,
+      "n_citations": 1,
+      "needs_human": true,
+      "confidence": {
+        "retrieval": 0.9966,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7985,
+        "logit": 1.3769,
+        "calibrated": 0.7985,
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-delivery-01",
+      "qid": "q-035",
+      "role": "delivery_engineer",
+      "max_level": 2,
+      "评测集期望": "answer",
+      "gold密级": [
+        "2"
+      ],
+      "桶": "作答",
+      "该给结论": true,
+      "该转人工": false,
+      "可见 gold": 1,
+      "turn": 1,
+      "kind": "首问",
+      "session_id": "s-tu-u-delivery-01-q-035-5ad1fa",
+      "client_ms": 3266.5,
+      "status": "answer",
+      "conclusion_chars": 15,
+      "n_citations": 1,
+      "needs_human": false,
+      "confidence": {
+        "retrieval": 0.9829,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7923,
+        "logit": 1.3388,
+        "calibrated": 0.7923,
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-pm-01",
+      "qid": "q-036",
+      "role": "pm",
+      "max_level": 3,
+      "评测集期望": "answer",
+      "gold密级": [
+        "3"
+      ],
+      "桶": "作答",
+      "该给结论": true,
+      "该转人工": false,
+      "可见 gold": 2,
+      "turn": 1,
+      "kind": "首问",
+      "session_id": "s-tu-u-pm-01-q-036-6fd634",
+      "client_ms": 3322.7,
+      "status": "answer",
+      "conclusion_chars": 18,
+      "n_citations": 1,
+      "needs_human": true,
+      "confidence": {
+        "retrieval": 0.9985,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7993,
+        "logit": 1.3819,
+        "calibrated": 0.7993,
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-pm-01",
+      "qid": "q-037",
+      "role": "pm",
+      "max_level": 3,
+      "评测集期望": "answer",
+      "gold密级": [
+        "3"
+      ],
+      "桶": "作答",
+      "该给结论": true,
+      "该转人工": false,
+      "可见 gold": 1,
+      "turn": 1,
+      "kind": "首问",
+      "session_id": "s-tu-u-pm-01-q-037-54edbe",
+      "client_ms": 3335.9,
+      "status": "answer",
+      "conclusion_chars": 30,
+      "n_citations": 1,
+      "needs_human": true,
+      "confidence": {
+        "retrieval": 0.9668,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7851,
+        "logit": 1.2956,
+        "calibrated": 0.7851,
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-newcomer-01",
+      "qid": "q-038",
+      "role": "newcomer",
+      "max_level": 1,
+      "评测集期望": "answer",
+      "gold密级": [
+        "1"
+      ],
+      "桶": "作答",
+      "该给结论": true,
+      "该转人工": false,
+      "可见 gold": 2,
+      "turn": 1,
+      "kind": "首问",
+      "session_id": "s-tu-u-newcomer-01-q-038-e051d2",
+      "client_ms": 4510.4,
+      "status": "answer",
+      "conclusion_chars": 46,
+      "n_citations": 1,
+      "needs_human": false,
+      "confidence": {
+        "retrieval": 0.9839,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7927,
+        "logit": 1.3413,
+        "calibrated": 0.7927,
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-delivery-01",
+      "qid": "q-039",
+      "role": "delivery_engineer",
+      "max_level": 2,
+      "评测集期望": "answer",
+      "gold密级": [
+        "2"
+      ],
+      "桶": "作答",
+      "该给结论": true,
+      "该转人工": false,
+      "可见 gold": 2,
+      "turn": 1,
+      "kind": "首问",
+      "session_id": "s-tu-u-delivery-01-q-039-c12144",
+      "client_ms": 3996.8,
+      "status": "tentative",
+      "conclusion_chars": 39,
+      "n_citations": 1,
+      "needs_human": false,
+      "confidence": {
+        "retrieval": 0.5073,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.5783,
+        "logit": 0.3158,
+        "calibrated": 0.5783,
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-delivery-01",
+      "qid": "q-040",
+      "role": "delivery_engineer",
+      "max_level": 2,
+      "评测集期望": "answer",
+      "gold密级": [
+        "2"
+      ],
+      "桶": "作答",
+      "该给结论": true,
+      "该转人工": false,
+      "可见 gold": 2,
+      "turn": 1,
+      "kind": "首问",
+      "session_id": "s-tu-u-delivery-01-q-040-706065",
+      "client_ms": 5996.9,
+      "status": "tentative",
+      "conclusion_chars": 25,
+      "n_citations": 2,
+      "needs_human": false,
+      "confidence": {
+        "retrieval": 0.5625,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.6031,
+        "logit": 0.4184,
+        "calibrated": 0.6031,
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-delivery-01",
+      "qid": "q-041",
+      "role": "delivery_engineer",
+      "max_level": 2,
+      "评测集期望": "answer",
+      "gold密级": [
+        "2"
+      ],
+      "桶": "作答",
+      "该给结论": true,
+      "该转人工": false,
+      "可见 gold": 3,
+      "turn": 1,
+      "kind": "首问",
+      "session_id": "s-tu-u-delivery-01-q-041-050de1",
+      "client_ms": 5118.3,
+      "status": "tentative",
+      "conclusion_chars": 56,
+      "n_citations": 1,
+      "needs_human": false,
+      "confidence": {
+        "retrieval": 0.4519,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.5534,
+        "logit": 0.2144,
+        "calibrated": 0.5534,
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-delivery-01",
+      "qid": "q-042",
+      "role": "delivery_engineer",
+      "max_level": 2,
+      "评测集期望": "answer",
+      "gold密级": [
+        "2"
+      ],
+      "桶": "作答",
+      "该给结论": true,
+      "该转人工": false,
+      "可见 gold": 2,
+      "turn": 1,
+      "kind": "首问",
+      "session_id": "s-tu-u-delivery-01-q-042-29ac9f",
+      "client_ms": 4650.0,
+      "status": "tentative",
+      "conclusion_chars": 46,
+      "n_citations": 1,
+      "needs_human": false,
+      "confidence": {
+        "retrieval": 0.271,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.4719,
+        "logit": -0.1125,
+        "calibrated": 0.4719,
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-delivery-01",
+      "qid": "q-043",
+      "role": "delivery_engineer",
+      "max_level": 2,
+      "评测集期望": "answer",
+      "gold密级": [
+        "2"
+      ],
+      "桶": "作答",
+      "该给结论": true,
+      "该转人工": false,
+      "可见 gold": 1,
+      "turn": 1,
+      "kind": "首问",
+      "session_id": "s-tu-u-delivery-01-q-043-41dfa0",
+      "client_ms": 5409.0,
+      "status": "tentative",
+      "conclusion_chars": 102,
+      "n_citations": 1,
+      "needs_human": false,
+      "confidence": {
+        "retrieval": 0.5889,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.615,
+        "logit": 0.4684,
+        "calibrated": 0.615,
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-newcomer-01",
+      "qid": "q-044",
+      "role": "newcomer",
+      "max_level": 1,
+      "评测集期望": "answer",
+      "gold密级": [
+        "1",
+        "3"
+      ],
+      "桶": "作答",
+      "该给结论": true,
+      "该转人工": false,
+      "可见 gold": 2,
+      "turn": 1,
+      "kind": "首问",
+      "session_id": "s-tu-u-newcomer-01-q-044-06116c",
+      "client_ms": 417.9,
+      "status": "refuse",
+      "conclusion_chars": 0,
+      "n_citations": 0,
+      "needs_human": false,
+      "confidence": {
+        "retrieval": 0.0242,
+        "composite": 0.0,
+        "calibrated": 0.0,
+        "rule": "retrieval_gate",
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-newcomer-01",
+      "qid": "q-044",
+      "role": "newcomer",
+      "max_level": 1,
+      "评测集期望": "answer",
+      "gold密级": [
+        "1",
+        "3"
+      ],
+      "桶": "作答",
+      "该给结论": true,
+      "该转人工": false,
+      "可见 gold": 2,
+      "turn": 2,
+      "kind": "追问",
+      "session_id": "s-tu-u-newcomer-01-q-044-06116c",
+      "client_ms": 417.4,
+      "status": "refuse",
+      "conclusion_chars": 0,
+      "n_citations": 0,
+      "needs_human": false,
+      "confidence": {
+        "retrieval": 0.0163,
+        "composite": 0.0,
+        "calibrated": 0.0,
+        "rule": "retrieval_gate",
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-delivery-01",
+      "qid": "q-045",
+      "role": "delivery_engineer",
+      "max_level": 2,
+      "评测集期望": "answer",
+      "gold密级": [
+        "2",
+        "3"
+      ],
+      "桶": "作答",
+      "该给结论": true,
+      "该转人工": false,
+      "可见 gold": 1,
+      "turn": 1,
+      "kind": "首问",
+      "session_id": "s-tu-u-delivery-01-q-045-fc782c",
+      "client_ms": 3766.0,
+      "status": "tentative",
+      "conclusion_chars": 34,
+      "n_citations": 1,
+      "needs_human": false,
+      "confidence": {
+        "retrieval": 0.7803,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7011,
+        "logit": 0.8525,
+        "calibrated": 0.7011,
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-newcomer-01",
+      "qid": "q-046",
+      "role": "newcomer",
+      "max_level": 1,
+      "评测集期望": "answer",
+      "gold密级": [
+        "1"
+      ],
+      "桶": "作答",
+      "该给结论": true,
+      "该转人工": false,
+      "可见 gold": 1,
+      "turn": 1,
+      "kind": "首问",
+      "session_id": "s-tu-u-newcomer-01-q-046-12cd62",
+      "client_ms": 4163.7,
+      "status": "tentative",
+      "conclusion_chars": 55,
+      "n_citations": 1,
+      "needs_human": false,
+      "confidence": {
+        "retrieval": 0.2417,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.4588,
+        "logit": -0.1652,
+        "calibrated": 0.4588,
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-pm-01",
+      "qid": "q-047",
+      "role": "pm",
+      "max_level": 3,
+      "评测集期望": "answer",
+      "gold密级": [
+        "3"
+      ],
+      "桶": "作答",
+      "该给结论": true,
+      "该转人工": false,
+      "可见 gold": 2,
+      "turn": 1,
+      "kind": "首问",
+      "session_id": "s-tu-u-pm-01-q-047-b7b484",
+      "client_ms": 332.8,
+      "status": "refuse",
+      "conclusion_chars": 0,
+      "n_citations": 0,
+      "needs_human": false,
+      "confidence": {
+        "retrieval": 0.1387,
+        "composite": 0.0,
+        "calibrated": 0.0,
+        "rule": "retrieval_gate",
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-pm-01",
+      "qid": "q-047",
+      "role": "pm",
+      "max_level": 3,
+      "评测集期望": "answer",
+      "gold密级": [
+        "3"
+      ],
+      "桶": "作答",
+      "该给结论": true,
+      "该转人工": false,
+      "可见 gold": 2,
+      "turn": 2,
+      "kind": "追问",
+      "session_id": "s-tu-u-pm-01-q-047-b7b484",
+      "client_ms": 329.3,
+      "status": "refuse",
+      "conclusion_chars": 0,
+      "n_citations": 0,
+      "needs_human": false,
+      "confidence": {
+        "retrieval": 0.1056,
+        "composite": 0.0,
+        "calibrated": 0.0,
+        "rule": "retrieval_gate",
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-pm-01",
+      "qid": "q-048",
+      "role": "pm",
+      "max_level": 3,
+      "评测集期望": "answer",
+      "gold密级": [
+        "3"
+      ],
+      "桶": "作答",
+      "该给结论": true,
+      "该转人工": false,
+      "可见 gold": 2,
+      "turn": 1,
+      "kind": "首问",
+      "session_id": "s-tu-u-pm-01-q-048-970612",
+      "client_ms": 3697.9,
+      "status": "tentative",
+      "conclusion_chars": 27,
+      "n_citations": 1,
+      "needs_human": true,
+      "confidence": {
+        "retrieval": 0.8105,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7147,
+        "logit": 0.9183,
+        "calibrated": 0.7147,
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-delivery-01",
+      "qid": "q-049",
+      "role": "delivery_engineer",
+      "max_level": 2,
+      "评测集期望": "answer",
+      "gold密级": [
+        "2"
+      ],
+      "桶": "作答",
+      "该给结论": true,
+      "该转人工": false,
+      "可见 gold": 2,
+      "turn": 1,
+      "kind": "首问",
+      "session_id": "s-tu-u-delivery-01-q-049-b0b494",
+      "client_ms": 3279.3,
+      "status": "tentative",
+      "conclusion_chars": 36,
+      "n_citations": 1,
+      "needs_human": false,
+      "confidence": {
+        "retrieval": 0.5757,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.6091,
+        "logit": 0.4435,
+        "calibrated": 0.6091,
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-newcomer-01",
+      "qid": "q-050",
+      "role": "newcomer",
+      "max_level": 1,
+      "评测集期望": "answer",
+      "gold密级": [
+        "1"
+      ],
+      "桶": "作答",
+      "该给结论": true,
+      "该转人工": false,
+      "可见 gold": 1,
+      "turn": 1,
+      "kind": "首问",
+      "session_id": "s-tu-u-newcomer-01-q-050-a7365f",
+      "client_ms": 3294.9,
+      "status": "answer",
+      "conclusion_chars": 27,
+      "n_citations": 1,
+      "needs_human": false,
+      "confidence": {
+        "retrieval": 0.9028,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7563,
+        "logit": 1.1325,
+        "calibrated": 0.7563,
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-newcomer-01",
+      "qid": "q-051",
+      "role": "newcomer",
+      "max_level": 1,
+      "评测集期望": "answer",
+      "gold密级": [
+        "1"
+      ],
+      "桶": "作答",
+      "该给结论": true,
+      "该转人工": false,
+      "可见 gold": 2,
+      "turn": 1,
+      "kind": "首问",
+      "session_id": "s-tu-u-newcomer-01-q-051-9b9985",
+      "client_ms": 360.8,
+      "status": "refuse",
+      "conclusion_chars": 0,
+      "n_citations": 0,
+      "needs_human": false,
+      "confidence": {
+        "retrieval": 0.1232,
+        "composite": 0.0,
+        "calibrated": 0.0,
+        "rule": "retrieval_gate",
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-newcomer-01",
+      "qid": "q-051",
+      "role": "newcomer",
+      "max_level": 1,
+      "评测集期望": "answer",
+      "gold密级": [
+        "1"
+      ],
+      "桶": "作答",
+      "该给结论": true,
+      "该转人工": false,
+      "可见 gold": 2,
+      "turn": 2,
+      "kind": "追问",
+      "session_id": "s-tu-u-newcomer-01-q-051-9b9985",
+      "client_ms": 364.4,
+      "status": "refuse",
+      "conclusion_chars": 0,
+      "n_citations": 0,
+      "needs_human": false,
+      "confidence": {
+        "retrieval": 0.0688,
+        "composite": 0.0,
+        "calibrated": 0.0,
+        "rule": "retrieval_gate",
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-delivery-01",
+      "qid": "q-052",
+      "role": "delivery_engineer",
+      "max_level": 2,
+      "评测集期望": "answer",
+      "gold密级": [
+        "2"
+      ],
+      "桶": "作答",
+      "该给结论": true,
+      "该转人工": false,
+      "可见 gold": 1,
+      "turn": 1,
+      "kind": "首问",
+      "session_id": "s-tu-u-delivery-01-q-052-ad26f0",
+      "client_ms": 374.1,
+      "status": "refuse",
+      "conclusion_chars": 0,
+      "n_citations": 0,
+      "needs_human": false,
+      "confidence": {
+        "retrieval": 0.1184,
+        "composite": 0.0,
+        "calibrated": 0.0,
+        "rule": "retrieval_gate",
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-delivery-01",
+      "qid": "q-052",
+      "role": "delivery_engineer",
+      "max_level": 2,
+      "评测集期望": "answer",
+      "gold密级": [
+        "2"
+      ],
+      "桶": "作答",
+      "该给结论": true,
+      "该转人工": false,
+      "可见 gold": 1,
+      "turn": 2,
+      "kind": "追问",
+      "session_id": "s-tu-u-delivery-01-q-052-ad26f0",
+      "client_ms": 363.8,
+      "status": "refuse",
+      "conclusion_chars": 0,
+      "n_citations": 0,
+      "needs_human": false,
+      "confidence": {
+        "retrieval": 0.1242,
+        "composite": 0.0,
+        "calibrated": 0.0,
+        "rule": "retrieval_gate",
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-pm-01",
+      "qid": "q-053",
+      "role": "pm",
+      "max_level": 3,
+      "评测集期望": "answer",
+      "gold密级": [
+        "3"
+      ],
+      "桶": "作答",
+      "该给结论": true,
+      "该转人工": false,
+      "可见 gold": 1,
+      "turn": 1,
+      "kind": "首问",
+      "session_id": "s-tu-u-pm-01-q-053-efb3d5",
+      "client_ms": 3017.0,
+      "status": "answer",
+      "conclusion_chars": 24,
+      "n_citations": 1,
+      "needs_human": true,
+      "confidence": {
+        "retrieval": 0.9624,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7831,
+        "logit": 1.2838,
+        "calibrated": 0.7831,
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-delivery-01",
+      "qid": "q-054",
+      "role": "delivery_engineer",
+      "max_level": 2,
+      "评测集期望": "answer",
+      "gold密级": [
+        "2",
+        "3"
+      ],
+      "桶": "作答",
+      "该给结论": true,
+      "该转人工": false,
+      "可见 gold": 3,
+      "turn": 1,
+      "kind": "首问",
+      "session_id": "s-tu-u-delivery-01-q-054-dfaf71",
+      "client_ms": 9506.6,
+      "status": "answer",
+      "conclusion_chars": 24,
+      "n_citations": 1,
+      "needs_human": false,
+      "confidence": {
+        "retrieval": 0.9609,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7824,
+        "logit": 1.2797,
+        "calibrated": 0.7824,
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-delivery-01",
+      "qid": "q-055",
+      "role": "delivery_engineer",
+      "max_level": 2,
+      "评测集期望": "answer",
+      "gold密级": [
+        "2"
+      ],
+      "桶": "作答",
+      "该给结论": true,
+      "该转人工": false,
+      "可见 gold": 2,
+      "turn": 1,
+      "kind": "首问",
+      "session_id": "s-tu-u-delivery-01-q-055-53d04a",
+      "client_ms": 3355.7,
+      "status": "answer",
+      "conclusion_chars": 17,
+      "n_citations": 1,
+      "needs_human": false,
+      "confidence": {
+        "retrieval": 0.9888,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7949,
+        "logit": 1.3547,
+        "calibrated": 0.7949,
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-delivery-01",
+      "qid": "q-056",
+      "role": "delivery_engineer",
+      "max_level": 2,
+      "评测集期望": "answer",
+      "gold密级": [
+        "2"
+      ],
+      "桶": "作答",
+      "该给结论": true,
+      "该转人工": false,
+      "可见 gold": 8,
+      "turn": 1,
+      "kind": "首问",
+      "session_id": "s-tu-u-delivery-01-q-056-db4ea7",
+      "client_ms": 11005.3,
+      "status": "answer",
+      "conclusion_chars": 138,
+      "n_citations": 5,
+      "needs_human": false,
+      "confidence": {
+        "retrieval": 0.9907,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7958,
+        "logit": 1.3602,
+        "calibrated": 0.7958,
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-delivery-01",
+      "qid": "q-057",
+      "role": "delivery_engineer",
+      "max_level": 2,
+      "评测集期望": "answer",
+      "gold密级": [
+        "2",
+        "3"
+      ],
+      "桶": "作答",
+      "该给结论": true,
+      "该转人工": false,
+      "可见 gold": 1,
+      "turn": 1,
+      "kind": "首问",
+      "session_id": "s-tu-u-delivery-01-q-057-b3539a",
+      "client_ms": 8128.1,
+      "status": "answer",
+      "conclusion_chars": 122,
+      "n_citations": 1,
+      "needs_human": false,
+      "confidence": {
+        "retrieval": 0.98,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.791,
+        "logit": 1.331,
+        "calibrated": 0.791,
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-delivery-01",
+      "qid": "q-058",
+      "role": "delivery_engineer",
+      "max_level": 2,
+      "评测集期望": "answer",
+      "gold密级": [
+        "2"
+      ],
+      "桶": "作答",
+      "该给结论": true,
+      "该转人工": false,
+      "可见 gold": 1,
+      "turn": 1,
+      "kind": "首问",
+      "session_id": "s-tu-u-delivery-01-q-058-ee9d99",
+      "client_ms": 4379.9,
+      "status": "answer",
+      "conclusion_chars": 53,
+      "n_citations": 1,
+      "needs_human": false,
+      "confidence": {
+        "retrieval": 0.9658,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7846,
+        "logit": 1.2927,
+        "calibrated": 0.7846,
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-pm-01",
+      "qid": "q-059",
+      "role": "pm",
+      "max_level": 3,
+      "评测集期望": "refuse",
+      "gold密级": [],
+      "桶": "拒答",
+      "该给结论": false,
+      "该转人工": false,
+      "可见 gold": 0,
+      "turn": 1,
+      "kind": "首问",
+      "session_id": "s-tu-u-pm-01-q-059-7c3670",
+      "client_ms": 2150.8,
+      "status": "refuse",
+      "conclusion_chars": 0,
+      "n_citations": 0,
+      "needs_human": true,
+      "confidence": {
+        "retrieval": 0.8745,
+        "composite": 0.0,
+        "calibrated": 0.0,
+        "rule": "declared_no_evidence",
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-pm-01",
+      "qid": "q-060",
+      "role": "pm",
+      "max_level": 3,
+      "评测集期望": "refuse",
+      "gold密级": [],
+      "桶": "拒答",
+      "该给结论": false,
+      "该转人工": false,
+      "可见 gold": 0,
+      "turn": 1,
+      "kind": "首问",
+      "session_id": "s-tu-u-pm-01-q-060-c45752",
+      "client_ms": 355.4,
+      "status": "refuse",
+      "conclusion_chars": 0,
+      "n_citations": 0,
+      "needs_human": false,
+      "confidence": {
+        "retrieval": 0.0089,
+        "composite": 0.0,
+        "calibrated": 0.0,
+        "rule": "retrieval_gate",
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-pm-01",
+      "qid": "q-061",
+      "role": "pm",
+      "max_level": 3,
+      "评测集期望": "refuse",
+      "gold密级": [],
+      "桶": "拒答",
+      "该给结论": false,
+      "该转人工": false,
+      "可见 gold": 0,
+      "turn": 1,
+      "kind": "首问",
+      "session_id": "s-tu-u-pm-01-q-061-1be703",
+      "client_ms": 3622.6,
+      "status": "refuse",
+      "conclusion_chars": 0,
+      "n_citations": 0,
+      "needs_human": false,
+      "confidence": {
+        "retrieval": 0.2074,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.0,
+        "calibrated": 0.0,
+        "rule": "marginal_evidence_refusal",
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-pm-01",
+      "qid": "q-062",
+      "role": "pm",
+      "max_level": 3,
+      "评测集期望": "refuse",
+      "gold密级": [],
+      "桶": "拒答",
+      "该给结论": false,
+      "该转人工": false,
+      "可见 gold": 0,
+      "turn": 1,
+      "kind": "首问",
+      "session_id": "s-tu-u-pm-01-q-062-974bb7",
+      "client_ms": 2650.2,
+      "status": "refuse",
+      "conclusion_chars": 0,
+      "n_citations": 0,
+      "needs_human": true,
+      "confidence": {
+        "retrieval": 0.6504,
+        "composite": 0.0,
+        "calibrated": 0.0,
+        "rule": "declared_no_evidence",
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-pm-01",
+      "qid": "q-063",
+      "role": "pm",
+      "max_level": 3,
+      "评测集期望": "refuse",
+      "gold密级": [],
+      "桶": "拒答",
+      "该给结论": false,
+      "该转人工": false,
+      "可见 gold": 0,
+      "turn": 1,
+      "kind": "首问",
+      "session_id": "s-tu-u-pm-01-q-063-ba4bca",
+      "client_ms": 8452.3,
+      "status": "refuse",
+      "conclusion_chars": 0,
+      "n_citations": 0,
+      "needs_human": true,
+      "confidence": {
+        "retrieval": 0.2181,
+        "composite": 0.0,
+        "calibrated": 0.0,
+        "rule": "declared_no_evidence",
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-pm-01",
+      "qid": "q-064",
+      "role": "pm",
+      "max_level": 3,
+      "评测集期望": "refuse",
+      "gold密级": [],
+      "桶": "拒答",
+      "该给结论": false,
+      "该转人工": false,
+      "可见 gold": 0,
+      "turn": 1,
+      "kind": "首问",
+      "session_id": "s-tu-u-pm-01-q-064-b97757",
+      "client_ms": 3403.8,
+      "status": "refuse",
+      "conclusion_chars": 0,
+      "n_citations": 0,
+      "needs_human": true,
+      "confidence": {
+        "retrieval": 0.5591,
+        "composite": 0.0,
+        "calibrated": 0.0,
+        "rule": "declared_no_evidence",
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-pm-01",
+      "qid": "q-065",
+      "role": "pm",
+      "max_level": 3,
+      "评测集期望": "refuse",
+      "gold密级": [],
+      "桶": "拒答",
+      "该给结论": false,
+      "该转人工": false,
+      "可见 gold": 0,
+      "turn": 1,
+      "kind": "首问",
+      "session_id": "s-tu-u-pm-01-q-065-43e07a",
+      "client_ms": 341.9,
+      "status": "refuse",
+      "conclusion_chars": 0,
+      "n_citations": 0,
+      "needs_human": false,
+      "confidence": {
+        "retrieval": 0.0048,
+        "composite": 0.0,
+        "calibrated": 0.0,
+        "rule": "retrieval_gate",
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-pm-01",
+      "qid": "q-066",
+      "role": "pm",
+      "max_level": 3,
+      "评测集期望": "escalate",
+      "gold密级": [
+        "3"
+      ],
+      "桶": "转人工",
+      "该给结论": true,
+      "该转人工": true,
+      "可见 gold": 4,
+      "turn": 1,
+      "kind": "首问",
+      "session_id": "s-tu-u-pm-01-q-066-ea5611",
+      "client_ms": 59.8,
+      "status": "escalate",
+      "conclusion_chars": 0,
+      "n_citations": 0,
+      "needs_human": true,
+      "confidence": {
+        "composite": 0.0,
+        "calibrated": 0.0,
+        "rule": "sensitive_block",
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-pm-01",
+      "qid": "q-067",
+      "role": "pm",
+      "max_level": 3,
+      "评测集期望": "escalate",
+      "gold密级": [
+        "3"
+      ],
+      "桶": "转人工",
+      "该给结论": true,
+      "该转人工": true,
+      "可见 gold": 2,
+      "turn": 1,
+      "kind": "首问",
+      "session_id": "s-tu-u-pm-01-q-067-05f268",
+      "client_ms": 41.0,
+      "status": "escalate",
+      "conclusion_chars": 0,
+      "n_citations": 0,
+      "needs_human": true,
+      "confidence": {
+        "composite": 0.0,
+        "calibrated": 0.0,
+        "rule": "sensitive_block",
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-pm-01",
+      "qid": "q-068",
+      "role": "pm",
+      "max_level": 3,
+      "评测集期望": "escalate",
+      "gold密级": [
+        "3"
+      ],
+      "桶": "转人工",
+      "该给结论": true,
+      "该转人工": true,
+      "可见 gold": 2,
+      "turn": 1,
+      "kind": "首问",
+      "session_id": "s-tu-u-pm-01-q-068-ed51a6",
+      "client_ms": 56.1,
+      "status": "escalate",
+      "conclusion_chars": 0,
+      "n_citations": 0,
+      "needs_human": true,
+      "confidence": {
+        "composite": 0.0,
+        "calibrated": 0.0,
+        "rule": "sensitive_block",
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-pm-01",
+      "qid": "q-069",
+      "role": "pm",
+      "max_level": 3,
+      "评测集期望": "escalate",
+      "gold密级": [
+        "3"
+      ],
+      "桶": "转人工",
+      "该给结论": true,
+      "该转人工": true,
+      "可见 gold": 2,
+      "turn": 1,
+      "kind": "首问",
+      "session_id": "s-tu-u-pm-01-q-069-f8629f",
+      "client_ms": 60.6,
+      "status": "escalate",
+      "conclusion_chars": 0,
+      "n_citations": 0,
+      "needs_human": true,
+      "confidence": {
+        "composite": 0.0,
+        "calibrated": 0.0,
+        "rule": "sensitive_block",
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-pm-01",
+      "qid": "q-070",
+      "role": "pm",
+      "max_level": 3,
+      "评测集期望": "escalate",
+      "gold密级": [
+        "3"
+      ],
+      "桶": "转人工",
+      "该给结论": true,
+      "该转人工": true,
+      "可见 gold": 2,
+      "turn": 1,
+      "kind": "首问",
+      "session_id": "s-tu-u-pm-01-q-070-13c0ac",
+      "client_ms": 4888.5,
+      "status": "answer",
+      "conclusion_chars": 26,
+      "n_citations": 1,
+      "needs_human": true,
+      "confidence": {
+        "retrieval": 0.9683,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7857,
+        "logit": 1.2992,
+        "calibrated": 0.7857,
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-newcomer-01",
+      "qid": "q-071",
+      "role": "newcomer",
+      "max_level": 1,
+      "评测集期望": "answer",
+      "gold密级": [
+        "1",
+        "3"
+      ],
+      "桶": "作答",
+      "该给结论": true,
+      "该转人工": false,
+      "可见 gold": 1,
+      "turn": 1,
+      "kind": "首问",
+      "session_id": "s-tu-u-newcomer-01-q-071-17992d",
+      "client_ms": 3909.9,
+      "status": "answer",
+      "conclusion_chars": 44,
+      "n_citations": 1,
+      "needs_human": false,
+      "confidence": {
+        "retrieval": 0.8989,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7545,
+        "logit": 1.1228,
+        "calibrated": 0.7545,
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-delivery-01",
+      "qid": "q-072",
+      "role": "delivery_engineer",
+      "max_level": 2,
+      "评测集期望": "answer",
+      "gold密级": [
+        "2"
+      ],
+      "桶": "作答",
+      "该给结论": true,
+      "该转人工": false,
+      "可见 gold": 1,
+      "turn": 1,
+      "kind": "首问",
+      "session_id": "s-tu-u-delivery-01-q-072-764c9f",
+      "client_ms": 3812.7,
+      "status": "answer",
+      "conclusion_chars": 21,
+      "n_citations": 1,
+      "needs_human": false,
+      "confidence": {
+        "retrieval": 0.9775,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7899,
+        "logit": 1.3243,
+        "calibrated": 0.7899,
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-pm-01",
+      "qid": "q-073",
+      "role": "pm",
+      "max_level": 3,
+      "评测集期望": "answer",
+      "gold密级": [
+        "3"
+      ],
+      "桶": "作答",
+      "该给结论": true,
+      "该转人工": false,
+      "可见 gold": 1,
+      "turn": 1,
+      "kind": "首问",
+      "session_id": "s-tu-u-pm-01-q-073-592d58",
+      "client_ms": 5733.0,
+      "status": "answer",
+      "conclusion_chars": 154,
+      "n_citations": 1,
+      "needs_human": true,
+      "confidence": {
+        "retrieval": 0.9888,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7949,
+        "logit": 1.3547,
+        "calibrated": 0.7949,
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-delivery-01",
+      "qid": "q-074",
+      "role": "delivery_engineer",
+      "max_level": 2,
+      "评测集期望": "answer",
+      "gold密级": [
+        "2"
+      ],
+      "桶": "作答",
+      "该给结论": true,
+      "该转人工": false,
+      "可见 gold": 2,
+      "turn": 1,
+      "kind": "首问",
+      "session_id": "s-tu-u-delivery-01-q-074-b2e866",
+      "client_ms": 4472.4,
+      "status": "answer",
+      "conclusion_chars": 29,
+      "n_citations": 1,
+      "needs_human": false,
+      "confidence": {
+        "retrieval": 0.9946,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7976,
+        "logit": 1.3714,
+        "calibrated": 0.7976,
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-delivery-01",
+      "qid": "q-075",
+      "role": "delivery_engineer",
+      "max_level": 2,
+      "评测集期望": "answer",
+      "gold密级": [
+        "2"
+      ],
+      "桶": "作答",
+      "该给结论": true,
+      "该转人工": false,
+      "可见 gold": 1,
+      "turn": 1,
+      "kind": "首问",
+      "session_id": "s-tu-u-delivery-01-q-075-840593",
+      "client_ms": 4647.7,
+      "status": "answer",
+      "conclusion_chars": 26,
+      "n_citations": 1,
+      "needs_human": false,
+      "confidence": {
+        "retrieval": 0.9565,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7804,
+        "logit": 1.268,
+        "calibrated": 0.7804,
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-delivery-01",
+      "qid": "q-076",
+      "role": "delivery_engineer",
+      "max_level": 2,
+      "评测集期望": "answer",
+      "gold密级": [
+        "2"
+      ],
+      "桶": "作答",
+      "该给结论": true,
+      "该转人工": false,
+      "可见 gold": 2,
+      "turn": 1,
+      "kind": "首问",
+      "session_id": "s-tu-u-delivery-01-q-076-1b03f7",
+      "client_ms": 3396.5,
+      "status": "answer",
+      "conclusion_chars": 42,
+      "n_citations": 1,
+      "needs_human": false,
+      "confidence": {
+        "retrieval": 0.894,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7523,
+        "logit": 1.1109,
+        "calibrated": 0.7523,
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-delivery-01",
+      "qid": "q-077",
+      "role": "delivery_engineer",
+      "max_level": 2,
+      "评测集期望": "answer",
+      "gold密级": [
+        "2"
+      ],
+      "桶": "作答",
+      "该给结论": true,
+      "该转人工": false,
+      "可见 gold": 4,
+      "turn": 1,
+      "kind": "首问",
+      "session_id": "s-tu-u-delivery-01-q-077-9f30ac",
+      "client_ms": 4000.9,
+      "status": "answer",
+      "conclusion_chars": 69,
+      "n_citations": 1,
+      "needs_human": false,
+      "confidence": {
+        "retrieval": 0.9868,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7941,
+        "logit": 1.3498,
+        "calibrated": 0.7941,
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-delivery-01",
+      "qid": "q-078",
+      "role": "delivery_engineer",
+      "max_level": 2,
+      "评测集期望": "answer",
+      "gold密级": [
+        "2"
+      ],
+      "桶": "作答",
+      "该给结论": true,
+      "该转人工": false,
+      "可见 gold": 2,
+      "turn": 1,
+      "kind": "首问",
+      "session_id": "s-tu-u-delivery-01-q-078-4ea9da",
+      "client_ms": 4382.7,
+      "status": "answer",
+      "conclusion_chars": 81,
+      "n_citations": 1,
+      "needs_human": false,
+      "confidence": {
+        "retrieval": 0.9868,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7941,
+        "logit": 1.3498,
+        "calibrated": 0.7941,
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-pm-01",
+      "qid": "q-079",
+      "role": "pm",
+      "max_level": 3,
+      "评测集期望": "answer",
+      "gold密级": [
+        "3"
+      ],
+      "桶": "作答",
+      "该给结论": true,
+      "该转人工": false,
+      "可见 gold": 2,
+      "turn": 1,
+      "kind": "首问",
+      "session_id": "s-tu-u-pm-01-q-079-64c0b9",
+      "client_ms": 4875.8,
+      "status": "answer",
+      "conclusion_chars": 48,
+      "n_citations": 1,
+      "needs_human": true,
+      "confidence": {
+        "retrieval": 0.9697,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7864,
+        "logit": 1.3034,
+        "calibrated": 0.7864,
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-delivery-01",
+      "qid": "q-080",
+      "role": "delivery_engineer",
+      "max_level": 2,
+      "评测集期望": "answer",
+      "gold密级": [
+        "2"
+      ],
+      "桶": "作答",
+      "该给结论": true,
+      "该转人工": false,
+      "可见 gold": 4,
+      "turn": 1,
+      "kind": "首问",
+      "session_id": "s-tu-u-delivery-01-q-080-6df788",
+      "client_ms": 2828.8,
+      "status": "answer",
+      "conclusion_chars": 21,
+      "n_citations": 1,
+      "needs_human": false,
+      "confidence": {
+        "retrieval": 0.9668,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.7851,
+        "logit": 1.2956,
+        "calibrated": 0.7851,
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-newcomer-01",
+      "qid": "q-003",
+      "role": "newcomer",
+      "max_level": 1,
+      "评测集期望": "answer",
+      "gold密级": [
+        "3"
+      ],
+      "桶": "权限拦截",
+      "该给结论": false,
+      "该转人工": false,
+      "可见 gold": 0,
+      "为什么": "gold 密级 ['3'] 全部高于角色上限 1",
+      "turn": 1,
+      "kind": "首问",
+      "session_id": "s-tu-u-newcomer-01-q-003-433ca7",
+      "client_ms": 387.0,
+      "status": "refuse",
+      "conclusion_chars": 0,
+      "n_citations": 0,
+      "needs_human": false,
+      "confidence": {
+        "retrieval": 0.0083,
+        "composite": 0.0,
+        "calibrated": 0.0,
+        "rule": "retrieval_gate",
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-newcomer-01",
+      "qid": "q-004",
+      "role": "newcomer",
+      "max_level": 1,
+      "评测集期望": "answer",
+      "gold密级": [
+        "3"
+      ],
+      "桶": "权限拦截",
+      "该给结论": false,
+      "该转人工": false,
+      "可见 gold": 0,
+      "为什么": "gold 密级 ['3'] 全部高于角色上限 1",
+      "turn": 1,
+      "kind": "首问",
+      "session_id": "s-tu-u-newcomer-01-q-004-22df66",
+      "client_ms": 385.0,
+      "status": "refuse",
+      "conclusion_chars": 0,
+      "n_citations": 0,
+      "needs_human": false,
+      "confidence": {
+        "retrieval": 0.002,
+        "composite": 0.0,
+        "calibrated": 0.0,
+        "rule": "retrieval_gate",
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-newcomer-01",
+      "qid": "q-006",
+      "role": "newcomer",
+      "max_level": 1,
+      "评测集期望": "answer",
+      "gold密级": [
+        "3"
+      ],
+      "桶": "权限拦截",
+      "该给结论": false,
+      "该转人工": false,
+      "可见 gold": 0,
+      "为什么": "gold 密级 ['3'] 全部高于角色上限 1",
+      "turn": 1,
+      "kind": "首问",
+      "session_id": "s-tu-u-newcomer-01-q-006-c4c817",
+      "client_ms": 457.3,
+      "status": "refuse",
+      "conclusion_chars": 0,
+      "n_citations": 0,
+      "needs_human": false,
+      "confidence": {
+        "retrieval": 0.1412,
+        "composite": 0.0,
+        "calibrated": 0.0,
+        "rule": "retrieval_gate",
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-newcomer-01",
+      "qid": "q-007",
+      "role": "newcomer",
+      "max_level": 1,
+      "评测集期望": "answer",
+      "gold密级": [
+        "3"
+      ],
+      "桶": "权限拦截",
+      "该给结论": false,
+      "该转人工": false,
+      "可见 gold": 0,
+      "为什么": "gold 密级 ['3'] 全部高于角色上限 1",
+      "turn": 1,
+      "kind": "首问",
+      "session_id": "s-tu-u-newcomer-01-q-007-555179",
+      "client_ms": 330.4,
+      "status": "refuse",
+      "conclusion_chars": 0,
+      "n_citations": 0,
+      "needs_human": false,
+      "confidence": {
+        "retrieval": 0.0031,
+        "composite": 0.0,
+        "calibrated": 0.0,
+        "rule": "retrieval_gate",
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    },
+    {
+      "user": "u-delivery-01",
+      "qid": "q-001",
+      "role": "delivery_engineer",
+      "max_level": 2,
+      "评测集期望": "answer",
+      "gold密级": [
+        "2"
+      ],
+      "桶": "作答",
+      "该给结论": true,
+      "该转人工": false,
+      "可见 gold": 2,
+      "turn": 3,
+      "kind": "指代",
+      "session_id": "s-tu-u-delivery-01-q-001-62c66d",
+      "client_ms": 3723.0,
+      "status": "tentative",
+      "conclusion_chars": 56,
+      "n_citations": 1,
+      "needs_human": false,
+      "confidence": {
+        "retrieval": 0.252,
+        "citation_consistency": 1.0,
+        "self_assessed": 0.0,
+        "composite": 0.4634,
+        "logit": -0.1467,
+        "calibrated": 0.4634,
+        "temperature": 1.0,
+        "score_basis": "rule_composite_not_probability"
+      },
+      "cache_hit": false,
+      "retrieval_degraded": [],
+      "contract_keys_ok": true
+    }
+  ],
+  "metrics": {
+    "模拟自助解答率": {
+      "n_tasks": 68,
+      "value": 0.9412,
+      "小样本警告": null,
+      "reading": "64/68",
+      "门禁": "≥ 60%",
+      "分母怎么来": "只算「这个角色看得见 gold」的作答任务；被权限拦掉的不进分母",
+      "定义": "该答任务里最终拿到可用答案（answer/tentative）的比例（含追问后拿到）"
+    },
+    "一次通过率": {
+      "n_tasks": 68,
+      "value": 0.9265,
+      "reading": "63/68",
+      "定义": "首轮就拿到可用答案——这才是「重复提问占比」能替代的那件事"
+    },
+    "追问占比（模拟）": {
+      "value": 0.0556,
+      "n_reask": 5,
+      "n_turns": 90,
+      "边界": "**由剧本的行为模型决定，不是真实用户行为率**；换剧本就换数，不得对外称「重复提问率」"
+    },
+    "权限拦截正确率": {
+      "value": 1.0,
+      "reading": "4/4",
+      "定义": "看不见 gold 的题：既没给结论也没引用 = 拦住；给了结论就是越权"
+    },
+    "转人工触发率": {
+      "value": 1.0,
+      "reading": "5/5",
+      "边界": "只在**该角色看得见密级 3 证据**的任务上测；低权限角色问同一题走的是拦截不是转人工"
+    },
+    "该拒的没蹦结论": {
+      "reading": "7/7"
+    },
+    "status 分布": {
+      "answer": 56,
+      "tentative": 10,
+      "refuse": 19,
+      "escalate": 5
+    },
+    "检索静默降级轮数": {
+      "value": 0,
+      "题": [],
+      "原因": [],
+      "读法": "这些轮次是**只用 BM25 腿**答出来的；>0 就别把本轮当成完整 hybrid 的成绩（warm-up 已排掉冷启动那一呼，剩下的要单独查）"
+    }
+  },
+  "not_measurable": {
+    "重复提问占比「下降 ≥30%」": "要**上线前**的基线（没有系统时用户问几次）。测试用户给不出「没有系统时」的行为，所以只能报上面的绝对值，不能报下降幅度。",
+    "新人上手周期缩短 ≥30%": "要真人 + 时间维度（从入职到独立使用的天数）。脚本化的新人只能测「任务能不能做完」，测不出「花了多久上手」。"
+  },
+  "cross_check": {
+    "对照源": "var/gate0/answer_correct_calibration.json",
+    "本轮未答上": [
+      "q-044",
+      "q-047",
+      "q-051",
+      "q-052"
+    ],
+    "人判归因的检索漏召": [
+      "q-003",
+      "q-044",
+      "q-047",
+      "q-051",
+      "q-052"
+    ],
+    "两集合是否一致": true,
+    "读法": "未答上的题**全部落在**人判归因已登记的检索漏召里 ⇒ 这条新通路没在制造新的失败类型"
+  },
+  "rbac_leak_checks": [
+    {
+      "qid": "q-066",
+      "asked_by": "newcomer",
+      "max_level": 1,
+      "status": "escalate",
+      "n_citations": 0,
+      "conclusion_chars": 0,
+      "cited_security_levels": [],
+      "note": "n_citations=0：本条只证明没泄漏，不证明「看见了但按密级拒绝」",
+      "leaked_above_clearance": false
+    },
+    {
+      "qid": "q-067",
+      "asked_by": "newcomer",
+      "max_level": 1,
+      "status": "escalate",
+      "n_citations": 0,
+      "conclusion_chars": 0,
+      "cited_security_levels": [],
+      "note": "n_citations=0：本条只证明没泄漏，不证明「看见了但按密级拒绝」",
+      "leaked_above_clearance": false
+    },
+    {
+      "qid": "q-068",
+      "asked_by": "newcomer",
+      "max_level": 1,
+      "status": "escalate",
+      "n_citations": 0,
+      "conclusion_chars": 0,
+      "cited_security_levels": [],
+      "note": "n_citations=0：本条只证明没泄漏，不证明「看见了但按密级拒绝」",
+      "leaked_above_clearance": false
+    },
+    {
+      "qid": "q-069",
+      "asked_by": "newcomer",
+      "max_level": 1,
+      "status": "escalate",
+      "n_citations": 0,
+      "conclusion_chars": 0,
+      "cited_security_levels": [],
+      "note": "n_citations=0：本条只证明没泄漏，不证明「看见了但按密级拒绝」",
+      "leaked_above_clearance": false
+    },
+    {
+      "qid": "q-070",
+      "asked_by": "newcomer",
+      "max_level": 1,
+      "status": "refuse",
+      "n_citations": 0,
+      "conclusion_chars": 0,
+      "cited_security_levels": [],
+      "note": "n_citations=0：本条只证明没泄漏，不证明「看见了但按密级拒绝」",
+      "leaked_above_clearance": false
+    },
+    {
+      "qid": "q-003",
+      "asked_by": "newcomer",
+      "max_level": 1,
+      "status": "refuse",
+      "n_citations": 0,
+      "conclusion_chars": 0,
+      "cited_security_levels": [],
+      "note": "n_citations=0：本条只证明没泄漏，不证明「看见了但按密级拒绝」",
+      "leaked_above_clearance": false
+    },
+    {
+      "qid": "q-004",
+      "asked_by": "newcomer",
+      "max_level": 1,
+      "status": "refuse",
+      "n_citations": 0,
+      "conclusion_chars": 0,
+      "cited_security_levels": [],
+      "note": "n_citations=0：本条只证明没泄漏，不证明「看见了但按密级拒绝」",
+      "leaked_above_clearance": false
+    },
+    {
+      "qid": "q-006",
+      "asked_by": "newcomer",
+      "max_level": 1,
+      "status": "refuse",
+      "n_citations": 0,
+      "conclusion_chars": 0,
+      "cited_security_levels": [],
+      "note": "n_citations=0：本条只证明没泄漏，不证明「看见了但按密级拒绝」",
+      "leaked_above_clearance": false
+    },
+    {
+      "qid": "q-007",
+      "asked_by": "newcomer",
+      "max_level": 1,
+      "status": "refuse",
+      "n_citations": 0,
+      "conclusion_chars": 0,
+      "cited_security_levels": [],
+      "note": "n_citations=0：本条只证明没泄漏，不证明「看见了但按密级拒绝」",
+      "leaked_above_clearance": false
+    }
+  ],
+  "sse": {
+    "ok": true,
+    "first_visible_ms": 763.5
+  },
+  "db_checks": {
+    "session_turn_rows": 90,
+    "with_total_ms": 90,
+    "audit_rows_for_actors": 446
+  },
+  "link_checks": {
+    "契约完整（每轮都含 status/conclusion/citations/session_id）": true,
+    "每轮都有引用或明确拒答（零引用却出结论 = 0 起）": true,
+    "session_turn 全行带 total_ms（e2e 漏计修复在线生效）": true,
+    "审计真落库": true,
+    "审计读接口可用（GET /api/v1/audit）": true,
+    "SSE 流式可通且有可读首字": true,
+    "多轮指代消解后仍给出可用答案": true,
+    "权限拦不住的题 = 0（看不见 gold 就不该给结论）": true,
+    "该转人工的每轮 needs_human 都为真": true,
+    "该拒的每轮都没蹦出结论": true,
+    "越权探测无一泄漏": true,
+    "生产无「已生效但未复核」的版本（复核闸在位）": true,
+    "云端兜底关闭（数据不出域）": true
+  },
+  "link_checks_failed": []
+}

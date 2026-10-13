@@ -25,6 +25,27 @@ OUT_MD = ROOT / "reports" / "m5" / "M5_DoD核对表.md"
 STATUSES = ("达标", "部分达标", "不达标", "不可测", "待复测", "本次产出")
 
 
+def business_status(tu: dict, link_failed: list[str]) -> tuple[str, str | None]:
+    """DoD#6 的状态推导。四种落点都要能单测，因为它们的**危险方向各不相同**：
+    缺产物写成「不可测」＝把没跑当成结构性拿不到；冒烟读数当业务结论＝拿手挑的题冒充用户；
+    链路有失败还报比率＝系统没在正常跑，数字无从谈起。
+    """
+    if not tu:
+        return "不可测", ("测试用户运行验收产物缺失——先跑 `scripts/m5_test_user_run.py` 再谈这一格。"
+                        "没有数据就不要写结论，哪怕是「不可测」这种看起来保守的词。")
+    if not str(tu.get("剧本来源", "")).startswith("评测集全量"):
+        n = (tu.get("metrics") or {}).get("模拟自助解答率", {}).get("n_tasks", "?")
+        return "待复测", (f"只有冒烟剧本（{tu.get('剧本来源', '未记录')}）：n={n} 且题由脚本作者手挑，"
+                        "这种比率不能当业务读数——它只会复现挑题这个动作。跑全量再来。")
+    if link_failed:
+        return "不达标", f"链路检查有 {len(link_failed)} 项不过：{link_failed}——系统没在正常跑，业务比率无从谈起。"
+    v = (tu.get("metrics") or {}).get("模拟自助解答率", {}).get("value")
+    if v is None:
+        return "不可测", "作答任务数为 0：分母为空，任何比率都不许出。"
+    # 门禁过了也只到「部分达标」：三条业务指标里有两条按构造仍不可测，整格不能判成全过
+    return ("部分达标" if v >= 0.60 else "不达标"), None
+
+
 def load(name: str) -> dict:
     p = ART / name
     try:
@@ -85,6 +106,13 @@ def build() -> dict:
     ap = ac.get("populations", {}).get("answer_prod", {})
     ab = ac.get("populations", {}).get("all_behav", {})
     ver = {i: load(f"verdict_0{i}.json") for i in range(1, 7)}
+
+    tu = load("m5_test_user.json")
+    tu_m = tu.get("metrics") or {}
+    tu_self = tu_m.get("模拟自助解答率") or {}
+    tu_link_failed = tu.get("link_checks_failed") or []
+    tu_v = tu_self.get("value")
+    tu_status, tu_say = business_status(tu, tu_link_failed)
 
     bf = m2.get("baseline_full", {})
     sg = bf.get("strict_gold", {})
@@ -227,13 +255,32 @@ def build() -> dict:
             ["var/gate0/m2_eval.json", "var/gate0/m5_latency_replicates.json",
              "scripts/m5_latency_clean.py", "scripts/m5_latency_merge.py"],
             lat_say),
-        row("6", "业务指标", "不可测", "自助解答率 ≥ 60%；重复提问占比下降 ≥ 30%；新人上手周期缩短 ≥ 30%",
+        row("6", "业务指标", tu_status,
+            "**V1.27 改判（用户裁「测试用户可替代真实用户」）**：自助解答率 → **模拟口径** ≥ 60%；"
+            "重复提问占比「下降 ≥30%」与新人上手周期「缩短 ≥30%」两条**仍不可测**——"
+            "它们要的是上线前基线与真人时间维度，测试用户给不出",
+            (f"模拟自助解答率 **{tu_self.get('reading', '无数')} = {tu_v}**"
+             f"（n={tu_self.get('n_tasks')} 个作答任务，剧本={tu.get('剧本来源', '未记录')}）｜ "
+             f"一次通过率 {tu_m.get('一次通过率', {}).get('reading', '无数')} ｜ "
+             f"权限拦截正确率 {tu_m.get('权限拦截正确率', {}).get('reading', '无数')} ｜ "
+             f"转人工触发率 {tu_m.get('转人工触发率', {}).get('reading', '无数')} ｜ "
+             f"链路检查 {len(tu.get('link_checks', {}) or {}) - len(tu_link_failed)}/"
+             f"{len(tu.get('link_checks', {}) or {})} 过 ｜ "
+             f"旧代理（进程内探针）：可答题 {ans.get('n_answerable')} 道里 answer {sd.get('answer')} / "
+             f"tentative {sd.get('tentative')} / refuse {sd.get('refuse')} / escalate {sd.get('escalate')}")
+            if tu else
             f"无真实用户与线上流量 ⇒ 不可测。结构性代理：可答题 {ans.get('n_answerable')} 道里 "
-            f"answer {sd.get('answer')} / tentative {sd.get('tentative')} / refuse {sd.get('refuse')} / escalate {sd.get('escalate')}，"
-            f"需转人工 {ans.get('needs_human')} 道",
-            ["var/gate0/m3_answer_probe.json"],
-            "代理读数测的是「构造语料上的系统行为分布」，**不是**用户是否真的自助解决了问题。"
-            "把它当业务指标写进材料就是编数；这一格在 MVP 阶段只能标不可测。"),
+            f"answer {sd.get('answer')} / tentative {sd.get('tentative')} / refuse {sd.get('refuse')} / "
+            f"escalate {sd.get('escalate')}，需转人工 {ans.get('needs_human')} 道",
+            ["var/gate0/m5_test_user.json", "reports/m5/M5_测试用户运行验收.md", "var/gate0/m3_answer_probe.json"],
+            tu_say or (
+            "**这一格最多只能「部分达标」，而且要同句带上下面这三条限制**："
+            "① 分子分母都在**测试用户剧本**上，剧本是评测集全量自动派生（题与角色不由人挑），但"
+            "「测试用户会不会真的这样问」这件事本身没有验证过；"
+            "② 它替代的是「操作者是人」这一维，**不替代**上线前基线与时间维度，"
+            "所以「下降 ≥30%」「周期缩短 ≥30%」这两条依旧无对照可比，不得写成达标；"
+            "③ 同一份系统行为在进程内探针上是同一批数——这里多出来的价值是**走生产 HTTP 入口 + 真实角色身份**，"
+            "不是更高的证据等级。对外引用必须连着这三条一起引。")),
         row("7", "合规", "部分达标", "数据不出域；RBAC 检索层过滤；审计追加禁改",
             f"⑥ 2026-10-12 复跑：一键 {g6s.get('up', {}).get('startup_sec')}s、全 healthy={g6s.get('up', {}).get('all_healthy')}、"
             f"非回环绑定 {len(g6s.get('binding', {}).get('non_loopback_bindings', []))}、"
