@@ -782,6 +782,29 @@ def create_app(*, skip_embedding: bool = False, scheduler: Any | None = None, co
         out["scope"] = {"role": ctx.role, "reader": reader}
         return out
 
+    @app.get("/api/v1/sessions")
+    def sessions_list(
+        request: Request,
+        x_kee_role: str | None = Header(None),
+        x_kee_actor: str | None = Header(None),
+        limit: int = 50,
+    ) -> dict[str, Any]:
+        """当前身份自己的会话列表（左侧「会话历史」栏）。
+
+        只返回自己的：`user_id == actor`。这条判的是**归属**不是**角色**，
+        所以治理角色也看不到别人的会话——能读全库密级不等于能读别人的提问历史，
+        后者是另一件事（真要审计别人的会话，走 `audit_log` 的 `answer_generated` 记录）。
+        列表本身不落审计：读某一条时 `session_read` 会落，逐条列表再各落一行只会把表灌成噪声。
+        """
+        ctx, actor = context_of(x_kee_role, x_kee_actor, None, None)
+        rows = pg.list_sessions(actor, limit=max(1, min(limit, 200)))
+        return {
+            "total": len(rows),
+            "scope": {"actor": actor, "role": ctx.role},
+            "items": [{**r, "created_at": str(r["created_at"]), "updated_at": str(r["updated_at"]),
+                       "last_at": str(r["last_at"]) if r.get("last_at") else ""} for r in rows],
+        }
+
     @app.get("/api/v1/sessions/{session_id}")
     def session_history(
         session_id: str,
@@ -794,7 +817,10 @@ def create_app(*, skip_embedding: bool = False, scheduler: Any | None = None, co
         sess = pg.session_ctx(session_id)
         if sess is None:
             raise ApiError("E404", 404, f"会话不存在：{session_id}", request.state.trace_id)
-        turns = pg.turns_of(session_id, limit=max(1, min(limit, 100)))
+        if sess["user_id"] != actor:
+            # 会话 id 是 `s-<12 hex>`，猜中不难；不给读的理由不是「猜不到」而是「不是你的」
+            raise ApiError("E403", 403, "该会话不属于当前身份", request.state.trace_id)
+        turns = pg.turns_of(session_id, limit=max(1, min(limit, 100)), with_answer=True)
         pg.append_audit(actor, "session_read", session_id, request.state.trace_id, {"n_turns": len(turns)})
         return {
             "session_id": session_id,

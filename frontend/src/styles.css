@@ -92,10 +92,32 @@ button, input, select { font: inherit; color: inherit; }
 .kee-health--ok { color: #14532d; }
 .kee-health--bad { color: var(--bad); }
 
-/* 问答页：正文在上、输入在下。`.kee-turns` 是唯一的滚动容器，
- * `min-height: 0` 不是可省的——flex 子项默认 min-height:auto，不写它它就永远撑到内容高度、
- * 把滚动顶回外层，表现为「页面变长、输入框被推走」，正是这次要修的那个毛病。 */
-.kee-ask { display: flex; flex-direction: column; height: 100%; min-height: 0; }
+/* 问答页：左侧会话历史 + 右侧「正文在上、输入在下」。整页仍不滚，滚的是两个内部区域。
+ * `.kee-turns` 与 `.kee-sessions__list` 各自 `min-height: 0`——flex 子项默认 min-height:auto，
+ * 不写它就会被内容撑高、把滚动顶回外层，表现为「页面变长、输入框被推走」。 */
+.kee-ask-layout { display: flex; gap: 16px; height: 100%; min-height: 0; }
+.kee-sessions {
+  flex: 0 0 240px; display: flex; flex-direction: column; gap: 8px; min-height: 0;
+  border-right: 1px solid var(--line); padding-right: 12px;
+}
+.kee-sessions__head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.kee-sessions__list {
+  list-style: none; margin: 0; padding: 0; flex: 1 1 auto; min-height: 0; overflow-y: auto;
+  display: flex; flex-direction: column; gap: 2px; scrollbar-gutter: stable;
+}
+.kee-sessions__item {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 2px; width: 100%;
+  text-align: left; background: none; border: 0; border-radius: 4px; padding: 7px 8px; cursor: pointer;
+  color: var(--ink);
+}
+.kee-sessions__item:hover { background: #eef1f6; }
+.kee-sessions__item--on { background: #e8eff9; box-shadow: inset 2px 0 0 var(--accent); }
+.kee-sessions__title {
+  font-size: 13px; line-height: 1.4; overflow: hidden; display: -webkit-box;
+  -webkit-line-clamp: 2; -webkit-box-orient: vertical; word-break: break-all;
+}
+.kee-sessions__meta { font-size: 11px; color: var(--ink-2); }
+.kee-ask { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; height: 100%; min-height: 0; }
 .kee-turns {
   flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain;
   scrollbar-gutter: stable; display: flex; flex-direction: column; gap: 14px; padding: 2px 6px 10px 0;

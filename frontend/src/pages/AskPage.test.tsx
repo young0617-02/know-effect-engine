@@ -2,6 +2,7 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AskPage } from "./AskPage";
 import { IdentityProvider } from "../state/identity";
+import { ConversationProvider } from "../state/conversation";
 
 const enc = new TextEncoder();
 
@@ -93,7 +94,9 @@ function stubFetch(frames: Frame[], answerOverrides: Record<string, unknown> = {
 const renderPage = () =>
   render(
     <IdentityProvider>
-      <AskPage />
+      <ConversationProvider>
+        <AskPage />
+      </ConversationProvider>
     </IdentityProvider>,
   );
 

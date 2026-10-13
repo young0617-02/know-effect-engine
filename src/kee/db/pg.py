@@ -348,6 +348,33 @@ class AuthoritativeStore:
         with self.connect() as conn:
             return conn.execute("SELECT * FROM session WHERE id=%s", (session_id,)).fetchone()
 
+    def list_sessions(self, user_id: str, limit: int = 50) -> list[dict[str, Any]]:
+        """某个 actor 的会话列表，按最近活动排序——左侧「会话历史」栏的数据。
+
+        `user_id` 就是 `open_session` 当时写进去的 actor：**登录态下它是库里的账号名，
+        脚本通道下它是请求头自称的值**。所以「只看自己的会话」这条的实际强度等于身份通道的强度，
+        与 `/api/v1/audit` 那道角色门不是同一回事（那条判的是角色，这条判的是归属）。
+        """
+        with self.connect() as conn:
+            rows = conn.execute(
+                """
+                SELECT s.id, s.user_id, s.created_at, s.updated_at,
+                       (SELECT count(*) FROM session_turn t WHERE t.session_id = s.id)          AS n_turns,
+                       (SELECT t.question FROM session_turn t WHERE t.session_id = s.id
+                        ORDER BY t.turn_no LIMIT 1)                                             AS title,
+                       (SELECT t.status FROM session_turn t WHERE t.session_id = s.id
+                        ORDER BY t.turn_no DESC LIMIT 1)                                        AS last_status,
+                       (SELECT max(t.created_at) FROM session_turn t WHERE t.session_id = s.id) AS last_at
+                FROM session s
+                WHERE s.user_id = %(user_id)s
+                  AND EXISTS (SELECT 1 FROM session_turn t WHERE t.session_id = s.id)
+                ORDER BY s.updated_at DESC
+                LIMIT %(limit)s
+                """,
+                {"user_id": user_id, "limit": max(1, min(limit, 200))},
+            ).fetchall()
+        return list(rows)
+
     def append_turn(self, session_id: str, turn: dict[str, Any]) -> int:
         """轮次号在会话内单调递增。用 RETURNING 而不是先查后插，避免并发下撞 UNIQUE。"""
         with self.connect() as conn:
@@ -377,11 +404,17 @@ class AuthoritativeStore:
             conn.execute("UPDATE session SET updated_at=now() WHERE id=%s", (session_id,))
         return int(row["turn_no"])
 
-    def turns_of(self, session_id: str, limit: int = 20) -> list[dict[str, Any]]:
+    def turns_of(self, session_id: str, limit: int = 20, with_answer: bool = False) -> list[dict[str, Any]]:
+        """默认**不**带 `answer` 整包：图里造上文只要问题/结论/状态，把 jsonb 一起捞出来
+        等于每轮多读几 KB 却没人用。界面恢复历史时才要 `with_answer=True`——
+        没有整包就只能恢复出问题与结论，要点、引用落点与规则分全丢，
+        「翻回旧会话」会变成一份看着完整、其实被削过的记录。"""
+        cols = "turn_no, question, status, conclusion, retrieval_ms, total_ms, trace_id, created_at"
+        if with_answer:
+            cols += ", answer"
         with self.connect() as conn:
             rows = conn.execute(
-                "SELECT turn_no, question, status, conclusion, retrieval_ms, total_ms, trace_id, created_at "
-                "FROM session_turn WHERE session_id=%s ORDER BY turn_no DESC LIMIT %s",
+                f"SELECT {cols} FROM session_turn WHERE session_id=%s ORDER BY turn_no DESC LIMIT %s",
                 (session_id, limit),
             ).fetchall()
         return list(reversed(rows))

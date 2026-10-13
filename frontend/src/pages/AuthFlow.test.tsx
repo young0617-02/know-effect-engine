@@ -2,6 +2,7 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { App } from "../App";
 import { IdentityProvider } from "../state/identity";
+import { ConversationProvider } from "../state/conversation";
 import { getToken, TOKEN_KEY } from "../api/auth";
 
 /** 登录/注册与「未登录时界面只剩登录页」这条闸门。
@@ -56,7 +57,9 @@ function stubFetch(stub: Stub = {}) {
 const renderApp = () =>
   render(
     <IdentityProvider>
-      <App />
+      <ConversationProvider>
+        <App />
+      </ConversationProvider>
     </IdentityProvider>,
   );
 

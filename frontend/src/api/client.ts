@@ -194,3 +194,45 @@ export const getAudit = (
     { identity },
   );
 };
+
+/** 会话历史：左侧栏读列表，点开某一条读轮次。
+ *
+ * 权威源是 PG 的 `session` / `session_turn`，前端不自己存一份对话——
+ * 存了就出现「浏览器里的那份」和「服务端的那份」两个真相，刷新一次就分叉。
+ */
+
+export interface SessionRow {
+  id: string;
+  user_id: string;
+  n_turns: number;
+  title: string | null;
+  last_status: string | null;
+  created_at: string;
+  updated_at: string;
+  last_at: string;
+}
+
+export const listSessions = (identity: Identity, limit = 50) =>
+  apiFetch<{ total: number; items: SessionRow[]; scope: { actor: string; role: string } }>(
+    `/api/v1/sessions?limit=${limit}`,
+    { identity },
+  );
+
+export interface SessionTurn {
+  turn_no: number;
+  question: string;
+  status: string;
+  conclusion: string;
+  retrieval_ms: number | null;
+  total_ms: number | null;
+  trace_id: string | null;
+  created_at: string;
+  answer?: Record<string, unknown> | null;
+}
+
+export const getSession = (identity: Identity, sessionId: string) =>
+  apiFetch<{ session_id: string; user_id: string; turns: SessionTurn[] }>(
+    `/api/v1/sessions/${encodeURIComponent(sessionId)}`,
+    { identity },
+  );
+

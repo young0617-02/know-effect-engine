@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { apiFetch, ApiError, type Identity } from "../api/client";
-import { postSse } from "../api/sse";
-import type { AnswerPayload, Citation, DeltaPayload, RetrievalEvent } from "../api/types";
+import { useEffect, useRef, useState } from "react";
+import { apiFetch, type Identity } from "../api/client";
+import type { AnswerPayload, Citation, RetrievalEvent } from "../api/types";
+import { slotKey, useConversation, type Turn } from "../state/conversation";
 import { useIdentity } from "../state/identity";
 import { styles as s } from "../styles";
 
@@ -16,59 +16,23 @@ import { styles as s } from "../styles";
  *
  * 引用片段正文另走 `POST /api/v1/chunks/batch`：答案里的 citations 刻意不带正文，
  * 而那条通道与检索层同口径过滤，所以「越权」在这里表现为拿不到正文，不是前端遮住。
+ *
+ * 对话状态不在本页里（在 `ConversationProvider`）：切到别的模块再切回来时这个组件会被卸载，
+ * 状态留在页里就等于「切模块 = 清空问答」。左侧历史栏读的是服务端的 `session_turn`，
+ * 恢复出来的每一轮走的是同一个渲染函数，所以引用与规则分不会因为"是历史"就少显示一栏。
  */
 
-const KEY = (field: string, index: number | null | undefined) => `${field}:${index ?? "-"}`;
-
-/** 载荷解析：流是外部输入，坏帧要报出来而不是被 `JSON.parse` 抛成一句天书，更不能静默跳过——
- *  跳过的代价是界面永远停在「生成中」，那正是这套契约最不该出现的状态。 */
-function parseEvent(evt: { event: string; data: string }): unknown {
-  if (!evt.data.trim()) throw new Error(`事件 ${evt.event} 的载荷为空（未按契约给出 JSON）`);
-  try {
-    return JSON.parse(evt.data) as unknown;
-  } catch {
-    throw new Error(`事件 ${evt.event} 的载荷不是合法 JSON：${evt.data.slice(0, 60)}`);
-  }
-}
-
-interface Slot {
-  text: string;
-  closed: boolean;
-}
-
-interface Turn {
-  id: number;
-  question: string;
-  phase: "streaming" | "done" | "error";
-  retrieval?: RetrievalEvent;
-  slots: Record<string, Slot>;
-  order: string[];
-  streamedChars: number;
-  answer?: AnswerPayload;
-  error?: string;
-  startedAt: number;
-  firstDeltaMs?: number;
-}
-
-const STATUS_LABEL: Record<string, string> = {
-  answer: "已作答",
-  tentative: "初步判断（低置信度显式降级）",
-  refuse: "未给出结论",
-  escalate: "已转人工",
-  degraded: "降级",
-};
-
-let turnSeq = 0;
+const shortTime = (iso: string) => (iso ? iso.slice(5, 16).replace("T", " ") : "");
 
 export function AskPage() {
   const { identity } = useIdentity();
+  const {
+    turns, sessions, activeId, busy, loading, error,
+    tokenStream, setTokenStream, rewriteOnFollowup, setRewriteOnFollowup,
+    ask, newSession, openSession, refreshSessions, clearError,
+  } = useConversation();
   const [question, setQuestion] = useState("");
-  const [tokenStream, setTokenStream] = useState(true);
-  const [rewriteOnFollowup, setRewriteOnFollowup] = useState(true);
-  const [turns, setTurns] = useState<Turn[]>([]);
-  const [busy, setBusy] = useState(false);
   const [activeEvidence, setActiveEvidence] = useState<string | null>(null);
-  const sessionRef = useRef<string | null>(null);
   const scrollerRef = useRef<HTMLDivElement | null>(null);
   /** 是否跟随到最新一轮。用户往上翻看历史时必须停住——否则流式每来一帧就把视口拽回底部，
    *  「边生成边核对上一条引用」这件事就做不成了。回到靠近底部时自动恢复跟随。 */
@@ -85,150 +49,115 @@ export function AskPage() {
     if (el && followTail) el.scrollTop = el.scrollHeight;
   }, [turns, followTail]);
 
-  const patch = useCallback((id: number, fn: (t: Turn) => Turn) => {
-    setTurns((prev) => prev.map((t) => (t.id === id ? fn(t) : t)));
-  }, []);
-
-  const ask = useCallback(
-    async (text: string) => {
-      const q = text.trim();
-      if (!q || busy) return;
-      const id = ++turnSeq;
-      setTurns((prev) => [
-        ...prev,
-        { id, question: q, phase: "streaming", slots: {}, order: [], streamedChars: 0, startedAt: performance.now() },
-      ]);
-      setQuestion("");
-      setBusy(true);
+  // 轮次条数一变（新问 / 载入一整段历史）就回到最新一条；流式增量不改条数，所以不会跟用户抢滚动
+  const countRef = useRef(-1);
+  useEffect(() => {
+    if (countRef.current !== turns.length) {
+      countRef.current = turns.length;
       setFollowTail(true);
-      const controller = new AbortController();
-
-      // 追问才开改写：首轮字面查询本来就自足，为它多花一次模型调用不划算
-      // （实测单次改写 P95 843ms，几乎吃满 800ms 的检索门禁预算）。
-      const isFollowup = Boolean(sessionRef.current);
-      const body = {
-        question: q,
-        session_id: sessionRef.current,
-        top_k: 5,
-        rewrite: isFollowup && rewriteOnFollowup,
-        token_stream: tokenStream,
-      };
-
-      try {
-        await postSse("/api/v1/answers/stream", {
-          identity,
-          body,
-          signal: controller.signal,
-          onEvent: (evt) => {
-            if (evt.event === "retrieval") {
-              patch(id, (t) => ({ ...t, retrieval: parseEvent(evt) as RetrievalEvent }));
-              return;
-            }
-            if (evt.event === "delta") {
-              const d = parseEvent(evt) as DeltaPayload;
-              patch(id, (t) => {
-                const key = KEY(d.field, d.index);
-                return {
-                  ...t,
-                  slots: { ...t.slots, [key]: { text: d.text, closed: d.closed } },
-                  order: key in t.slots ? t.order : [...t.order, key],
-                  streamedChars: d.chars,
-                  firstDeltaMs: t.firstDeltaMs ?? Math.round(performance.now() - t.startedAt),
-                };
-              });
-              return;
-            }
-            if (evt.event === "answer") {
-              const a = parseEvent(evt) as AnswerPayload;
-              if (a.session_id) sessionRef.current = a.session_id;
-              patch(id, (t) => ({ ...t, phase: "done", answer: a }));
-              return;
-            }
-            if (evt.event === "error") {
-              const e = parseEvent(evt) as { code?: string; message?: string };
-              patch(id, (t) => ({ ...t, phase: "error", error: `${e.code ?? "E500"} ${e.message ?? "流式中断"}` }));
-            }
-          },
-        });
-        // 流结束了却没有 answer：不能留在「生成中」的样子，那等于界面自己假装成功
-        patch(id, (t) =>
-          t.phase === "streaming"
-            ? { ...t, phase: "error", error: "连接结束但未收到 answer 事件（答案未交付，不算成功）" }
-            : t,
-        );
-      } catch (e) {
-        const msg = e instanceof ApiError ? e.display : e instanceof Error ? e.message : String(e);
-        patch(id, (t) => (t.phase === "streaming" ? { ...t, phase: "error", error: msg } : t));
-      } finally {
-        setBusy(false);
-      }
-    },
-    [busy, identity, patch, rewriteOnFollowup, tokenStream],
-  );
+    }
+  }, [turns.length]);
 
   return (
-    <section className={s.ask}>
-      <div className={s.turns} ref={scrollerRef} onScroll={onScroll} data-testid="transcript">
-        {!turns.length ? (
-          <p className={s.empty}>还没有提问。答案的结论、要点、引用落点、规则分与降级原因都会显示在这里。</p>
+    <div className={s.askLayout}>
+      <aside className={s.sessions} aria-label="会话历史">
+        <div className={s.sessionsHead}>
+          <strong>会话历史</strong>
+          <button type="button" className={s.link} onClick={newSession}>新会话</button>
+        </div>
+        {loading ? <p className={s.muted}>读取中…</p> : null}
+        {error ? <p className={s.formMsg} data-testid="sessions-error">{error}</p> : null}
+        {!sessions.length && !loading ? (
+          <p className={s.muted} data-testid="sessions-empty">还没有历史会话。</p>
         ) : null}
-        {turns.map((t) => (
-          <AnswerView
-            key={t.id}
-            turn={t}
-            identity={identity}
-            activeEvidence={activeEvidence}
-            onEvidence={setActiveEvidence}
-            onAsk={ask}
-          />
-        ))}
-      </div>
+        <ul className={s.sessionList}>
+          {sessions.map((x) => (
+            <li key={x.id}>
+              <button
+                type="button"
+                className={`${s.sessionItem} ${x.id === activeId ? s.sessionItemOn : ""}`}
+                aria-current={x.id === activeId ? "true" : undefined}
+                data-testid={`session-${x.id}`}
+                onClick={() => void openSession(x.id)}
+              >
+                <span className={s.sessionTitle}>{x.title || "（无标题会话）"}</span>
+                <span className={s.sessionMeta}>
+                  {x.n_turns} 轮 · {shortTime(x.last_at)}
+                </span>
+              </button>
+            </li>
+          ))}
+        </ul>
+        <button type="button" className={s.link} onClick={() => void refreshSessions()}>刷新</button>
+      </aside>
 
-      <div className={s.askDock}>
-        <form
-          className={s.askForm}
-          onSubmit={(e) => {
-            e.preventDefault();
-            void ask(question);
-          }}
-        >
-          <input
-            type="search"
-            value={question}
-            placeholder="就知识库提问，例如：SIS 安全仪表系统采用的表决逻辑是什么？"
-            onChange={(e) => setQuestion(e.target.value)}
-            aria-label="问题"
-          />
-          <button type="submit" className={`${s.btn} ${s.btnPrimary}`} disabled={busy || !question.trim()}>
-            {busy ? "生成中…" : "提问"}
-          </button>
-          <button
-            type="button"
-            className={s.btn}
-            onClick={() => {
-              sessionRef.current = null;
-              setTurns([]);
+      <section className={s.ask}>
+        <div className={s.turns} ref={scrollerRef} onScroll={onScroll} data-testid="transcript">
+          {!turns.length ? (
+            <p className={s.empty}>还没有提问。答案的结论、要点、引用落点、规则分与降级原因都会显示在这里。</p>
+          ) : null}
+          {turns.map((t) => (
+            <AnswerView
+              key={t.id}
+              turn={t}
+              identity={identity}
+              activeEvidence={activeEvidence}
+              onEvidence={setActiveEvidence}
+              onAsk={ask}
+            />
+          ))}
+        </div>
+
+        <div className={s.askDock}>
+          <form
+            className={s.askForm}
+            onSubmit={(e) => {
+              e.preventDefault();
+              clearError();
+              void ask(question);
             }}
           >
-            新会话
-          </button>
-        </form>
+            <input
+              type="search"
+              value={question}
+              placeholder="就知识库提问，例如：SIS 安全仪表系统采用的表决逻辑是什么？"
+              onChange={(e) => setQuestion(e.target.value)}
+              aria-label="问题"
+            />
+            <button type="submit" className={`${s.btn} ${s.btnPrimary}`} disabled={busy || !question.trim()}>
+              {busy ? "生成中…" : "提问"}
+            </button>
+          </form>
 
-        <div className={s.toolbar}>
-          <label>
-            <input type="checkbox" checked={tokenStream} onChange={(e) => setTokenStream(e.target.checked)} />
-            token 级流式（关掉退回阶段级两事件，用于对照）
-          </label>
-          <label>
-            <input type="checkbox" checked={rewriteOnFollowup} onChange={(e) => setRewriteOnFollowup(e.target.checked)} />
-            追问时启用查询改写（实测单次 P95 843ms）
-          </label>
-          {sessionRef.current ? <span className={s.meta}>会话 {sessionRef.current}</span> : null}
+          <div className={s.toolbar}>
+            <label>
+              <input type="checkbox" checked={tokenStream} onChange={(e) => setTokenStream(e.target.checked)} />
+              token 级流式（关掉退回阶段级两事件，用于对照）
+            </label>
+            <label>
+              <input
+                type="checkbox"
+                checked={rewriteOnFollowup}
+                onChange={(e) => setRewriteOnFollowup(e.target.checked)}
+              />
+              追问时启用查询改写（实测单次 P95 843ms）
+            </label>
+            {activeId ? <span className={s.meta}>会话 {activeId}</span> : null}
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
+    </div>
   );
 }
+
+
+const STATUS_LABEL: Record<string, string> = {
+  answer: "已作答",
+  tentative: "初步判断（低置信度显式降级）",
+  refuse: "未给出结论",
+  escalate: "已转人工",
+  degraded: "降级",
+};
 
 function AnswerView({
   turn,
@@ -280,7 +209,7 @@ function AnswerView({
     // cites 派生自 answer，answer 换了就该重取；identity 变了权限面也变了
   }, [answer, identity]);
 
-  const streamedConclusion = turn.slots[KEY("conclusion", null)]?.text ?? "";
+  const streamedConclusion = turn.slots[slotKey("conclusion", null)]?.text ?? "";
   const pointSlots = turn.order.filter((k) => k.startsWith("point:"));
   const finalConclusion = (answer?.conclusion ?? "").trim();
   const retracted = Boolean(answer?.provisional_retracted);
@@ -291,6 +220,11 @@ function AnswerView({
       <h3 className={s.turnQuestion}>{turn.question}</h3>
 
       <div className={s.turnAnswer}>
+        {turn.restored ? (
+          <p className={s.meta} data-testid="turn-restored">
+            本轮由服务端历史恢复（结论、要点、引用与规则分都在，缺的是当时那一轮的流式过程）
+          </p>
+        ) : null}
         {turn.retrieval ? <RetrievalSkeleton ev={turn.retrieval} firstDeltaMs={turn.firstDeltaMs} /> : null}
         {turn.error ? <p className={s.error} data-testid="turn-error">{turn.error}</p> : null}
 

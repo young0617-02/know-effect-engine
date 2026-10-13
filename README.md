@@ -176,12 +176,13 @@ M3-05 已落地：在线链路搬进 `src/kee/qa/graph.py` 的 LangGraph 状态�
 
 | 入口 | 作用 |
 |---|---|
-| `frontend/` | Vite + React + TS 独立前端（**无 UI 框架、无路由库**）：登录/注册页 / 问答页 / 知识库管理页 / 审计页 / 账号条 / 账号授权页 |
+| `frontend/` | Vite + React + TS 独立前端（**无 UI 框架、无路由库**）：登录/注册页 / 问答页（左侧会话历史 + 底部提问栏）/ 知识库管理页 / 审计页 / 账号条 / 账号授权页 |
 | `scripts/serve_api.py` | 宿主 API 入口（127.0.0.1:38000；**拒绝非回环绑定**） |
 | `infra/docker-compose.m4.yml` | 一键部署：`include` 存储栈 + `kee-web`（Nginx 静态 + 同源反代） |
 | `infra/nginx.m4.conf` | SSE 关缓冲（`proxy_buffering off`）——否则 token 级流式在浏览器里退化成一次性出答案 |
 | `scripts/verify_m4.py` | 端到端 12 项：事件顺序 / `answer` 恰好一次 / 流不被攒 / 密级与行业过滤 / 审计角色门与留痕 |
 | `docs/前端流式渲染契约.md` | 三态渲染的可断言规格（C-1…C-8），并写明**哪些条款还没有断言** |
+| `GET /api/v1/sessions`、`GET /api/v1/sessions/{id}` | 会话历史：列表只返回**自己**的（判归属不判角色，零轮次不入列），详情带**整包答案**（要点/引用/规则分），供左侧历史栏恢复旧会话 |
 | `reports/m4/M4_前端与一键部署.md` | 本轮实测结论 + 四处「差点写成假绿」的记录 + 已验证/未验证分栏 |
 
 ```bash
@@ -189,7 +190,7 @@ uv run python scripts/serve_api.py                 # 宿主 API
 cd frontend && npm install && npm run build        # 产出 frontend/dist
 docker compose -f infra/docker-compose.m4.yml up -d   # 一键：存储 + Nginx → http://127.0.0.1:38080/
 KEE_BASE=http://127.0.0.1:38080 uv run python scripts/verify_m4.py   # 12 项端到端
-cd frontend && npm run test                        # 29 条组件/分帧/登录闸门断言
+cd frontend && npm run test                        # 34 条组件/分帧/登录闸门/会话生命周期断言
 ```
 
 **登录与鉴权（V1.31 起的主身份通道）**：`src/kee/api/auth.py` + 两张表（`app_user` / `user_session`）
