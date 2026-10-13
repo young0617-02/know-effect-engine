@@ -1,0 +1,250 @@
+{
+  "purpose": "机制探针：gold 卡在稠密/BM25/融合各自的第几名。**第二个变体用了 gold_keywords，属上限检验，不可当功能上线**——它只回答「词都对上了还检不到吗」",
+  "n_vectors": 193,
+  "cases": {
+    "q-044": {
+      "question": "运维图省事想直接进库里把那个字段改回来，哪条规定把这条路堵死了？",
+      "category": "口语化",
+      "gold_keywords": [
+        "审计追踪",
+        "数据库直连"
+      ],
+      "variants": {
+        "原查询": {
+          "query": "运维图省事想直接进库里把那个字段改回来，哪条规定把这条路堵死了？",
+          "per_gold": [
+            {
+              "chunk_id": "chm-presale-prj-chm-2025-014@v1#2.1#c1",
+              "dense_rank": null,
+              "sparse_rank": 7,
+              "rrf_rank": 26
+            },
+            {
+              "chunk_id": "chm-runbook-prj-chm-2025-014@v1#2.2#c1",
+              "dense_rank": null,
+              "sparse_rank": 28,
+              "rrf_rank": 52
+            },
+            {
+              "chunk_id": "chm-runbook-prj-chm-2025-014@v1#2.2#c2",
+              "dense_rank": null,
+              "sparse_rank": 17,
+              "rrf_rank": 37
+            }
+          ]
+        },
+        "原查询+gold_keywords": {
+          "query": "运维图省事想直接进库里把那个字段改回来，哪条规定把这条路堵死了？ 审计追踪 数据库直连",
+          "per_gold": [
+            {
+              "chunk_id": "chm-presale-prj-chm-2025-014@v1#2.1#c1",
+              "dense_rank": 9,
+              "sparse_rank": 2,
+              "rrf_rank": 2
+            },
+            {
+              "chunk_id": "chm-runbook-prj-chm-2025-014@v1#2.2#c1",
+              "dense_rank": 3,
+              "sparse_rank": 1,
+              "rrf_rank": 1
+            },
+            {
+              "chunk_id": "chm-runbook-prj-chm-2025-014@v1#2.2#c2",
+              "dense_rank": null,
+              "sparse_rank": 19,
+              "rrf_rank": 38
+            }
+          ]
+        },
+        "只查关键词": {
+          "query": "审计追踪 数据库直连",
+          "per_gold": [
+            {
+              "chunk_id": "chm-presale-prj-chm-2025-014@v1#2.1#c1",
+              "dense_rank": 3,
+              "sparse_rank": 2,
+              "rrf_rank": 2
+            },
+            {
+              "chunk_id": "chm-runbook-prj-chm-2025-014@v1#2.2#c1",
+              "dense_rank": 1,
+              "sparse_rank": 1,
+              "rrf_rank": 1
+            },
+            {
+              "chunk_id": "chm-runbook-prj-chm-2025-014@v1#2.2#c2",
+              "dense_rank": 40,
+              "sparse_rank": 37,
+              "rrf_rank": 15
+            }
+          ]
+        }
+      }
+    },
+    "q-046": {
+      "question": "车间电压一闪，采集那边咋保证记录不断，能自己顶多久？",
+      "category": "口语化",
+      "gold_keywords": [
+        "断电",
+        "本地缓存"
+      ],
+      "variants": {
+        "原查询": {
+          "query": "车间电压一闪，采集那边咋保证记录不断，能自己顶多久？",
+          "per_gold": [
+            {
+              "chunk_id": "chm-runbook-prj-chm-2025-014@v1#4.1#c1",
+              "dense_rank": 1,
+              "sparse_rank": 17,
+              "rrf_rank": 4
+            }
+          ]
+        },
+        "原查询+gold_keywords": {
+          "query": "车间电压一闪，采集那边咋保证记录不断，能自己顶多久？ 断电 本地缓存",
+          "per_gold": [
+            {
+              "chunk_id": "chm-runbook-prj-chm-2025-014@v1#4.1#c1",
+              "dense_rank": 1,
+              "sparse_rank": 1,
+              "rrf_rank": 1
+            }
+          ]
+        },
+        "只查关键词": {
+          "query": "断电 本地缓存",
+          "per_gold": [
+            {
+              "chunk_id": "chm-runbook-prj-chm-2025-014@v1#4.1#c1",
+              "dense_rank": 1,
+              "sparse_rank": 1,
+              "rrf_rank": 1
+            }
+          ]
+        }
+      }
+    },
+    "q-047": {
+      "question": "想切之前先确认两地数据跟没跟上，超过多少就不能发起切换了？",
+      "category": "口语化",
+      "gold_keywords": [
+        "同步延迟",
+        "5000 毫秒"
+      ],
+      "variants": {
+        "原查询": {
+          "query": "想切之前先确认两地数据跟没跟上，超过多少就不能发起切换了？",
+          "per_gold": [
+            {
+              "chunk_id": "fin-ifspec-prj-fin-2024-033@v1#2.1#c1",
+              "dense_rank": null,
+              "sparse_rank": 2,
+              "rrf_rank": 24
+            },
+            {
+              "chunk_id": "fin-ifspec-prj-fin-2024-033@v1#2.1#c2",
+              "dense_rank": 27,
+              "sparse_rank": 35,
+              "rrf_rank": 16
+            }
+          ]
+        },
+        "原查询+gold_keywords": {
+          "query": "想切之前先确认两地数据跟没跟上，超过多少就不能发起切换了？ 同步延迟 5000 毫秒",
+          "per_gold": [
+            {
+              "chunk_id": "fin-ifspec-prj-fin-2024-033@v1#2.1#c1",
+              "dense_rank": 14,
+              "sparse_rank": 1,
+              "rrf_rank": 2
+            },
+            {
+              "chunk_id": "fin-ifspec-prj-fin-2024-033@v1#2.1#c2",
+              "dense_rank": 4,
+              "sparse_rank": 2,
+              "rrf_rank": 1
+            }
+          ]
+        },
+        "只查关键词": {
+          "query": "同步延迟 5000 毫秒",
+          "per_gold": [
+            {
+              "chunk_id": "fin-ifspec-prj-fin-2024-033@v1#2.1#c1",
+              "dense_rank": 1,
+              "sparse_rank": 1,
+              "rrf_rank": 1
+            },
+            {
+              "chunk_id": "fin-ifspec-prj-fin-2024-033@v1#2.1#c2",
+              "dense_rank": 2,
+              "sparse_rank": 2,
+              "rrf_rank": 2
+            }
+          ]
+        }
+      }
+    },
+    "q-051": {
+      "question": "值班想知道哪块表没抄上来就得开工单，这条规矩写在哪儿？",
+      "category": "口语化",
+      "gold_keywords": [
+        "抄读失败",
+        "核查工单"
+      ],
+      "variants": {
+        "原查询": {
+          "query": "值班想知道哪块表没抄上来就得开工单，这条规矩写在哪儿？",
+          "per_gold": [
+            {
+              "chunk_id": "ene-ifspec-prj-ene-2025-011@v1#2.1#c1",
+              "dense_rank": 1,
+              "sparse_rank": null,
+              "rrf_rank": 12
+            },
+            {
+              "chunk_id": "ene-ifspec-prj-ene-2025-011@v1#2.1#c2",
+              "dense_rank": 39,
+              "sparse_rank": null,
+              "rrf_rank": 69
+            }
+          ]
+        },
+        "原查询+gold_keywords": {
+          "query": "值班想知道哪块表没抄上来就得开工单，这条规矩写在哪儿？ 抄读失败 核查工单",
+          "per_gold": [
+            {
+              "chunk_id": "ene-ifspec-prj-ene-2025-011@v1#2.1#c1",
+              "dense_rank": 1,
+              "sparse_rank": 1,
+              "rrf_rank": 1
+            },
+            {
+              "chunk_id": "ene-ifspec-prj-ene-2025-011@v1#2.1#c2",
+              "dense_rank": 25,
+              "sparse_rank": 14,
+              "rrf_rank": 9
+            }
+          ]
+        },
+        "只查关键词": {
+          "query": "抄读失败 核查工单",
+          "per_gold": [
+            {
+              "chunk_id": "ene-ifspec-prj-ene-2025-011@v1#2.1#c1",
+              "dense_rank": 1,
+              "sparse_rank": 1,
+              "rrf_rank": 1
+            },
+            {
+              "chunk_id": "ene-ifspec-prj-ene-2025-011@v1#2.1#c2",
+              "dense_rank": 14,
+              "sparse_rank": 5,
+              "rrf_rank": 5
+            }
+          ]
+        }
+      }
+    }
+  }
+}
