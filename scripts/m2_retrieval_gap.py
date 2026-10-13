@@ -278,8 +278,6 @@ def main() -> int:
             "strict_rrf10": any(cid in gold for cid in ids_10[:5]),
             "ms_rrf20": r20.timings_ms.get("retrieval_total_ms"),
             "ms_rrf10": r10.timings_ms.get("retrieval_total_ms"),
-            "hit5_rrf20": any(cid in gold_any for cid in ids_20[:5]),
-            "hit5_rrf10": any(cid in gold_any for cid in ids_10[:5]),
             "strict_rc40": any(cid in gold for cid in ids_w[:5]),
             "strict_legs40": any(cid in gold for cid in ids_l[:5]),
             "strict_both40": any(cid in gold for cid in ids_t[:5]),

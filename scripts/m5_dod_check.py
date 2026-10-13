@@ -203,7 +203,8 @@ def build() -> dict:
         row("3", "引用可信", "部分达标",
             "**V1.22 定案**：门禁 = **引用落 gold 率 ≥ 90%**（机械可复算）；"
             "**答案正确率（真人判 answer_correct）= 报告值**，须附 n 与覆盖边界，不当门禁；"
-            "幻觉率 ≤ 10%（Faithfulness 为报告值，非阻塞）",
+            "幻觉率 ≤ 10%（**代理读数**——编造数字检测 + 人判「无依据却出结论」；"
+            "RAGAS Faithfulness 从未接入，V1.28 名实对齐，别再挂一个没有装置的名字）",
             f"行级引用落 gold {ans.get('行级引用落gold')} ｜ **人判答案正确性（#40 已回收）{ac_acc}** ｜ 数字落地率均值 "
             f"{round(statistics.mean(grounded), 4) if grounded else 'NA'}（{len(grounded)} 题可判）｜ "
             f"含编造数字的题 {len(invented)} 道 ｜ 零引用结论 {ans.get('契约拦下的空结论')} 条 ｜ "

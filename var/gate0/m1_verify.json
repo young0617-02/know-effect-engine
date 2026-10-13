@@ -32,7 +32,7 @@
           "索引条数": 4,
           "解析告警": 1,
           "元数据告警": 0,
-          "耗时s": 15.476
+          "耗时s": 12.229
         },
         "txt": {
           "doc_id": "m1-xunjian-prj-ene-2025-008",
@@ -44,7 +44,7 @@
           "索引条数": 3,
           "解析告警": 1,
           "元数据告警": 0,
-          "耗时s": 11.726
+          "耗时s": 11.696
         },
         "docx": {
           "doc_id": "m1-shishi-prj-fin-2024-017",
@@ -56,7 +56,7 @@
           "索引条数": 2,
           "解析告警": 2,
           "元数据告警": 0,
-          "耗时s": 9.099
+          "耗时s": 9.017
         },
         "pdf": {
           "doc_id": "m1-anquan-prj-mfg-2024-001",
@@ -68,7 +68,7 @@
           "索引条数": 21,
           "解析告警": 4,
           "元数据告警": 0,
-          "耗时s": 11.912
+          "耗时s": 12.748
         },
         "secret": {
           "doc_id": "m1-mi-mfg-2024-002",
@@ -80,7 +80,7 @@
           "索引条数": 2,
           "解析告警": 1,
           "元数据告警": 0,
-          "耗时s": 11.854
+          "耗时s": 11.931
         }
       }
     },
@@ -206,7 +206,7 @@
           "短段并入前段：16｜经销商。",
           "触发原因：文本层过薄（1 页）"
         ],
-        "耗时s": 36.319,
+        "耗时s": 10.662,
         "检索命中": [
           {
             "doc": "m1-saomiao-prj-mfg-2024-003",
@@ -272,7 +272,7 @@
           "doc_id": "m1-fupan-prj-ene-2025-008",
           "effective_version": "m1-fupan-prj-ene-2025-008@v1",
           "reindexed": 4,
-          "seconds": 11.54
+          "seconds": 11.53
         },
         "v1 索引条数": 4,
         "v2 索引条数": 0
@@ -321,14 +321,14 @@
       "ok": true,
       "detail": {
         "动作分布": {
-          "answer_generated": 477,
-          "chunks_read": 274,
+          "answer_generated": 974,
+          "chunks_read": 353,
           "document_admitted": 48,
-          "document_ingested": 151,
-          "document_review_pass": 9,
-          "document_review_reject": 8,
-          "document_rollback": 9,
-          "reconciliation_run": 13,
+          "document_ingested": 159,
+          "document_review_pass": 10,
+          "document_review_reject": 9,
+          "document_rollback": 10,
+          "reconciliation_run": 14,
           "session_read": 28
         },
         "篡改被拒": "audit_log 为追加表，禁止 UPDATE 操作"
@@ -345,10 +345,10 @@
     }
   ],
   "timings_sec": {
-    "upload_5_docs": 60.26,
-    "retrieval_probes": 9.01,
-    "reconcile_run": 12.61,
-    "whole_run": 300.16
+    "upload_5_docs": 57.77,
+    "retrieval_probes": 6.51,
+    "reconcile_run": 12.36,
+    "whole_run": 265.86
   },
   "baseline": {
     "collection": "kb_chunks",
@@ -385,12 +385,12 @@
         },
         "timings_sec": {
           "parse": 0.0,
-          "authoritative_write": 0.094,
-          "embed": 13.778,
-          "index": 1.603,
-          "total": 15.476
+          "authoritative_write": 0.117,
+          "embed": 10.536,
+          "index": 1.576,
+          "total": 12.229
         },
-        "trace_id": "api-5536cde046a5"
+        "trace_id": "api-2afc1f1ce284"
       }
     },
     "txt": {
@@ -423,11 +423,11 @@
         "timings_sec": {
           "parse": 0.0,
           "authoritative_write": 0.08,
-          "embed": 0.02,
-          "index": 11.625,
-          "total": 11.726
+          "embed": 0.017,
+          "index": 11.599,
+          "total": 11.696
         },
-        "trace_id": "api-c5ffdd1e464b"
+        "trace_id": "api-5707e88d1acb"
       }
     },
     "docx": {
@@ -459,13 +459,13 @@
           "remaining_pending": 0
         },
         "timings_sec": {
-          "parse": 0.234,
-          "authoritative_write": 0.119,
-          "embed": 0.138,
-          "index": 8.608,
-          "total": 9.099
+          "parse": 0.207,
+          "authoritative_write": 0.103,
+          "embed": 0.117,
+          "index": 8.59,
+          "total": 9.017
         },
-        "trace_id": "api-c36135095372"
+        "trace_id": "api-90c84b356371"
       }
     },
     "pdf": {
@@ -499,13 +499,13 @@
           "remaining_pending": 0
         },
         "timings_sec": {
-          "parse": 2.607,
-          "authoritative_write": 0.194,
-          "embed": 0.505,
-          "index": 8.605,
-          "total": 11.912
+          "parse": 0.675,
+          "authoritative_write": 0.086,
+          "embed": 0.397,
+          "index": 11.59,
+          "total": 12.748
         },
-        "trace_id": "api-3e2129e01d4a"
+        "trace_id": "api-6a00c4796f1f"
       }
     },
     "secret": {
@@ -537,12 +537,12 @@
         },
         "timings_sec": {
           "parse": 0.0,
-          "authoritative_write": 0.096,
-          "embed": 0.176,
-          "index": 11.582,
-          "total": 11.854
+          "authoritative_write": 0.099,
+          "embed": 0.187,
+          "index": 11.644,
+          "total": 11.931
         },
-        "trace_id": "api-629f9def00c4"
+        "trace_id": "api-5228f3f9d382"
       }
     }
   },

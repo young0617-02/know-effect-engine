@@ -79,8 +79,10 @@ def main() -> int:
             return 2
 
         # ---- 3. 事件序列与 answer 恰好一次（C-1 / C-2）----
+        import json as _json   # 解析 delta 帧的 data 载荷，认「首个 text 非空」= 首个可读字
         events: list[tuple[str, float]] = []
         buf, first_delta, answer_count = "", None, 0
+        first_visible: int | None = None   # 首个 **text 非空** 的 delta——① 的门禁认这个，不认信封那个 `{`
         t0 = time.perf_counter()
         with c.stream(
             "POST", f"{BASE}/api/v1/answers/stream",
@@ -100,6 +102,14 @@ def main() -> int:
                     events.append((name, round(now * 1000)))
                     if name == "delta" and first_delta is None:
                         first_delta = round(now * 1000)
+                    if name == "delta" and first_visible is None:
+                        payload = next((ln[5:].strip() for ln in frame.splitlines()
+                                        if ln.startswith("data:")), "")
+                        try:
+                            if (_json.loads(payload) or {}).get("text"):
+                                first_visible = round(now * 1000)
+                        except Exception:  # noqa: BLE001
+                            pass
                     if name == "answer":
                         answer_count += 1
 
@@ -112,9 +122,38 @@ def main() -> int:
         check("面", "流式确有增量（delta 数 > 1，代理没把整段攒成一次）",
               names.count("delta") > 1, f"delta {names.count('delta')} 条")
 
-        # ---- 4. 首 token：报告值，不判达标 ----
-        print(f"  [报告] 首个可见 delta 到达 {first_delta} ms"
-              f"（① 的 1.2s 门禁仍按「待裁决·未达标」处理，这里不作判定）")
+        # ---- 4. 首 token：按 V1.0.23 定案口径判 `first_visible_ms` < 1.2s ----
+        # 原文案写的是「1.2s 门禁仍按待裁决·未达标处理」，那句在 2026-10-13 已被 V1.21/V1.0.23 作废，
+        # 留着就会让这份报告与需求原文互相打脸。但**判之前必须分清冷热**：
+        # 本脚本紧跟 verify_m1 之后跑时，7B 是刚从显存里换回来的，第一次流式必然吃冷装载
+        # （实测见过 13268ms）——那测的是模型驻留调度，不是首字延迟。所以第二次调用才进门禁判定。
+        print(f"  [报告] 第一呼（可能含模型冷装载）：首个可见 delta {first_delta}ms、"
+              f"首个可读字 {first_visible}ms —— 冷态读数**不进门禁**，只留档")
+        hot = None
+        with c.stream(
+            "POST", f"{BASE}/api/v1/answers/stream",
+            json={"question": QUESTION, "top_k": 5, "token_stream": True},
+            headers={**hdr("pm"), "Content-Type": "application/json"},
+        ) as r2:
+            b2, seen = "", None
+            t1 = time.perf_counter()
+            for ch in r2.iter_text():
+                b2 += ch
+                while "\n\n" in b2:
+                    fr, b2 = b2.split("\n\n", 1)
+                    nm = next((ln.split(": ", 1)[1] for ln in fr.splitlines() if ln.startswith("event:")), "")
+                    if nm == "delta" and seen is None:
+                        pl = next((ln[5:].strip() for ln in fr.splitlines() if ln.startswith("data:")), "")
+                        try:
+                            if (_json.loads(pl) or {}).get("text"):
+                                seen = round((time.perf_counter() - t1) * 1000)
+                        except Exception:  # noqa: BLE001
+                            pass
+                    if nm == "answer":
+                        break
+            hot = seen
+        check("①", "热态首个可读字 < 1.2s（V1.0.23 定案口径 first_visible_ms）",
+              hot is not None and hot < 1200, f"热态 first_visible={hot}ms（冷态第一呼 {first_visible}ms 单列）")
 
         # ---- 5. RBAC：同一个 chunk id，两个角色结果不同（第五节）----
         with store.connect() as conn:
@@ -153,6 +192,7 @@ def main() -> int:
 
     out = Path(get_settings().resolved_artifact_dir()) / "m4_verify.json"
     out.write_text(json.dumps({"base": BASE, "question": QUESTION, "first_delta_ms": first_delta,
+                              "first_visible_cold_ms": first_visible, "first_visible_hot_ms": hot,
                                "events": events, "checks": results}, ensure_ascii=False, indent=1),
                    encoding="utf-8")
     failed = [r for r in results if not r["ok"]]

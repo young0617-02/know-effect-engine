@@ -1,79 +1,33 @@
 {
  "base": "http://127.0.0.1:38080",
  "question": "SIS 安全仪表系统采用的表决逻辑是什么？",
- "first_delta_ms": 497,
+ "first_delta_ms": 736,
+ "first_visible_cold_ms": 736,
+ "first_visible_hot_ms": 338,
  "events": [
   [
    "retrieval",
-   24
+   27
   ],
   [
    "delta",
-   497
+   736
   ],
   [
    "delta",
-   519
+   758
   ],
   [
    "delta",
-   539
+   802
   ],
   [
    "delta",
-   562
+   823
   ],
   [
    "delta",
-   582
-  ],
-  [
-   "delta",
-   605
-  ],
-  [
-   "delta",
-   625
-  ],
-  [
-   "delta",
-   647
-  ],
-  [
-   "delta",
-   668
-  ],
-  [
-   "delta",
-   690
-  ],
-  [
-   "delta",
-   711
-  ],
-  [
-   "delta",
-   733
-  ],
-  [
-   "delta",
-   755
-  ],
-  [
-   "delta",
-   776
-  ],
-  [
-   "delta",
-   797
-  ],
-  [
-   "delta",
-   818
-  ],
-  [
-   "delta",
-   839
+   843
   ],
   [
    "delta",
@@ -81,135 +35,39 @@
   ],
   [
    "delta",
-   886
+   883
   ],
   [
    "delta",
-   906
+   903
   ],
   [
    "delta",
-   926
+   924
   ],
   [
    "delta",
-   950
+   944
   ],
   [
    "delta",
-   995
+   964
   ],
   [
    "delta",
-   1018
+   1004
   ],
   [
    "delta",
-   1041
+   1024
   ],
   [
    "delta",
-   1063
-  ],
-  [
-   "delta",
-   1092
-  ],
-  [
-   "delta",
-   1108
-  ],
-  [
-   "delta",
-   1133
-  ],
-  [
-   "delta",
-   1154
-  ],
-  [
-   "delta",
-   1178
-  ],
-  [
-   "delta",
-   1198
-  ],
-  [
-   "delta",
-   1221
-  ],
-  [
-   "delta",
-   1244
-  ],
-  [
-   "delta",
-   1265
-  ],
-  [
-   "delta",
-   1287
-  ],
-  [
-   "delta",
-   1311
-  ],
-  [
-   "delta",
-   1336
-  ],
-  [
-   "delta",
-   1361
-  ],
-  [
-   "delta",
-   1383
-  ],
-  [
-   "delta",
-   1406
-  ],
-  [
-   "delta",
-   1428
-  ],
-  [
-   "delta",
-   1454
-  ],
-  [
-   "delta",
-   1472
-  ],
-  [
-   "delta",
-   1493
-  ],
-  [
-   "delta",
-   1515
-  ],
-  [
-   "delta",
-   1536
-  ],
-  [
-   "delta",
-   1557
-  ],
-  [
-   "delta",
-   1578
-  ],
-  [
-   "delta",
-   1599
+   1044
   ],
   [
    "answer",
-   3440
+   3181
   ]
  ],
  "checks": [
@@ -247,7 +105,13 @@
    "clause": "面",
    "name": "流式确有增量（delta 数 > 1，代理没把整段攒成一次）",
    "ok": true,
-   "detail": "delta 50 条"
+   "detail": "delta 14 条"
+  },
+  {
+   "clause": "①",
+   "name": "热态首个可读字 < 1.2s（V1.0.23 定案口径 first_visible_ms）",
+   "ok": true,
+   "detail": "热态 first_visible=338ms（冷态第一呼 736ms 单列）"
   },
   {
    "clause": "第五节",
@@ -277,7 +141,7 @@
    "clause": "第五节",
    "name": "引用片段读取留了审计（chunks_read）",
    "ok": true,
-   "detail": "['answer_generated', 'chunks_read', 'session_read']"
+   "detail": "['answer_generated', 'chunks_read', 'document_ingested', 'document_review_pass', 'document_review_reject', 'document_rol"
   },
   {
    "clause": "C-1",
