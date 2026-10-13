@@ -112,7 +112,35 @@ def test_zero_denominator_reports_not_applicable_not_zero_percent():
     assert hr.rate(1, 4)["value"] == 0.25
 
 
+def test_escalation_is_not_counted_as_over_refusal(sheet, monkeypatch):
+    """本轮现场修过一次：q-070 人判「证据充分 + 处置正确」，旧口径把它记成误拒（1/8=12.5% 的假红）。
+    密级题即使证据充分，正确处置也是转人工 ⇒ 误拒只算 status=refuse 的纯拒答行。"""
+    monkeypatch.setattr(sys, "argv", ["m5_hallucination_rate.py"])
+    # q-061 是 escalate 行；把它的判据一填成 1（证据充分）
+    hr.TINY.write_text("q-059 1=0 2=1\nq-060 1=0 2=1\nq-061 1=1 2=1\n", encoding="utf-8")
+    assert hr.merge() == 0
+    assert hr.main() == 0
+    out = json.loads(hr.OUT.read_text(encoding="utf-8"))
+    m = out["metrics"]
+    # 误拒分母里不该出现 q-061（它是转人工，不是拒答）：本夹具里只有 q-059 进分母，且它判"证据不足"
+    assert m["over_refusal_had_evidence_but_refused"]["n"] == 1, \
+        "把一次正确的转人工算进了误拒分母"
+    assert m["over_refusal_had_evidence_but_refused"]["value"] == 0.0
+    assert "q-061" in out["definition_notes"]["escalated_with_sufficient_evidence"]
+    # 该转未转：q-061 确实转了 ⇒ 0/1，分母是 escalate 行数而不是 0（这是"测了且没犯"，不是"没测"）
+    assert m["should_escalate_but_did_not"]["n"] == 1
+    assert m["should_escalate_but_did_not"]["numerator"] == 0
+    assert m["should_escalate_but_did_not"]["value"] == 0.0
+
+
 def test_reading_refuses_to_mix_generations(sheet, monkeypatch):
+    """标签只能配它判过的那一代产物：工单题面与运行记录哈希不一致就拒绝出数。"""
+    monkeypatch.setattr(sys, "argv", ["m5_hallucination_rate.py"])
+    data = json.loads(hr.RUN.read_text(encoding="utf-8"))
+    data["question_hash"] = 12345  # 篡改运行记录的题面哈希 = 拿两代产物混算
+    hr.RUN.write_text(json.dumps(data), encoding="utf-8")
+    assert hr.main() == 3, "题面不同代却仍然出了读数——混代了"
+    assert not hr.OUT.exists()
     """标签只能配它判过的那一代产物：工单题面与运行记录哈希不一致就拒绝出数。"""
     monkeypatch.setattr(sys, "argv", ["m5_hallucination_rate.py"])
     data = json.loads(hr.RUN.read_text(encoding="utf-8"))

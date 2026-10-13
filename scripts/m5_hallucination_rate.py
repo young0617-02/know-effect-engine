@@ -233,14 +233,20 @@ def main() -> int:
         return 2
 
     # 判据一的可判分母还要排除"系统没检索"的行——那类行的 c1 按工单说明填 ?，这里再兜一层
-    def assessable(rows_: list[dict], want_conclusion: bool) -> list[dict]:
-        return [j for j in rows_ if j["c1"] in ("0", "1")
-                and j["has_conclusion"] == want_conclusion and j["evidence_n"] > 0]
+    def with_face(rows_: list[dict]) -> list[dict]:
+        return [j for j in rows_ if j["c1"] in ("0", "1") and j["evidence_n"] > 0]
 
-    halluc_den = assessable(judged, True)
+    halluc_den = [j for j in with_face(judged) if j["has_conclusion"]]
     halluc_num = [j for j in halluc_den if j["c1"] == "0"]
-    over_den = assessable(judged, False)
+    # 误拒只看**纯拒答**（status=refuse）。转人工（escalate）不是拒答：
+    # 密级 3 的题即使证据充分，正确处置也是转人工，把它算成误拒就是一次假红。
+    # （本轮真事：q-070 判"证据充分 + 处置正确"，旧口径把它记成误拒 1/8=12.5%，那次数是错的。）
+    over_den = [j for j in with_face(judged) if j["status"] == "refuse" and not j["has_conclusion"]]
     over_num = [j for j in over_den if j["c1"] == "1"]
+    escalated_with_evidence = [j["qid"] for j in with_face(judged)
+                               if j["status"] == "escalate" and j["c1"] == "1"]
+    esc_rows = [j for j in judged if j["expected_behavior"] == "escalate"]
+    not_escalated = [j["qid"] for j in esc_rows if j["status"] != "escalate"]
     bc = [j for j in judged if j["c2"] in ("0", "1")]
     bc_num = [j for j in bc if j["c2"] == "1"]
 
@@ -263,6 +269,15 @@ def main() -> int:
             "hallucination_unsupported_conclusion": rate(len(halluc_num), len(halluc_den)),
             "over_refusal_had_evidence_but_refused": rate(len(over_num), len(over_den)),
             "behavior_correct": rate(len(bc_num), len(bc)),
+            "should_escalate_but_did_not": rate(len(not_escalated), len(esc_rows)),
+        },
+        "definition_notes": {
+            "over_refusal": ("只算 `status=refuse` 的纯拒答行。**转人工不算误拒**：密级 3 的题即使证据充分，"
+                             "正确处置也是转人工。本轮现场修正过一次——旧口径把 q-070（判人标"
+                             "『证据充分 + 处置正确』）记成误拒，报了个 12.5% 的假红。"),
+            "escalated_with_sufficient_evidence": escalated_with_evidence,
+            "hallucination": "结论非空 且 判据一=0 ⇒ 无依据却出结论；分子由两列人判机械导出，不直接问「这是幻觉吗」。",
+            "not_assessable": "判据一为 ? 或系统未做检索（无证据面）的行不进任何判据一分母。",
         },
         "lists": {
             "hallucination_rows": [j["qid"] for j in halluc_num],
@@ -286,8 +301,13 @@ def main() -> int:
     st = "" if out["complete"] else f"（未完成：还有 {len(blanks)} 行空着 {blanks[:5]}）"
     print(f"已判 {out['n_rows_judged']}/{out['n_rows_total']} 行{st}")
     print(f"  真幻觉（无依据却出结论）: {m['hallucination_unsupported_conclusion']['reading']}")
-    print(f"  误拒（证据够却拒答）    : {m['over_refusal_had_evidence_but_refused']['reading']}")
+    print(f"  误拒（证据够却纯拒答）  : {m['over_refusal_had_evidence_but_refused']['reading']}"
+          f"  ※分母只含 status=refuse 的行")
+    print(f"  该转人工却未转          : {m['should_escalate_but_did_not']['reading']}")
     print(f"  处置正确率              : {m['behavior_correct']['reading']}")
+    if out["definition_notes"]["escalated_with_sufficient_evidence"]:
+        print(f"  （转人工且证据充分的行，按密级规则算正确、不计误拒："
+              f"{out['definition_notes']['escalated_with_sufficient_evidence']}）")
     if out["lists"]["behavior_wrong_rows"]:
         print(f"  判错的行: {out['lists']['behavior_wrong_rows']}")
     print(f"  ⚠ {out['scope_note']}")

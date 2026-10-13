@@ -1,0 +1,69 @@
+{
+  "generated_at": "2026-10-13T11:35:59+0800",
+  "scope_note": "观测域 = 系统实际检索到的 Top-5 证据面（候选池），不是全库；「该检到却没检到」不在本表职责内（属 #58 检索缺口）。",
+  "pairing_note": "标签只配这一代产物：题面哈希 + 本次输出都记在这里。重跑生成会改结论文本（#56 实测 ~7%），所以刷新本表要整套重来、不能与旧标签混算。",
+  "question_hash": 3508928384,
+  "n_rows_total": 12,
+  "n_rows_judged": 12,
+  "blank_rows": [],
+  "complete": true,
+  "system_behavior_shape": {
+    "rows_with_conclusion": 0,
+    "rows_without_conclusion": 12,
+    "status_dist": {
+      "refuse": 7,
+      "escalate": 5
+    },
+    "note": "这个分布决定哪几个率有分母。本次生成的 12 行系统全部没给结论 ⇒ 真幻觉率的分母为 0，只能报「不适用」，不能报 0%"
+  },
+  "metrics": {
+    "hallucination_unsupported_conclusion": {
+      "n": 0,
+      "numerator": 0,
+      "value": null,
+      "reading": "不适用（此类样本为 0，不得读成 0%）"
+    },
+    "over_refusal_had_evidence_but_refused": {
+      "n": 7,
+      "numerator": 0,
+      "value": 0.0,
+      "reading": "0/7 = 0.00%"
+    },
+    "behavior_correct": {
+      "n": 12,
+      "numerator": 12,
+      "value": 1.0,
+      "reading": "12/12 = 100.00%"
+    },
+    "should_escalate_but_did_not": {
+      "n": 5,
+      "numerator": 0,
+      "value": 0.0,
+      "reading": "0/5 = 0.00%"
+    }
+  },
+  "definition_notes": {
+    "over_refusal": "只算 `status=refuse` 的纯拒答行。**转人工不算误拒**：密级 3 的题即使证据充分，正确处置也是转人工。本轮现场修正过一次——旧口径把 q-070（判人标『证据充分 + 处置正确』）记成误拒，报了个 12.5% 的假红。",
+    "escalated_with_sufficient_evidence": [
+      "q-070"
+    ],
+    "hallucination": "结论非空 且 判据一=0 ⇒ 无依据却出结论；分子由两列人判机械导出，不直接问「这是幻觉吗」。",
+    "not_assessable": "判据一为 ? 或系统未做检索（无证据面）的行不进任何判据一分母。"
+  },
+  "lists": {
+    "hallucination_rows": [],
+    "over_refusal_rows": [],
+    "behavior_wrong_rows": [],
+    "not_assessable_no_evidence_face": [
+      "q-066",
+      "q-067",
+      "q-068",
+      "q-069"
+    ]
+  },
+  "failure_kind_dist": {},
+  "escalate_structural": {
+    "rows": 5,
+    "needs_human_all": true
+  }
+}
