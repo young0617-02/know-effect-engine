@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import json
 import re
+import sys
 from datetime import datetime
 from pathlib import Path
 
@@ -283,6 +284,29 @@ ADDED = [
     ("误收运行日志进版本库", CLOSED,
      "本轮发生并已纠正：`git add -f var/gate0/` 把 Gate 0 的 .log 一起收了进去，与本仓库「只收读数」的纪律不符，"
      "已用新 commit 移出跟踪（文件留在磁盘）。教训：add -f 之前先看 git status --short 的完整清单"),
+    ("自建账号体系（V1.31）留下的四条边界", OPEN,
+     "换成真登录把「界面上谁都能切角色」这条堵死了，但它自身不是零成本，四条都要同条引用、不许只报「已实现鉴权」："
+     "① **`KEE_ALLOW_HEADER_IDENTITY` 默认仍 `true`** ⇒ 不带令牌、只发 `X-Kee-Role: system_admin` 仍能拿到管理员范围"
+     "（实测：无令牌走请求头，`X-Kee-Actor: script-channel` 原样落进审计）。保留默认为的是不断既有脚本通道，"
+     "接企业网络前必须翻成 `false` 并重跑鉴权用例；② **退出只撤销当前那枚令牌**，同用户其余会话要到 12h 自然过期"
+     "（实测：一次 logout 后 `user_session` 仍剩 4 行）——「踢人下线」目前没有对应动作；"
+     "③ **`failed_count` 只计数，不锁号也不限速** ⇒ 在线撞库的成本仍然只有 scrypt 本身；"
+     "④ **首个注册者可以是治理角色**（库里为空时的引导例外，否则没人当得上第一个管理员），"
+     "代价是**首次注册必须在受控网络内先到先得**，部署手册里要写死这一步。"
+     "另记两条小的：账号无删除端点（注销要走 DB）、口令无轮换策略/历史校验"),
+    ("hybrid 模式下稠密腿空结果不写 `degraded`：静默退化成 BM25 单腿且分数换量纲", OPEN,
+     "**2026-10-13 会话端点改动后复跑 `verify_m3` 时抓到，与本次改动无关**。同一份代码两次跑同一步：一次 "
+     "`confidence.retrieval = 0.9937`（正常），一次 **36.9408**——后者不是「分数变高」，是**换了量纲**："
+     "稠密腿没跑成，`rankings` 只剩 BM25 一路，融合退化为原始稀疏分（几十），门禁那句 "
+     "`top_score >= min_retrieval_score` 就在一个它从未打算比较的尺度上「通过」，而 `degraded` 是**空的**。"
+     "机制在 `src/kee/retrieval/pipeline.py:205-213`：`dense_empty` 只在 `mode == \"dense\"` 时追加，"
+     "`hybrid` 下稠密腿返回空列表既不报错也不标记。触发条件已复现：宿主 API 进程占着嵌入/重排模型时"
+     "（8GB 显存实测零余量），`verify_m3` 自己起的 CUDA 上下文拿不到显存 ⇒ 稠密腿空 ⇒ 静默退化，"
+     "第二次跑直接**段错误退出 139**。与 #56 那条「冷启动第一呼 `dense_timeout` ⇒ 单腿答」是同一件事的两个面："
+     "**超时那条会报 `degraded`，空结果这条不报**。两条修法待用户拍：① hybrid 也追加 `dense_empty`"
+     "（一行，只改上报不动阈值，代价是既有产物的 `degraded` 列会出现新值，历史读数引用须附「上报口径于今日收紧」）；"
+     "② 给 `top_score` 加量纲护栏（>1 即判依赖异常、拒绝出读数，走 `probe_guard` 那条既有纪律）。"
+     "**未擅自执行**：⑤ 的置信度与 DoD#2 的 P95 检索都以 `retrieval ∈ [0,1]` 为前提，动它等于动证据链"),
 ]
 
 
@@ -376,6 +400,18 @@ def main() -> int:
           "拼接式别名净收益为负（口语化 14 题 strict @5 由 13 → 12，掉下去的正是被改的块）⇒ 不做；"
           "「别名独立字段 + 独立一路」那版收益上界 1/68 题、代价是全库重建与融合逻辑改动 ⇒ 建议不投入。"
           "详见 `reports/m2/M2_检索缺口归因.md` 六。",
+          "5. **`KEE_ALLOW_HEADER_IDENTITY` 的默认值**（V1.31 新登记，未拍）—— 现在默认 `true`，"
+          "即**不带令牌、只发一个请求头就能拿到该角色的全部范围**。翻成 `false` 的代价是既有脚本通道"
+          "（`scripts/m5_test_user_run.py` 这类走 `X-Kee-Role` 的）当场失效，翻成 `true` 的代价是"
+          "「限内网」这条约束继续由部署环境而不是由代码承担。建议**交付物默认 `false`、脚本显式带令牌**，"
+          "但这改的是已有验收脚本的跑法，所以留给用户拍。",
+          "6. **稠密腿空结果的静默退化怎么堵**（V1.0.34 复跑 verify_m3 时抓到，未拍）—— "
+          "`hybrid` 下稠密腿返回空列表时既不报错也不写 `degraded`，分数从 0–1 换成 BM25 原始量纲"
+          "（实测 36.9408 vs 正常 0.9937），检索门禁于是「在一个它从未打算比较的尺度上通过」。"
+          "两条路：① hybrid 也追加 `dense_empty`（一行，只改上报不动阈值，代价是既有产物的 "
+          "`degraded` 列会出现新值，历史读数引用须附一句「上报口径于 2026-10-13 收紧」）；"
+          "② 给 `top_score` 加量纲护栏（>1 即判依赖异常、拒绝出读数）。**都没擅自执行**——"
+          "⑤ 的置信度与 DoD#2 的 P95 检索都建立在 `retrieval ∈ [0,1]` 这个前提上。",
           "", "> ADR-12（API 容器化）**已于 2026-10-12 定案**：维持「存储 + 前端进容器、API 在宿主」，"
           "「整机断网下端到端问答」划出承诺范围——它不再挂在待裁清单上。", "",
           "## 四、M5 的收口结论", "",
@@ -401,6 +437,20 @@ def main() -> int:
           "新独立标签没给我的选块加分，而是打了分。",
           "- 定稿不抹历史：状态变化都在原表的「状态更新」子行里留痕，这份文件只做**分类与归因**。", ""]
     OUT_MD.parent.mkdir(parents=True, exist_ok=True)
+    # 第二节整段由本脚本重写 ⇒ **手写在 markdown 里的行会被静默抹掉**。
+    # 2026-10-13 真发生过：把「自建账号体系」那条直接写进产物文件，重跑生成器它就消失了，
+    # 而且消失的方向是「少一条敞口」——读起来更像好消息，没人会去查。
+    # 所以落盘前先比对：现文件第二节有、而本次不生成的行一律拒绝，除非显式给非空理由。
+    if OUT_MD.exists():
+        sec2 = OUT_MD.read_text(encoding="utf-8").split("## 二、")[-1].split("## 三、")[0]
+        have = {ln.split("|")[1].strip() for ln in sec2.splitlines()
+                if ln.startswith("| ") and "定稿状态" not in ln and set(ln) - {"|", " ", "-"} }
+        losing = sorted(x for x in have if x not in {n for n, _, _ in ADDED} and x != "风险")
+        allow = next((a.split("=", 1)[1] for a in sys.argv[1:] if a.startswith("--allow-drop=")), "")
+        if losing and not allow.strip():
+            raise SystemExit("拒绝生成：第二节这些行会消失但没给理由（要删就写 --allow-drop=为什么）："
+                             + "；".join(losing))
+
     OUT_MD.write_text("\n".join(L), encoding="utf-8")
     print("行数", len(out), "| 未匹配", len(unmatched), "| 状态分布", json.dumps(counts, ensure_ascii=False))
     print("产物：", OUT_MD)
