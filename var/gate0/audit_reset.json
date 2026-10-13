@@ -1,0 +1,31 @@
+{
+  "at": "2026-10-13T19:25:05+0800",
+  "by": "wesley",
+  "reason": "交付前清场：界面上不应留着开发期演示产生的 actor 与测试会话（用户 2026-10-13 选定「整表清空」）",
+  "action": "TRUNCATE audit_log / session_turn / session",
+  "绕过的是什么": "audit_log_immutable 触发器只声明 DELETE/UPDATE，PostgreSQL 触发器不覆盖 TRUNCATE；且应用角色 kee 当前为 superuser，表级 REVOKE 无效",
+  "行数_前": {
+    "audit_log": 1662,
+    "session_turn": 1000,
+    "session": 852
+  },
+  "行数_后": {
+    "audit_log": 0,
+    "session_turn": 0,
+    "session": 0
+  },
+  "被清掉的演示数据": {
+    "actor 含 demo 的审计行": 26,
+    "s-demo 会话轮": 8
+  },
+  "未动的东西": [
+    "document",
+    "document_version",
+    "chunk",
+    "outbox_event",
+    "reconciliation_diff",
+    "Milvus 集合 kb_chunks",
+    "评测集与全部人工标注",
+    "var/gate0/*.json 证据产物"
+  ]
+}

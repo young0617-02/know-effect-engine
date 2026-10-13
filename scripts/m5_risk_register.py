@@ -82,6 +82,19 @@ DISPOSITION: dict[str, tuple[str, str]] = {
 
 # 原表里没单列、但本轮新登记/仍未闭的三条，补进定稿
 ADDED = [
+    ("审计「禁改」可被 TRUNCATE 整体绕过（根因：应用角色是 superuser）", OPEN,
+     "**2026-10-13 交付前清场时实测到**。`audit_log_immutable` 只声明 `BEFORE DELETE OR UPDATE`，"
+     "而 PostgreSQL 的行级/语句级触发器**不覆盖 TRUNCATE**；再叠加应用角色 `kee` 当前 `rolsuper=true`"
+     "（表级 REVOKE 对超级用户一律无效），于是 `TRUNCATE TABLE audit_log` 一句就能把整张防篡改表抹干净且不留痕。"
+     "实测方式安全：在事务里 TRUNCATE→看到 0 行→ROLLBACK，行数复原 1662，未影响任何数据。"
+     "**收紧路径（按顺序做，缺一都堵不住）**：① `ALTER TABLE audit_log OWNER TO postgres`；"
+     "② `ALTER ROLE kee NOSUPERUSER`；③ `GRANT INSERT, SELECT ON audit_log TO kee`——"
+     "只有把「超级用户 + 属主」这两个身份都摘掉，触发器才从『聊胜于无』变成真防线。"
+     "⚠  会改变整个应用的权限面（迁移里的 `DO $mig$`、建表、扩展等都要重验），"
+     "**所以本轮没擅自执行**：先登记，等用户点头再动，动完必须重跑 verify_m1/m3/m4 全套。"
+     "另：本轮的清空动作本身已落**表外凭据** `var/gate0/audit_reset.json`（审计表记不了自己的抹除，"
+     "让被审计对象写证词等于没写），工具 `scripts/reset_audit_state.py` 要求 `--confirm=RESET` + 非空 `--reason`，"
+     "且拒绝在只删部分行时去拆触发器"),
     ("拒答/转人工出口的置信度块缺 `score_basis` 与 `temperature`", CLOSED,
      "**2026-10-13 真机走查抓到并已修**。六个不进生成的出口里三处（`sensitive_gate` / `retrieval_gate` / "
      "`declared_no_evidence`）是各自手写的字典，只有 `composite=0`，而作答出口带 `score_basis="

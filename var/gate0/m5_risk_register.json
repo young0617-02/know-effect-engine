@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-13T19:04:17",
+  "generated_at": "2026-10-13T19:31:07",
   "principle": "逐行解析原表，缺一条处置就拒绝生成；状态显式给定，不按散文猜",
   "risk_rows": [
     {
@@ -155,6 +155,11 @@
   ],
   "added": [
     {
+      "风险": "审计「禁改」可被 TRUNCATE 整体绕过（根因：应用角色是 superuser）",
+      "定稿状态": "敞口未闭",
+      "定稿依据": "**2026-10-13 交付前清场时实测到**。`audit_log_immutable` 只声明 `BEFORE DELETE OR UPDATE`，而 PostgreSQL 的行级/语句级触发器**不覆盖 TRUNCATE**；再叠加应用角色 `kee` 当前 `rolsuper=true`（表级 REVOKE 对超级用户一律无效），于是 `TRUNCATE TABLE audit_log` 一句就能把整张防篡改表抹干净且不留痕。实测方式安全：在事务里 TRUNCATE→看到 0 行→ROLLBACK，行数复原 1662，未影响任何数据。**收紧路径（按顺序做，缺一都堵不住）**：① `ALTER TABLE audit_log OWNER TO postgres`；② `ALTER ROLE kee NOSUPERUSER`；③ `GRANT INSERT, SELECT ON audit_log TO kee`——只有把「超级用户 + 属主」这两个身份都摘掉，触发器才从『聊胜于无』变成真防线。⚠  会改变整个应用的权限面（迁移里的 `DO $mig$`、建表、扩展等都要重验），**所以本轮没擅自执行**：先登记，等用户点头再动，动完必须重跑 verify_m1/m3/m4 全套。另：本轮的清空动作本身已落**表外凭据** `var/gate0/audit_reset.json`（审计表记不了自己的抹除，让被审计对象写证词等于没写），工具 `scripts/reset_audit_state.py` 要求 `--confirm=RESET` + 非空 `--reason`，且拒绝在只删部分行时去拆触发器"
+    },
+    {
       "风险": "拒答/转人工出口的置信度块缺 `score_basis` 与 `temperature`",
       "定稿状态": "已闭合",
       "定稿依据": "**2026-10-13 真机走查抓到并已修**。六个不进生成的出口里三处（`sensitive_gate` / `retrieval_gate` / `declared_no_evidence`）是各自手写的字典，只有 `composite=0`，而作答出口带 `score_basis=rule_composite_not_probability`。后果是拒答轮给下游的是「0 分但没有一句说明这个 0 是什么」——**0 比 0.79 更容易被读成概率**（「系统自评 0% 正确」）。前端当时显示「score_basis 缺失」，等于用 UI 兜住了后端的契约缺口，所以没有任何测试变红。修法：全部改走同一个 `_gate()` 构造子；防回归 `tests/test_qa_graph_stream.py` 既测 `_gate` 本身、也测两条真实拒答通路（与 `e2e_ms` 那次同一类错：**出口形状少一个字段**）。《前端流式渲染契约》第 4 条原文写的是「原样带出 score_basis」，**没分出口**——所以这不是口径分歧，是实现漏项"
@@ -273,6 +278,6 @@
   "counts": {
     "已闭合": 23,
     "继承未触发": 2,
-    "敞口未闭": 10
+    "敞口未闭": 11
   }
 }
