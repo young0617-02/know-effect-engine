@@ -71,6 +71,11 @@ def build() -> dict:
     g6 = load("m4_g06_rerun2.json")
     ac = load("answer_correct_calibration.json")
     rep = load("m5_latency_replicates.json")
+    halluc = load("hallucination_run.json")
+    # 工单没回收时这一格必须显式「无数」，而且要说清哪几个率此刻**按构造出不了数**
+    if halluc:
+        halluc["no_evidence_face"] = [r["qid"] for r in halluc.get("rows", [])
+                                      if not r.get("retrieved_ids")]
     ap = ac.get("populations", {}).get("answer_prod", {})
     ab = ac.get("populations", {}).get("all_behav", {})
     ver = {i: load(f"verdict_0{i}.json") for i in range(1, 7)}
@@ -150,16 +155,25 @@ def build() -> dict:
         row("3", "引用可信", "部分达标", "引用正确率 ≥ 90%；幻觉率 ≤ 10%（Faithfulness 为报告值，非阻塞）",
             f"行级引用落 gold {ans.get('行级引用落gold')} ｜ **人判答案正确性（#40 已回收）{ac_acc}** ｜ 数字落地率均值 "
             f"{round(statistics.mean(grounded), 4) if grounded else 'NA'}（{len(grounded)} 题可判）｜ "
-            f"含编造数字的题 {len(invented)} 道 ｜ 零引用结论 {ans.get('契约拦下的空结论')} 条",
+            f"含编造数字的题 {len(invented)} 道 ｜ 零引用结论 {ans.get('契约拦下的空结论')} 条 ｜ "
+            f"**真幻觉率（该拒却答了）：无数**——#57 工单 {halluc.get('n_rows', 0)} 行已下发、三列判断均未填",
             ["var/gate0/m3_answer_probe.json", "var/gate0/m3_confidence_probe.json",
-             "var/gate0/answer_correct_calibration.json", "scripts/m5_answer_correct_calibration.py"],
+             "var/gate0/answer_correct_calibration.json", "scripts/m5_answer_correct_calibration.py",
+             "var/gate0/hallucination_fill.csv", "var/gate0/hallucination_run.json",
+             "scripts/m5_hallucination_sheet.py", "scripts/m5_hallucination_rate.py"],
             "这一格现在有**两种不同的可信**：出处可信（引用落 gold）与结论可信（真人判 answer_correct）。"
             f"后者首次有数：{ap.get('n')} 行给出答案的行里 {ap.get('n_wrong')} 行结论错"
             f"（错行归因：{cause_short}；明细见 `var/gate0/answer_correct_calibration.json`）。"
-            "边界必须同句说：这只覆盖 67 道可答题里真跑过生成的 62 行，"
+            "边界必须同句说：这只覆盖 68 道可答题里真跑过生成的那批，"
             "**无答案 7 + 敏感 5 题不在标签集内**——那 12 题「该拒却答了」至今没有真人标签，"
             "所以「幻觉率 ≤ 10%」这半边仍是代理读数（编造数字），不是人判。"
-            "（V1.0.14 的**答案层复核闸**是准入控制，不是正确性度量，不能顶替这一格）"),
+            f"（V1.0.14 的**答案层复核闸**是准入控制，不是正确性度量，不能顶替这一格）"
+            f"**#57 已把工单出好**（源=生产入口真调用，题面哈希 {halluc.get('question_hash')}，"
+            f"护栏：qid 双向对齐、混代拒绝、分母为 0 报「不适用」而不是 0%）："
+            f"回收前这一格只能写「无数」。另有一条结构性缺口要同句报——"
+            f"这 12 行里 **{len(halluc.get('no_evidence_face', []))} 行系统没做检索就给了处置**"
+            "（敏感题在检索前被拦），那些行的「证据够不够」按构造不可判，"
+            "所以这张表真正能定量的是**误拒**与**该转未转**，不是四个率都能出数。"),
         row("4", "校准与结构化", "部分达标", "ECE ≤ 0.10；结构化输出首次成功率 ≥ 90%",
             f"结构化首次成功率 {pct(struct_ok / n_gen) if n_gen else 'NA'}（{struct_ok}/{n_gen}，被截断 {concl.get('被截断数')}）｜ "
             f"ECE（真人 answer_correct，n={ap.get('n', 0)}）**{ac_ece}**"
