@@ -63,7 +63,7 @@ export function KbPage() {
     <div>
       <div className={s.toolbar}>
         <label>
-          行业
+          部门
           <select value={industry} onChange={(e) => { setIndustry(e.target.value); setOffset(0); }}>
             <option value="">（全部可见）</option>
             {INDUSTRIES.map((i) => (
@@ -113,7 +113,7 @@ export function KbPage() {
         <table className={s.table}>
           <thead>
             <tr>
-              {["文档", "行业/项目", "类型", "密级", "状态", "生效版本", "子块", "操作"].map((h) => (
+              {["文档", "部门/项目", "类型", "密级", "状态", "生效版本", "子块", "操作"].map((h) => (
                 <th key={h}>{h}</th>
               ))}
             </tr>

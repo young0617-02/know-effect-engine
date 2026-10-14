@@ -26,7 +26,7 @@ export function AccountBar() {
         <code>{user.role}</code>
       </div>
       <div className={s.field}>
-        <span>行业范围</span>
+        <span>部门范围</span>
         <strong>{identity.industries.length ? identity.industries.join("、") : "不限定"}</strong>
       </div>
       <button type="button" className={s.link} onClick={() => void logout()}>退出登录</button>

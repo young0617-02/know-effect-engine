@@ -84,9 +84,9 @@ describe("postSse 分帧", () => {
     globalThis.fetch = originalFetch;
     expect(capture.headers).toMatchObject({
       "X-Kee-Role": "system_admin",
-      // actor 同样要编码：中文姓名（张三）在这里和中文行业名是同一个问题
+      // actor 同样要编码：中文姓名（张三）在这里和中文部门名（金融）是同一个问题
       "X-Kee-Actor": encodeURIComponent("a@b"),
-      // 中文行业名**必须以百分号编码发出**：直接发中文，浏览器会拒发整个请求。
+      // 中文部门名**必须以百分号编码发出**：直接发中文，浏览器会拒发整个请求。
       // 这条断言就是那条契约的护栏。
       "X-Kee-Industries": encodeURIComponent("金融"),
       "X-Kee-Projects": "PRJ-X",

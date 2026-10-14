@@ -46,7 +46,7 @@ export class ApiError extends Error {
  * 分两处加令牌迟早出现「普通接口认登录、流式接口不认」这种半吊子状态。
  */
 export function identityHeaders(id: Identity): Record<string, string> {
-  // HTTP 头只允许 latin-1 字节，而行业/项目/actor 会是中文（金融、张三）。
+  // HTTP 头只允许 latin-1 字节，而部门/项目/actor 会是中文（金融、张三）。
   // 直接塞中文浏览器当场拒发，所以这里按契约做百分号编码，后端 `context_of` 对应 unquote。
   const enc = (v: string) => encodeURIComponent(v);
   const h: Record<string, string> = { ...authHeaders() };

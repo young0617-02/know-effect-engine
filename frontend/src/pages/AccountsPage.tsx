@@ -57,7 +57,7 @@ export function AccountsPage() {
       {(msg || error) && <p className={s.formMsg} data-testid="accounts-msg">{msg || error}</p>}
       <table className={s.table}>
         <thead>
-          <tr><th>账号</th><th>显示名</th><th>角色</th><th>行业</th><th>最近登录</th><th>失败次数</th><th>授予角色</th></tr>
+          <tr><th>账号</th><th>显示名</th><th>角色</th><th>部门</th><th>最近登录</th><th>失败次数</th><th>授予角色</th></tr>
         </thead>
         <tbody>
           {rows.map((r) => (

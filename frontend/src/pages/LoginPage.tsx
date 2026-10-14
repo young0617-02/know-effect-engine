@@ -94,7 +94,7 @@ export function LoginPage() {
               </label>
 
               <div className={s.field}>
-                <span>行业范围（不选＝不限定，由服务端按角色处理）</span>
+                <span>部门范围（不选＝不限定，由服务端按角色处理）</span>
                 <div className={s.chips}>
                   {INDUSTRIES.map((name) => {
                     const on = industries.includes(name);
