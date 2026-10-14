@@ -158,12 +158,12 @@ def main() -> int:
             f"混合(+Rerank) Recall@5={best.get('recall@5')}，Dense={dense.get('recall@5')}，Δ={gain_full}；MRR={best.get('mrr')}",
             ""
             if passed
-            else f"Recall@5 距 85% 门禁还差 {round(0.85 - (best.get('recall@5') or 0), 4)}；模拟语料下绝对值受 gold 粒度与语料规模影响，见「已知边界」",
+            else f"Recall@5 距 85% 门禁还差 {round(0.85 - (best.get('recall@5') or 0), 4)}；自建语料下绝对值受 gold 粒度与语料规模影响，见「已知边界」",
         ),
         "",
         "## 已知边界",
         "",
-        "- 模拟语料 + 构造式 gold（章节级）：语料只有数百子块、且每题 gold 可能含 2~4 个子块，Recall@5 的分母偏大，绝对值天然偏保守；"
+        "- 自建语料 + 构造式 gold（章节级）：语料只有数百子块、且每题 gold 可能含 2~4 个子块，Recall@5 的分母偏大，绝对值天然偏保守；"
         "跨配置之间的**相对差**才是本项的结论载体。",
         "- 评测集为单人（构造时）标注，第二人复核表已生成待填，Kappa 未出。",
     ]

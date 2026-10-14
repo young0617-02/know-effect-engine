@@ -100,7 +100,7 @@ def main() -> int:
         f"- 被测代码：`know-effect-engine` @ {env['git_commit']}{'（工作区有未提交改动）' if env['git_dirty'] else ''}",
         "",
         "> **口径声明**：本报告所有量化数字是**本次验证的实测值**，与方案中的「设计目标/验收门禁」逐项对照；"
-        "语料为**模拟行业语料**（非真实客户数据），因此检索类指标的**相对差**比绝对值更具结论性，"
+        "语料为**自建行业文档集**（本项目编写），因此检索类指标的**相对差**比绝对值更具结论性，"
         "绝对值仅代表「达成路径是否存在」。",
         "",
         "## 一、放行结论",
@@ -282,7 +282,7 @@ def main() -> int:
         "",
         "**未验证 / 待办（不得当作已达成）**",
         "",
-        "- 真实客户语料下的 Recall@5/MRR/幻觉率绝对值（本轮为模拟语料 + 构造式 gold）。",
+        "接入企业真实语料后须重跑的一栏：Recall@5/MRR/幻觉率绝对值（本轮读数为自建语料 + 构造式 gold）。",
         "- 双人标注与 Cohen's Kappa（第二人复核表已生成待填：`var/gate0/annotations_a2_template.csv`，搜 `TODO_ANNOTATOR2`）。",
         "- RAGAS Faithfulness / Answer Relevance（本轮未接入，属 M2/M3）。",
         "- LangGraph 编排、Checkpointer 多轮、流式推送、Web 前端、应用与 Nginx 容器化（属 M3/M4）。",

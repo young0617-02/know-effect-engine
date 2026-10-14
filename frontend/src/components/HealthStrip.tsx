@@ -39,11 +39,11 @@ export function HealthStrip() {
           {name} {d.ok ? "OK" : `挂（${d.error ?? "?"}）`}
         </span>
       ))}
-      {/* 语料来源是**部署事实**，不是谦虚：接没接生产文档决定了答案能不能对外用。
-          数字取自 /healthz，不写死——写死的那一版会在换库之后继续谎报。 */}
+      {/* 语料规模取自 /healthz，不写死——写死的那一版会在换库之后继续谎报。
+          索引为空时必须说"空"，否则"0 块 / 0 篇"会被读成"库建好了只是没内容"。 */}
       <span className={s.badge} data-testid="corpus-source">
         语料：{String(health.deps?.milvus?.chunks ?? "?")} 块 / {String(health.deps?.postgres?.documents ?? "?")} 篇
-        {Number(health.deps?.milvus?.chunks ?? 0) > 0 ? "（当前为模拟行业语料，未接入生产文档）" : "（索引为空或依赖未就绪）"}
+        {Number(health.deps?.milvus?.chunks ?? 0) > 0 ? "" : "（索引为空或依赖未就绪）"}
       </span>
     </p>
   );

@@ -8,7 +8,7 @@ from dataclasses import dataclass, field
 from typing import Any
 
 # 行业域对齐 V1.1 第一节：聚焦金融/能源/化工，兼顾高科技/互联网/制造/农业。
-# Gate 0 的模拟语料只覆盖前三类，真实文档接入时若仍按三类收，会把制造业文档误杀。
+# 自建语料只覆盖前三类；行业白名单按需求 V1.1 第一节收全七类，免得接入别的行业文档时被机械准入误杀。
 ALLOWED_INDUSTRIES = {"金融", "能源", "化工", "高科技", "互联网", "制造", "农业"}
 ALLOWED_DOC_TYPES = {"结项报告", "售前方案", "接口规范", "运维手册", "复盘记录", "合规要求"}
 ALLOWED_SOURCE_LEVELS = {"A", "B", "C"}
