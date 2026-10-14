@@ -186,8 +186,7 @@ describe("问答页的三态渲染", () => {
     expect(skel.textContent).toContain("dense_timeout");
   });
 
-  it("拒答轮也要带 score_basis：0 分最容易被读成概率，缺这句说明就最危险", async () => {
-    stubFetch([
+  it("拒答轮也要带 score_basis：0 分最容易被读成概率，缺这句说明就最危险", async () => {    stubFetch([
       { event: "retrieval", data: { n_chunks: 3 } },
       { event: "answer", data: { ...ANSWER_BASE, status: "refuse", conclusion: "", key_points: [], citations: [],
         confidence: { composite: 0, calibrated: 0, temperature: 1, retrieval: 0.0073,
@@ -279,6 +278,18 @@ describe("问答页的三态渲染", () => {
 
     const err = await screen.findByTestId("turn-error");
     expect(err.textContent).toContain("未收到 answer");
+  });
+
+  it("免责句的句号只能有一个：没有流出字数时不许出现「。。」", async () => {
+    stubFetch([
+      { event: "retrieval", data: { n_chunks: 3 } },
+      { event: "answer", data: { ...ANSWER_BASE, status: "refuse", conclusion: "", provisional_streamed_chars: 0 } },
+    ]);
+    renderPage();
+    ask();
+    const meta = await screen.findByText(/免责提示/);
+    expect(meta.textContent).toMatch(/不是正确概率。$/);
+    expect(meta.textContent).not.toMatch(/。。/);
   });
 });
 

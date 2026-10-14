@@ -398,10 +398,16 @@ function AnswerMeta({
       </div>
 
       <p>
-        免责提示：内容由本地模型依据知识库生成，引用落点可逐条核对；置信度为规则分、不是正确概率。
-        {answer.provisional_streamed_chars ? ` 本次流出 ${answer.provisional_streamed_chars} 字` : ""}
-        {answer.provisional_lost ? `，条目级丢失 ${answer.provisional_lost} 条` : ""}
-        {answer.provisional_lost_samples?.length ? `（示例：${answer.provisional_lost_samples[0]}）` : ""}。
+        {(() => {
+          // 那句「本次流出 N 字」是可选项，句号只能有一个：
+          // 原先把句号写死在 JSX 末尾，没有流出字数时就渲染成「…不是正确概率。。」
+          const tail: string[] = [];
+          if (answer.provisional_streamed_chars) tail.push(`本次流出 ${answer.provisional_streamed_chars} 字`);
+          if (answer.provisional_lost) tail.push(`条目级丢失 ${answer.provisional_lost} 条`);
+          if (answer.provisional_lost_samples?.length) tail.push(`示例：${answer.provisional_lost_samples[0]}`);
+          return `免责提示：内容由本地模型依据知识库生成，引用落点可逐条核对；置信度为规则分、不是正确概率。` +
+            (tail.length ? ` ${tail.join("，")}。` : "");
+        })()}
       </p>
     </div>
   );
