@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { grantRole, listUsers } from "../api/auth";
+import { grantRole, listUsers, revokeSessions } from "../api/auth";
 import { ROLES, isGovernance } from "../api/rbac";
 import { useIdentity } from "../state/identity";
 import { styles as s } from "../styles";
@@ -46,6 +46,18 @@ export function AccountsPage() {
     }
   };
 
+  const kick = async (username: string) => {
+    setMsg("");
+    clearError();
+    try {
+      const r = await revokeSessions(username);
+      setMsg(`${username} 的 ${r.revoked} 个登录态已撤销（由 ${r.by} 执行，已进审计）`);
+      await refresh();
+    } catch (e) {
+      setMsg(e instanceof Error ? e.message : String(e));
+    }
+  };
+
   return (
     <section>
       <div className={s.row}>
@@ -57,7 +69,7 @@ export function AccountsPage() {
       {(msg || error) && <p className={s.formMsg} data-testid="accounts-msg">{msg || error}</p>}
       <table className={s.table}>
         <thead>
-          <tr><th>账号</th><th>显示名</th><th>角色</th><th>部门</th><th>最近登录</th><th>失败次数</th><th>授予角色</th></tr>
+          <tr><th>账号</th><th>显示名</th><th>角色</th><th>部门</th><th>最近登录</th><th>失败次数</th><th>授予角色</th><th>登录态</th></tr>
         </thead>
         <tbody>
           {rows.map((r) => (
@@ -73,6 +85,12 @@ export function AccountsPage() {
                         onChange={(e) => void grant(String(r.username), e.target.value)}>
                   {ROLES.map((x) => <option key={x.role} value={x.role}>{x.label}</option>)}
                 </select>
+              </td>
+              <td>
+                <button type="button" className={s.link} data-testid={`kick-${r.username}`}
+                        onClick={() => void kick(String(r.username))}>
+                  强制下线
+                </button>
               </td>
             </tr>
           ))}

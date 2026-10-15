@@ -23,12 +23,19 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
+sys.path.insert(0, str(ROOT / "scripts"))
+
+from _identity import ensure_accounts, login_http  # noqa: E402
 
 MAIN = "infra/docker-compose.gate0.yml"
 NODEV = "infra/docker-compose.gate0.nodev.yml"
 M4 = "infra/docker-compose.m4.yml"
 API = "http://127.0.0.1:38000"
 OUT = ROOT / "var" / "gate0" / "m4_airgap_nodev.json"
+
+# 身份走登录令牌（`KEE_ALLOW_HEADER_IDENTITY` 的默认已于 2026-10-15 翻成 False，用户裁「交付物默认 false、脚本显式带令牌」），
+# TOKEN 在 main() 里登录后填充：审计里的 actor 因此是账号名 verify-owner，不再是请求头里随手写的 airgap-probe。
+TOKEN = ""
 
 PUBLIC_TARGETS = ["http://1.1.1.1", "http://8.8.8.8", "https://registry-1.docker.io/v2/"]
 
@@ -122,15 +129,13 @@ def container_mesh() -> dict:
     return {"etcd_health": etcd.stdout.strip()[:80] or etcd.stderr.strip()[:80], "rc": etcd.returncode}
 
 
-def ask(question: str, role: str = "knowledge_owner", industries: str = "%E9%87%91%E8%9E%8D") -> dict:
+def ask(question: str) -> dict:
     body = json.dumps({"question": question}, ensure_ascii=False)
     r = sh(
         [
             "curl", "-s", "-m", "180", "-X", "POST", f"{API}/api/v1/answers",
             "-H", "Content-Type: application/json",
-            "-H", f"X-Kee-Role: {role}",
-            "-H", f"X-Kee-Industries: {industries}",
-            "-H", "X-Kee-Actor: airgap-probe",
+            "-H", f"Authorization: Bearer {TOKEN}",
             "-d", body,
         ],
         timeout=200,
@@ -156,9 +161,7 @@ def stream_first_event(timeout: int = 120) -> dict:
         [
             "curl", "-s", "-N", "-m", str(timeout), "-X", "POST", f"{API}/api/v1/answers/stream",
             "-H", "Content-Type: application/json",
-            "-H", "X-Kee-Role: knowledge_owner",
-            "-H", "X-Kee-Industries: %E9%87%91%E8%9E%8D",
-            "-H", "X-Kee-Actor: airgap-probe",
+            "-H", f"Authorization: Bearer {TOKEN}",
             "-d", json.dumps({"question": "银企直联方案 V3.2 的 RTO 是多少？"}, ensure_ascii=False),
         ],
         timeout=timeout + 30,
@@ -181,6 +184,11 @@ def main() -> int:
         stop_api(api)
         return 2
     print(f"跑前：chunks={pre_counts[0]} docs={pre_counts[1]}")
+
+    # 令牌在断网步骤之前取好：会话行存在数据卷里，容器重建后这枚令牌照样解得开
+    global TOKEN
+    ensure_accounts()
+    TOKEN = login_http(API, "verify-owner")["Authorization"].removeprefix("Bearer ")
 
     rep: dict = {
         "env": {"ts": datetime.now().isoformat(timespec="seconds"), "commit": sh(["git", "rev-parse", "--short", "HEAD"]).stdout.strip()},

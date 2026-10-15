@@ -52,9 +52,25 @@ REPHRASE = "换个说法问：{q}"
 GATES = {"模拟自助解答率": 0.60, "一次通过率": 0.60, "运行链路检查": 1.0}
 
 
+from _identity import BY_ROLE, USERS as ACCOUNTS, ensure_accounts, login_http  # noqa: E402
+
+_TOKENS: dict[str, dict] = {}
+
+
 def h(role: str, actor: str) -> dict:
-    # 身份走请求头且只允许 latin-1 ⇒ 角色与 actor 全用 ASCII
-    return {"X-Kee-Role": role, "X-Kee-Actor": actor, "Content-Type": "application/json"}
+    """身份走登录令牌。请求头通道默认已关闭（用户 2026-10-15 裁「脚本显式带令牌」），
+    所以这里的 actor 必须是库里真有的账号名——预热与 SSE 检查那两个「只报角色」的调用点
+    按 `BY_ROLE` 落到该角色的验收账号。
+
+    `ACCOUNTS` 是本脚本的**用户画像表** `USERS` 之外的东西（那是「谁以什么角色问哪道题」），
+    这里指落库播种的账号清单，所以别名引进来，不让两个 USERS 互相覆盖。
+    """
+    if not _TOKENS:
+        ensure_accounts()
+    username = actor if actor in ACCOUNTS else BY_ROLE[role]
+    if username not in _TOKENS:
+        _TOKENS[username] = login_http(BASE, username)
+    return {**_TOKENS[username], "Content-Type": "application/json"}
 
 
 def post(path: str, body: dict, role: str, actor: str, timeout: float = 300.0) -> dict:

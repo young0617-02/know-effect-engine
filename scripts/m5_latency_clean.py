@@ -38,8 +38,12 @@ from kee.config import get_settings  # noqa: E402
 from kee.db.pg import AuthoritativeStore  # noqa: E402
 from kee.eval.build_eval import build_eval_set  # noqa: E402
 
+from _identity import ensure_accounts, login_http  # noqa: E402
+
 BASE = os.environ.get("KEE_LAT_BASE", "http://127.0.0.1:38000")
-HDRS = {"X-Kee-Role": "knowledge_owner", "X-Kee-Actor": "lat-clean", "Content-Type": "application/json"}
+# 身份走登录令牌：`KEE_ALLOW_HEADER_IDENTITY` 的默认已于 2026-10-15 翻成 False（用户裁「交付物默认 false、脚本显式带令牌」）；
+# `Authorization` 由 main() 登录后补进 HDRS，session_turn/audit 里的 actor 因此是账号名 verify-owner，不再是 lat-clean。
+HDRS = {"Content-Type": "application/json"}
 
 
 def post(path: str, body: dict, timeout: float = 300.0) -> dict:
@@ -155,6 +159,9 @@ def main() -> int:
         print(f"[拒绝起跑] /healthz 报不健康：{h}")
         return 2
     print(f"[前置] healthz={h}")
+
+    ensure_accounts()
+    HDRS.update(login_http(BASE, "verify-owner"))
 
     pg = AuthoritativeStore()
     qs = build_eval_set(pg, write_files=False)["questions"]

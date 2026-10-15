@@ -25,6 +25,7 @@ from kee.api.auth import (
     bearer_of,
     current_user,
     drop_session,
+    drop_user_sessions,
     register,
     resolve,
     set_role,
@@ -278,14 +279,25 @@ def create_app(*, skip_embedding: bool = False, scheduler: Any | None = None, co
                 "user": {"username": body.username}}
 
     @app.post("/api/v1/auth/logout")
-    def auth_logout(request: Request, authorization: str | None = Header(None)) -> dict[str, Any]:
+    def auth_logout(request: Request, authorization: str | None = Header(None),
+                    all_devices: bool = True) -> dict[str, Any]:
+        """退出。默认把该账号的**所有**会话一起撤销——只删当前那枚令牌时，别的浏览器里
+        那枚还能用到 TTL 自然过期（12h），共享电脑上的「退出」等于没退。
+        需要「只退本机」时显式带 `?all_devices=false`。"""
         token = bearer_of(authorization)
         user = current_user.get()
         with pg.connect() as conn:
-            n = drop_session(conn, token) if token else 0
+            if user and all_devices:
+                n = drop_user_sessions(conn, user["username"])
+            elif token:
+                n = drop_session(conn, token)
+            else:
+                n = 0
         if user:
-            _audit(user["username"], "logout", user["username"], {"revoked": n}, request.state.trace_id)
-        return {"revoked": n}
+            _audit(user["username"], "logout", user["username"],
+                   {"revoked": n, "scope": "all_devices" if all_devices else "current_token"},
+                   request.state.trace_id)
+        return {"revoked": n, "scope": "all_devices" if all_devices else "current_token"}
 
     @app.get("/api/v1/auth/me")
     def auth_me() -> dict[str, Any]:
@@ -326,6 +338,26 @@ def create_app(*, skip_embedding: bool = False, scheduler: Any | None = None, co
             raise ApiError("E400", 400, str(e), request.state.trace_id)
         _audit(actor, "user_role_granted", username, {"role": body.role}, request.state.trace_id)
         return {"user": row, "granted_by": actor}
+
+    @app.post("/api/v1/auth/users/{username}/revoke-sessions")
+    def auth_revoke_sessions(username: str, request: Request,
+                             x_kee_role: str | None = Header(None),
+                             x_kee_actor: str | None = Header(None)) -> dict[str, Any]:
+        """强制下线：撤销该账号的全部登录态，口令留着（停用账号是另一件事，走 `is_active`）。
+
+        这条补的是「治理角色手上没有踢人动作」这个缺口——此前只有本人点退出，
+        而退出又只管当前那枚令牌，所以要停掉一个泄露的账号只能改库。
+        """
+        ctx, actor = context_of(x_kee_role, x_kee_actor, None, None)
+        if ctx.role not in ("knowledge_owner", "system_admin"):
+            raise ApiError("E403", 403, "强制下线需 knowledge_owner 或 system_admin", request.state.trace_id)
+        with pg.connect() as conn:
+            exists = conn.execute("SELECT 1 FROM app_user WHERE username = %s", (username,)).fetchone()
+            n = drop_user_sessions(conn, username) if exists else 0
+        if not exists:
+            raise ApiError("E404", 404, f"用户名 {username} 不存在", request.state.trace_id)
+        _audit(actor, "user_force_logout", username, {"revoked": n}, request.state.trace_id)
+        return {"username": username, "revoked": n, "by": actor}
 
     @app.get("/healthz")
     def healthz() -> dict[str, Any]:

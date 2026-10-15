@@ -207,10 +207,13 @@ class HybridRetriever:
                 d = self._dense_hits(q_dense, expr, self.dense_top_k, timings, degraded)
                 if d:
                     rankings.append(d)
+                elif not any(x.startswith("dense_timeout") for x in degraded):
+                    # 此前这个标记只在 mode=="dense" 时补，于是 hybrid 下稠密腿交白卷既不报错也不留痕，
+                    # 整条链路静默退化成 BM25 单腿（实测同一份代码两次跑出 0.9937 与 36.9408）。
+                    # 超时那条腿自己会标 dense_timeout，不重复追加。
+                    degraded.append("dense_empty")
             except Exception as e:  # noqa: BLE001 - 依赖故障必须显式降级而非抛错
                 degraded.append(f"dense_error:{type(e).__name__}")
-            if self.mode == "dense" and not rankings:
-                degraded.append("dense_empty")
         if self.mode in ("sparse", "hybrid"):
             try:
                 rankings.append(self._sparse_hits(q_sparse, expr, self.sparse_top_k, timings))
@@ -243,6 +246,10 @@ class HybridRetriever:
 
         if len(rankings) == 1:
             fused = [(h, h.score) for h in rankings[0]]
+            if self.mode == "hybrid":
+                # 只有 hybrid 才标：mode="sparse"/"dense" 本来就是单腿，标它是噪声。
+                # 单腿时 RRF 没有发生，`h.score` 是该腿的原始量纲——BM25 是几十，不是 0–1。
+                degraded.append("hybrid_single_leg")
         else:
             fused = rrf_fuse(rankings, k=self.rrf_k)
             timings["fuse_ms"] = 0.0
@@ -260,6 +267,12 @@ class HybridRetriever:
             chunks = [_to_chunk(h) for h in candidates[:top_k]]
 
         timings["retrieval_total_ms"] = round((time.perf_counter() - t_all) * 1000, 1)
+        if self.use_rerank and chunks and max(c.score for c in chunks) > 1.0:
+            # 交叉编码器的分恒在 (0,1)（`reranker.score` 走 sigmoid）。出现 >1 就说明这个分
+            # 不是重排给的，而是某条腿的原始量纲漏到了下游——下游的 `min_retrieval_score=0.20`
+            # 与置信度成分都假定 retrieval ∈ [0,1]，在这个尺度上「过闸」等于没比。
+            # 只标记、不动阈值：动阈值就是动证据链。
+            degraded.append(f"score_scale_out_of_range:{round(max(c.score for c in chunks), 4)}")
         if key and self.cache:
             self.cache.set(key, [c.as_dict() for c in chunks])
         return RetrievalResult(

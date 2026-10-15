@@ -43,3 +43,30 @@ def unusable_run(share: float, threshold: float = 0.2) -> str | None:
             "不代表 llama-server 能起来加载模型。"
         )
     return None
+
+
+SCORE_SCALE_MAX = 1.0
+
+
+def score_scale_violation(scores: list[float], limit: float = SCORE_SCALE_MAX) -> str | None:
+    """检索分量超出 [0,1] 就判「这一轮不是测量」——与 `unusable_run` 同一条纪律，量纲版的。
+
+    起因（用户 2026-10-15 裁「乙为主、甲为辅」）：同一份代码复跑 `verify_m3`，
+    `confidence.retrieval` 一次 0.9937、一次 **36.9408**。后者不是分数变高，是**换了量纲**——
+    重排没跑成时 `chunks[].score` 漏的是 BM25 原始分，而下游 `min_retrieval_score=0.20`
+    与置信度成分都假定这个数在 0–1 之间。于是门禁句 `top_score >= 0.20` 在
+    **一个它从未打算比较的尺度上「通过」**，读数还照常写进产物。
+
+    为什么不在这里顺手把分数夹到 1：那等于把「依赖没起来」化妆成「一次很自信的测量」。
+    拒绝出读数才是对的处置，跟 `unusable_run` 同一个理由。
+    """
+    bad = [s for s in scores if s > limit]
+    if not bad:
+        return None
+    return (
+        f"{len(bad)}/{len(scores)} 行的检索分量 > {limit:g}（最大 {max(bad):.4f}）——"
+        "这个数不是重排给的 sigmoid 概率，是某条腿的原始量纲漏下来了。"
+        "**依赖没起来，不是测量结果**：不写 artifact、不覆盖既有证据。"
+        "先看同一行的 `retrieval_degraded`（`hybrid_single_leg` / `rerank_error:*` / "
+        "`score_scale_out_of_range:*`）定位是哪条腿。"
+    )

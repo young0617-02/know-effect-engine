@@ -118,12 +118,76 @@ def test_logout_actually_revokes_the_session(client, store):
     assert _register(client, u).status_code == 201
     token = client.post("/api/v1/auth/login", json={"username": u, "password": PW}).json()["token"]
     assert client.get("/api/v1/auth/me", headers={"Authorization": f"Bearer {token}"}).status_code == 200
-    out = client.post("/api/v1/auth/logout", headers={"Authorization": f"Bearer {token}"})
+    out = client.post("/api/v1/auth/logout?all_devices=false", headers={"Authorization": f"Bearer {token}"})
     assert out.status_code == 200 and out.json()["revoked"] == 1
     # 令牌只从浏览器里抹掉不算退出——**库里那行必须没了**
     assert client.get("/api/v1/auth/me", headers={"Authorization": f"Bearer {token}"}).status_code == 401
     with store.connect() as c:
         assert c.execute("SELECT 1 FROM user_session WHERE username = %s", (u,)).fetchone() is None
+
+
+def test_logout_revokes_every_session_of_that_account(client, store):
+    """退出默认把该账号**所有**会话一起撤销。
+
+    只删当前那枚令牌时，别的浏览器里那枚还能用到 TTL 自然过期（12h）——
+    共享电脑上的「退出」因此是假的。这是风险册里那条「退出只撤销当前令牌」的正面处置。
+    """
+    u = f"t{SUFFIX}_logout_all"
+    assert _register(client, u).status_code == 201
+    t1 = client.post("/api/v1/auth/login", json={"username": u, "password": PW}).json()["token"]
+    t2 = client.post("/api/v1/auth/login", json={"username": u, "password": PW}).json()["token"]
+    assert client.get("/api/v1/auth/me", headers={"Authorization": f"Bearer {t2}"}).status_code == 200
+
+    out = client.post("/api/v1/auth/logout", headers={"Authorization": f"Bearer {t1}"})
+    assert out.status_code == 200
+    assert out.json()["revoked"] == 2 and out.json()["scope"] == "all_devices"
+    for t in (t1, t2):
+        assert client.get("/api/v1/auth/me", headers={"Authorization": f"Bearer {t}"}).status_code == 401
+    with store.connect() as c:
+        assert c.execute("SELECT 1 FROM user_session WHERE username = %s", (u,)).fetchone() is None
+
+
+def test_logout_can_stay_scoped_to_one_device(client, store):
+    """`?all_devices=false` 是「只退本机」那条路，不能把别人的会话一起删了。"""
+    u = f"t{SUFFIX}_logout_one"
+    assert _register(client, u).status_code == 201
+    t1 = client.post("/api/v1/auth/login", json={"username": u, "password": PW}).json()["token"]
+    t2 = client.post("/api/v1/auth/login", json={"username": u, "password": PW}).json()["token"]
+    out = client.post("/api/v1/auth/logout?all_devices=false", headers={"Authorization": f"Bearer {t1}"})
+    assert out.json()["revoked"] == 1 and out.json()["scope"] == "current_token"
+    assert client.get("/api/v1/auth/me", headers={"Authorization": f"Bearer {t2}"}).status_code == 200
+
+
+def test_force_logout_is_governance_only(client, store):
+    """治理角色才有踢人动作；被踢的那位令牌当场失效；这一步自己进审计。"""
+    admin = f"t{SUFFIX}_fl_admin"
+    victim = f"t{SUFFIX}_fl_victim"
+    assert _register(client, admin, role="newcomer").status_code == 201
+    assert _register(client, victim, role="newcomer").status_code == 201
+    # 授予这一步沿用本文件既有的治理通道（脚本身份）；被测的三个动作全走真令牌。
+    # 不能叫 victim 自己给自己升角色——那条本来就该 403，不是引导路径。
+    assert client.post(f"/api/v1/auth/users/{admin}/role", json={"role": "system_admin"},
+                       headers={"X-Kee-Role": "system_admin", "X-Kee-Actor": "admin-01"}).status_code == 200
+    admin_tok = client.post("/api/v1/auth/login", json={"username": admin, "password": PW}).json()["token"]
+    victim_tok = client.post("/api/v1/auth/login", json={"username": victim, "password": PW}).json()["token"]
+
+    denied = client.post(f"/api/v1/auth/users/{victim}/revoke-sessions",
+                         headers={"Authorization": f"Bearer {victim_tok}"})
+    assert denied.status_code == 403
+
+    kick = client.post(f"/api/v1/auth/users/{victim}/revoke-sessions",
+                       headers={"Authorization": f"Bearer {admin_tok}"})
+    assert kick.status_code == 200 and kick.json()["revoked"] == 1
+    assert client.get("/api/v1/auth/me", headers={"Authorization": f"Bearer {victim_tok}"}).status_code == 401
+
+    missing = client.post("/api/v1/auth/users/t0_suffix_nobody/revoke-sessions",
+                          headers={"Authorization": f"Bearer {admin_tok}"})
+    assert missing.status_code == 404
+
+    with store.connect() as c:
+        row = c.execute("SELECT actor, payload FROM audit_log WHERE action = 'user_force_logout' "
+                        "AND target = %s ORDER BY id DESC LIMIT 1", (victim,)).fetchone()
+    assert row["actor"] == admin and row["payload"]["revoked"] == 1
 
 
 def test_logged_in_identity_beats_the_role_header(client):
@@ -140,6 +204,15 @@ def test_logged_in_identity_beats_the_role_header(client):
     docs = client.get("/api/v1/documents?limit=1", headers={"Authorization": f"Bearer {token}",
                                                             "X-Kee-Role": "system_admin"})
     assert "security_level <= 1" in docs.json()["scope"]["filter_expr"]
+
+
+def test_header_identity_defaults_off():
+    """交付物的默认值必须是「请求头身份关闭」。这条钉的是**默认**，不是开关能不能用。
+
+    读 `model_fields` 的默认而不是实例：实例会被 `tests/conftest.py` 里为测试通道
+    显式设的环境变量影响，那样这条测试就变成在测本机环境了。
+    """
+    assert Settings.model_fields["allow_header_identity"].default is False
 
 
 def test_header_identity_can_be_switched_off(monkeypatch, store):

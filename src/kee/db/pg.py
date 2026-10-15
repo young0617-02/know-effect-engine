@@ -196,7 +196,29 @@ class AuthoritativeStore:
             conn.execute(SCHEMA_SQL)
             conn.execute(AUTH_SCHEMA_SQL)
             conn.execute(REVIEW_GATE_SQL)   # 一次性迁移：列已存在时整块 DO 什么都不做
+            self._ensure_audit_guard(conn)
+
+    def _ensure_audit_guard(self, conn) -> None:
+        """装上「审计表禁改」触发器；装不动时必须确认它已经在那儿，不能默默放行。
+
+        `scripts/harden_audit_store.py` 把 `audit_log` 的属主交给 NOLOGIN 超级用户角色后，
+        应用角色不再是属主，`CREATE TRIGGER` 对它必然报权限不足——**这正是收紧生效的表现**。
+        所以这里分三种情况：装上了（未收紧的新库）/ 装不上但触发器在（已收紧）/
+        装不上且触发器也没有（配置错了，拒绝启动）。
+        最后那格不能省：少了它，「应用角色碰不到触发器」就会表现成「每次启动都静默地没装上」，
+        而那正是这条防线要防的那类失效。
+        """
+        try:
             conn.execute(IMMUTABLE_SQL)
+        except psycopg.errors.InsufficientPrivilege:
+            if not conn.execute("SELECT 1 FROM pg_trigger WHERE tgname = 'audit_log_immutable' "
+                                "AND NOT tgisinternal").fetchone():
+                raise RuntimeError(
+                    "audit_log 上没有禁改触发器，而当前角色也没有权限装它。"
+                    "要么是先收紧了权限却没建触发器（跑 scripts/harden_audit_store.py），"
+                    "要么是新库但角色被误配（用超级用户跑一次 init_schema）。"
+                    "不许带着「审计表可被任意改写」起跑。"
+                ) from None
 
     def truncate_all(self, include_audit: bool = True) -> None:
         tables = [

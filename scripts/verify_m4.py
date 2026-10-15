@@ -42,13 +42,28 @@ def check(clause: str, name: str, ok: bool, detail: str = "") -> bool:
     return bool(ok)
 
 
-def hdr(role: str, actor: str = "verify", industries: list[str] | None = None) -> dict:
-    from urllib.parse import quote
+_ROLE_ACCOUNTS = {"knowledge_owner": "verify-owner", "system_admin": "verify-admin",
+                  "delivery_engineer": "verify-eng", "presales_architect": "verify-arch",
+                  "pm": "verify-pm", "ops_support": "verify-ops", "newcomer": "verify-new"}
+_tokens: dict[str, dict] = {}
 
-    h = {"X-Kee-Role": role, "X-Kee-Actor": quote(actor)}
+
+def hdr(role: str, actor: str = "verify", industries: list[str] | None = None) -> dict:
+    """按角色取一枚 Bearer。请求头身份通道默认已关闭（用户 2026-10-15 裁决），
+    所以这里不再有 `X-Kee-Role`——审计里的 actor 是账号名，不是第二个参数。
+
+    `industries` 这个参数以前是编进 `X-Kee-Industries` 头的；现在范围由账号自带，
+    带部门的身份改用专门那个账号（`verify-new-fin`，库里就配了「金融」）。
+    """
+    from _identity import ensure_accounts, login_http
+
+    username = _ROLE_ACCOUNTS.get(role, f"verify-{role}")
     if industries:
-        h["X-Kee-Industries"] = ",".join(quote(i) for i in industries)
-    return h
+        username = "verify-new-fin"
+    if username not in _tokens:
+        ensure_accounts()
+        _tokens[username] = login_http(BASE, username)
+    return dict(_tokens[username])
 
 
 def main() -> int:
@@ -174,7 +189,9 @@ def main() -> int:
 
         ind = c.get(f"{BASE}/api/v1/documents?limit=1", headers=hdr("newcomer", "nc", ["金融"])).json()
         expr = (ind.get("scope") or {}).get("filter_expr", "")
-        check("第五节", "中文行业名经百分号编码后仍进了过滤表达式", "industry in" in expr, expr)
+        # 这条原来叫「中文行业名经百分号编码后仍进了过滤表达式」。翻成令牌后范围来自账号本身，
+        # 编码那条路不再是这条断言的机制——名字跟着改，否则就成了「测的是 A、报的是 B」。
+        check("第五节", "账号自带的部门范围确实进了过滤表达式", "industry in" in expr, expr)
 
         # ---- 6. 审计面：角色门 + 留痕 + 顺序 ----
         denied = c.get(f"{BASE}/api/v1/audit", headers=hdr("delivery_engineer", "eng"))

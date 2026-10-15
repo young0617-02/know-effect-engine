@@ -1,82 +1,220 @@
 {
- "base": "http://127.0.0.1:38080",
+ "base": "http://127.0.0.1:28000",
  "question": "SIS 安全仪表系统采用的表决逻辑是什么？",
- "first_delta_ms": 736,
- "first_visible_cold_ms": 736,
- "first_visible_hot_ms": 338,
+ "first_delta_ms": 20994,
+ "first_visible_cold_ms": 20994,
+ "first_visible_hot_ms": 570,
  "events": [
   [
    "retrieval",
-   27
+   19628
   ],
   [
    "delta",
-   736
+   20994
   ],
   [
    "delta",
-   758
+   21056
   ],
   [
    "delta",
-   802
+   21086
   ],
   [
    "delta",
-   823
+   21118
   ],
   [
    "delta",
-   843
+   21147
   ],
   [
    "delta",
-   864
+   21175
   ],
   [
    "delta",
-   883
+   21205
   ],
   [
    "delta",
-   903
+   21230
   ],
   [
    "delta",
-   924
+   21259
   ],
   [
    "delta",
-   944
+   21287
   ],
   [
    "delta",
-   964
+   21319
   ],
   [
    "delta",
-   1004
+   21346
   ],
   [
    "delta",
-   1024
+   21376
   ],
   [
    "delta",
-   1044
+   21406
+  ],
+  [
+   "delta",
+   21431
+  ],
+  [
+   "delta",
+   21461
+  ],
+  [
+   "delta",
+   21488
+  ],
+  [
+   "delta",
+   21516
+  ],
+  [
+   "delta",
+   21548
+  ],
+  [
+   "delta",
+   21577
+  ],
+  [
+   "delta",
+   21607
+  ],
+  [
+   "delta",
+   21638
+  ],
+  [
+   "delta",
+   21697
+  ],
+  [
+   "delta",
+   21725
+  ],
+  [
+   "delta",
+   21751
+  ],
+  [
+   "delta",
+   21781
+  ],
+  [
+   "delta",
+   21812
+  ],
+  [
+   "delta",
+   21843
+  ],
+  [
+   "delta",
+   21875
+  ],
+  [
+   "delta",
+   21904
+  ],
+  [
+   "delta",
+   21934
+  ],
+  [
+   "delta",
+   21960
+  ],
+  [
+   "delta",
+   21993
+  ],
+  [
+   "delta",
+   22022
+  ],
+  [
+   "delta",
+   22094
+  ],
+  [
+   "delta",
+   22195
+  ],
+  [
+   "delta",
+   22250
+  ],
+  [
+   "delta",
+   22278
+  ],
+  [
+   "delta",
+   22307
+  ],
+  [
+   "delta",
+   22340
+  ],
+  [
+   "delta",
+   22370
+  ],
+  [
+   "delta",
+   22398
+  ],
+  [
+   "delta",
+   22430
+  ],
+  [
+   "delta",
+   22459
+  ],
+  [
+   "delta",
+   22489
+  ],
+  [
+   "delta",
+   22521
+  ],
+  [
+   "delta",
+   22551
+  ],
+  [
+   "delta",
+   22579
+  ],
+  [
+   "delta",
+   22607
+  ],
+  [
+   "delta",
+   22634
   ],
   [
    "answer",
-   3181
+   25029
   ]
  ],
  "checks": [
-  {
-   "clause": "C-面",
-   "name": "Nginx 托管前端 index.html",
-   "ok": true,
-   "detail": "HTTP 200"
-  },
   {
    "clause": "C-3",
    "name": "依赖全部就绪（否则首 token 读数没有意义）",
@@ -105,13 +243,13 @@
    "clause": "面",
    "name": "流式确有增量（delta 数 > 1，代理没把整段攒成一次）",
    "ok": true,
-   "detail": "delta 14 条"
+   "detail": "delta 50 条"
   },
   {
    "clause": "①",
    "name": "热态首个可读字 < 1.2s（V1.0.23 定案口径 first_visible_ms）",
    "ok": true,
-   "detail": "热态 first_visible=338ms（冷态第一呼 736ms 单列）"
+   "detail": "热态 first_visible=570ms（冷态第一呼 20994ms 单列）"
   },
   {
    "clause": "第五节",
@@ -121,7 +259,7 @@
   },
   {
    "clause": "第五节",
-   "name": "中文行业名经百分号编码后仍进了过滤表达式",
+   "name": "账号自带的部门范围确实进了过滤表达式",
    "ok": true,
    "detail": "security_level <= 1 and industry in [\"金融\"]"
   },

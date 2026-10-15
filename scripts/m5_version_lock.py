@@ -456,8 +456,20 @@ def main() -> int:
           f"- dtype `{rep['dtype']}`、设备 `{rep['device']}`：改成 CPU 会打穿 P95 检索门禁，"
           "见 `docs/ADR-12_容器化代价实测.md`",
           "- 显存：8GB 要容纳「嵌入 + 重排 +（分时）7B」；同时跑别的 GPU 应用会污染延迟读数",
-          "- 端口只绑 127.0.0.1（`serve_api.py` 拒绝非回环绑定）：API 38000、Web 38080、Vite dev 38173",
-          "- 身份走请求头且**可伪造** ⇒ 限内网部署；接生产必须替换为真实身份源（《技术方案》7.2.1）", "",
+          "- 端口只绑 127.0.0.1（`serve_api.py` 拒绝非回环绑定）：API 38000、Web 38080、Vite dev 38173"
+          "（Windows 会把 38xxx–41xxx 段保留掉，bind 报 WSAEACCES 而 `netstat` 查不到占用者；"
+          "换端口用 `KEE_API_PORT` / `KEE_API_ORIGIN`）",
+          "- 身份走**登录令牌**（`/api/v1/auth/*`）。请求头那条兜底通道 **默认关闭**"
+          "（`KEE_ALLOW_HEADER_IDENTITY=false`，V1.35 裁决），所以无令牌即 `E401`；"
+          "内网工具确需该通道时必须显式打开，交付物不带。"
+          "接企业统一身份（OIDC / LDAP / 网关 JWT）时 `app_user` 的迁移方式**尚未设计**（用户裁「留」），"
+          "届时要替换的是这套口令体系本身，不是配置一个开关",
+          "- **数据库权限面（换环境部署时是必经步骤，不是可选项）**：应用连 `kee_app`（非超级用户），"
+          "`KEE_POSTGRES_DSN` 默认指向它；存储栈起好后必须先跑一次 `scripts/harden_audit_store.py`"
+          "（建 `kee_app` + `kee_admin` + NOLOGIN 的 `postgres`，把 `audit_log` 与其触发器函数的属主交给后者）。"
+          "没跑的话 `kee_app` 不存在、API 连不上库；`kee_admin` 的口令只落 `var/pg_admin_credentials.json`（不入库）。"
+          "⚠ 别指望 `ALTER ROLE kee NOSUPERUSER`：`kee` 是 compose `POSTGRES_USER` 走 initdb 造的 bootstrap 超级用户，"
+          "PG 明文拒绝摘它的 SUPERUSER（实测），所以防线只能靠换应用角色达成", "",
           "## Ollama 生成模型", "", "```", rep["ollama"]["raw"] or "（未取到）", "```", "",
           f"**权重指纹状态：{rep['ollama']['digests']['状态']}**（来源 `{rep['ollama']['digests'].get('来源', '—')}`）", "",
           "| 模型 tag | digest（= 权重身份） | 体量 | modified_at |", "|---|---|---|---|"]

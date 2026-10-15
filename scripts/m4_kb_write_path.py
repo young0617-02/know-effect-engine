@@ -21,20 +21,23 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
+sys.path.insert(0, str(ROOT / "scripts"))
 
 SCRATCH_DB = "kee_writepath"
 SCRATCH_COLL = "kb_chunks_writepath"
 OUT = ROOT / "var" / "gate0" / "m4_kb_write_path.json"
 
 # 必须在 import kee.config 之前盖掉，否则 Settings 会把生产 DSN 缓存住
-os.environ["KEE_POSTGRES_DSN"] = f"postgresql://kee:待填_KEE_PG_SUPERUSER_PASSWORD@127.0.0.1:35432/{SCRATCH_DB}"
+os.environ["KEE_POSTGRES_DSN"] = f"postgresql://kee_app:待填_KEE_PG_APP_PASSWORD@127.0.0.1:35432/{SCRATCH_DB}"
 os.environ["KEE_MILVUS_COLLECTION"] = SCRATCH_COLL
 
-OWNER = {"X-Kee-Role": "knowledge_owner", "X-Kee-Actor": "reviewer-b"}
-UPLOADER = {"X-Kee-Role": "delivery_engineer", "X-Kee-Actor": "uploader-a"}
-# 职责分离测的是「同一个人」，不是「同一个角色」：给复核权但 actor 与上传者相同
-SELF_REVIEW = {"X-Kee-Role": "knowledge_owner", "X-Kee-Actor": "uploader-a"}
-ADMIN = {"X-Kee-Role": "system_admin", "X-Kee-Actor": "admin-c"}
+# 身份走登录令牌：`KEE_ALLOW_HEADER_IDENTITY` 的默认已于 2026-10-15 翻成 False（用户裁「交付物默认 false、脚本显式带令牌」），
+# 这四个字典在 main() 里登录后填充；审计里的 actor 因此是账号名（verify-owner / verify-admin），不再是请求头里随手写的 uploader-a / reviewer-b。
+OWNER: dict = {}
+UPLOADER: dict = {}
+# 职责分离测的是「同一个人」，不是「同一个角色」：令牌身份下「同一个人」只能靠复用上传者那枚令牌来表达
+SELF_REVIEW: dict = {}
+ADMIN: dict = {}
 DOC_ID = "prj-ene-2024-001-handover-wtest"
 
 DOC_V1 = """# 运维交接说明 v1
@@ -60,7 +63,7 @@ def ck(name: str, ok: bool, detail: dict | str = "") -> bool:
 
 def psql(sql: str) -> str:
     r = subprocess.run(
-        ["docker", "exec", "kee-postgres", "psql", "-U", "kee", "-d", "postgres", "-tAc", sql],
+        ["docker", "exec", "kee-postgres", "psql", "-U", "kee_admin", "-d", "postgres", "-tAc", sql],
         capture_output=True, text=True, timeout=120,
     )
     if r.returncode != 0:
@@ -69,7 +72,7 @@ def psql(sql: str) -> str:
 
 
 def make_db() -> None:
-    psql(f"CREATE DATABASE {SCRATCH_DB} OWNER kee")
+    psql(f"CREATE DATABASE {SCRATCH_DB} OWNER kee_app")
 
 
 def drop_db() -> None:
@@ -105,12 +108,15 @@ def main() -> int:
         from kee.db.pg import AuthoritativeStore
         from kee.retrieval.milvus_store import KbStore
 
+        from _identity import ensure_accounts, login_headers  # noqa: E402
+
         # scratch 库是新建的空库：表结构与集合都得先建出来（app 不负责建，它假设依赖已就绪）
         AuthoritativeStore().init_schema()
         KbStore(SCRATCH_COLL, "jieba").ensure()
 
         app = create_app()
         pg = app.state.pg  # AuthoritativeStore 是 app 内的实例，不是模块单例
+        ensure_accounts(pg)  # 账号要播种进**本脚本的 scratch 库**：登录与写路径读的必须是同一个库
 
         def search_text(client, query: str) -> str:
             """检索接口只回元数据（`hits`），正文要经 /chunks/batch 二段取——顺带把这条契约也验了。"""
@@ -122,6 +128,12 @@ def main() -> int:
             return "".join(i.get("content", "") for i in batch.get("items", []))
 
         with TestClient(app) as client:
+            global OWNER, UPLOADER, SELF_REVIEW, ADMIN
+            OWNER = login_headers(client, "verify-owner")   # knowledge_owner：检索、换人复核、回滚（与原来同一个角色）
+            ADMIN = login_headers(client, "verify-admin")   # system_admin：对账、审计
+            # 上传者换成带复核权的账号：delivery_engineer 自审只会撞「角色不够」的 403，那条断言就不再测职责分离了
+            UPLOADER = ADMIN
+            SELF_REVIEW = UPLOADER  # 同一账号的**同一枚令牌**——令牌身份下「同一个人」只能这样造
             h = client.get("/healthz").json()
             coll = h["deps"]["milvus"].get("collection")
             ck("写路径跑在 scratch 上（没碰生产库与基线集合）", coll == SCRATCH_COLL, {"collection": coll, "chunks": h["deps"]["milvus"].get("chunks")})
@@ -134,7 +146,7 @@ def main() -> int:
                {"http": r1.status_code, "body": r1.text[:300], "doc_id": doc_id, "version_id": v1,
                 "chunks": body1.get("indexed_chunks")})
 
-            # 职责分离：同一个**人**上传又复核（角色合法、 actor 相同）必须被拒
+            # 职责分离：同一个**人**上传又复核（角色合法、actor 即登录账号名）必须被拒——故 SELF_REVIEW 用的就是 UPLOADER 那枚令牌
             self_review = client.post(f"/api/v1/documents/{doc_id}/review", headers=SELF_REVIEW, json={"decision": "pass"})
             ck("上传者复核自己被拒（E403 职责分离）",
                self_review.status_code == 403 and "职责分离" in self_review.text,

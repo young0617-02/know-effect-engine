@@ -73,11 +73,15 @@ export interface Credentials {
 export const login = (c: Credentials) => call<{ token: string; expires_in_hours: number }>("/api/v1/auth/login", c);
 export const register = (c: Credentials) =>
   call<{ user: AuthUser; note: string }>("/api/v1/auth/register", c);
-export const logout = () => call<{ revoked: number }>("/api/v1/auth/logout", {});
+export const logout = () => call<{ revoked: number; scope: string }>("/api/v1/auth/logout", {});
 export const me = () => call<MeResponse>("/api/v1/auth/me");
 export const listUsers = () => call<{ total: number; items: Record<string, unknown>[] }>("/api/v1/auth/users");
 export const grantRole = (username: string, role: string, industries: string[] = [], projects: string[] = []) =>
   call<{ user: AuthUser; granted_by: string }>(`/api/v1/auth/users/${encodeURIComponent(username)}/role`,
     { role, industries, projects });
+/** 强制下线：撤销该账号全部登录态。口令留着，要停用账号是另一件事。 */
+export const revokeSessions = (username: string) =>
+  call<{ username: string; revoked: number; by: string }>(
+    `/api/v1/auth/users/${encodeURIComponent(username)}/revoke-sessions`, {});
 
 export const isAuthError = (e: unknown): e is ApiError => e instanceof ApiError && (e.code === "E401" || e.httpStatus === 401);

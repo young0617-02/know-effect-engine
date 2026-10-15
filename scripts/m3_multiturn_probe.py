@@ -36,7 +36,11 @@ from kee.config import get_settings  # noqa: E402
 from kee.db.pg import AuthoritativeStore  # noqa: E402
 from kee.eval.build_eval import build_eval_set  # noqa: E402
 
-OWNER = {"X-Kee-Role": "knowledge_owner", "X-Kee-Actor": "m3-mt-01"}
+from _identity import ensure_accounts, login_headers  # noqa: E402
+
+# 身份走登录令牌：`KEE_ALLOW_HEADER_IDENTITY` 的默认已于 2026-10-15 翻成 False（用户裁「交付物默认 false、脚本显式带令牌」），
+# 这个字典在 main() 里登录后填充，审计里的 actor 因此是账号名 verify-owner，不再是请求头里随手写的 m3-mt-01。
+OWNER: dict = {}
 
 
 def answered(body: dict) -> bool:
@@ -81,6 +85,9 @@ def main() -> int:
         return 2
 
     with TestClient(create_app()) as client:
+        global OWNER
+        ensure_accounts()
+        OWNER = login_headers(client, "verify-owner")
         rows = []
         for anaphora, q in triples:
             # 无上文：全新会话 + rewrite=false。

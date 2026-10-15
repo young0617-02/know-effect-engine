@@ -1,4 +1,4 @@
-# 企业级知识库 RAG Agent · 技术方案与 MVP 设计（V1.0.36）
+# 企业级知识库 RAG Agent · 技术方案与 MVP 设计（V1.0.37）
 
 > **基准行业**：数字技术服务 / IT 服务与数字化运营（面向多行业的咨询、解决方案与交付服务）。
 > **文档用途**：为个人自研项目给出可对外展示的技术方案全景、五维选型决策、可行性验证门禁（Gate 0）与 MVP 交付定义；
@@ -10,7 +10,15 @@
 > **执行主体**：个人独立设计与开发。
 > **日期**：2026-10-09。
 > **与 V1.1 的关系**：本文以《企业级知识库 RAG Agent · 项目定义（数字技术服务企业版 V1.1）》为**唯一基准**，是其第十节「技术方案概览」与第十一节「关键能力设计」的**工程化展开与 MVP 定型**；凡本文与 V1.1 冲突，以 V1.1 口径为准。约束继承 V1.1 第八节（数据不出域、行业/项目/密级隔离、单机部署、GPU 显存 8GB 硬瓶颈、本地优先云端兜底、Windows 11 + WSL2 + Docker Desktop、合规对标 CMMI/ISO/CCRC/ITSS）。
-> **版本**：V1.0.36（**权限维度统一表述为「部门」+ Should/未实现项就地标注**，与《项目定义》V1.34 同批；**阈值与读数一字未动**）。
+> **版本**：V1.0.37（**四条安全敞口按用户裁决落地：请求头身份默认关闭 / 退出撤销全部会话 + 强制下线 / 审计 TRUNCATE 绕过堵住 / hybrid 单腿量纲闸门**，与《项目定义》V1.35 同批；**阈值与既有读数一字未动**，动的是权限面与上报口径）。
+> 一处原清单**不可执行**已如实登记：`ALTER ROLE kee NOSUPERUSER` 被 PG 拒绝（`kee` 是 initdb 的 bootstrap 超级用户），
+> 终态改用非特权应用角色 `kee_app` 达成同一防线——**部署多了一个必经步骤**：存储栈起好后先跑
+> `scripts/harden_audit_store.py`，否则 `kee_app` 不存在、服务连不上库。
+> 量纲那条同时更正了登记时的两点归因（详见《M5 风险登记册定稿》同名条目）：36.94 这个读数要求**重排腿同时被绕过**，
+> 只补 `dense_empty` 堵不住；而「degraded 是空的」实际是**探针产物里从来没有 degraded 这一列**。
+> 重验：后端 244 passed（+12）、前端 37 passed（+2）、`verify_m1` 全步骤通过（含新增的 TRUNCATE 闸门步）、
+> `verify_m3` 全步骤通过（含量纲步）、`verify_m4` 12 项 0 失败，全部走真实 HTTP 与 Bearer 令牌。
+> **上一版**：V1.0.36（**权限维度统一表述为「部门」+ Should/未实现项就地标注**，与《项目定义》V1.34 同批；**阈值与读数一字未动**）。
 > **上一版**：V1.0.35（**措辞改判（第三次）**：语料来源改为中性陈述，界面状态条不再挂「模拟语料 / 未接入生产文档」；**阈值与读数一字未动**，与《项目定义》V1.33 同批）。
 > **上一版**：V1.0.34（**问答记录不再随模块切换丢失 + 左侧会话历史栏**，与《项目定义》V1.32 同批；**阈值一字未动**）。
 现象是「切到知识库管理再切回来，刚才问的没了」——根因不在数据（`session_turn` 一直落库），
@@ -634,8 +642,8 @@ START → sensitive_gate → rewrite → retrieve → retrieval_gate → generat
 
 | 通道 | 怎么给身份 | 优先级与边界 |
 |---|---|---|
-| **登录令牌（主）** | `Authorization: Bearer <token>`，由 `POST /api/v1/auth/login` 签发 | 有有效令牌时**身份完全以令牌为准**：角色、行业、项目、审计 actor 都取库里的账号，请求头一律不参与判定 |
-| **请求头（兜底）** | `X-Kee-Role` / `X-Kee-Actor` / `X-Kee-Industries` / `X-Kee-Projects` | 仅在**没有**令牌时使用，供内网脚本与运维通道；`KEE_ALLOW_HEADER_IDENTITY=false` 可整体关闭（关掉后无令牌即 `E401`） |
+| **登录令牌（主）** | `Authorization: Bearer <token>`，由 `POST /api/v1/auth/login` 签发 | 有有效令牌时**身份完全以令牌为准**：角色、部门、项目（存储字段名仍是 `industry`）、审计 actor 都取库里的账号，请求头一律不参与判定 |
+| **请求头（兜底）** | `X-Kee-Role` / `X-Kee-Actor` / `X-Kee-Industries` / `X-Kee-Projects` | 仅在**没有**令牌时使用，供内网脚本与运维通道；**`KEE_ALLOW_HEADER_IDENTITY` 默认已是 `false`**（V1.0.37 裁决），即无令牌即 `E401`。确需该通道时必须显式设成 `true`，交付物不带 |
 
 **账号侧规则**（`src/kee/api/auth.py`，实现即契约）：
 
@@ -669,8 +677,24 @@ DoD 第 7 项「RBAC 检索层过滤」判的还是检索层那一刀，没有�
 > **一处刻意保留**：代码与存储字段名仍是 `industry` / `document.industry` / Milvus 的 `industry` 列 /
 > 请求头 `X-Kee-Industries`——改这些要重建向量集合 schema 与全库索引、重跑 `m2_eval` 基线，
 > 并让 `var/gate0/` 里所有含 `industry` 的既有读数留档变成历史版本，属另一次改动，未与本次措辞裁决合并执行。
-> **仍待裁决的两条**：接企业统一身份（OIDC / LDAP / 网关签发 JWT）时如何迁移 `app_user`；
-> `KEE_ALLOW_HEADER_IDENTITY` 的默认值（当前 `true`，为的是既有脚本通道不断）。
+
+**两条待裁决已于 V1.0.37 定案（用户 2026-10-15）**
+
+| 事项 | 裁决 | 落点与代价 |
+|---|---|---|
+| `KEE_ALLOW_HEADER_IDENTITY` 的默认值 | **交付物默认 `false`，脚本显式带令牌** | `config.py:71-78` 默认翻成 `False`。原来「不带令牌、只发一个 `X-Kee-Role: system_admin` 就能拿到该角色全部范围」这条路在交付物里关掉；`/healthz` 与 `/auth/me` 继续如实报 `header_identity_allowed`。代价按裁词兑付：11 支验收脚本改走 `/auth/login` + Bearer（`scripts/_identity.py` 播种验收账号，口令只落 `var/verify_credentials.json`，不入库），`verify_m1` 审计里的 actor 从 `owner-01` 变成 `verify-owner`；测试通道由 `tests/conftest.py` **显式打开**并写明理由，默认值本身由 `tests/test_auth.py::test_header_identity_defaults_off` 钉住 |
+| 接企业统一身份（OIDC / LDAP / 网关 JWT）时如何迁移 `app_user` | **留**（不写进交付承诺，不列入待拍清单） | 要拍的两件事已在风险登记册第三节第 7 项摊开：`app_user` 降级成「外部主体 → 本地授权」映射表、还是让 claim 直接携带部门/密级；以及网关 JWT 与现有「Bearer 优先、请求头只在无登录态时生效」这条优先级的关系。留着的代价是明确的：交付物自带一套口令体系，接企业网络时是**替换**而不是配置 |
+
+**同批把数据库权限面也收紧了（这是鉴权真正落地时才发现的另一半）**
+`audit_log` 的防篡改触发器只声明 `DELETE/UPDATE`，而 PostgreSQL 的触发器**不覆盖 TRUNCATE**；
+只要应用角色是超级用户，表级 REVOKE 一律无效。处置见《M5 风险登记册定稿》同名条目，落点是
+`scripts/harden_audit_store.py`（幂等，`--check` 只报不写）：表与触发器函数的属主交给 NOLOGIN 的 `postgres`，
+应用改用非特权角色 **`kee_app`**，在 `audit_log` 上只有 `INSERT, SELECT`。
+⚠ 原方案的 `ALTER ROLE kee NOSUPERUSER` **本机不可执行**——`kee` 是 initdb 的 bootstrap 超级用户，
+PG 明文拒绝摘它的 SUPERUSER；且降级后系统不留任何管理入口，所以同批建了 `kee_admin`
+（LOGIN 超级用户，随机口令只落 `var/pg_admin_credentials.json`）。
+**部署因此多了一个必经步骤**：存储栈起好后必须先跑一次 `scripts/harden_audit_store.py`，
+否则 `kee_app` 不存在、服务连不上库。
 
 ### 7.3 统一错误码 / 超时 / 重试 / 幂等契约
 
@@ -854,6 +878,53 @@ DoD 第 7 项「RBAC 检索层过滤」判的还是检索层那一刀，没有�
 ---
 
 ## 十二、修订记录
+
+### V1.0.37（2026-10-15，四条安全敞口按裁决落地：身份默认值 / 会话撤销 / 审计防篡改 / 检索量纲）
+
+用户对本轮摊开的五项逐条拍板：①量纲「乙为主、甲为辅」②身份「交付物默认 `false`、脚本显式带令牌」
+③审计「按顺序执行，确认」④退出「修复」⑤企业统一身份迁移「留」。落地如下，**阈值与既有读数一字未动**。
+
+- **请求头身份默认翻成 `false`**（`config.py:71-78`）。这条原本是「限内网」由部署环境承担而不是由代码承担：
+  不带令牌、只发 `X-Kee-Role: system_admin` 就能拿到该角色的全部范围。关掉后 11 支验收脚本改走
+  `/auth/login` + Bearer（新增 `scripts/_identity.py`：播种验收账号、口令只落 `var/verify_credentials.json`）。
+  **两个坑记下来**：① 测试套件里整批用例测的就是这条通道本身，所以 `tests/conftest.py` 显式打开它并写明理由——
+  默认值由 `test_header_identity_defaults_off` 单独钉住，且读 `Settings.model_fields` 的默认而不是实例，
+  否则那条测试会退化成在测本机环境变量；② `verify_m4` 有一句断言原名「中文行业名经百分号编码后仍进了过滤表达式」，
+  翻成令牌后范围来自账号、编码不再是机制，**名字跟着改了**（否则成了测 A 报 B）。
+- **退出默认撤销该账号全部会话**（`app.py:280-297`，`?all_devices=false` 保留只退本机），
+  并新增治理角色的 `POST /auth/users/{name}/revoke-sessions`。原状态是：一次 logout 后 `user_session` 仍剩 4 行，
+  同用户其余会话要等 12h 自然过期，「踢人下线」没有任何对应动作。现在三条测试分别覆盖全撤销、只退本机、强制下线
+  （含 403/404 与审计 `user_force_logout`）。账号那四条边界因此**只剩两条**（`failed_count` 不锁号、首个注册者可为治理角色）。
+- **审计 TRUNCATE 绕过堵住，并做成验证项**。落点 `scripts/harden_audit_store.py`（幂等，`--check` 只报不写）：
+  `audit_log` 与**其触发器函数**的属主 → NOLOGIN 的 `postgres`；应用改用非特权角色 `kee_app`；
+  在 `audit_log` 上只授 `INSERT, SELECT`，序列 `USAGE/SELECT` 单独授回。三处非显然的必需项：
+  ① 函数不换属主的话，应用角色 `CREATE OR REPLACE FUNCTION … RETURN NEW` 就把触发器空转了；
+  ② 序列随表换属主，漏授会在写审计时撞 `permission denied for sequence`；
+  ③ **原清单第②步不可执行**——`ALTER ROLE kee NOSUPERUSER` 报
+  `The bootstrap superuser must have the SUPERUSER attribute`，所以「应用角色不是超级用户」只能靠换角色达成；
+  顺带必须先建 `kee_admin`，否则降级后系统不留任何管理通路。
+  顺序也调了：授权排在降级之前，否则会失败在「表已换属主、角色已降级」的半完成状态上。
+  `init_schema` 相应改为**装不上触发器时先确认它已存在**，不存在则拒绝启动（`pg.py:194-220`）——
+  不写这一段，「应用碰不到触发器」会表现成「每次启动都静默地没装上」。
+  实测：以 `kee_app` 试探 `TRUNCATE` 与 `DELETE` 双双被拒，审计行数 596 → 596 一字未动；
+  `verify_m1` 新增一步断言「TRUNCATE 被拒 + `not rolsuper` + 属主 ≠ 当前角色 + 前后行数相等」。
+- **hybrid 单腿的量纲闸门（乙为主、甲为辅）**。甲：`dense_empty` 放开到 hybrid（超时腿自己标 `dense_timeout`，不重复追加）。
+  乙：`probe_guard.score_scale_violation()` 在写 artifact **之前**判废，与 `unusable_run` 同一条纪律——
+  检索分量 >1 说明这个分不是重排给的 sigmoid 概率而是某条腿的原始量纲漏下来，`min_retrieval_score=0.20`
+  于是「在一个它从未打算比较的尺度上通过」。运行时另加 `hybrid_single_leg` 与 `score_scale_out_of_range:<分>`，
+  只上报不动阈值；`m3_confidence_probe` 产物新增 `retrieval_degraded` 列。
+  **两点归因更正**（登记时写错了）：单腿只要重排跑成就会把分覆盖回 0–1，所以 36.9408 要求**重排腿同时被绕过**，
+  只补 `dense_empty` 堵不住这次的实际读数——这正是不拿①当主闸门的理由；而「degraded 是空的」更准的说法是
+  **产物里从来没有 degraded 这一列**，所以「静默」是记录缺失，不只是标记缺失。
+  复跑实测第一呼 `['dense_timeout>2500ms','hybrid_single_leg']` 而 `retrieval=0.9937` ⇒ 单腿答现在看得见，
+  量纲在范围内所以不判废（与 #56 那条冷启动敞口的处置一致：不设硬闸，只让它可见）。
+- **本轮抓到并修掉一处先前存在的名实不符**：`review` 路由是**先查角色、再查职责分离**，
+  所以 `verify_m1` 里「delivery_engineer 自审拿到 403」证明的一直是角色闸门，不是职责分离——
+  两条 403 撞在同一个状态码上，断言分不出是谁在拦。现在既验状态码也验文案，
+  并补一条真正落在职责分离上的自审（带复核权的账号复核自己传的那篇）。
+- 测试：**后端 244 passed**（+8 量纲/降级、+3 会话撤销、+1 默认值）、**前端 37 passed**（+2 退出与强制下线）。
+  `verify_m1` / `verify_m3` 全步骤通过，`verify_m4` 12 项 0 失败，全部经真实 HTTP + Bearer。
+- **⑤ 企业统一身份迁移按用户裁「留」**：不写进交付承诺，风险登记册第三节第 7 项摊开要拍的两件事与代价。
 
 ### V1.0.36（2026-10-14，权限维度统一为「部门」；未实现项就地标注）
 

@@ -142,6 +142,15 @@ def drop_session(conn, token: str) -> int:
     return conn.execute("DELETE FROM user_session WHERE token_hash = %s", (_hash_token(token),)).rowcount
 
 
+def drop_user_sessions(conn, username: str) -> int:
+    """撤销该账号的**全部**会话。
+
+    只删当前那枚令牌时，「退出」在别设备上等于没发生——令牌还要等 TTL 自然过期，
+    共享电脑上的退出因此是假的。踢人下线也只有这一个动作能表达。
+    """
+    return conn.execute("DELETE FROM user_session WHERE username = %s", (username,)).rowcount
+
+
 def set_role(conn, *, actor: str, username: str, role: str, industries: list[str] | None = None,
              projects: list[str] | None = None) -> dict[str, Any]:
     """授予/调整角色——只有管理员路由会调它，且调用方负责写审计。"""

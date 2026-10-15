@@ -238,17 +238,28 @@ def main() -> int:
             rows.append({"qid": q["qid"], "category": q["category"], "status": r.status,
                          "question": q["question"], "conclusion": r.conclusion,
                          "reference_answer": str(q.get("reference_answer") or ""),
-                         "notes": list(r.notes), "confidence": dict(r.confidence), **lab})
+                         "notes": list(r.notes), "confidence": dict(r.confidence),
+                         # 静默退化要在产物里可见，不能只活在内存里那一瞬。
+                         # 此前这里只存 notes，`retrieval.degraded` 从来没落盘过——
+                         # 「单腿答」与「两腿答」在产物上长得一样。
+                         "retrieval_degraded": list((r.retrieval or {}).get("degraded") or []),
+                         **lab})
             l4 = "—" if lab["ref_number_recall"] is None else f'{lab["ref_number_recall"]:.2f}'
             print(f"[{i:>2}/{len(pool)}] {q['qid']} {r.status:<10} L1={lab['section_any']} "
                   f"L2={lab['strict_any']} L3={lab['strict_precision']:.2f} L4={l4} "
                   f"编造{len(lab['invented_numbers'])} conf={r.confidence.get('calibrated')}")
 
-    from kee.eval.probe_guard import generation_failure_share, unusable_run
+    from kee.eval.probe_guard import generation_failure_share, score_scale_violation, unusable_run
 
     reason = unusable_run(generation_failure_share([r["notes"] for r in rows]))
     if reason:
         print("\n[判废] " + reason)
+        return 3
+    # 量纲闸门：置信度的 ⑤ 与 DoD#2 的 P95 检索都建立在「retrieval ∈ [0,1]」这个前提上，
+    # 前提不成立时这一轮根本不是一次测量，所以跟 unusable_run 一样在写产物**之前**判废。
+    scale = score_scale_violation([float((r.get("confidence") or {}).get("retrieval") or 0.0) for r in rows])
+    if scale:
+        print("\n[判废] " + scale)
         return 3
 
     add_runtime_signals(rows, texts)

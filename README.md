@@ -3,7 +3,7 @@
 面向数字技术服务企业内部的**交付知识服务引擎**：把「咨询—实施—运维」全链路沉淀的项目与行业知识，
 做成可追问、可溯源、可评估的 RAG 知识服务。Slogan：知识有源，交付有效。
 
-**当前状态：M0–M5 全部完成，是一个能跑起来的内网部署版**（需求 V1.33 / 方案 V1.0.35，docs 见 `docs/`）。
+**当前状态：M0–M5 全部完成，是一个能跑起来的内网部署版**（需求 V1.35 / 方案 V1.0.37，docs 见 `docs/`）。
 验收口径要说清两件事，缺一件就是虚报：**门禁值**是设计目标，**验收读数**是这台机器上的本地实测——
 本地实测不等于线上数据，也不等于真实用户行为（语料为自建行业文档集、无真实流量，故《项目定义》第六节
 业务三条里仍有两条按构造不可测）。DoD 汇总：**达标 3／部分达标 4／不达标 0／不可测 0／本次产出 1**，
@@ -12,7 +12,7 @@
 ## 目录
 
 ```
-docs/                     需求与方案（项目定义 V1.33、技术方案与 MVP 设计 V1.0.35、用户操作手册、命名、ADR）
+docs/                     需求与方案（项目定义 V1.35、技术方案与 MVP 设计 V1.0.37、用户操作手册、命名、ADR）
 infra/docker-compose.*    Gate 0 单机存储栈（Milvus v3.0.0 / PostgreSQL 18 / Redis 8）+ 断网变体覆盖
 src/kee/config.py         运行配置（全部 KEE_ 前缀环境变量）
 src/kee/models/           BGE-M3 嵌入、BGE-reranker-v2-m3 重排、显存采样、分时驻留调度
@@ -195,11 +195,15 @@ cd frontend && npm run test                        # 34 条组件/分帧/登录�
 ```
 
 **登录与鉴权（V1.31 起的主身份通道）**：`src/kee/api/auth.py` + 两张表（`app_user` / `user_session`）
-+ 六个 `/api/v1/auth/*` 端点（register / login / logout / me / users / users/{name}/role）。
-口令 scrypt 散列、会话服务端可撤销（库里只存令牌 SHA-256 摘要，默认 12h）、注册不得自授治理角色
-（唯一例外：库里为空时的首个注册者）。**有令牌时请求头不参与判定**；无令牌才回落到
-`X-Kee-Role` 那条内网脚本通道（`KEE_ALLOW_HEADER_IDENTITY=false` 可关）。
++ 七个 `/api/v1/auth/*` 端点（register / login / logout / me / users / users/{name}/role /
+users/{name}/revoke-sessions）。
+口令 scrypt 散列、会话服务端可撤销（库里只存令牌 SHA-256 摘要，默认 12h；**退出默认撤销该账号全部会话**）、
+注册不得自授治理角色（唯一例外：库里为空时的首个注册者）。**有令牌时请求头不参与判定**；
+无令牌时那条 `X-Kee-Role` 内网脚本通道**默认关闭**（`KEE_ALLOW_HEADER_IDENTITY` 默认 `false`，V1.35 裁决），
+确需时由部署方显式打开。
 界面上未登录只有登录页，登录后**没有角色选择器**——范围由账号推导并只读显示。
+数据库侧同批收紧：应用连的是非超级用户角色 `kee_app`，`audit_log` 的属主是 NOLOGIN 角色，
+所以 `TRUNCATE` 那条绕过防篡改的路也堵住了（`scripts/harden_audit_store.py`，`verify_m1` 里有对应验证步）。
 
 M4 新增两个后端读接口：`POST /api/v1/chunks/batch`（引用片段正文，**与检索层同口径过滤**、只返回生效版本、
 越权与不存在合并成 `hidden`、每次读取落 `chunks_read` 审计）与 `GET /api/v1/audit`（限管理角色，按 id 倒序）。

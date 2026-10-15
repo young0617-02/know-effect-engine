@@ -25,8 +25,12 @@ from kee.api.app import create_app  # noqa: E402
 from kee.config import get_settings  # noqa: E402
 from kee.db.pg import AuthoritativeStore  # noqa: E402
 
-OWNER = {"X-Kee-Role": "knowledge_owner", "X-Kee-Actor": "m3-owner-01"}
-NEW = {"X-Kee-Role": "newcomer", "X-Kee-Actor": "m3-new-01"}
+from _identity import ensure_accounts, login_headers  # noqa: E402
+
+# 身份来自登录令牌，不来自请求头（`KEE_ALLOW_HEADER_IDENTITY` 的默认已于 2026-10-15 翻成 False）。
+# 这两个字典在 main() 里登录后填充；调用点一律 `headers=OWNER`，与界面用的是同一条入口。
+OWNER: dict = {}
+NEW: dict = {}
 
 evidence: dict = {"steps": []}
 
@@ -43,6 +47,11 @@ def main() -> int:
     pg = AuthoritativeStore()
     t_all = time.perf_counter()
     client = TestClient(create_app())
+
+    global OWNER, NEW
+    ensure_accounts(pg)
+    OWNER = login_headers(client, "verify-owner")
+    NEW = login_headers(client, "verify-new")
 
     # ---- 1. 健康与依赖 ----
     h = client.get("/healthz").json()
@@ -77,6 +86,22 @@ def main() -> int:
         },
     )
     sid = b1["session_id"]
+
+    # ---- 2b. 量纲闸门（用户 2026-10-15 裁「乙为主」）----
+    # 同一份代码复跑曾一次读出 confidence.retrieval=0.9937、一次读出 **36.9408**。
+    # 后者不是分变高，是**换了量纲**：重排没跑成时 `chunks[].score` 漏的是 BM25 原始分，
+    # 而 `min_retrieval_score=0.20` 与置信度成分都假定这个数在 0–1 之间——
+    # 门禁于是「在一个它从未打算比较的尺度上通过」。所以把它做成验证项，不做成事后解释。
+    from kee.eval.probe_guard import score_scale_violation
+
+    scale = score_scale_violation([float(b1["confidence"].get("retrieval") or 0.0)])
+    step("检索分量落在 [0,1]，且本轮不是单腿静默退化",
+         scale is None,
+         {"confidence.retrieval": b1["confidence"].get("retrieval"),
+          "mode": b1.get("retrieval", {}).get("mode"),
+          "retrieval.degraded": b1.get("retrieval", {}).get("degraded", []),
+          "判废语": scale or "无"},
+         )
 
     # ---- 3. 引用可溯源：每条引用都要带 doc/章节/页 ----
     bad = [c for c in b1["citations"] if not c.get("doc_id") or c.get("page") is None or not c.get("section_no")]
@@ -200,7 +225,7 @@ def main() -> int:
     # ---- 11. 审计留痕 ----
     with pg.connect() as conn:
         audits = conn.execute(
-            "SELECT action, count(*) n FROM audit_log WHERE actor IN ('m3-owner-01','m3-new-01') GROUP BY action"
+            "SELECT action, count(*) n FROM audit_log WHERE actor IN ('verify-owner','verify-new') GROUP BY action"
         ).fetchall()
     acts = {a["action"]: a["n"] for a in audits}
     step("答案链每次问答与每次会话读取都进审计",

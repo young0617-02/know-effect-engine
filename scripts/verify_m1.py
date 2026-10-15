@@ -24,14 +24,19 @@ from kee.retrieval.milvus_store import KbStore  # noqa: E402
 from kee.retrieval.pipeline import HybridRetriever  # noqa: E402
 from kee.retrieval.rbac import AccessContext  # noqa: E402
 
+from _identity import ensure_accounts, login_headers  # noqa: E402
+
 COLLECTION = "kb_chunks"  # 对账口径是「一份权威源 ↔ 一个索引」，验证必须跑在生产集合上
 FIXTURES = Path("var/m1/fixtures")
 REAL_PDF = Path("D:/project/kb_rag/doc/hak180产品安全手册.pdf")
 
-OWNER = {"X-Kee-Role": "knowledge_owner", "X-Kee-Actor": "owner-01"}
-ADMIN = {"X-Kee-Role": "system_admin", "X-Kee-Actor": "admin-01"}
-ENG = {"X-Kee-Role": "delivery_engineer", "X-Kee-Actor": "eng-01"}
-NEW = {"X-Kee-Role": "newcomer", "X-Kee-Actor": "new-01"}
+# 身份来自登录令牌（`KEE_ALLOW_HEADER_IDENTITY` 默认已于 2026-10-15 翻成 False），
+# 在 main() 里登录后填充。审计里的 actor 因此是账号名，不再是请求头里随手写的 owner-01。
+OWNER: dict[str, str] = {}
+ADMIN: dict[str, str] = {}
+ENG: dict[str, str] = {}
+NEW: dict[str, str] = {}
+PM: dict[str, str] = {}
 
 evidence: dict[str, Any] = {"steps": [], "timings_sec": {}}
 
@@ -94,6 +99,14 @@ def main() -> int:
 
     sched = ResidencyScheduler(policy="co_resident")
     client = TestClient(create_app(scheduler=sched, collection=COLLECTION))
+
+    global OWNER, ADMIN, ENG, NEW, PM
+    ensure_accounts(pg)
+    OWNER = login_headers(client, "verify-owner")
+    ADMIN = login_headers(client, "verify-admin")
+    ENG = login_headers(client, "verify-eng")
+    NEW = login_headers(client, "verify-new")
+    PM = login_headers(client, "verify-pm")
 
     h = client.get("/healthz").json()
     step("健康检查（依赖就绪）", h["status"] == "ok", h)
@@ -387,6 +400,15 @@ def main() -> int:
     )
 
     # ---- 7. 复核：职责分离 + 驳回撤索引 ----
+    # 先记一笔先前存在的错：`review` 的路由是**先查角色、再查职责分离**（app.py:475-483）。
+    # 所以「delivery_engineer 自审拿到 403」证明的是角色闸门，不是职责分离——两条 403 撞在
+    # 同一个状态码上，断言就分不出是谁在拦。这里改成既验状态码也验文案，
+    # 并补一条真正落在职责分离上的自审（带复核权的账号复核自己传的那篇）。
+    true_self_review = client.post(
+        "/api/v1/documents/m1-mi-mfg-2024-002/review",
+        json={"decision": "pass", "note": "我传的文档我自己批"},
+        headers=OWNER,   # 该文档由 verify-owner 上传（见上面的 up_mission），同一个人、同一枚令牌
+    )
     self_review = client.post(
         "/api/v1/documents/m1-shishi-prj-fin-2024-017/review",
         json={"decision": "pass", "note": "我自己传的我自己批"},
@@ -395,27 +417,31 @@ def main() -> int:
     wrong_role = client.post(
         "/api/v1/documents/m1-shishi-prj-fin-2024-017/review",
         json={"decision": "pass"},
-        headers={"X-Kee-Role": "pm", "X-Kee-Actor": "pm-01"},
+        headers=PM,
     )
     other_pass = client.post(
         "/api/v1/documents/m1-shishi-prj-fin-2024-017/review",
         json={"decision": "pass", "note": "格式与来源核对通过"},
-        headers={"X-Kee-Role": "knowledge_owner", "X-Kee-Actor": "owner-02"},
+        headers=OWNER,   # 该篇由 verify-eng 上传，OWNER 是另一个人 ⇒ 这条才是「换人复核通过」
     )
     reject = client.post(
         "/api/v1/documents/m1-mi-mfg-2024-002/review",
         json={"decision": "reject", "note": "商务数据未脱敏，不得进知识库"},
-        headers=ADMIN,  # 该文档由 owner-01 上传，必须换人复核（职责分离真的在拦）
+        headers=ADMIN,  # 该文档由 verify-owner 上传，必须换人复核（职责分离真的在拦）
     )
     rejected_ver = "m1-mi-mfg-2024-002@v1"
     step(
-        "复核契约：上传者自审 403、非 Owner 角色 403、他人 pass 通过、reject 后索引撤净",
-        self_review.status_code == 403 and wrong_role.status_code == 403
+        "复核契约：带复核权的人自审被职责分离拦、无复核权的角色被角色闸门拦、换人 pass 通过、reject 后索引撤净",
+        true_self_review.status_code == 403
+        and "职责分离" in true_self_review.json().get("message", "")
+        and self_review.status_code == 403 and "复核需" in self_review.json().get("message", "")
+        and wrong_role.status_code == 403 and "复核需" in wrong_role.json().get("message", "")
         and other_pass.status_code == 200 and reject.status_code == 200
         and len(kb.all_chunk_ids(version_id=rejected_ver)) == 0,
         {
-            "自审": [self_review.status_code, self_review.json().get("code")],
-            "非授权角色": [wrong_role.status_code, wrong_role.json().get("code")],
+            "同账号自审(职责分离)": [true_self_review.status_code, true_self_review.json().get("message", "")[:40]],
+            "上传者无复核权(角色闸门)": [self_review.status_code, self_review.json().get("message", "")[:40]],
+            "pm 角色": [wrong_role.status_code, wrong_role.json().get("message", "")[:40]],
             "他人通过": other_pass.json().get("status"),
             "驳回后状态": reject.json().get("status"),
             "驳回后索引条数": len(kb.all_chunk_ids(version_id=rejected_ver)),
@@ -446,10 +472,34 @@ def main() -> int:
             conn.execute("UPDATE audit_log SET action='tampered' WHERE id=(SELECT min(id) FROM audit_log)")
         except Exception as e:  # noqa: BLE001
             tamper = str(e).splitlines()[0]
+        # TRUNCATE 那条缝（2026-10-15 收紧的对象）：触发器只声明 DELETE/UPDATE，
+        # 而 PostgreSQL 的触发器不覆盖 TRUNCATE，所以这条路只能靠权限堵。必须单独试一条——
+        # 否则「禁改做了」会被读成「整张表堵住了」，而它当时只堵了三分之二。
+        truncate = None
+        rows_before = conn.execute("SELECT count(*) n FROM audit_log").fetchone()["n"]
+        try:
+            conn.execute("TRUNCATE TABLE audit_log")
+        except Exception as e:  # noqa: BLE001
+            truncate = str(e).splitlines()[0]
+        posture = conn.execute(
+            "SELECT current_user AS role, "
+            "(SELECT rolsuper FROM pg_roles WHERE rolname = current_user) AS sup, "
+            "(SELECT r.rolname FROM pg_class c JOIN pg_roles r ON r.oid = c.relowner "
+            " WHERE c.relname = 'audit_log') AS audit_owner"
+        ).fetchone()
+        rows_after = conn.execute("SELECT count(*) n FROM audit_log").fetchone()["n"]
     step(
         "审计追加留痕且禁改（覆盖上传/复核/回滚/对账）",
         tamper is not None and {"document_ingested", "document_review_pass", "document_rollback", "reconciliation_run"} <= {a["action"] for a in audits},
         {"动作分布": {a["action"]: a["c"] for a in audits}, "篡改被拒": tamper[:120]},
+    )
+    step(
+        "TRUNCATE 这条路也堵住了，且应用角色不是超级用户（收紧后的闸门）",
+        truncate is not None and not posture["sup"] and posture["audit_owner"] != posture["role"]
+        and rows_before == rows_after,
+        {"试探结果": (truncate or "竟然成功了")[:120], "连接角色": posture["role"],
+         "该角色超级用户": posture["sup"], "audit_log 属主": posture["audit_owner"],
+         "行数_前": rows_before, "行数_后": rows_after},
     )
 
     # ---- 9.5 清场：验证不该在生产集合里留下痕迹，否则下一轮基线就被污染 ----

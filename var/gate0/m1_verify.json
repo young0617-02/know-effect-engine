@@ -32,7 +32,7 @@
           "索引条数": 4,
           "解析告警": 1,
           "元数据告警": 0,
-          "耗时s": 18.952
+          "耗时s": 123.109
         },
         "txt": {
           "doc_id": "m1-xunjian-prj-ene-2025-008",
@@ -44,7 +44,7 @@
           "索引条数": 3,
           "解析告警": 1,
           "元数据告警": 0,
-          "耗时s": 11.754
+          "耗时s": 11.776
         },
         "docx": {
           "doc_id": "m1-shishi-prj-fin-2024-017",
@@ -56,7 +56,7 @@
           "索引条数": 2,
           "解析告警": 2,
           "元数据告警": 0,
-          "耗时s": 9.052
+          "耗时s": 9.232
         },
         "pdf": {
           "doc_id": "m1-anquan-prj-mfg-2024-001",
@@ -68,7 +68,7 @@
           "索引条数": 21,
           "解析告警": 4,
           "元数据告警": 0,
-          "耗时s": 10.614
+          "耗时s": 9.883
         },
         "secret": {
           "doc_id": "m1-mi-mfg-2024-002",
@@ -80,7 +80,7 @@
           "索引条数": 2,
           "解析告警": 1,
           "元数据告警": 0,
-          "耗时s": 11.824
+          "耗时s": 11.879
         }
       }
     },
@@ -206,7 +206,7 @@
           "短段并入前段：16｜经销商。",
           "触发原因：文本层过薄（1 页）"
         ],
-        "耗时s": 37.549,
+        "耗时s": 14.669,
         "检索命中": [
           {
             "doc": "m1-saomiao-prj-mfg-2024-003",
@@ -272,23 +272,27 @@
           "doc_id": "m1-fupan-prj-ene-2025-008",
           "effective_version": "m1-fupan-prj-ene-2025-008@v1",
           "reindexed": 4,
-          "seconds": 11.54
+          "seconds": 11.53
         },
         "v1 索引条数": 4,
         "v2 索引条数": 0
       }
     },
     {
-      "step": "复核契约：上传者自审 403、非 Owner 角色 403、他人 pass 通过、reject 后索引撤净",
+      "step": "复核契约：带复核权的人自审被职责分离拦、无复核权的角色被角色闸门拦、换人 pass 通过、reject 后索引撤净",
       "ok": true,
       "detail": {
-        "自审": [
+        "同账号自审(职责分离)": [
           403,
-          "E403"
+          "职责分离：上传者不能复核自己的文档"
         ],
-        "非授权角色": [
+        "上传者无复核权(角色闸门)": [
           403,
-          "E403"
+          "复核需 knowledge_owner 或 system_admin 角色"
+        ],
+        "pm 角色": [
+          403,
+          "复核需 knowledge_owner 或 system_admin 角色"
         ],
         "他人通过": "active",
         "驳回后状态": "rejected",
@@ -321,14 +325,35 @@
       "ok": true,
       "detail": {
         "动作分布": {
-          "answer_generated": 1,
-          "document_ingested": 8,
-          "document_review_pass": 1,
-          "document_review_reject": 1,
-          "document_rollback": 1,
-          "reconciliation_run": 1
+          "answer_generated": 59,
+          "chunks_read": 148,
+          "document_ingested": 16,
+          "document_review_pass": 7,
+          "document_review_reject": 2,
+          "document_rollback": 2,
+          "hardening_check": 1,
+          "login": 112,
+          "login_failed": 32,
+          "logout": 29,
+          "reconciliation_run": 2,
+          "session_read": 33,
+          "user_force_logout": 4,
+          "user_registered": 116,
+          "user_role_granted": 33
         },
-        "篡改被拒": "audit_log 为追加表，禁止 UPDATE 操作"
+        "篡改被拒": "permission denied for table audit_log"
+      }
+    },
+    {
+      "step": "TRUNCATE 这条路也堵住了，且应用角色不是超级用户（收紧后的闸门）",
+      "ok": true,
+      "detail": {
+        "试探结果": "permission denied for table audit_log",
+        "连接角色": "kee_app",
+        "该角色超级用户": false,
+        "audit_log 属主": "postgres",
+        "行数_前": 596,
+        "行数_后": 596
       }
     },
     {
@@ -342,10 +367,10 @@
     }
   ],
   "timings_sec": {
-    "upload_5_docs": 62.39,
-    "retrieval_probes": 9.42,
-    "reconcile_run": 12.56,
-    "whole_run": 301.01
+    "upload_5_docs": 166.16,
+    "retrieval_probes": 8.46,
+    "reconcile_run": 12.55,
+    "whole_run": 382.48
   },
   "baseline": {
     "collection": "kb_chunks",
@@ -382,12 +407,12 @@
         },
         "timings_sec": {
           "parse": 0.0,
-          "authoritative_write": 0.091,
-          "embed": 17.263,
-          "index": 1.597,
-          "total": 18.952
+          "authoritative_write": 0.162,
+          "embed": 121.317,
+          "index": 1.63,
+          "total": 123.109
         },
-        "trace_id": "api-58c7f14e8b28"
+        "trace_id": "api-2f38758dc79e"
       }
     },
     "txt": {
@@ -419,12 +444,12 @@
         },
         "timings_sec": {
           "parse": 0.0,
-          "authoritative_write": 0.11,
-          "embed": 0.041,
-          "index": 11.602,
-          "total": 11.754
+          "authoritative_write": 0.121,
+          "embed": 0.039,
+          "index": 11.616,
+          "total": 11.776
         },
-        "trace_id": "api-67c4a7084325"
+        "trace_id": "api-ea343c380971"
       }
     },
     "docx": {
@@ -456,13 +481,13 @@
           "remaining_pending": 0
         },
         "timings_sec": {
-          "parse": 0.226,
-          "authoritative_write": 0.113,
-          "embed": 0.126,
-          "index": 8.586,
-          "total": 9.052
+          "parse": 0.299,
+          "authoritative_write": 0.128,
+          "embed": 0.21,
+          "index": 8.596,
+          "total": 9.232
         },
-        "trace_id": "api-7bc645bca5ab"
+        "trace_id": "api-aa49e11a8eaf"
       }
     },
     "pdf": {
@@ -496,13 +521,13 @@
           "remaining_pending": 0
         },
         "timings_sec": {
-          "parse": 1.344,
-          "authoritative_write": 0.095,
-          "embed": 0.536,
-          "index": 8.639,
-          "total": 10.614
+          "parse": 0.979,
+          "authoritative_write": 0.117,
+          "embed": 0.184,
+          "index": 8.603,
+          "total": 9.883
         },
-        "trace_id": "api-b339451ae414"
+        "trace_id": "api-54581fc0cc27"
       }
     },
     "secret": {
@@ -534,12 +559,12 @@
         },
         "timings_sec": {
           "parse": 0.0,
-          "authoritative_write": 0.11,
-          "embed": 0.114,
-          "index": 11.6,
-          "total": 11.824
+          "authoritative_write": 0.089,
+          "embed": 0.171,
+          "index": 11.619,
+          "total": 11.879
         },
-        "trace_id": "api-fdd0401f4337"
+        "trace_id": "api-0390264b7b30"
       }
     }
   },

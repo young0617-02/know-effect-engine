@@ -25,6 +25,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
+sys.path.insert(0, str(ROOT / "scripts"))
 
 DB = "kee_uploadhttp"
 COLL = "kb_chunks_uploadhttp"
@@ -48,7 +49,7 @@ def ck(name: str, ok, detail="") -> bool:
 
 
 def psql(sql: str) -> str:
-    r = subprocess.run(["docker", "exec", "kee-postgres", "psql", "-U", "kee", "-d", "postgres", "-tAc", sql],
+    r = subprocess.run(["docker", "exec", "kee-postgres", "psql", "-U", "kee_admin", "-d", "postgres", "-tAc", sql],
                        capture_output=True, text=True, timeout=180)
     if r.returncode != 0:
         raise RuntimeError(r.stderr[:200])
@@ -79,18 +80,22 @@ def main() -> int:
     print(f"生产侧跑前：chunks={pre_counts[0]} docs={pre_counts[1]}（本脚本不该改动它）")
 
     env = dict(os.environ)
-    env["KEE_POSTGRES_DSN"] = f"postgresql://kee:待填_KEE_PG_SUPERUSER_PASSWORD@127.0.0.1:35432/{DB}"
+    env["KEE_POSTGRES_DSN"] = f"postgresql://kee_app:待填_KEE_PG_APP_PASSWORD@127.0.0.1:35432/{DB}"
     env["KEE_MILVUS_COLLECTION"] = COLL
     env["KEE_API_PORT"] = str(PORT)
 
-    psql(f"CREATE DATABASE {DB} OWNER kee")
+    psql(f"CREATE DATABASE {DB} OWNER kee_app")
     print(f"scratch 库已建：{DB} / 集合 {COLL} / 端口 {PORT}")
     proc = None
     try:
         from kee.db.pg import AuthoritativeStore
         from kee.retrieval.milvus_store import KbStore
 
-        AuthoritativeStore(dsn=env["KEE_POSTGRES_DSN"]).init_schema()
+        from _identity import ensure_accounts, login_http  # noqa: E402
+
+        scratch = AuthoritativeStore(dsn=env["KEE_POSTGRES_DSN"])
+        scratch.init_schema()
+        ensure_accounts(scratch)  # 验收账号要播种进**scratch 库**：子进程那个 API 读的是它，不是生产库
         KbStore(COLL, "jieba").ensure()
 
         # 真起一个 serve_api.py 子进程——与生产完全同一份启动代码
@@ -108,8 +113,12 @@ def main() -> int:
         if not ready:
             return 3
 
-        owner = ["-H", "X-Kee-Role: knowledge_owner", "-H", "X-Kee-Actor: reviewer-b"]
-        eng = ["-H", "X-Kee-Role: delivery_engineer", "-H", "X-Kee-Actor: uploader-a"]
+        # 身份走登录令牌：`KEE_ALLOW_HEADER_IDENTITY` 的默认已于 2026-10-15 翻成 False（用户裁「交付物默认 false、脚本显式带令牌」）；
+        # 审计里的 actor 因此是账号名 verify-owner / verify-eng，不再是请求头里随手写的 reviewer-b / uploader-a。
+        owner_tok = login_http(base, "verify-owner")["Authorization"].removeprefix("Bearer ")
+        eng_tok = login_http(base, "verify-eng")["Authorization"].removeprefix("Bearer ")
+        owner = ["-H", f"Authorization: Bearer {owner_tok}"]
+        eng = ["-H", f"Authorization: Bearer {eng_tok}"]
         f = ROOT / "var" / ".upload_probe.md"
         f.write_text(DOC, encoding="utf-8")
         try:

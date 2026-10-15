@@ -41,7 +41,11 @@ class Settings(BaseSettings):
     milvus_uri: str = "http://127.0.0.1:39530"
     milvus_db: str = "default"
     milvus_collection: str = "kb_chunks"
-    postgres_dsn: str = "postgresql://kee:待填_KEE_PG_SUPERUSER_PASSWORD@127.0.0.1:35432/kee"
+    # 应用角色 `kee_app`（LOGIN，非超级用户）。口令与 `待填_KEE_PG_SUPERUSER_PASSWORD` 同性质：本机开发的公开值。
+    # 不用 `kee` 是因为它是 initdb 引导出来的 bootstrap 超级用户——PG 明文禁止摘它的 SUPERUSER，
+    # 而超级用户让表级 REVOKE 全部失效（含 `audit_log` 的防篡改触发器）。
+    # 新库起好后必须跑一次 `scripts/harden_audit_store.py`，否则 `kee_app` 根本不存在。
+    postgres_dsn: str = "postgresql://kee_app:待填_KEE_PG_APP_PASSWORD@127.0.0.1:35432/kee"
     redis_url: str = "redis://127.0.0.1:36379/0"
     search_cache_ttl_sec: int = 300
 
@@ -71,8 +75,12 @@ class Settings(BaseSettings):
     # ---- 账号与登录态 ----
     session_ttl_hours: int = 12
     # 请求头身份（X-Kee-Role 等）是内网工具与验收脚本的通道；关掉它就必须带 Bearer 令牌。
-    # 默认 True 是**如实反映现状**：现有一批脚本走的就是头。收紧为 False 的代价与步骤登记在风险册。
-    allow_header_identity: bool = True
+    # 默认 **False**（用户 2026-10-15 裁「交付物默认 false、脚本显式带令牌」）：
+    # 保持 True 时，「限内网可用」这条约束是由部署环境承担的，不由代码承担——
+    # 不带令牌、只发一个 `X-Kee-Role: system_admin` 就能拿到该角色的全部范围。
+    # 需要该通道的脚本改走 `scripts/_identity.py`（登录换 Bearer）；
+    # 本机测试要覆盖这条通道时，由 `tests/conftest.py` 显式打开，不在生产默认里留后门。
+    allow_header_identity: bool = False
 
     # ---- 运行产物 ----
     artifact_dir: Path = Field(default=PROJECT_ROOT / "var/gate0")

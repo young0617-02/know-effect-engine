@@ -46,6 +46,12 @@ function stubFetch(stub: Stub = {}) {
         : json({ user: ME("delivery_engineer").user, note: "注册即可登录；治理角色须由现有管理员授予" }, 201);
     }
     if (u.includes("/auth/me")) return json(stub.me?.body ?? ME("delivery_engineer"), stub.me?.status ?? 200);
+    if (u.includes("revoke-sessions")) return json({ username: "leaked-01", revoked: 3, by: "sys-admin-01" });
+    if (u.includes("/auth/users")) {
+      return json({ total: 1, items: [{ username: "leaked-01", display_name: "泄露的账号",
+        role: "delivery_engineer", industries: "金融", projects: "", is_active: true,
+        created_at: "2026-10-15T00:00:00Z", last_login_at: null, failed_count: 0 }] });
+    }
     if (u.includes("/healthz")) {
       return json({ status: "ok", deps: { milvus: { ok: true, chunks: 100 }, postgres: { ok: true, documents: 10 } } });
     }
@@ -173,5 +179,36 @@ describe("账号 tab 的可见性", () => {
   it("治理角色看得到「账号」", async () => {
     await loginIn("system_admin");
     expect(await screen.findByRole("tab", { name: "账号" })).toBeTruthy();
+  });
+});
+
+describe("会话撤销的两条出口", () => {
+  /** 钉的是 2026-10-15 的两条处置：退出默认撤销该账号**全部**会话；治理角色手上要有踢人动作。
+   *  前者防止共享电脑上的「退出」只是把令牌从 localStorage 抹掉，后者防止账号泄露后只能改库。 */
+  it("界面上的「退出登录」走默认全撤销：请求里不带 all_devices=false", async () => {
+    const calls = stubFetch({ me: { body: ME("delivery_engineer") } });
+    renderApp();
+    fill("u-delivery-01", "Passw0rd-1234");
+    fireEvent.click(screen.getByRole("button", { name: "进入系统" }));
+    fireEvent.click(await screen.findByRole("button", { name: "退出登录" }));
+
+    await waitFor(() => expect(screen.getByLabelText("用户名")).toBeTruthy());
+    const out = calls.find((c) => c.url.includes("/auth/logout"));
+    expect(out?.url.split("?")[0]).toContain("/api/v1/auth/logout");
+    // 带 `all_devices=false` 就说明退回了「只退本机」那条旧语义——共享电脑上的退出因此是假的
+    expect(out?.url).not.toContain("all_devices=false");
+    expect(localStorage.getItem(TOKEN_KEY)).toBeNull();
+  });
+
+  it("账号页的「强制下线」打到 revoke-sessions，并把撤销数报出来", async () => {
+    const calls = stubFetch({ me: { body: ME("system_admin", "sys-admin-01") } });
+    renderApp();
+    fill("sys-admin-01", "Passw0rd-1234");
+    fireEvent.click(screen.getByRole("button", { name: "进入系统" }));
+    fireEvent.click(await screen.findByRole("tab", { name: "账号" }));
+    fireEvent.click(await screen.findByTestId("kick-leaked-01"));
+
+    await waitFor(() => expect(screen.getByTestId("accounts-msg").textContent).toContain("3 个登录态"));
+    expect(calls.some((c) => c.url.includes("/api/v1/auth/users/leaked-01/revoke-sessions"))).toBe(true);
   });
 });
