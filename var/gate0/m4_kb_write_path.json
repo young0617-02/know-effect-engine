@@ -1,7 +1,7 @@
 {
   "env": {
-    "ts": "2026-10-12T15:17:38",
-    "commit": "dc028c0",
+    "ts": "2026-10-15T14:32:17",
+    "commit": "b74019d",
     "scratch_db": "kee_writepath",
     "scratch_collection": "kb_chunks_writepath"
   },
@@ -117,6 +117,7 @@
           "document_ingested",
           "document_review_pass",
           "document_rollback",
+          "login",
           "reconciliation_run"
         ]
       }

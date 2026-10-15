@@ -38,10 +38,13 @@ JUDGE_LINE = (
 
 
 def guard_existing_fill(force: bool) -> str | None:
+    """⚠ 读表走 `kee.eval.sheets.read_fill_rows`：本工单开头有 `#` 判据注释，
+    裸 `csv.DictReader` 会把注释当表头 ⇒ 已填行数恒为 0 ⇒ 这道护栏形同摆设。"""
     if not FILL.exists() or force:
         return None
-    with FILL.open(encoding="utf-8-sig", newline="") as f:
-        rows = [r for r in csv.DictReader(f)]
+    from kee.eval.sheets import read_fill_rows
+
+    rows = read_fill_rows(FILL)
     filled = [r for r in rows if (r.get("answer_correct__fill_1_or_0") or "").strip() not in ("", None)]
     if not filled:
         return None

@@ -30,7 +30,8 @@ from _identity import ensure_accounts, login_http  # noqa: E402
 MAIN = "infra/docker-compose.gate0.yml"
 NODEV = "infra/docker-compose.gate0.nodev.yml"
 M4 = "infra/docker-compose.m4.yml"
-API = "http://127.0.0.1:38000"
+# 宿主 API 端口不是常量（同上：Windows 保留段），换端口时传 KEE_API_PORT
+API = f"http://127.0.0.1:{os.environ.get('KEE_API_PORT', '38000')}"
 OUT = ROOT / "var" / "gate0" / "m4_airgap_nodev.json"
 
 # 身份走登录令牌（`KEE_ALLOW_HEADER_IDENTITY` 的默认已于 2026-10-15 翻成 False，用户裁「交付物默认 false、脚本显式带令牌」），

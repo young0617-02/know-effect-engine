@@ -30,11 +30,17 @@ services:
     restart: unless-stopped
     ports:
       - "127.0.0.1:38080:80"
+    environment:
+      # 反代目标端口。宿主 API 换端口时（Windows 会保留 38xxx–41xxx 段）这里跟着改，
+      # 否则 38080 整条同源通路 502。由镜像 entrypoint 的 envsubst 渲染进 conf。
+      - KEE_API_PORT=${KEE_API_PORT:-38000}
     volumes:
       # 挂 dist 而不是 build 镜像：要能「改完前端重新 build 就生效」，
       # 每次改前端都重新构建镜像会让验证节奏慢到没人愿意验证。
       - ../frontend/dist:/usr/share/nginx/html:ro
-      - ./nginx.m4.conf:/etc/nginx/conf.d/default.conf:ro
+      # 挂 templates 而不是 conf.d：官方 nginx 镜像的 entrypoint 会对 *.template 跑
+      # envsubst 再输出到 conf.d/default.conf，端口就是这么注入的。
+      - ./nginx.m4.conf.template:/etc/nginx/templates/default.conf.template:ro
     extra_hosts:
       # Docker Desktop 上 host.docker.internal 自带；host-gateway 写给 Linux 引擎兜底
       - "host.docker.internal:host-gateway"

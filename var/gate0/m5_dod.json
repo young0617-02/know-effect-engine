@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-10-15T10:52:38",
+  "generated_at": "2026-10-15T14:44:02",
   "principle": "读数全部从 var/gate0 产物与 PG 取；取不到就标不可测；status 显式给定，不靠散文里有没有「达标」二字来数",
   "dod": [
     {
       "#": "1",
       "验收项": "Must 链端到端可演示",
       "判定标准": "9 条 Must 全链路可跑通",
-      "实测读数": "M1 17 步 ｜ M2 基线 gates_passed=True ｜ M3 13 步（多轮/流式/RBAC/拒答/审计）｜ M4 交付层 12 项 ｜ M4 写路径 13 项",
+      "实测读数": "M1 17 步 ｜ M2 基线 gates_passed=True ｜ M3 13 步（多轮/流式/RBAC/拒答/审计）｜ M4 交付层 13 项 ｜ M4 写路径 13 项",
       "证据": [
         "var/gate0/m1_verify.json",
         "var/gate0/m2_eval.json",

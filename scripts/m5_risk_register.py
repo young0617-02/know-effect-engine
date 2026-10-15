@@ -114,7 +114,7 @@ ADDED = [
      "闸门已做成代码而不是一句承诺：`verify_m1` 新增一步"
      "「TRUNCATE 这条路也堵住了，且应用角色不是超级用户」，断言含 `not rolsuper` 与"
      "`audit_log 属主 ≠ current_user` 且前后行数相等。"
-     "全套重验：pytest 244 passed / verify_m1 全步骤通过 / verify_m3 全步骤通过 / verify_m4 12 项 0 失败；"
+     "全套重验：pytest 244 passed / verify_m1 全步骤通过 / verify_m3 全步骤通过 / verify_m4 直连 12 项、经 Nginx 13 项 0 失败；"
      "生产集合与权威源回到基线（193 块 / 24 篇）。"
      "另：登记时那条**表外凭据**的做法保留（`var/gate0/audit_reset.json`）——"
      "触发器不覆盖 TRUNCATE 这一点没变，超级用户仍能整表抹掉且审计零痕迹，"
@@ -328,6 +328,21 @@ ADDED = [
      "另记两条小的，同样未动：账号无删除端点（注销要走 DB）、口令无轮换策略/历史校验。"
      "⚠ 同一条裁决顺带把 DB 面也收紧了（见「审计 TRUNCATE」那条）：**交付物现在用 `kee_app` 这个非超级用户角色连库**，"
      "新库起好后必须跑一次 `scripts/harden_audit_store.py`，否则 `kee_app` 不存在、服务连不上库"),
+    ("人工工单的「拒绝覆盖」护栏被自己的注释头照瞎（复跑脚本时撞出来）", CLOSED,
+     "**2026-10-15 补跑 6 支验收脚本时撞出来的，且它属于最难发现的那一类：护栏不报错、不改变任何读数，"
+     "只在某次'顺手重跑一下生成脚本'时把人工标注抹掉。**"
+     "两张工单（`answer_correct_fill.csv` 67 行、`hallucination_fill.csv` 12 行）开头都有几行 `#` 判据注释，"
+     "而 `guard_existing_fill()` 用裸 `csv.DictReader(f)` 读它 ⇒ **第一行注释被当成表头**，"
+     "`row.get(\"answer_correct__fill_1_or_0\")` 恒为 None ⇒ 「已填行数」永远算出 0 ⇒ 护栏在填过的表上也放行覆盖。"
+     "现场证据：我把 `hallucination_fill.csv` 的 12 行真人判断覆盖掉了，靠事先记了 md5 + `git checkout` 才还原"
+     "（还原后与 `5d0b7a8` 那次回收的提交逐字节一致，67/67 与 12/12 都还在）。"
+     "**注意我原本正是「怕覆盖才记 md5」——一个凭习惯做的动作，而不是因为信那道护栏。**"
+     "修法：新增 `kee.eval.sheets.read_fill_rows()`（跳 `#` 与空行后再按真表头解析），两道护栏都改用它；"
+     "回归测试 `tests/test_sheet_guards.py` 8 条，其中两条最关键："
+     "① **拿仓库里真工单验护栏看得见**（67/67、12/12，行数写死——少了就说明被覆盖过）；"
+     "② 反面对照「没填过仍要放行」，否则把护栏改成永远拒绝也测不出来。"
+     "同形缺陷在 `m4_annotation_fill_helper.py` 里本来就有正确解法（`commented_lines()`），"
+     "只是两道护栏没用它 ⇒ **同一份文件格式在仓库里有两种读法时，读错的那个往往是安全相关的**"),
     ("hybrid 模式下稠密腿空结果不写 `degraded`：静默退化成 BM25 单腿且分数换量纲", CLOSED,
      "**2026-10-13 会话端点改动后复跑 `verify_m3` 时抓到，与本次改动无关**。同一份代码两次跑同一步：一次 "
      "`confidence.retrieval = 0.9937`（正常），一次 **36.9408**——后者不是「分数变高」，是**换了量纲**："
@@ -483,7 +498,7 @@ def main() -> int:
           "**2026-10-15 再收四条（docs V1.35 / V1.0.37）**：请求头身份默认翻成 `false`（脚本改带令牌）、"
           "退出撤销全部会话 + 治理角色强制下线、审计 TRUNCATE 绕过按「换属主 + 换应用角色 + 只授 INSERT/SELECT」"
           "堵住并做成 verify_m1 的验证项、hybrid 单腿静默退化按「乙为主甲为辅」落闸门与产物列。"
-          "重验：pytest 244 passed、verify_m1 / verify_m3 全步骤通过、verify_m4 12 项 0 失败。"
+          "重验：pytest 244 passed、verify_m1 / verify_m3 全步骤通过、verify_m4 直连 12 项 / 经 Nginx 13 项均 0 失败。"
           "**一处原清单不可执行已如实登记**：`ALTER ROLE kee NOSUPERUSER` 被 PG 拒绝"
           "（bootstrap 超级用户不许摘 SUPERUSER），终态改用非特权应用角色 `kee_app` 达成同一防线。",
           "- **剩下的敞口只有三类，都不是「还没做」而是「按构造拿不到数」**："

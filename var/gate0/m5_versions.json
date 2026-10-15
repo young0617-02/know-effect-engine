@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-15T10:51:59",
+  "generated_at": "2026-10-15T14:47:04",
   "principle": "取不到就标 未固定 并写原因；未固定项 = 可移植性缺口，MVP 收口前逐条销掉或明写接受",
   "host": {
     "os": "Windows 11",
@@ -61,6 +61,7 @@
         "scripts\\m5_dod_check.py",
         "scripts\\m5_version_lock.py",
         "scripts\\reset_audit_state.py",
+        "scripts\\serve_api.py",
         "src\\kee\\api\\app.py",
         "src\\kee\\db\\pg.py",
         "src\\kee\\gate0\\g06_localization.py"
@@ -365,11 +366,11 @@
     ],
     "compose_files": {
       "docker-compose.gate0.yml": "0feafc8850ec",
-      "docker-compose.m4.yml": "f2a4bd6f2439",
+      "docker-compose.m4.yml": "95b11278b548",
       "docker-compose.gate0.iso.yml": "5e19ef937df8",
       "docker-compose.gate0.nodev.yml": "cec446d18e21"
     },
-    "nginx_conf": "5e294de5ee15"
+    "nginx_conf": "c789d25853bf"
   },
   "servers": {
     "milvus": "3.0.0",

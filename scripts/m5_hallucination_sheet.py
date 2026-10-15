@@ -95,11 +95,17 @@ def post(path: str, body: dict, timeout: float = 300.0) -> dict:
 
 
 def guard_existing_fill(force: bool) -> str | None:
-    """已经有人填过就不覆盖——覆盖等于销毁人工标注，这是不可逆的。"""
+    """已经有人填过就不覆盖——覆盖等于销毁人工标注，这是不可逆的。
+
+    ⚠ 读表必须走 `read_fill_rows`：这张工单开头有几行 `#` 判据注释，
+    用裸 `csv.DictReader` 会把注释当表头，于是「已填行数」恒等于 0，
+    **这道护栏就变成一道摆设**（2026-10-15 复跑时照出来的就是这个）。
+    """
     if not FILL.exists() or force:
         return None
-    with FILL.open(encoding="utf-8-sig", newline="") as f:
-        rows = [r for r in csv.DictReader(f)]
+    from kee.eval.sheets import read_fill_rows
+
+    rows = read_fill_rows(FILL)
     filled = [r for r in rows
               if any((r.get(c) or "").strip() for c in FILL_COLS)]
     if not filled:

@@ -1,5 +1,12 @@
 # M4 部署的 Nginx：静态托管 frontend/dist + 同源反代宿主 API。
 #
+# **为什么是 `.template` 而不是 `.conf`**：宿主 API 的端口不是常量。Windows 会把
+# 38xxx–41xxx 整段保留掉（bind 直接 WSAEACCES 而 `netstat` 查不到占用者），本机一旦换到
+# 28000，写死 38000 的 Nginx 就把整条同源通路变成 502——而 502 看起来像前端坏了。
+# 官方 nginx 镜像的 entrypoint 会对 `/etc/nginx/templates/*.template` 跑 envsubst，
+# 输出到 `conf.d/default.conf`，所以端口由 compose 的 `KEE_API_PORT` 注入（默认 38000）。
+# ⚠ 自定义 entrypoint 会跳过这一步：那样 conf.d 下不会有文件，属"起得来但全 502"的形状。
+#
 # 同源是刻意的：前端一律打相对路径 /api/*，dev 由 Vite 代理、这里由 Nginx 代理，
 # 于是「上线才发现要配 CORS」这类分叉在结构上不可能出现，也就不需要为开发期放开 CORS。
 #
@@ -20,7 +27,7 @@ server {
 
     # 问答流式端点：关缓冲、关缓存、拉长读超时
     location = /api/v1/answers/stream {
-        proxy_pass http://host.docker.internal:38000;
+        proxy_pass http://host.docker.internal:${KEE_API_PORT};
         proxy_http_version 1.1;
         proxy_set_header Host $host;
         proxy_set_header X-Trace-Id $request_id;
@@ -35,7 +42,7 @@ server {
     }
 
     location /api/ {
-        proxy_pass http://host.docker.internal:38000;
+        proxy_pass http://host.docker.internal:${KEE_API_PORT};
         proxy_http_version 1.1;
         proxy_set_header Host $host;
         proxy_set_header X-Trace-Id $request_id;
@@ -44,7 +51,7 @@ server {
     }
 
     location = /healthz {
-        proxy_pass http://host.docker.internal:38000;
+        proxy_pass http://host.docker.internal:${KEE_API_PORT};
         proxy_set_header Host $host;
     }
 

@@ -29,8 +29,10 @@ sys.path.insert(0, str(ROOT / "scripts"))
 
 DB = "kee_uploadhttp"
 COLL = "kb_chunks_uploadhttp"
-PORT = 38001
-PROD_PORT = 38000
+# 端口可换：Windows 会把 38xxx–41xxx 整段保留掉（bind 报 WSAEACCES 而 netstat 查不到占用者），
+# 本机这套跑在 28000 上，写死端口就等于"脚本没问题但在这台机器上跑不了"。
+PORT = int(os.environ.get("KEE_CHECK_API_PORT", "38001"))
+PROD_PORT = int(os.environ.get("KEE_PROD_API_PORT", "38000"))
 OUT = ROOT / "var" / "gate0" / "m4_upload_http.json"
 
 DOC = """# 上传链路验证说明 v1

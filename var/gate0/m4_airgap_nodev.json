@@ -1,7 +1,7 @@
 {
   "env": {
-    "ts": "2026-10-12T15:01:03",
-    "commit": "dc028c0"
+    "ts": "2026-10-15T14:37:42",
+    "commit": "b74019d"
   },
   "pre": {
     "health": {
@@ -32,16 +32,16 @@
     "down_main": {
       "rc": 0,
       "out": "",
-      "err": "Container kee-milvus Stopping \n Container kee-postgres Stopping \n Container kee-redis Stopping \n Container kee-postgres Stopped \n Container kee-postgres Removing \n Container kee-postgres Removed \n Container kee-redis Stopped \n Container kee-redis Removing \n Container kee-redis Removed \n Container kee-milvus Stopped \n Container kee-milvus Removing \n Container kee-milvus Removed \n Container kee-etcd"
+      "err": "Container kee-postgres Stopping \n Container kee-milvus Stopping \n Container kee-redis Stopping \n Container kee-postgres Stopped \n Container kee-postgres Removing \n Container kee-postgres Removed \n Container kee-redis Stopped \n Container kee-redis Removing \n Container kee-redis Removed \n Container kee-milvus Stopped \n Container kee-milvus Removing \n Container kee-milvus Removed \n Container kee-mini"
     },
     "up_nodev": {
       "rc": 0,
       "out": "",
-      "err": "Network kee-gate0_kee-net Creating \n Network kee-gate0_kee-net Created \n Container kee-minio Creating \n Container kee-redis Creating \n Container kee-postgres Creating \n Container kee-etcd Creating \n Container kee-minio Created \n Container kee-redis Created \n Container kee-etcd Created \n Container kee-milvus Creating \n Container kee-postgres Created \n Container kee-milvus Created \n Container kee-et"
+      "err": "Network kee-gate0_kee-net Creating \n Network kee-gate0_kee-net Created \n Container kee-redis Creating \n Container kee-etcd Creating \n Container kee-minio Creating \n Container kee-postgres Creating \n Container kee-etcd Created \n Container kee-postgres Created \n Container kee-minio Created \n Container kee-milvus Creating \n Container kee-redis Created \n Container kee-milvus Created \n Container kee-re"
     },
     "ready": {
       "ok": true,
-      "waited_sec": 6.0,
+      "waited_sec": 6.1,
       "health": {
         "status": "ok",
         "deps": {
@@ -61,12 +61,12 @@
     "down_nodev": {
       "rc": 0,
       "out": "",
-      "err": "Container kee-milvus Stopping \n Container kee-redis Stopping \n Container kee-postgres Stopping \n Container kee-redis Stopped \n Container kee-redis Removing \n Container kee-redis Removed \n Container kee-postgres Stopped \n Container kee-postgres Removing \n Container kee-postgres Removed \n Container kee-milvus Stopped \n Container kee-milvus Removing \n Container kee-milvus Removed \n Container kee-etcd"
+      "err": "Container kee-postgres Stopping \n Container kee-milvus Stopping \n Container kee-redis Stopping \n Container kee-redis Stopped \n Container kee-redis Removing \n Container kee-redis Removed \n Container kee-postgres Stopped \n Container kee-postgres Removing \n Container kee-postgres Removed \n Container kee-milvus Stopped \n Container kee-milvus Removing \n Container kee-milvus Removed \n Container kee-etcd"
     },
     "up_main": {
       "rc": 0,
       "out": "",
-      "err": "Network kee-gate0_kee-net Creating \n Network kee-gate0_kee-net Created \n Container kee-redis Creating \n Container kee-minio Creating \n Container kee-postgres Creating \n Container kee-etcd Creating \n Container kee-etcd Created \n Container kee-minio Created \n Container kee-milvus Creating \n Container kee-redis Created \n Container kee-postgres Created \n Container kee-milvus Created \n Container kee-re"
+      "err": "Network kee-gate0_kee-net Creating \n Network kee-gate0_kee-net Created \n Container kee-redis Creating \n Container kee-minio Creating \n Container kee-etcd Creating \n Container kee-postgres Creating \n Container kee-etcd Created \n Container kee-minio Created \n Container kee-milvus Creating \n Container kee-redis Created \n Container kee-postgres Created \n Container kee-milvus Created \n Container kee-re"
     },
     "restore_web": {
       "rc": 0,
@@ -77,7 +77,7 @@
   "post": {
     "ready": {
       "ok": true,
-      "waited_sec": 6.0,
+      "waited_sec": 6.1,
       "health": {
         "status": "ok",
         "deps": {
@@ -124,13 +124,13 @@
         "url": "http://8.8.8.8",
         "rc": 28,
         "http": "000",
-        "err": "curl: (28) Connection timed out after 6000 milliseconds"
+        "err": "curl: (28) Connection timed out after 6001 milliseconds"
       },
       {
         "url": "https://registry-1.docker.io/v2/",
         "rc": 28,
         "http": "000",
-        "err": "curl: (28) Connection timed out after 6001 milliseconds"
+        "err": "curl: (28) Connection timed out after 6000 milliseconds"
       },
       {
         "url": "dns:github.com",

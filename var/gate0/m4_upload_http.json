@@ -1,7 +1,7 @@
 {
   "env": {
-    "ts": "2026-10-12T16:37:16",
-    "commit": "a5fc799",
+    "ts": "2026-10-15T14:36:53",
+    "commit": "b74019d",
     "scratch_db": "kee_uploadhttp",
     "scratch_collection": "kb_chunks_uploadhttp",
     "port": 38001
@@ -59,7 +59,7 @@
     {
       "name": "回滚到 v1 生效",
       "ok": true,
-      "detail": "{\"http\": 200, \"body\": \"{\\\"doc_id\\\":\\\"upload-http-probe\\\",\\\"effective_version\\\":\\\"upload-http-probe@v1\\\",\\\"reindexed\\\":1,\\\"seconds\\\":11.53}\"}"
+      "detail": "{\"http\": 200, \"body\": \"{\\\"doc_id\\\":\\\"upload-http-probe\\\",\\\"effective_version\\\":\\\"upload-http-probe@v1\\\",\\\"reindexed\\\":1,\\\"seconds\\\":11.54}\"}"
     },
     {
       "name": "索引里只剩 v1 的子块",
@@ -74,7 +74,7 @@
     {
       "name": "上传/复核/回滚/对账都进了审计",
       "ok": true,
-      "detail": "[\"answer_generated\", \"document_ingested\", \"document_review_pass\", \"document_rollback\", \"reconciliation_run\"]"
+      "detail": "[\"answer_generated\", \"document_ingested\", \"document_review_pass\", \"document_rollback\", \"login\", \"reconciliation_run\"]"
     },
     {
       "name": "生产侧未被改动（chunks/docs 与跑前一致）",

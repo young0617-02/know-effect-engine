@@ -347,7 +347,7 @@ def main() -> int:
             f: sha256_head(ROOT / "infra" / f) for f in
             ["docker-compose.gate0.yml", "docker-compose.m4.yml", "docker-compose.gate0.iso.yml",
              "docker-compose.gate0.nodev.yml"]},
-            "nginx_conf": sha256_head(ROOT / "infra" / "nginx.m4.conf")},
+            "nginx_conf": sha256_head(ROOT / "infra" / "nginx.m4.conf.template")},
         "servers": {"milvus": server_milvus, "postgres": server_pg},
         "models": [
             model_dir("BGE-M3（稠密+稀疏嵌入）", os.environ.get("KEE_BGE_M3_PATH", "D:/modelscope/hub/models/BAAI--bge-m3/snapshots/master")),
@@ -435,7 +435,7 @@ def main() -> int:
           f"- `frontend/package-lock.json` sha256 前 12 位：`{rep['frontend_lock']['sha256_head']}`", "",
           "## 容器与编排", ""]
     L += [f"- {f}：`{h}`" for f, h in rep["containers"]["compose_files"].items()]
-    L += [f"- `infra/nginx.m4.conf`：`{rep['containers']['nginx_conf']}`",
+    L += [f"- `infra/nginx.m4.conf.template`（反代端口由 `KEE_API_PORT` 注入）：`{rep['containers']['nginx_conf']}`",
           "", "**本项目 compose 引用的镜像**（ID = 本机当前那份）："]
     host_id = dict(i.split("\t", 1) for i in rep["containers"]["images"] if "\t" in i)
     for img in rep["containers"]["required_by_compose"]:
