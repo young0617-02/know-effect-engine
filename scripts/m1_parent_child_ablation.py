@@ -422,9 +422,10 @@ def main() -> int:
                                 f"容差 {G3_MECH_TOL}。**裁判版对照（仅报告值，不进门禁）**："
                                 f"A1 {a1_rate} vs A1b {a1b_rate}，同档 label 翻转地板 {floor['judge_label_flip']} 行"},
         "G4 改写真的生效": {"pass": g4a and a2_stripped == len(a2_sample),
-                          "basis": f"A1 带父块 {sum(order_flags['A1_parent'])}/{len(order_flags['A1_parent'])} 行、"
-                                   f"A1b 带错配父块 {sum(order_flags['A1b_wrongparent'])} 行、"
-                                   f"A2 抽样 {len(a2_sample)} 行标题前缀已去掉 {a2_stripped}"},
+                          "basis": f"A1 注入父块 {sum(order_flags['A1_parent'])}/{len(order_flags['A1_parent'])}、"
+                                   f"A1b 注入错配父块 {sum(order_flags['A1b_wrongparent'])}——"
+                                   f"**这两个计数的是证据行（每题 5 条引用 × 每次组装），不是题目行**；"
+                                   f"A2 抽样 {len(a2_sample)} 题、标题前缀确实剥掉 {a2_stripped}"},
     }
     all_pass = all(g["pass"] for g in gates.values())
     print("\n[护栏] " + " ｜ ".join(f"{k.split(' ')[0]}:{'过' if v['pass'] else '不过'}" for k, v in gates.items()))
@@ -643,10 +644,16 @@ def render(rep: dict[str, Any]) -> str:
     L.append("")
     for k, v in rep["gates"].items():
         L.append(f"- {k}：{'过' if v['pass'] else '**不过**'} ｜ {v['basis']}")
+    L.append("> 计数口径提醒：G4 里 A1/A1b 的分子是**证据行**（每题 5 条引用 × 每轮组装次数），不是 67 道题；"
+             "题目级覆盖看 G1 的逐行比对与 `paired_gold.dropped_qids`。代码侧已把这条措辞改成「证据行」，"
+             "本产物由改动前那趟跑出，故仍印「行」。")
     L.append(f"- 保真检查（A0 是否复现留档输出）：结论逐字一致 "
              f"**{rep['fidelity_check']['conclusion_identical']}/{rep['fidelity_check']['n']} "
              f"= {rep['fidelity_check']['rate']:.2%}**"
-             f"（留档那代本身重跑就有 ~7.46% 文本漂移，所以这个数不要求 100%）")
+             f"（不要求 100%。但**别拿同代漂移来解释这个缺口**：同代 A0 重跑只翻 "
+             f"{rep['noise_floor']['conclusion_flip']} 行 = {rep['noise_floor']['conclusion_flip_rate']:.2%}，"
+             "与留档差这么多是**跨代**（留档那代之后动过身份默认、检索量纲闸门、退出撤销）"
+             "⇒ 本实验绝对值不得与留档读数并列引用，见 §五 口径）")
     L.append("")
     L.append("## 五、口径与边界")
     L.append("")
