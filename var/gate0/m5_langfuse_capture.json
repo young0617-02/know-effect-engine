@@ -1,0 +1,340 @@
+[
+ {
+  "path": "/api/public/ingestion",
+  "authorization": "Basic cGstbGYta2VlLWxvY2FsOnNrLWxmLWtlZS1sb2NhbA==",
+  "content_type": "application/json",
+  "n_events": 3,
+  "event_types": [
+   "trace-create",
+   "span-create",
+   "generation-create"
+  ],
+  "events": [
+   {
+    "id": "34d62390-f335-4250-a935-62ac3f701eb0",
+    "type": "trace-create",
+    "timestamp": "2026-10-16T03:49:43.518352Z",
+    "body": {
+     "id": "2702bfc8-9cda-4dfb-be40-ffc035e4938e",
+     "timestamp": "2026-10-16T03:49:43.518352Z",
+     "name": "kee.qa.round",
+     "input": "项目终验通过的条件是什么",
+     "output": {
+      "status": "tentative",
+      "conclusion": "终验测试案例一次通过率需达到94.5%及以上；缺陷收敛期内关闭全部严重与一般缺陷；结项结论为合格并同意关闭项目；两次连续成功的切换演练",
+      "key_points": [
+       {
+        "point": "终验测试案例一次通过率需达到94.5%及以上",
+        "evidence_ids": [
+         "E1"
+        ]
+       },
+       {
+        "point": "缺陷收敛期内关闭全部严重与一般缺陷",
+        "evidence_ids": [
+         "E2"
+        ]
+       },
+       {
+        "point": "结项结论为合格并同意关闭项目",
+        "evidence_ids": [
+         "E3"
+        ]
+       },
+       {
+        "point": "两次连续成功的切换演练",
+        "evidence_ids": [
+         "E4"
+        ]
+       }
+      ],
+      "needs_human": true
+     },
+     "sessionId": "s-0dac56052829",
+     "userId": "verify-owner",
+     "tags": [
+      "status:tentative",
+      "mode:hybrid",
+      "cache:miss"
+     ],
+     "metadata": {
+      "kee_trace_id": "qa-792122558629",
+      "role": "knowledge_owner",
+      "status": "tentative",
+      "notes": [
+       "conclusion_derived_from_points:4",
+       "secret_level_cited:1 条需人工复核",
+       "初步判断（低置信度显式降级）"
+      ],
+      "degraded": [
+       "dense_timeout>2500ms",
+       "hybrid_single_leg"
+      ],
+      "cache_hit": false,
+      "top_score": 0.8555,
+      "confidence": {
+       "retrieval": 0.8555,
+       "citation_consistency": 1.0,
+       "self_assessed": 0.0,
+       "composite": 0.735,
+       "logit": 1.0201,
+       "calibrated": 0.735,
+       "temperature": 1.0,
+       "score_basis": "rule_composite_not_probability"
+      },
+      "timings_ms": {
+       "retrieval_ms": 12591.4,
+       "stage_embed_ms": 8391.3,
+       "stage_dense_ms": 7.8,
+       "stage_sparse_ms": 5.5,
+       "stage_rerank_ms": 4182.3,
+       "generate_ms": 12257.0,
+       "e2e_ms": 24863.8
+      },
+      "residual_unmeasured_ms": 12272.4
+     }
+    }
+   },
+   {
+    "id": "2cc07906-784b-4563-bdb3-8fb98113b4d6",
+    "type": "span-create",
+    "timestamp": "2026-10-16T03:49:43.518352Z",
+    "body": {
+     "id": "66b1f2cb-6998-4831-90f8-53d96a711aa9",
+     "traceId": "2702bfc8-9cda-4dfb-be40-ffc035e4938e",
+     "name": "qa.retrieve",
+     "startTime": "2026-10-16T03:49:18.654552Z",
+     "endTime": "2026-10-16T03:49:31.245952Z",
+     "input": "项目终验通过的条件是什么",
+     "output": {
+      "n_chunks": 5,
+      "top_chunk_ids": [
+       "chm-closeout-prj-chm-2024-003@v1#1.1#c2",
+       "ene-closeout-prj-ene-2024-006@v1#1.1#c1",
+       "fin-closeout-prj-fin-2024-017@v1#1.1#c2",
+       "fin-ifspec-prj-fin-2024-033@v1#5.1#c1",
+       "fin-closeout-prj-fin-2024-017@v1#1.1#c1"
+      ]
+     },
+     "metadata": {
+      "duration_ms": 12591.4
+     }
+    }
+   },
+   {
+    "id": "992acd19-35e0-49bf-8c33-d89bd74950b3",
+    "type": "generation-create",
+    "timestamp": "2026-10-16T03:49:43.518352Z",
+    "body": {
+     "id": "c05c81fc-f592-4945-832a-4789dc28e353",
+     "traceId": "2702bfc8-9cda-4dfb-be40-ffc035e4938e",
+     "name": "qa.generate",
+     "model": "qwen2.5:7b",
+     "startTime": "2026-10-16T03:49:31.261352Z",
+     "endTime": "2026-10-16T03:49:43.518352Z",
+     "input": "项目终验通过的条件是什么",
+     "output": {
+      "conclusion": "终验测试案例一次通过率需达到94.5%及以上；缺陷收敛期内关闭全部严重与一般缺陷；结项结论为合格并同意关闭项目；两次连续成功的切换演练",
+      "key_points": [
+       {
+        "point": "终验测试案例一次通过率需达到94.5%及以上",
+        "evidence_ids": [
+         "E1"
+        ]
+       },
+       {
+        "point": "缺陷收敛期内关闭全部严重与一般缺陷",
+        "evidence_ids": [
+         "E2"
+        ]
+       },
+       {
+        "point": "结项结论为合格并同意关闭项目",
+        "evidence_ids": [
+         "E3"
+        ]
+       },
+       {
+        "point": "两次连续成功的切换演练",
+        "evidence_ids": [
+         "E4"
+        ]
+       }
+      ]
+     },
+     "usage": {
+      "input": 1269,
+      "output": 315,
+      "unit": "TOKENS"
+     },
+     "metadata": {
+      "prompt_chars": 1671,
+      "json_valid_first_attempt": true,
+      "done_reason": "stop",
+      "ollama_metrics": {
+       "total_ms": 12256.9,
+       "server_total_ms": 12211.8,
+       "load_ms": 8.3,
+       "prompt_eval_ms": 74.1,
+       "eval_ms": 12120.0,
+       "prompt_tokens": 1269,
+       "completion_tokens": 315,
+       "done_reason": "stop",
+       "tokens_per_sec": 25.99
+      },
+      "llm_ok": true,
+      "llm_error": ""
+     }
+    }
+   }
+  ]
+ },
+ {
+  "path": "/api/public/ingestion",
+  "authorization": "Basic cGstbGYta2VlLWxvY2FsOnNrLWxmLWtlZS1sb2NhbA==",
+  "content_type": "application/json",
+  "n_events": 1,
+  "event_types": [
+   "trace-create"
+  ],
+  "events": [
+   {
+    "id": "3097a56b-4445-4cd9-8d54-5078dbc9ae00",
+    "type": "trace-create",
+    "timestamp": "2026-10-16T03:49:43.707801Z",
+    "body": {
+     "id": "e6038839-aaf8-4a47-9e0f-ab2b0732ae45",
+     "timestamp": "2026-10-16T03:49:43.707801Z",
+     "name": "kee.qa.round",
+     "input": "这个客户的合同金额是多少",
+     "output": {
+      "status": "escalate",
+      "conclusion": "",
+      "key_points": [],
+      "needs_human": true
+     },
+     "sessionId": "s-5f2842ed960e",
+     "userId": "verify-owner",
+     "tags": [
+      "status:escalate",
+      "mode:",
+      "cache:miss"
+     ],
+     "metadata": {
+      "kee_trace_id": "qa-792122583693",
+      "role": "knowledge_owner",
+      "status": "escalate",
+      "notes": [
+       "sensitive_pattern:合同金额"
+      ],
+      "degraded": [],
+      "cache_hit": false,
+      "top_score": null,
+      "confidence": {
+       "composite": 0.0,
+       "calibrated": 0.0,
+       "rule": "sensitive_block",
+       "temperature": 1.0,
+       "score_basis": "rule_composite_not_probability"
+      },
+      "timings_ms": {
+       "e2e_ms": 1.3
+      },
+      "residual_unmeasured_ms": 1.3
+     }
+    }
+   }
+  ]
+ },
+ {
+  "path": "/api/public/ingestion",
+  "authorization": "Basic cGstbGYta2VlLWxvY2FsOnNrLWxmLWtlZS1sb2NhbA==",
+  "content_type": "application/json",
+  "n_events": 2,
+  "event_types": [
+   "trace-create",
+   "span-create"
+  ],
+  "events": [
+   {
+    "id": "f945c673-4f92-4d43-8764-428eb4ef50ea",
+    "type": "trace-create",
+    "timestamp": "2026-10-16T03:49:44.191293Z",
+    "body": {
+     "id": "395ed276-601e-4ba2-ba69-e9f0e7815285",
+     "timestamp": "2026-10-16T03:49:44.191293Z",
+     "name": "kee.qa.round",
+     "input": "质保期从什么时候开始算",
+     "output": {
+      "status": "refuse",
+      "conclusion": "",
+      "key_points": [],
+      "needs_human": false
+     },
+     "sessionId": "s-facc5260184e",
+     "userId": "verify-owner",
+     "tags": [
+      "status:refuse",
+      "mode:hybrid",
+      "cache:miss"
+     ],
+     "metadata": {
+      "kee_trace_id": "qa-792122583886",
+      "role": "knowledge_owner",
+      "status": "refuse",
+      "notes": [
+       "no_sufficient_evidence"
+      ],
+      "degraded": [],
+      "cache_hit": false,
+      "top_score": 0.1421,
+      "confidence": {
+       "retrieval": 0.1421,
+       "composite": 0.0,
+       "calibrated": 0.0,
+       "rule": "retrieval_gate",
+       "temperature": 1.0,
+       "score_basis": "rule_composite_not_probability"
+      },
+      "timings_ms": {
+       "retrieval_ms": 276.3,
+       "stage_embed_ms": 12.1,
+       "stage_dense_ms": 5.5,
+       "stage_sparse_ms": 3.9,
+       "stage_fuse_ms": 0.0,
+       "stage_rerank_ms": 254.3,
+       "e2e_ms": 287.2
+      },
+      "residual_unmeasured_ms": 10.9
+     }
+    }
+   },
+   {
+    "id": "18a91230-d808-42e2-9216-50aea188bcb8",
+    "type": "span-create",
+    "timestamp": "2026-10-16T03:49:44.191293Z",
+    "body": {
+     "id": "dce0cbec-0337-4991-9e9f-d2d283cccafd",
+     "traceId": "395ed276-601e-4ba2-ba69-e9f0e7815285",
+     "name": "qa.retrieve",
+     "startTime": "2026-10-16T03:49:43.904093Z",
+     "endTime": "2026-10-16T03:49:44.180393Z",
+     "input": "质保期从什么时候开始算",
+     "output": {
+      "n_chunks": 5,
+      "top_chunk_ids": [
+       "chm-closeout-prj-chm-2024-003@v1#1.1#c2",
+       "fin-closeout-prj-fin-2024-017@v1#1.1#c2",
+       "chm-closeout-prj-chm-2023-021@v1#5.1#c1",
+       "fin-closeout-prj-fin-2024-017@v1#4.2#c1",
+       "chm-closeout-prj-chm-2023-021@v1#5.1#c2"
+      ]
+     },
+     "metadata": {
+      "duration_ms": 276.3
+     }
+    }
+   }
+  ]
+ }
+]

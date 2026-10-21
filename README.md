@@ -3,7 +3,7 @@
 面向数字技术服务企业内部的**交付知识服务引擎**：把「咨询—实施—运维」全链路沉淀的项目与行业知识，
 做成可追问、可溯源、可评估的 RAG 知识服务。Slogan：知识有源，交付有效。
 
-**当前状态：M0–M5 全部完成，是一个能跑起来的内网部署版**（需求 V1.35 / 方案 V1.0.37，docs 见 `docs/`）。
+**当前状态：M0–M5 全部完成，是一个能跑起来的内网部署版**（需求 V1.37 / 方案 V1.0.39，docs 见 `docs/`）。
 验收口径要说清两件事，缺一件就是虚报：**门禁值**是设计目标，**验收读数**是这台机器上的本地实测——
 本地实测不等于线上数据，也不等于真实用户行为（语料为自建行业文档集、无真实流量，故《项目定义》第六节
 业务三条里仍有两条按构造不可测）。DoD 汇总：**达标 3／部分达标 4／不达标 0／不可测 0／本次产出 1**，
@@ -12,8 +12,9 @@
 ## 目录
 
 ```
-docs/                     需求与方案（项目定义 V1.35、技术方案与 MVP 设计 V1.0.37、用户操作手册、命名、ADR）
+docs/                     需求与方案（项目定义 V1.37、技术方案与 MVP 设计 V1.0.39、业务诉求推演、用户操作手册、命名、ADR）
 infra/docker-compose.*    Gate 0 单机存储栈（Milvus v3.0.0 / PostgreSQL 18 / Redis 8）+ 断网变体覆盖
+scripts/ci_local.sh       本机一条命令复验（十阶段：前置/静态/前后端单测/三支 verify/观测探针/报告）
 src/kee/config.py         运行配置（全部 KEE_ 前缀环境变量）
 src/kee/models/           BGE-M3 嵌入、BGE-reranker-v2-m3 重排、显存采样、分时驻留调度
 src/kee/retrieval/        Milvus 混合检索（服务端 BM25 + 分析器）、RRF、RBAC 过滤、Redis 缓存、检索流水线
@@ -112,6 +113,7 @@ CUDA torch 底座互顶版本；**也不用 mineru.net 云 API**，那属于数�
 | `scripts/m2_rebuild_baseline.py` | 基线索引重建 + 四项自证校验（正文逐块不变 / 命名统一 / gold 等价 / 索引=权威源） |
 | `scripts/m2_rewrite_probe.py` | 查询改写真机探针：触发率、单次延迟、JSON 失败率 |
 | `scripts/m2_table_probe.py` | 表格检索专项：单元格级问题能否检索到对应行（独立集合，跑完清库） |
+| `scripts/probe_dense_vs_bm25.py` | 双腿并排对照：纯编号 / 口语化 / 混合三条问句上稠密与服务端 BM25 的 Top-5 名次差异（关重排，只读名次）；`--control` 另跑构造的低词面重合对照 |
 
 ```bash
 .venv/Scripts/python.exe scripts/m2_eval.py            # 全量（基线 + 9 格网格），约 3 分钟
@@ -182,6 +184,8 @@ M3-05 已落地：在线链路搬进 `src/kee/qa/graph.py` 的 LangGraph 状态�
 | `infra/nginx.m4.conf.template` | SSE 关缓冲（`proxy_buffering off`）——否则 token 级流式在浏览器里退化成一次性出答案 |
 | `scripts/verify_m4.py` | 端到端 12 项（直连 API）/ 13 项（经 Nginx，多的那项是「Nginx 托管前端 index.html」）：事件顺序 / `answer` 恰好一次 / 流不被攒 / 密级与行业过滤 / 审计角色门与留痕 |
 | `docs/用户操作手册.md` | **给使用方的操作手册**：登录注册、提问与引用核对、会话历史、拒答与转人工、权限可见范围、知识库管理、审计、账号授权、排错；15 张真机截图（`docs/assets/manual/`） |
+| `docs/需求主流程.md` | **照「采购计划」那份模板的格式**做的需求主流程推演：一句话诉求 → 角色 → 要回答的四问 → 公司政策（9 条阈值）→ 证据的安全库存怎么算差额 → 答案明细 → 自动化边界（机器 vs 人）→ 9 个子系统带 23 个接口（含可观测那一组）→ 一段「基于政策所以…」的完整答复单 → 与模板的分歧 |
+| `docs/业务诉求到主流程的推演.md` | **为什么长成这个样子**：六条痛点 → 三个硬要求 → 可信三件套 → 一条请求的七个节点（每档挡住哪个业务失败模式）→ **推演被实测推翻的六处** → 诉求对到当前读数 |
 | `docs/前端流式渲染契约.md` | 三态渲染的可断言规格（C-1…C-8），并写明**哪些条款还没有断言** |
 | `GET /api/v1/sessions`、`GET /api/v1/sessions/{id}` | 会话历史：列表只返回**自己**的（判归属不判角色，零轮次不入列），详情带**整包答案**（要点/引用/规则分），供左侧历史栏恢复旧会话 |
 | `reports/m4/M4_前端与一键部署.md` | 本轮实测结论 + 四处「差点写成假绿」的记录 + 已验证/未验证分栏 |
@@ -220,6 +224,77 @@ M4 新增两个后端读接口：`POST /api/v1/chunks/batch`（引用片段正�
 ① 的「流式首 token」口径已于 **V1.21 钉成 `first_visible_ms`（首个可读字）**，#56 净环境实测
 p50 695.4 / p95 859.2ms ⇒ 达标；**信封首字符（`{`，324ms）不得当达标依据**。
 
+## M5 · 可观测体系（Prometheus / Grafana / 结构化日志 / Langfuse）
+
+| 入口 | 作用 |
+|---|---|
+| `src/kee/obs/metrics.py` | **19 个 `kee_*` 指标族**，**私有注册表 + 标签全闭合枚举**（无查询文本、无用户名、无文档 id）；出口标签取 `state["gated"]` 实际值；抓取期依赖探针与 `/healthz` 共用一份代码 |
+| `src/kee/obs/logging.py` | 结构化日志：一行一个 JSON，`trace_id` 与响应体 / 审计 / `session_turn` 同源；`configure_logging()` 幂等 |
+| `src/kee/obs/langfuse.py` | Langfuse 上报（官方 `/api/public/ingestion` 批量接口，不引 SDK）：**默认关闭**、后台线程、队列满就丢并计数、**目标地址必须回环/私网** |
+| `GET /metrics` | Prometheus 文本。免鉴权的前提是三条同时成立：只绑回环 + Nginx 不反代该路径 + 标签无业务内容。`KEE_METRICS_ENABLED=false` 则 404 |
+| `GET /api/v1/observability/status` | 观测面开关与 Langfuse 状态（含被关闭的原因原文），限治理角色 |
+| `infra/docker-compose.observability.yml` | Prometheus + Grafana，**复用本机已有镜像（零下载）**，只绑 127.0.0.1：`http://127.0.0.1:39090` / `http://127.0.0.1:33000/d/kee-rag`（admin / 待填_KEE_GRAFANA_ADMIN_PASSWORD） |
+| `infra/prometheus/` | `prometheus.yml`（目标走 `file_sd`）+ `alerts.yml`（9 条）+ `targets/kee.json`（由脚本生成） |
+| `infra/grafana/` | 数据源与看板 provisioning + `dashboards/kee-rag.json`（15 面板，UI 不可改，改面板就改这个文件） |
+| `scripts/obs_targets.py` | 宿主 API 换端口后重跑一条即可，Prometheus 20s 内自刷、**不用重启容器** |
+| `scripts/m5_observability_probe.py` | 实测：`/metrics` 形状与抓取耗时、埋点开销（配对交错 A/B + 暂停抓取器）、七条计数器恒等式、31 条 PromQL 逐条执行、Grafana 面板级通路、外泄面核查 |
+| `infra/docker-compose.langfuse.yml` | Langfuse 自托管**出稿未跑**：要拉 GB 级镜像且落 C 盘 Docker VM，等裁决；带 `profiles` 防呆 |
+| `scripts/obs_langfuse_capture.py` | **实采**上报载荷：本地采集器 + 打印器，落盘 `var/gate0/m5_langfuse_capture.json`（作答轮 3 事件 / 敏感轮 1 事件 / 拒答轮 2 事件） |
+| `docs/assets/obs/` | Grafana 真截图 4 张（Edge 1600×1200 kiosk）：#1 QPS、#6 分位数、#9 阶段分解、整页 |
+
+```bash
+uv run python scripts/serve_api.py                                  # 宿主 API（示例用 28000）
+uv run python scripts/obs_targets.py --port 28000                   # 告诉 Prometheus API 在哪
+docker compose -f infra/docker-compose.observability.yml up -d      # 零下载，两个容器
+uv run python scripts/m5_observability_probe.py                     # 实测并出报告（退出码 0 才算通过）
+```
+
+**看板上的分位数不是门禁读数**：直方图分位是桶上线性插值的近似值、且统计全部轮次；
+① 那条 6s 延迟门禁的口径是「6s + 仅作答轮次 + `first_visible`」，权威读数仍由 `scripts/` 下的离线探针产出。
+实测就是证据：看板 p95 e2e 报 31.5s（含 `dense_timeout` 的冷启动轮），而门禁那条达标——两个数都对，说的是两件事。
+**指标进程内累计、不落库**（API 重启归零）；跨重启的历史看 Prometheus，单轮的事实看 `session_turn`，
+「谁问了什么」只有 `audit_log` 能答（追加写、禁改删）。
+
+## 本机一条命令复验（`scripts/ci_local.sh`）
+
+这个仓库**没有 remote**，而且被测系统绑着本机 D 盘的 CUDA 权重、Ollama、Milvus 与宿主回环端口——
+搬到第三方 runner 上既跑不动，也会把带业务原文的测试语料送出域外。所以这里的 CI 是**本机的强制点**：
+一条命令、顺序固定、失败即停、产物留档、**服务状态复原**。
+
+```bash
+scripts/ci_local.sh                 # 全量：十一个阶段
+scripts/ci_local.sh --quick         # 不碰 GPU 的四段（约 1 分钟）
+scripts/ci_local.sh --only eval     # 只检检索侧版本回归
+scripts/ci_local.sh --skip obs-probe --keep-going
+```
+
+| 阶段 | 跑什么 | 为什么在这一层 |
+|---|---|---|
+| `preflight` | `check_stack.py`：torch/CUDA、权重目录、Milvus/PG/Redis、Ollama 模型、容器健康 | 后面每一段的前置事实，先确认再跑 |
+| `static` | `ci_static.py`：`compileall`（src/scripts/tests）+ JSON 解析 + 四份 compose `config -q` + `promtool check config` | 拦的正是这两类当场炸的形状：`dict` 少一个收尾花括号、告警 YAML 写成两行各自带引号 |
+| `backend` / `frontend` | `pytest -q` 全量；前端单测 + `npm run build` | 构建产物就是 `kee-web` 挂载的那份 `dist`，不 build 等于没改 |
+| `verify-m1` / `verify-m3` | 在线链路验收（进程内加载模型） | **跑之前先停宿主 API**：8GB 单卡零余量，两边同时占就是静默退化而不是报错 |
+| `eval` | `m2_eval.py --skip-grid`，与 `var/gate0/m2_eval_prev.json` **同尺子**对照（2026-10-16 首跑 67s：四条门禁全过、`delta_strict=0.0`、`regressed=false`） | 检索侧的**版本回归**。退出码分开：`1` = 四条门禁没过，`2` = 同尺子 strict Recall@5 掉超 0.02（回归）。尺子指纹不一致时如实报「不可比」，不给 `regressed=false` |
+| `warm` | `api_warm.py`：登录 + 一次非流式问答 | 停起来再重启之后进程是冷的，这笔账必须由预热付而不是由验收吃（见下） |
+| `verify-m4` / `obs-probe` | 真 HTTP 通路（直连 + 经 Nginx 两套）、观测面实测 | 走生产入口，与界面同一条路；`warm` 没过就**跳过**，不让冷进程伪装成失败 |
+| `test-user` / `reports` | 默认跳过，需 `--with-test-user` / `--regen-reports` | 前者刷新带 LLM 漂移的业务读数，后者重写 `reports/m5/*.md` |
+
+四条设计约束都是这个项目踩过的坑，不是设想：
+
+1. **GPU 互斥**：`verify-m1`/`verify-m3`/`eval` 在自己进程里加载嵌入与重排，所以先 `api_down`，跑完按原状起回。
+2. **冷启动不能被读成失败**：本机 2026-10-16 两次实测重启后首个问答 **177.4s**（检索段 162.7s、生成段 14.2s）
+   与 **27.5s**（检索段 22.3s）——同一台机器差 6.5 倍，未拆到成分级，所以**没法预先预算**。
+   `verify_m4` 的 httpx 超时是 180s。第一次全量复验没有预热时那三段三连红（185s / 3s / 424s 全失败），
+   加上 `warm` 之后同三段 **11s / 10s / 71s 全通过**——那不是回归，是没预热。
+3. **证据产物不许被悄悄重写**：跑前跑后各记一次 md5 并打印变化清单；`eval` 用 `--out` 写到本次运行目录，
+   因为默认路径 `var/gate0/m2_eval.json` 是**带 dev 网格**的那份历史证据，`--skip-grid` 写回去等于抹掉 `grid_dev`。
+4. **人工标注工单只读**：阶段清单里不含任何会写 `var/gate0/*_fill.csv` 的作业。
+
+`ruff` 在本机装了，但仓库从来没有 `[tool.ruff]` 配置，其默认规则集在现有代码上报 590 项
+（263 项是 `RUF100`：满仓 `# noqa: BLE001` 注的都是没启用的规则）。所以它**只报数、不判失败**——
+让这种状态去判失败等于装一条永远红的闸门；升级成门禁需要「写配置 + 清 590 项」，那是独立一次改动。
+本脚本也刻意**不装任何东西**。
+
 ## 目录（M1 新增）
 
 ```
@@ -229,6 +304,9 @@ src/kee/ingest/mineru_onnx.py 本地 MinerU-ONNX 后端：PP-DocLayoutV2 版面 
 src/kee/ingest/metadata.py    元数据三级取值：表单 > front-matter > 推断，逐级告警
 src/kee/ingest/service.py     单文档摄取编排 + 升版/回滚/复核
 src/kee/retrieval/rewrite.py  查询改写：启发式触发 + 准入校验（禁引入原查询没有的数字）+ 截断打捞
+src/kee/obs/metrics.py        Prometheus 指标层：私有注册表、闭合枚举标签、抓取期依赖探针
+src/kee/obs/logging.py        结构化日志（JSON 一行一条，trace_id 与响应/审计同源）
+src/kee/obs/langfuse.py       Langfuse 上报：官方 ingestion 批量接口、默认关闭、域内地址硬闸门
 src/kee/api/app.py            对内 REST API 与统一错误码契约
 scripts/reconcile_job.py      对账作业 CLI
 scripts/table_fixtures.py     合成表格 PDF 生成器（表格结构的逐格真值来源）
@@ -236,6 +314,7 @@ scripts/m2_eval.py            M2 评测作业（基线 + dev 网格 + 回归比�
 scripts/verify_m1.py            M1 端到端验证（16 步）
 reports/m1/M1_验证记录.md      M1 实测结论、步骤表与已知限制
 reports/m2/M2_检索评测基线.md  M2 基线数字、gold 口径拆解与待裁决项
+reports/m2/M2_稠密与BM25双腿对照.md  三条问句（纯编号/口语化/混合）上两腿 Top-5 名次差异、jieba 编号切分选择性、低词面重合对照的失败实测
 ```
 
 
@@ -248,6 +327,10 @@ reports/m2/M2_检索评测基线.md  M2 基线数字、gold 口径拆解与待�
   指标不代表真实客户数据效果；gold 标注由构造时的关键词回查生成，第二人复核表在
   `var/gate0/annotations_a2_template.csv`（待填项统一用 `TODO_ANNOTATOR2` 搜索定位）。
 - 数据不出域：本地 Ollama + 本地权重 + 本地容器栈；云端兜底开关默认 `false`。
+  可观测层同规矩：Prometheus / Grafana **本机自托管、只绑 127.0.0.1、复用已有镜像零下载**；
+  Langfuse 上报**默认关闭**，且目标地址必须是回环/私网（公网直接拒发，`KEE_LANGFUSE_ALLOW_REMOTE` 是唯一越道口）。
+- 看板的分位数**不是门禁读数**（桶上近似 + 全部轮次）；指标进程内累计、不落库，重启归零。
+  `/metrics` 免鉴权的前提是「只绑回环 + Nginx 不反代该路径 + 标签无业务内容」三条同时成立。
 - 已发现的方案偏差（详见 `reports/gate0/`）：
   1. Milvus v3.0.0 不接受 `analyzer_params={"type":"jieba"}`，可用形态是 `{"tokenizer":"jieba"}` 或 `{"type":"chinese"}`。
   2. 8GB 单卡无法同时驻留两个 7B（Ollama 会 LRU 掉旧模型），坐实方案否决"本地双模型分工"的判断。

@@ -1,0 +1,89 @@
+# 告警表达式（本机自托管，无 Alertmanager：表达式仍在 evaluation_interval 上评估，
+# 状态在 Prometheus 的 /alerts 页看。要接告警通道就改 `prometheus.yml` 的 alertmanagers）。
+#
+# 口径声明，每条都要读：
+#   * 这里的 p95 是**直方图桶上的近似分位**，用来叫醒人；① 端到端延迟那条门禁的权威读数
+#     仍由 `scripts/` 下的离线探针按「6s + 仅作答轮次 + first_visible」口径产出。
+#     两者不一致时以离线探针为准，本文件只负责「先知道」。
+#   * 没有一条告警会改动门禁判定，也没有一条门禁判定依赖这个文件。
+#   * 长文案一律用 `>-` 折叠块。「两行各自带引号」在 YAML 里是语法错误，而它的症状是
+#     Prometheus **整个起不来**（不是某条告警不响）——这一版就在这上面翻过一次。
+groups:
+  - name: kee-availability
+    rules:
+      - alert: KeeApiScrapeFailing
+        expr: up{job="kee-api"} == 0
+        for: 1m
+        labels: {severity: critical}
+        annotations:
+          summary: "KEE API 抓不到 /metrics"
+          description: "宿主 API 进程没起、端口挪了没重跑 scripts/obs_targets.py、或 KEE_METRICS_ENABLED=false。看板会整片空掉。"
+
+      - alert: KeeDependencyDown
+        expr: kee_dependency_up == 0
+        for: 2m
+        labels: {severity: critical}
+        annotations:
+          summary: "依赖不可用：{{ $labels.dep }}"
+          description: "抓取期实测（与 /healthz 同一份代码）。Milvus 挂→检索降级；PostgreSQL 挂→权威源不可用（E901）。"
+
+      - alert: KeeScrapeProbeFailed
+        expr: increase(kee_scrape_probe_errors_total[10m]) > 0
+        labels: {severity: warning}
+        annotations:
+          summary: "依赖探针自己抛异常了"
+          description: "/metrics 仍然返回（探针失败只计数），但 kee_dependency_up 停在最后一次成功的值上——那串数字此刻不能再信。"
+
+  - name: kee-answer-quality-tripwires
+    rules:
+      - alert: KeeScoreScaleOutOfBound
+        expr: increase(kee_retrieval_degraded_total{reason="score_scale_out_of_range"}[5m]) > 0
+        labels: {severity: critical}
+        annotations:
+          summary: "检索分越出 (0,1)：有某条腿的原始量纲漏进了下游"
+          description: >-
+            2026-10 那次同一份代码跑出 0.9937 与 36.9408 就是这个形状（hybrid 只剩 BM25 单腿，
+            而 BM25 的分是几十）。离线评测有 probe_guard 直接拒出读数；在线没有那种闸门，
+            所以这条一次即报、不等持续。
+
+      - alert: KeeE2eP95Over6s
+        expr: histogram_quantile(0.95, sum by (le) (rate(kee_qa_stage_seconds_bucket{stage="e2e"}[10m]))) > 6
+        for: 15m
+        labels: {severity: warning}
+        annotations:
+          summary: "看板口径 e2e p95 > 6s（持续 15m）"
+          description: "桶上近似值，只作叫醒用；门禁读数见 reports/ 的离线探针报告。冷启动那批轮次（嵌入加载 ~87s）会单独顶高 p95。"
+
+      - alert: KeeRetrievalDegradedSpike
+        expr: sum(rate(kee_retrieval_degraded_total[5m])) > 0.5
+        for: 5m
+        labels: {severity: warning}
+        annotations:
+          summary: "检索降级标记速率 > 0.5/s"
+          description: >-
+            按原因拆开看那张图（dense_timeout / dense_empty / hybrid_single_leg / rerank_error…）。
+            缓存命中轮的 degraded 恒为 0，所以这条在「命中很多」的时段天然偏乐观。
+
+      - alert: KeeNoAnsweredRounds
+        expr: sum(increase(kee_qa_rounds_total{exit_gate="answered"}[15m])) == 0 and sum(increase(kee_qa_rounds_total[15m])) > 0
+        for: 15m
+        labels: {severity: critical}
+        annotations:
+          summary: "有流量但没有任何一轮走完七个节点"
+          description: "全落在闸门上了。先看 exit_gate 分布，再看 top_score 的 le=0.2 占比——那两条能分清是检索塌了还是生成塌了。"
+
+      - alert: KeeCacheBackendErrors
+        expr: increase(kee_search_cache_ops_total{result="error"}[10m]) > 0
+        labels: {severity: warning}
+        annotations:
+          summary: "Redis 缓存读写报错"
+          description: "缓存是非权威的，报错只意味着回源变慢、不影响正确性；但 p50 会跟着上去。"
+
+      - alert: KeeLangfuseEventsDropped
+        expr: increase(kee_langfuse_events_total{result="dropped"}[15m]) > 0
+        labels: {severity: warning}
+        annotations:
+          summary: "Langfuse 上报队列满，事件被丢弃"
+          description: >-
+            丢事件是刻意的（采集器不许反噬被采集的对象）。持续出现说明目标端收不动或网络在抖，
+            此时 Langfuse 里的 trace 是**不完整的样本**，不能拿来比对答案质量。

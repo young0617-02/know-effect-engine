@@ -1,0 +1,5848 @@
+{
+  "generated_at": "2026-10-16T16:34:08",
+  "tag": "",
+  "device": "自研复现（ragas 库未引入），零新依赖；prompt 中文、T=0.0；Faithfulness 第二步 = 一次批量判定（偏离，见护栏）",
+  "judge_model": "qwen2.5:7b",
+  "source": {
+    "path": "var\\gate0\\pre_reprobe\\m3_confidence_probe.json",
+    "md5": "23bead918210",
+    "qid_hash": 3350035773,
+    "temperature_used": 1.0
+  },
+  "labels": {
+    "path": "var\\gate0\\answer_correct_fill.csv",
+    "md5": "bc523785cfa4",
+    "note": "人判读数零作废：本次未重跑生成；裁判读数与人判读数分开命名，不互盖"
+  },
+  "summary": {
+    "population": {
+      "n_rows": 67,
+      "n_answered": 62,
+      "n_non_answer": 5
+    },
+    "faithfulness_cited": {
+      "n": 62,
+      "mean": 0.9866,
+      "median": 1.0,
+      "min": 0.5,
+      "max": 1.0,
+      "ci95": [
+        0.9651,
+        1.0
+      ],
+      "zeros": 0,
+      "n_not_assessable": 0,
+      "statement_counts": [
+        1,
+        2,
+        6,
+        1,
+        1,
+        1,
+        1,
+        1,
+        7,
+        1,
+        1,
+        3,
+        1,
+        2,
+        1,
+        2,
+        1,
+        1,
+        1,
+        2,
+        2,
+        1,
+        1,
+        1,
+        5,
+        2,
+        1,
+        3,
+        1,
+        2,
+        1,
+        1,
+        1,
+        1,
+        1,
+        2,
+        2,
+        2,
+        2,
+        3,
+        2,
+        7,
+        1,
+        4,
+        1,
+        1,
+        2,
+        2,
+        5,
+        1,
+        12,
+        8,
+        3,
+        2,
+        2,
+        9,
+        3,
+        2,
+        2,
+        3,
+        4,
+        4
+      ],
+      "n_decompose_failed": 0
+    },
+    "faithfulness_top5": {
+      "n": 62,
+      "mean": 0.9382,
+      "median": 1.0,
+      "min": 0.0,
+      "max": 1.0,
+      "ci95": [
+        0.879,
+        0.9839
+      ],
+      "zeros": 3,
+      "n_not_assessable": 0
+    },
+    "answer_relevance_answered": {
+      "n": 62,
+      "mean": 0.6582,
+      "median": 0.6642,
+      "min": 0.0,
+      "max": 0.9521,
+      "ci95": [
+        0.6205,
+        0.6928
+      ],
+      "zeros": 1
+    },
+    "answer_relevance_all_rows": {
+      "n": 67,
+      "mean": 0.6091,
+      "median": 0.6455,
+      "min": 0.0,
+      "max": 0.9521,
+      "ci95": [
+        0.5565,
+        0.6615
+      ],
+      "zeros": 6,
+      "note": "含非作答行；RAGAS 口径把 noncommittal 记 0，于是「拒得对」也被算进低分——不得单独对外引用这一档"
+    },
+    "judge_vs_human_all": {
+      "n_paired": 66,
+      "n_excluded": 1,
+      "value": 0.8636,
+      "reading": "57/66 = 86.36%",
+      "kappa": {
+        "kappa": -0.0645,
+        "po": 0.8636,
+        "pe": 0.8719,
+        "n": 66
+      },
+      "confusion": {
+        "human1_judge1": 57,
+        "human1_judge0": 3,
+        "human0_judge1": 6,
+        "human0_judge0": 0
+      },
+      "judge_yes_rate": 0.9545,
+      "recall_on_human_wrong": 0.0,
+      "n_human_wrong": 6,
+      "precision_on_flagged": 0.0,
+      "divergent": [
+        {
+          "qid": "q-003",
+          "human": 0,
+          "judge": 1
+        },
+        {
+          "qid": "q-013",
+          "human": 0,
+          "judge": 1
+        },
+        {
+          "qid": "q-014",
+          "human": 1,
+          "judge": 0
+        },
+        {
+          "qid": "q-021",
+          "human": 1,
+          "judge": 0
+        },
+        {
+          "qid": "q-040",
+          "human": 1,
+          "judge": 0
+        },
+        {
+          "qid": "q-047",
+          "human": 0,
+          "judge": 1
+        },
+        {
+          "qid": "q-051",
+          "human": 0,
+          "judge": 1
+        },
+        {
+          "qid": "q-052",
+          "human": 0,
+          "judge": 1
+        },
+        {
+          "qid": "q-076",
+          "human": 0,
+          "judge": 1
+        }
+      ]
+    },
+    "judge_vs_human_answered": {
+      "n_paired": 62,
+      "n_excluded": 0,
+      "value": 0.9194,
+      "reading": "57/62 = 91.94%",
+      "kappa": {
+        "kappa": -0.0403,
+        "po": 0.9194,
+        "pe": 0.9225,
+        "n": 62
+      },
+      "confusion": {
+        "human1_judge1": 57,
+        "human1_judge0": 3,
+        "human0_judge1": 2,
+        "human0_judge0": 0
+      },
+      "judge_yes_rate": 0.9516,
+      "recall_on_human_wrong": 0.0,
+      "n_human_wrong": 2,
+      "precision_on_flagged": 0.0,
+      "divergent": [
+        {
+          "qid": "q-013",
+          "human": 0,
+          "judge": 1
+        },
+        {
+          "qid": "q-014",
+          "human": 1,
+          "judge": 0
+        },
+        {
+          "qid": "q-021",
+          "human": 1,
+          "judge": 0
+        },
+        {
+          "qid": "q-040",
+          "human": 1,
+          "judge": 0
+        },
+        {
+          "qid": "q-076",
+          "human": 0,
+          "judge": 1
+        }
+      ]
+    },
+    "judge_vs_human_non_answer": {
+      "n_paired": 4,
+      "n_excluded": 1,
+      "value": 0.0,
+      "reading": "0/4 = 0.00%",
+      "kappa": {
+        "kappa": 0.0,
+        "po": 0.0,
+        "pe": 0.0,
+        "n": 4
+      },
+      "confusion": {
+        "human1_judge1": 0,
+        "human1_judge0": 0,
+        "human0_judge1": 4,
+        "human0_judge0": 0
+      },
+      "judge_yes_rate": 1.0,
+      "recall_on_human_wrong": 0.0,
+      "n_human_wrong": 4,
+      "precision_on_flagged": null,
+      "divergent": [
+        {
+          "qid": "q-003",
+          "human": 0,
+          "judge": 1
+        },
+        {
+          "qid": "q-047",
+          "human": 0,
+          "judge": 1
+        },
+        {
+          "qid": "q-051",
+          "human": 0,
+          "judge": 1
+        },
+        {
+          "qid": "q-052",
+          "human": 0,
+          "judge": 1
+        }
+      ]
+    },
+    "judge_by_rubric": {
+      "answer_correct": 62,
+      "disposition_correct": 5
+    },
+    "judge_unjudgeable_rows": [
+      "q-044"
+    ],
+    "judge_truncated_rows": [],
+    "row_errors": [],
+    "pairs": [
+      {
+        "qid": "q-001",
+        "human": 1,
+        "judge": 1
+      },
+      {
+        "qid": "q-002",
+        "human": 1,
+        "judge": 1
+      },
+      {
+        "qid": "q-003",
+        "human": 0,
+        "judge": 1
+      },
+      {
+        "qid": "q-004",
+        "human": 1,
+        "judge": 1
+      },
+      {
+        "qid": "q-005",
+        "human": 1,
+        "judge": 1
+      },
+      {
+        "qid": "q-006",
+        "human": 1,
+        "judge": 1
+      },
+      {
+        "qid": "q-007",
+        "human": 1,
+        "judge": 1
+      },
+      {
+        "qid": "q-008",
+        "human": 1,
+        "judge": 1
+      },
+      {
+        "qid": "q-009",
+        "human": 1,
+        "judge": 1
+      },
+      {
+        "qid": "q-010",
+        "human": 1,
+        "judge": 1
+      },
+      {
+        "qid": "q-011",
+        "human": 1,
+        "judge": 1
+      },
+      {
+        "qid": "q-012",
+        "human": 1,
+        "judge": 1
+      },
+      {
+        "qid": "q-013",
+        "human": 0,
+        "judge": 1
+      },
+      {
+        "qid": "q-014",
+        "human": 1,
+        "judge": 0
+      },
+      {
+        "qid": "q-015",
+        "human": 1,
+        "judge": 1
+      },
+      {
+        "qid": "q-016",
+        "human": 1,
+        "judge": 1
+      },
+      {
+        "qid": "q-017",
+        "human": 1,
+        "judge": 1
+      },
+      {
+        "qid": "q-018",
+        "human": 1,
+        "judge": 1
+      },
+      {
+        "qid": "q-019",
+        "human": 1,
+        "judge": 1
+      },
+      {
+        "qid": "q-020",
+        "human": 1,
+        "judge": 1
+      },
+      {
+        "qid": "q-021",
+        "human": 1,
+        "judge": 0
+      },
+      {
+        "qid": "q-022",
+        "human": 1,
+        "judge": 1
+      },
+      {
+        "qid": "q-023",
+        "human": 1,
+        "judge": 1
+      },
+      {
+        "qid": "q-024",
+        "human": 1,
+        "judge": 1
+      },
+      {
+        "qid": "q-025",
+        "human": 1,
+        "judge": 1
+      },
+      {
+        "qid": "q-026",
+        "human": 1,
+        "judge": 1
+      },
+      {
+        "qid": "q-027",
+        "human": 1,
+        "judge": 1
+      },
+      {
+        "qid": "q-028",
+        "human": 1,
+        "judge": 1
+      },
+      {
+        "qid": "q-029",
+        "human": 1,
+        "judge": 1
+      },
+      {
+        "qid": "q-030",
+        "human": 1,
+        "judge": 1
+      },
+      {
+        "qid": "q-031",
+        "human": 1,
+        "judge": 1
+      },
+      {
+        "qid": "q-032",
+        "human": 1,
+        "judge": 1
+      },
+      {
+        "qid": "q-033",
+        "human": 1,
+        "judge": 1
+      },
+      {
+        "qid": "q-034",
+        "human": 1,
+        "judge": 1
+      },
+      {
+        "qid": "q-035",
+        "human": 1,
+        "judge": 1
+      },
+      {
+        "qid": "q-036",
+        "human": 1,
+        "judge": 1
+      },
+      {
+        "qid": "q-037",
+        "human": 1,
+        "judge": 1
+      },
+      {
+        "qid": "q-038",
+        "human": 1,
+        "judge": 1
+      },
+      {
+        "qid": "q-039",
+        "human": 1,
+        "judge": 1
+      },
+      {
+        "qid": "q-040",
+        "human": 1,
+        "judge": 0
+      },
+      {
+        "qid": "q-041",
+        "human": 1,
+        "judge": 1
+      },
+      {
+        "qid": "q-042",
+        "human": 1,
+        "judge": 1
+      },
+      {
+        "qid": "q-043",
+        "human": 1,
+        "judge": 1
+      },
+      {
+        "qid": "q-044",
+        "human": 0,
+        "judge": null
+      },
+      {
+        "qid": "q-045",
+        "human": 1,
+        "judge": 1
+      },
+      {
+        "qid": "q-046",
+        "human": 1,
+        "judge": 1
+      },
+      {
+        "qid": "q-047",
+        "human": 0,
+        "judge": 1
+      },
+      {
+        "qid": "q-048",
+        "human": 1,
+        "judge": 1
+      },
+      {
+        "qid": "q-049",
+        "human": 1,
+        "judge": 1
+      },
+      {
+        "qid": "q-050",
+        "human": 1,
+        "judge": 1
+      },
+      {
+        "qid": "q-051",
+        "human": 0,
+        "judge": 1
+      },
+      {
+        "qid": "q-052",
+        "human": 0,
+        "judge": 1
+      },
+      {
+        "qid": "q-053",
+        "human": 1,
+        "judge": 1
+      },
+      {
+        "qid": "q-054",
+        "human": 1,
+        "judge": 1
+      },
+      {
+        "qid": "q-055",
+        "human": 1,
+        "judge": 1
+      },
+      {
+        "qid": "q-056",
+        "human": 1,
+        "judge": 1
+      },
+      {
+        "qid": "q-057",
+        "human": 1,
+        "judge": 1
+      },
+      {
+        "qid": "q-058",
+        "human": 1,
+        "judge": 1
+      },
+      {
+        "qid": "q-071",
+        "human": 1,
+        "judge": 1
+      },
+      {
+        "qid": "q-072",
+        "human": 1,
+        "judge": 1
+      },
+      {
+        "qid": "q-073",
+        "human": 1,
+        "judge": 1
+      },
+      {
+        "qid": "q-074",
+        "human": 1,
+        "judge": 1
+      },
+      {
+        "qid": "q-075",
+        "human": 1,
+        "judge": 1
+      },
+      {
+        "qid": "q-076",
+        "human": 0,
+        "judge": 1
+      },
+      {
+        "qid": "q-077",
+        "human": 1,
+        "judge": 1
+      },
+      {
+        "qid": "q-078",
+        "human": 1,
+        "judge": 1
+      },
+      {
+        "qid": "q-079",
+        "human": 1,
+        "judge": 1
+      }
+    ]
+  },
+  "baseline": {
+    "number_groundedness": "均值 1.0（n=51 可判）",
+    "citation_gold": "61/62 = 0.9839",
+    "human_answer_correct": "60/62 = 0.9677",
+    "ece": "0.2006（真人标签，报告值；门禁 ECE ≤ 0.10 不达标）"
+  },
+  "controls": {
+    "n": 10,
+    "mismatched_evidence": [
+      {
+        "qid": "q-010",
+        "donor": "q-001",
+        "faith_real": 1.0,
+        "faith_shuffled": 0.0,
+        "judge_real": 1,
+        "judge_shuffled": null
+      },
+      {
+        "qid": "q-050",
+        "donor": "q-001",
+        "faith_real": 1.0,
+        "faith_shuffled": 0.0,
+        "judge_real": 1,
+        "judge_shuffled": null
+      },
+      {
+        "qid": "q-037",
+        "donor": "q-001",
+        "faith_real": 1.0,
+        "faith_shuffled": 0.0,
+        "judge_real": 1,
+        "judge_shuffled": null
+      },
+      {
+        "qid": "q-034",
+        "donor": "q-001",
+        "faith_real": 1.0,
+        "faith_shuffled": 0.0,
+        "judge_real": 1,
+        "judge_shuffled": null
+      },
+      {
+        "qid": "q-045",
+        "donor": "q-071",
+        "faith_real": 1.0,
+        "faith_shuffled": 0.0,
+        "judge_real": 1,
+        "judge_shuffled": null
+      },
+      {
+        "qid": "q-046",
+        "donor": "q-001",
+        "faith_real": 1.0,
+        "faith_shuffled": 0.0,
+        "judge_real": 1,
+        "judge_shuffled": 0
+      },
+      {
+        "qid": "q-028",
+        "donor": "q-001",
+        "faith_real": 1.0,
+        "faith_shuffled": 1.0,
+        "judge_real": 1,
+        "judge_shuffled": 1
+      },
+      {
+        "qid": "q-077",
+        "donor": "q-001",
+        "faith_real": 1.0,
+        "faith_shuffled": 0.0,
+        "judge_real": 1,
+        "judge_shuffled": 0
+      },
+      {
+        "qid": "q-020",
+        "donor": "q-001",
+        "faith_real": 1.0,
+        "faith_shuffled": 0.0,
+        "judge_real": 1,
+        "judge_shuffled": null
+      },
+      {
+        "qid": "q-030",
+        "donor": "q-001",
+        "faith_real": 1.0,
+        "faith_shuffled": 0.0,
+        "judge_real": 1,
+        "judge_shuffled": null
+      }
+    ],
+    "empty_contexts": {
+      "qid": "q-001",
+      "value": 0.0,
+      "n_statements": 1,
+      "reading": "0/1 = 0.00%"
+    },
+    "empty_answer": {
+      "qid": "q-001",
+      "value": null,
+      "statements": [],
+      "reading": "不适用（无可判陈述）"
+    }
+  },
+  "ar_control": [
+    {
+      "qid": "q-001",
+      "donor": "q-002",
+      "own": 0.6455,
+      "mismatched": 0.5511,
+      "delta": 0.0944
+    },
+    {
+      "qid": "q-002",
+      "donor": "q-004",
+      "own": 0.9521,
+      "mismatched": 0.4482,
+      "delta": 0.5039
+    },
+    {
+      "qid": "q-004",
+      "donor": "q-005",
+      "own": 0.7395,
+      "mismatched": 0.3736,
+      "delta": 0.3658
+    },
+    {
+      "qid": "q-005",
+      "donor": "q-006",
+      "own": 0.7987,
+      "mismatched": 0.3828,
+      "delta": 0.416
+    },
+    {
+      "qid": "q-006",
+      "donor": "q-007",
+      "own": 0.9017,
+      "mismatched": 0.4572,
+      "delta": 0.4445
+    },
+    {
+      "qid": "q-007",
+      "donor": "q-008",
+      "own": 0.5425,
+      "mismatched": 0.4033,
+      "delta": 0.1393
+    },
+    {
+      "qid": "q-008",
+      "donor": "q-010",
+      "own": 0.6694,
+      "mismatched": 0.4238,
+      "delta": 0.2456
+    },
+    {
+      "qid": "q-010",
+      "donor": "q-011",
+      "own": 0.5863,
+      "mismatched": 0.511,
+      "delta": 0.0754
+    },
+    {
+      "qid": "q-011",
+      "donor": "q-012",
+      "own": 0.9298,
+      "mismatched": 0.5261,
+      "delta": 0.4038
+    },
+    {
+      "qid": "q-012",
+      "donor": "q-013",
+      "own": 0.7407,
+      "mismatched": 0.511,
+      "delta": 0.2297
+    }
+  ],
+  "controls_gate": {
+    "checks": {
+      "证据错配后 Faithfulness 下降": {
+        "pass": true,
+        "basis": "10 对，平均降 0.9，逐对下降 9/10"
+      },
+      "证据错配后裁判 label 会翻": {
+        "pass": true,
+        "basis": "9/10 翻转"
+      },
+      "答案错配后 Answer Relevance 下降": {
+        "pass": true,
+        "basis": "10 对，平均降 0.2918，逐对下降 10/10"
+      },
+      "空证据面不得判成立": {
+        "pass": true,
+        "basis": "1 条陈述全判 0 ⇒ 0/1 = 0.00%"
+      },
+      "空回答面不得读成 1.0": {
+        "pass": true,
+        "basis": "不适用（无可判陈述）（陈述 []）"
+      }
+    },
+    "all_pass": true
+  },
+  "floor": {
+    "judge": {
+      "n": 67,
+      "flips": 0,
+      "flip_rate": 0.0
+    },
+    "faithfulness": {
+      "sampled": 19,
+      "n": 19,
+      "mean_abs_delta": 0.0,
+      "restated": 0
+    }
+  },
+  "cost": {
+    "calls": 481,
+    "failed": 0,
+    "bad_json": 0,
+    "truncated": 0,
+    "llm_ms_total": 467955.3,
+    "prompt_tokens": 221632,
+    "completion_tokens": 18326,
+    "phase_r": "evict 7B 后复跑 67 题检索耗时 43.0s；cited_ids ⊆ 复跑 Top-5 的行 67/67",
+    "phase_e": {
+      "policy": "time_sharded",
+      "device": "cuda",
+      "dtype": "float16",
+      "embed_load_sec": 4.822,
+      "n_vectors": 250,
+      "embed_sec": 6.4,
+      "vram_before_evict7b_mib": 7533.0,
+      "vram_after_unload_mib": 2887.0,
+      "note": "先 evict 7B 再载 BGE-M3；embedding 用 float16/cuda 与在线检索同口径"
+    }
+  },
+  "caveats": [
+    "**这两个指标是自研复现，不是 ragas 库**（官方包拖 scikit-network→numba，会顶掉本项目硬钉的 numpy==2.5.3，而 torch 是经 `.pth` 挂进 `.venv` 的）。prompt 为中文（官方为英文），contexts 见两个口径——对外称「KEE 复现版 Faithfulness / Answer Relevance」，不得称「跑了 RAGAS」。",
+    "**裁判模型与生成模型同为 qwen2.5:7b**：自偏好偏置未经外部对照，第二节的一致率/κ 是它唯一的定级证据。",
+    "**读数一律为报告值，不进门禁**（用户 2026-10-16 裁决：LLM 判定不可机械复现，门禁只收机械可复算判据这条纪律不变）。",
+    "**未重跑生成**：输入是真人标签配对的那代留档产物 ⇒ 既有人判读数零作废；代价是这些指标量的是**那一批已判过的输出**，不是「系统此刻的输出」。",
+    "**Top-5 口径只在 cited_ids ⊆ 复跑 Top-5 的行上可比**（对齐率见第六节前那行）；不齐的行是检索跨代漂移，不是标签错。",
+    "**Answer Relevance 的全行档把正确拒答记成 0 分**（RAGAS 官方就这么算），单独引用它等于把「拒得对」说成「答得差」。",
+    "**Faithfulness 的第二步用了一次批量判定**（一题的 N 条陈述合成一趟 7B 调用，官方是逐条）：实测原口径 67 题 × 两口径要 ~740 次调用、约 2 小时，批量版 ~5 次/题。偏离买到的代价是模型一次要看完全部陈述、可能漏答——漏答一律记「判不出」进不了分母，而「证据换成别题的分数必须掉」那道护栏就是专门兜这种失明的；要跑逐条原口径加 `--per-statement`。",
+    "**Faithfulness 与「数字落地率」不是一回事**：前者是逐条陈述的 NLI 支持性（LLM 判、不可复算），后者是结论数字是否出现在被引正文（机械、可复算）。两者并列是为了看分歧，不是互相验证。"
+  ],
+  "rows": [
+    {
+      "qid": "q-001",
+      "status": "answer",
+      "conclusion": "RTO 小于 15 分钟",
+      "statements": [
+        "RTO小于15分钟"
+      ],
+      "verdicts": [
+        {
+          "statement": "RTO小于15分钟",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "verdicts_top5": [
+        {
+          "statement": "RTO小于15分钟",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "faith_cited": {
+        "n_statements": 1,
+        "n_gradable": 1,
+        "n_unparsable": 0,
+        "n_supported": 1,
+        "value": 1.0,
+        "reading": "1/1 = 100.00%"
+      },
+      "faith_top5": {
+        "n_statements": 1,
+        "n_gradable": 1,
+        "n_unparsable": 0,
+        "n_supported": 1,
+        "value": 1.0,
+        "reading": "1/1 = 100.00%"
+      },
+      "reverse_q": [
+        "RTO 是指什么？",
+        "RTO 小于 15 分钟适用于哪些场景？",
+        "RTO 的具体数值是多少？"
+      ],
+      "answer_relevance": {
+        "n_questions": 3,
+        "sims": [
+          0.5965,
+          0.6329,
+          0.707
+        ],
+        "value": 0.6455,
+        "reading": "mean cos = 0.6455（n=3）"
+      },
+      "judge": {
+        "label": 1,
+        "reason": "一致",
+        "span": "银企直联实时清算方案 V3.2 的灾备切换目标按 RTO 小于 15 分钟、RPO 等于 0 设定",
+        "why": "",
+        "truncated": false,
+        "rubric": "answer_correct"
+      }
+    },
+    {
+      "qid": "q-002",
+      "status": "answer",
+      "conclusion": "头寸管理模块上线后，法人账户日间头寸预测偏差绝对值由改造前的 3.7% 收敛至 1.2%",
+      "statements": [
+        "头寸管理模块上线后",
+        "法人账户日间头寸预测偏差绝对值由改造前的3.7%收敛至1.2%"
+      ],
+      "verdicts": [
+        {
+          "statement": "头寸管理模块上线后",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "法人账户日间头寸预测偏差绝对值由改造前的3.7%收敛至1.2%",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "verdicts_top5": [
+        {
+          "statement": "头寸管理模块上线后",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "法人账户日间头寸预测偏差绝对值由改造前的3.7%收敛至1.2%",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "faith_cited": {
+        "n_statements": 2,
+        "n_gradable": 2,
+        "n_unparsable": 0,
+        "n_supported": 2,
+        "value": 1.0,
+        "reading": "2/2 = 100.00%"
+      },
+      "faith_top5": {
+        "n_statements": 2,
+        "n_gradable": 2,
+        "n_unparsable": 0,
+        "n_supported": 2,
+        "value": 1.0,
+        "reading": "2/2 = 100.00%"
+      },
+      "reverse_q": [
+        "头寸管理模块上线后，法人账户日间头寸预测偏差绝对值降低了多少？",
+        "头寸管理模块上线后，法人账户日间头寸预测偏差绝对值具体是多少？",
+        "头寸管理模块上线前后，法人账户日间头寸预测偏差绝对值分别是多少？"
+      ],
+      "answer_relevance": {
+        "n_questions": 3,
+        "sims": [
+          0.9514,
+          0.9524,
+          0.9526
+        ],
+        "value": 0.9521,
+        "reading": "mean cos = 0.9521（n=3）"
+      },
+      "judge": {
+        "label": 1,
+        "reason": "数据一致",
+        "span": "法人账户日间头寸预测偏差绝对值由改造前的 3.7% 收敛至 1.2%",
+        "why": "",
+        "truncated": false,
+        "rubric": "answer_correct"
+      }
+    },
+    {
+      "qid": "q-003",
+      "status": "escalate",
+      "conclusion": "",
+      "statements": [],
+      "verdicts": [],
+      "verdicts_top5": [],
+      "faith_cited": {
+        "n_statements": 0,
+        "n_gradable": 0,
+        "n_unparsable": 0,
+        "n_supported": 0,
+        "value": null,
+        "reading": "不适用（无可判陈述）"
+      },
+      "faith_top5": {
+        "n_statements": 0,
+        "n_gradable": 0,
+        "n_unparsable": 0,
+        "n_supported": 0,
+        "value": null,
+        "reading": "不适用（无可判陈述）"
+      },
+      "reverse_q": [],
+      "answer_relevance": {
+        "n_questions": 0,
+        "value": 0.0,
+        "reading": "noncommittal ⇒ 0.0（RAGAS 官方口径）"
+      },
+      "judge": {
+        "label": 1,
+        "reason": "材料未提及拨备覆盖率最低要求",
+        "span": "",
+        "why": "",
+        "truncated": false,
+        "rubric": "disposition_correct"
+      }
+    },
+    {
+      "qid": "q-004",
+      "status": "answer",
+      "conclusion": "信贷资产风险分类结果按五级类别落库，即正常、关注、次级、可疑与损失。",
+      "statements": [
+        "信贷资产风险分类结果按五级类别落库",
+        "五级类别包括正常",
+        "五级类别包括关注",
+        "五级类别包括次级",
+        "五级类别包括可疑",
+        "五级类别包括损失"
+      ],
+      "verdicts": [
+        {
+          "statement": "信贷资产风险分类结果按五级类别落库",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "五级类别包括正常",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "五级类别包括关注",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "五级类别包括次级",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "五级类别包括可疑",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "五级类别包括损失",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "verdicts_top5": [
+        {
+          "statement": "信贷资产风险分类结果按五级类别落库",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "五级类别包括正常",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "五级类别包括关注",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "五级类别包括次级",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "五级类别包括可疑",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "五级类别包括损失",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "faith_cited": {
+        "n_statements": 6,
+        "n_gradable": 6,
+        "n_unparsable": 0,
+        "n_supported": 6,
+        "value": 1.0,
+        "reading": "6/6 = 100.00%"
+      },
+      "faith_top5": {
+        "n_statements": 6,
+        "n_gradable": 6,
+        "n_unparsable": 0,
+        "n_supported": 6,
+        "value": 1.0,
+        "reading": "6/6 = 100.00%"
+      },
+      "reverse_q": [
+        "五级分类中的正常类资产占比是多少？",
+        "信贷资产风险分类结果的五级类别具体是如何定义的？",
+        "哪些类型的信贷资产会被归类为损失类？"
+      ],
+      "answer_relevance": {
+        "n_questions": 3,
+        "sims": [
+          0.6163,
+          0.8605,
+          0.7416
+        ],
+        "value": 0.7395,
+        "reading": "mean cos = 0.7395（n=3）"
+      },
+      "judge": {
+        "label": 1,
+        "reason": "一致",
+        "span": "信贷资产风险分类结果按五级类别落库，即正常、关注、次级、可疑与损失。",
+        "why": "",
+        "truncated": false,
+        "rubric": "answer_correct"
+      }
+    },
+    {
+      "qid": "q-005",
+      "status": "answer",
+      "conclusion": "人行支付报文字段共改造报文字段映射 214 项",
+      "statements": [
+        "人行支付报文字段共改造报文字段映射214项"
+      ],
+      "verdicts": [
+        {
+          "statement": "人行支付报文字段共改造报文字段映射214项",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "verdicts_top5": [
+        {
+          "statement": "人行支付报文字段共改造报文字段映射214项",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "faith_cited": {
+        "n_statements": 1,
+        "n_gradable": 1,
+        "n_unparsable": 0,
+        "n_supported": 1,
+        "value": 1.0,
+        "reading": "1/1 = 100.00%"
+      },
+      "faith_top5": {
+        "n_statements": 1,
+        "n_gradable": 1,
+        "n_unparsable": 0,
+        "n_supported": 1,
+        "value": 1.0,
+        "reading": "1/1 = 100.00%"
+      },
+      "reverse_q": [
+        "人行支付报文改造了多少项？",
+        "总共改造了多少个支付报文字段？",
+        "这次改造涉及多少个具体的报文字段映射？"
+      ],
+      "answer_relevance": {
+        "n_questions": 3,
+        "sims": [
+          0.8686,
+          0.7731,
+          0.7545
+        ],
+        "value": 0.7987,
+        "reading": "mean cos = 0.7987（n=3）"
+      },
+      "judge": {
+        "label": 1,
+        "reason": "一致",
+        "span": "共改造报文字段映射 214 项",
+        "why": "",
+        "truncated": false,
+        "rubric": "answer_correct"
+      }
+    },
+    {
+      "qid": "q-006",
+      "status": "answer",
+      "conclusion": "双活数据中心同城链路正常水位不超过 800 毫秒",
+      "statements": [
+        "双活数据中心同城链路正常水位不超过 800 毫秒"
+      ],
+      "verdicts": [
+        {
+          "statement": "双活数据中心同城链路正常水位不超过 800 毫秒",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "verdicts_top5": [
+        {
+          "statement": "双活数据中心同城链路正常水位不超过 800 毫秒",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "faith_cited": {
+        "n_statements": 1,
+        "n_gradable": 1,
+        "n_unparsable": 0,
+        "n_supported": 1,
+        "value": 1.0,
+        "reading": "1/1 = 100.00%"
+      },
+      "faith_top5": {
+        "n_statements": 1,
+        "n_gradable": 1,
+        "n_unparsable": 0,
+        "n_supported": 1,
+        "value": 1.0,
+        "reading": "1/1 = 100.00%"
+      },
+      "reverse_q": [
+        "双活数据中心同城链路的正常水位是多少？",
+        "双活数据中心同城链路正常水位的上限是多少？",
+        "双活数据中心同城链路正常水位的定义是什么？"
+      ],
+      "answer_relevance": {
+        "n_questions": 3,
+        "sims": [
+          0.9067,
+          0.9142,
+          0.884
+        ],
+        "value": 0.9016,
+        "reading": "mean cos = 0.9016（n=3）"
+      },
+      "judge": {
+        "label": 1,
+        "reason": "结论与材料一致",
+        "span": "双活数据中心同城链路正常水位不超过 800 毫秒。",
+        "why": "",
+        "truncated": false,
+        "rubric": "answer_correct"
+      }
+    },
+    {
+      "qid": "q-007",
+      "status": "answer",
+      "conclusion": "92%",
+      "statements": [
+        "客户现有一阶段引擎在反洗钱可疑交易监测上的误报率大概是92%"
+      ],
+      "verdicts": [
+        {
+          "statement": "客户现有一阶段引擎在反洗钱可疑交易监测上的误报率大概是92%",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "verdicts_top5": [
+        {
+          "statement": "客户现有一阶段引擎在反洗钱可疑交易监测上的误报率大概是92%",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "faith_cited": {
+        "n_statements": 1,
+        "n_gradable": 1,
+        "n_unparsable": 0,
+        "n_supported": 1,
+        "value": 1.0,
+        "reading": "1/1 = 100.00%"
+      },
+      "faith_top5": {
+        "n_statements": 1,
+        "n_gradable": 1,
+        "n_unparsable": 0,
+        "n_supported": 1,
+        "value": 1.0,
+        "reading": "1/1 = 100.00%"
+      },
+      "reverse_q": [
+        "这个数值代表什么？",
+        "这个数值的统计范围是多少？",
+        "这个数值和去年同期相比有什么变化？"
+      ],
+      "answer_relevance": {
+        "n_questions": 3,
+        "sims": [
+          0.5174,
+          0.5678,
+          0.5424
+        ],
+        "value": 0.5425,
+        "reading": "mean cos = 0.5425（n=3）"
+      },
+      "judge": {
+        "label": 1,
+        "reason": "数据一致",
+        "span": "现有一阶段规则引擎以关键词与阈值类规则为主，反洗钱可疑交易监测的误报率长期高于 92%",
+        "why": "",
+        "truncated": false,
+        "rubric": "answer_correct"
+      }
+    },
+    {
+      "qid": "q-008",
+      "status": "answer",
+      "conclusion": "15 分钟内启动应急响应",
+      "statements": [
+        "15 分钟内启动应急响应"
+      ],
+      "verdicts": [
+        {
+          "statement": "15 分钟内启动应急响应",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "verdicts_top5": [
+        {
+          "statement": "15 分钟内启动应急响应",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "faith_cited": {
+        "n_statements": 1,
+        "n_gradable": 1,
+        "n_unparsable": 0,
+        "n_supported": 1,
+        "value": 1.0,
+        "reading": "1/1 = 100.00%"
+      },
+      "faith_top5": {
+        "n_statements": 1,
+        "n_gradable": 1,
+        "n_unparsable": 0,
+        "n_supported": 1,
+        "value": 1.0,
+        "reading": "1/1 = 100.00%"
+      },
+      "reverse_q": [
+        "应急响应在多长时间内启动？",
+        "启动应急响应的条件是什么？",
+        "谁负责启动应急响应？"
+      ],
+      "answer_relevance": {
+        "n_questions": 3,
+        "sims": [
+          0.7213,
+          0.6646,
+          0.6224
+        ],
+        "value": 0.6694,
+        "reading": "mean cos = 0.6694（n=3）"
+      },
+      "judge": {
+        "label": 1,
+        "reason": "一致",
+        "span": "P1 级故障须在 15 分钟内启动应急响应",
+        "why": "",
+        "truncated": false,
+        "rubric": "answer_correct"
+      }
+    },
+    {
+      "qid": "q-009",
+      "status": "answer",
+      "conclusion": "2秒",
+      "statements": [
+        "SCADA主站的实时数据刷新周期是2秒"
+      ],
+      "verdicts": [
+        {
+          "statement": "SCADA主站的实时数据刷新周期是2秒",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "verdicts_top5": [
+        {
+          "statement": "SCADA主站的实时数据刷新周期是2秒",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "faith_cited": {
+        "n_statements": 1,
+        "n_gradable": 1,
+        "n_unparsable": 0,
+        "n_supported": 1,
+        "value": 1.0,
+        "reading": "1/1 = 100.00%"
+      },
+      "faith_top5": {
+        "n_statements": 1,
+        "n_gradable": 1,
+        "n_unparsable": 0,
+        "n_supported": 1,
+        "value": 1.0,
+        "reading": "1/1 = 100.00%"
+      },
+      "reverse_q": [],
+      "answer_relevance": {
+        "n_questions": 0,
+        "value": 0.0,
+        "reading": "noncommittal ⇒ 0.0（RAGAS 官方口径）"
+      },
+      "judge": {
+        "label": 1,
+        "reason": "一致",
+        "span": "SCADA 主站的实时数据刷新周期为 2 秒",
+        "why": "",
+        "truncated": false,
+        "rubric": "answer_correct"
+      }
+    },
+    {
+      "qid": "q-010",
+      "status": "answer",
+      "conclusion": "接口编号 IF-ENE-0021 用于配电自动化终端的遥测数据上送，信息体地址段规划为 16385 至 18000，覆盖三相电流、三相电压、有功与无功功率及功率因数共 14 个测点。",
+      "statements": [
+        "接口编号 IF-ENE-0021 用于配电自动化终端的遥测数据上送",
+        "信息体地址段规划为 16385 至 18000",
+        "覆盖三相电流",
+        "覆盖三相电压",
+        "覆盖有功与无功功率",
+        "覆盖功率因数",
+        "共 14 个测点"
+      ],
+      "verdicts": [
+        {
+          "statement": "接口编号 IF-ENE-0021 用于配电自动化终端的遥测数据上送",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "信息体地址段规划为 16385 至 18000",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "覆盖三相电流",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "覆盖三相电压",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "覆盖有功与无功功率",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "覆盖功率因数",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "共 14 个测点",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "verdicts_top5": [
+        {
+          "statement": "接口编号 IF-ENE-0021 用于配电自动化终端的遥测数据上送",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "信息体地址段规划为 16385 至 18000",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "覆盖三相电流",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "覆盖三相电压",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "覆盖有功与无功功率",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "覆盖功率因数",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "共 14 个测点",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "faith_cited": {
+        "n_statements": 7,
+        "n_gradable": 7,
+        "n_unparsable": 0,
+        "n_supported": 7,
+        "value": 1.0,
+        "reading": "7/7 = 100.00%"
+      },
+      "faith_top5": {
+        "n_statements": 7,
+        "n_gradable": 7,
+        "n_unparsable": 0,
+        "n_supported": 7,
+        "value": 1.0,
+        "reading": "7/7 = 100.00%"
+      },
+      "reverse_q": [
+        "接口IF-ENE-0021覆盖了多少个测点？",
+        "信息体地址段16385至18000具体包括哪些数据？",
+        "该接口适用于哪些类型的配电自动化终端？"
+      ],
+      "answer_relevance": {
+        "n_questions": 3,
+        "sims": [
+          0.6321,
+          0.4568,
+          0.6701
+        ],
+        "value": 0.5863,
+        "reading": "mean cos = 0.5863（n=3）"
+      },
+      "judge": {
+        "label": 1,
+        "reason": "成立",
+        "span": "信息体地址段规划为16385至18000，覆盖三相电流、三相电压、有功与无功功率及功率因数共14个测点。",
+        "why": "",
+        "truncated": false,
+        "rubric": "answer_correct"
+      }
+    },
+    {
+      "qid": "q-011",
+      "status": "answer",
+      "conclusion": "采集数据质量与计量异常｜用电信息采集成功率由治理前的 91.6% 提升至 99.3%；",
+      "statements": [
+        "用电信息采集成功率由治理前的91.6%提升至99.3%"
+      ],
+      "verdicts": [
+        {
+          "statement": "用电信息采集成功率由治理前的91.6%提升至99.3%",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "verdicts_top5": [
+        {
+          "statement": "用电信息采集成功率由治理前的91.6%提升至99.3%",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "faith_cited": {
+        "n_statements": 1,
+        "n_gradable": 1,
+        "n_unparsable": 0,
+        "n_supported": 1,
+        "value": 1.0,
+        "reading": "1/1 = 100.00%"
+      },
+      "faith_top5": {
+        "n_statements": 1,
+        "n_gradable": 1,
+        "n_unparsable": 0,
+        "n_supported": 1,
+        "value": 1.0,
+        "reading": "1/1 = 100.00%"
+      },
+      "reverse_q": [
+        "治理前的用电信息采集成功率是多少？",
+        "治理后的用电信息采集成功率是多少？",
+        "用电信息采集成功率提升了多少百分点？"
+      ],
+      "answer_relevance": {
+        "n_questions": 3,
+        "sims": [
+          0.9179,
+          0.9425,
+          0.9292
+        ],
+        "value": 0.9299,
+        "reading": "mean cos = 0.9299（n=3）"
+      },
+      "judge": {
+        "label": 1,
+        "reason": "数据一致",
+        "span": "用电信息采集成功率由治理前的 91.6% 提升至 99.3%",
+        "why": "",
+        "truncated": false,
+        "rubric": "answer_correct"
+      }
+    },
+    {
+      "qid": "q-012",
+      "status": "answer",
+      "conclusion": "配电自动化终端与信息管理大区之间的数据交换必须经正反向隔离装置单向传输。",
+      "statements": [
+        "终端与信息管理大区之间数据交换必须经正反向隔离装置单向传输"
+      ],
+      "verdicts": [
+        {
+          "statement": "终端与信息管理大区之间数据交换必须经正反向隔离装置单向传输",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "verdicts_top5": [
+        {
+          "statement": "终端与信息管理大区之间数据交换必须经正反向隔离装置单向传输",
+          "verdict": 0,
+          "basis": ""
+        }
+      ],
+      "faith_cited": {
+        "n_statements": 1,
+        "n_gradable": 1,
+        "n_unparsable": 0,
+        "n_supported": 1,
+        "value": 1.0,
+        "reading": "1/1 = 100.00%"
+      },
+      "faith_top5": {
+        "n_statements": 1,
+        "n_gradable": 1,
+        "n_unparsable": 0,
+        "n_supported": 0,
+        "value": 0.0,
+        "reading": "0/1 = 0.00%"
+      },
+      "reverse_q": [
+        "配电自动化终端与信息管理大区之间通过什么设备进行数据交换？",
+        "数据从配电自动化终端传向信息管理大区时需要经过哪些步骤？",
+        "这种数据交换方式适用于哪些具体场景？"
+      ],
+      "answer_relevance": {
+        "n_questions": 3,
+        "sims": [
+          0.8307,
+          0.7822,
+          0.609
+        ],
+        "value": 0.7406,
+        "reading": "mean cos = 0.7406（n=3）"
+      },
+      "judge": {
+        "label": 1,
+        "reason": "一致",
+        "span": "与信息管理大区之间的数据交换必须经正反向隔离装置单向传输。",
+        "why": "",
+        "truncated": false,
+        "rubric": "answer_correct"
+      }
+    },
+    {
+      "qid": "q-013",
+      "status": "answer",
+      "conclusion": "改造共重构安全仪表功能回路 96 项，其中表决逻辑由 1oo1 升级为 1oo2 加冗余通道的 29 项、新增安全仪表功能 14 项。",
+      "statements": [
+        "改造共重构安全仪表功能回路96项",
+        "表决逻辑由1oo1升级为1oo2加冗余通道的29项",
+        "新增安全仪表功能14项"
+      ],
+      "verdicts": [
+        {
+          "statement": "改造共重构安全仪表功能回路96项",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "表决逻辑由1oo1升级为1oo2加冗余通道的29项",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "新增安全仪表功能14项",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "verdicts_top5": [
+        {
+          "statement": "改造共重构安全仪表功能回路96项",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "表决逻辑由1oo1升级为1oo2加冗余通道的29项",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "新增安全仪表功能14项",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "faith_cited": {
+        "n_statements": 3,
+        "n_gradable": 3,
+        "n_unparsable": 0,
+        "n_supported": 3,
+        "value": 1.0,
+        "reading": "3/3 = 100.00%"
+      },
+      "faith_top5": {
+        "n_statements": 3,
+        "n_gradable": 3,
+        "n_unparsable": 0,
+        "n_supported": 3,
+        "value": 1.0,
+        "reading": "3/3 = 100.00%"
+      },
+      "reverse_q": [
+        "改造了多少项安全仪表功能回路？",
+        "升级为1oo2加冗余通道的回路有多少项？",
+        "新增了多少项安全仪表功能？"
+      ],
+      "answer_relevance": {
+        "n_questions": 3,
+        "sims": [
+          0.5298,
+          0.4031,
+          0.5559
+        ],
+        "value": 0.4963,
+        "reading": "mean cos = 0.4963（n=3）"
+      },
+      "judge": {
+        "label": 1,
+        "reason": "结论与证据一致",
+        "span": "改造共重构安全仪表功能回路 96 项，其中表决逻辑由 1oo1 升级为 1oo2 加冗余通道的 29 项、新增安全仪表功能 14 项。",
+        "why": "",
+        "truncated": false,
+        "rubric": "answer_correct"
+      }
+    },
+    {
+      "qid": "q-014",
+      "status": "answer",
+      "conclusion": "涉及 DCS 联锁逻辑的点位一律设为只读",
+      "statements": [
+        "涉及DCS联锁逻辑的点位一律设为只读"
+      ],
+      "verdicts": [
+        {
+          "statement": "涉及DCS联锁逻辑的点位一律设为只读",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "verdicts_top5": [
+        {
+          "statement": "涉及DCS联锁逻辑的点位一律设为只读",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "faith_cited": {
+        "n_statements": 1,
+        "n_gradable": 1,
+        "n_unparsable": 0,
+        "n_supported": 1,
+        "value": 1.0,
+        "reading": "1/1 = 100.00%"
+      },
+      "faith_top5": {
+        "n_statements": 1,
+        "n_gradable": 1,
+        "n_unparsable": 0,
+        "n_supported": 1,
+        "value": 1.0,
+        "reading": "1/1 = 100.00%"
+      },
+      "reverse_q": [
+        "DCS联锁逻辑的点位为什么要设为只读？",
+        "哪些点位会被设为只读？",
+        "由哪个部门负责设置这些点位为只读？"
+      ],
+      "answer_relevance": {
+        "n_questions": 3,
+        "sims": [
+          0.8394,
+          0.6625,
+          0.6416
+        ],
+        "value": 0.7145,
+        "reading": "mean cos = 0.7145（n=3）"
+      },
+      "judge": {
+        "label": 0,
+        "reason": "结论扩大范围",
+        "span": "任何涉及 DCS 联锁逻辑的点位一律设为只读，联锁值修改权限保留在客户工艺与仪表两个部门，服务商无申请资格。",
+        "why": "",
+        "truncated": false,
+        "rubric": "answer_correct"
+      }
+    },
+    {
+      "qid": "q-015",
+      "status": "answer",
+      "conclusion": "结项文档连同验收原始记录须完整归档并保留3年",
+      "statements": [
+        "结项文档连同验收原始记录须完整归档",
+        "归档并保留3年"
+      ],
+      "verdicts": [
+        {
+          "statement": "结项文档连同验收原始记录须完整归档",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "归档并保留3年",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "verdicts_top5": [
+        {
+          "statement": "结项文档连同验收原始记录须完整归档",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "归档并保留3年",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "faith_cited": {
+        "n_statements": 2,
+        "n_gradable": 2,
+        "n_unparsable": 0,
+        "n_supported": 2,
+        "value": 1.0,
+        "reading": "2/2 = 100.00%"
+      },
+      "faith_top5": {
+        "n_statements": 2,
+        "n_gradable": 2,
+        "n_unparsable": 0,
+        "n_supported": 2,
+        "value": 1.0,
+        "reading": "2/2 = 100.00%"
+      },
+      "reverse_q": [
+        "结项文档和验收原始记录需要保存多久？",
+        "哪些文件需要归档？",
+        "归档的文件需要包含哪些内容？"
+      ],
+      "answer_relevance": {
+        "n_questions": 3,
+        "sims": [
+          0.9416,
+          0.6892,
+          0.7129
+        ],
+        "value": 0.7812,
+        "reading": "mean cos = 0.7812（n=3）"
+      },
+      "judge": {
+        "label": 1,
+        "reason": "一致",
+        "span": "按内部流程文件 Q/KEE-SOP-032 第 4.3 条要求，结项文档连同验收测试原始记录须完整归档并保留 3 年。",
+        "why": "",
+        "truncated": false,
+        "rubric": "answer_correct"
+      }
+    },
+    {
+      "qid": "q-016",
+      "status": "answer",
+      "conclusion": "第三级安全计算环境的身份鉴别与会话锁定要求出自 GB/T 22239-2019 第 8.1.4 条",
+      "statements": [
+        "第三级安全计算环境的身份鉴别与会话锁定要求出自GB/T 22239-2019第8.1.4条"
+      ],
+      "verdicts": [
+        {
+          "statement": "第三级安全计算环境的身份鉴别与会话锁定要求出自GB/T 22239-2019第8.1.4条",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "verdicts_top5": [
+        {
+          "statement": "第三级安全计算环境的身份鉴别与会话锁定要求出自GB/T 22239-2019第8.1.4条",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "faith_cited": {
+        "n_statements": 1,
+        "n_gradable": 1,
+        "n_unparsable": 0,
+        "n_supported": 1,
+        "value": 1.0,
+        "reading": "1/1 = 100.00%"
+      },
+      "faith_top5": {
+        "n_statements": 1,
+        "n_gradable": 1,
+        "n_unparsable": 0,
+        "n_supported": 1,
+        "value": 1.0,
+        "reading": "1/1 = 100.00%"
+      },
+      "reverse_q": [
+        "该标准具体指的是哪个级别的安全计算环境？",
+        "GB/T 22239-2019 的第 8.1.4 条具体规定了哪些内容？",
+        "身份鉴别的要求包括哪些方面？"
+      ],
+      "answer_relevance": {
+        "n_questions": 3,
+        "sims": [
+          0.7162,
+          0.4537,
+          0.6475
+        ],
+        "value": 0.6058,
+        "reading": "mean cos = 0.6058（n=3）"
+      },
+      "judge": {
+        "label": 1,
+        "reason": "一致",
+        "span": "第三级安全计算环境的身份鉴别与会话锁定要求出自 GB/T 22239-2019 第 8.1.4 条",
+        "why": "",
+        "truncated": false,
+        "rubric": "answer_correct"
+      }
+    },
+    {
+      "qid": "q-017",
+      "status": "answer",
+      "conclusion": "SLA-A1 对应 PRJ-FIN-2024-017 项目；质保期 12 个月",
+      "statements": [
+        "SLA-A1 对应 PRJ-FIN-2024-017 项目",
+        "质保期 12 个月"
+      ],
+      "verdicts": [
+        {
+          "statement": "SLA-A1 对应 PRJ-FIN-2024-017 项目",
+          "verdict": 0,
+          "basis": ""
+        },
+        {
+          "statement": "质保期 12 个月",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "verdicts_top5": [
+        {
+          "statement": "SLA-A1 对应 PRJ-FIN-2024-017 项目",
+          "verdict": 0,
+          "basis": ""
+        },
+        {
+          "statement": "质保期 12 个月",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "faith_cited": {
+        "n_statements": 2,
+        "n_gradable": 2,
+        "n_unparsable": 0,
+        "n_supported": 1,
+        "value": 0.5,
+        "reading": "1/2 = 50.00%"
+      },
+      "faith_top5": {
+        "n_statements": 2,
+        "n_gradable": 2,
+        "n_unparsable": 0,
+        "n_supported": 1,
+        "value": 0.5,
+        "reading": "1/2 = 50.00%"
+      },
+      "reverse_q": [
+        "SLA-A1 是指什么类型的协议？",
+        "质保期是从什么时候开始计算的？",
+        "PRJ-FIN-2024-017 项目是什么类型的项目？"
+      ],
+      "answer_relevance": {
+        "n_questions": 3,
+        "sims": [
+          0.8569,
+          0.5848,
+          0.3553
+        ],
+        "value": 0.599,
+        "reading": "mean cos = 0.5990（n=3）"
+      },
+      "judge": {
+        "label": 1,
+        "reason": "一致",
+        "span": "质保期 12 个月，服务级别协议编号 SLA-A1",
+        "why": "",
+        "truncated": false,
+        "rubric": "answer_correct"
+      }
+    },
+    {
+      "qid": "q-018",
+      "status": "answer",
+      "conclusion": "单笔汇款金额上限为 500 万元",
+      "statements": [
+        "单笔汇款金额上限为 500 万元"
+      ],
+      "verdicts": [
+        {
+          "statement": "单笔汇款金额上限为 500 万元",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "verdicts_top5": [
+        {
+          "statement": "单笔汇款金额上限为 500 万元",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "faith_cited": {
+        "n_statements": 1,
+        "n_gradable": 1,
+        "n_unparsable": 0,
+        "n_supported": 1,
+        "value": 1.0,
+        "reading": "1/1 = 100.00%"
+      },
+      "faith_top5": {
+        "n_statements": 1,
+        "n_gradable": 1,
+        "n_unparsable": 0,
+        "n_supported": 1,
+        "value": 1.0,
+        "reading": "1/1 = 100.00%"
+      },
+      "reverse_q": [
+        "单笔汇款的金额上限是多少？",
+        "对于哪些类型的汇款，金额上限为500万元？",
+        "如果不超过500万元，可以进行多少笔汇款？"
+      ],
+      "answer_relevance": {
+        "n_questions": 3,
+        "sims": [
+          0.8241,
+          0.764,
+          0.7712
+        ],
+        "value": 0.7864,
+        "reading": "mean cos = 0.7864（n=3）"
+      },
+      "judge": {
+        "label": 1,
+        "reason": "一致",
+        "span": "单笔汇款金额上限为 500 万元",
+        "why": "",
+        "truncated": false,
+        "rubric": "answer_correct"
+      }
+    },
+    {
+      "qid": "q-019",
+      "status": "answer",
+      "conclusion": "接口编号 IF-FIN-0013 单次响应报文体积不得超过 2 MB",
+      "statements": [
+        "接口编号 IF-FIN-0013 单次响应报文体积不得超过 2 MB"
+      ],
+      "verdicts": [
+        {
+          "statement": "接口编号 IF-FIN-0013 单次响应报文体积不得超过 2 MB",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "verdicts_top5": [
+        {
+          "statement": "接口编号 IF-FIN-0013 单次响应报文体积不得超过 2 MB",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "faith_cited": {
+        "n_statements": 1,
+        "n_gradable": 1,
+        "n_unparsable": 0,
+        "n_supported": 1,
+        "value": 1.0,
+        "reading": "1/1 = 100.00%"
+      },
+      "faith_top5": {
+        "n_statements": 1,
+        "n_gradable": 1,
+        "n_unparsable": 0,
+        "n_supported": 1,
+        "value": 1.0,
+        "reading": "1/1 = 100.00%"
+      },
+      "reverse_q": [
+        "单次响应报文的最大体积是多少？",
+        "接口编号IF-FIN-0013的响应报文体积限制是多少？",
+        "如果单次响应报文体积超过2MB会怎样？"
+      ],
+      "answer_relevance": {
+        "n_questions": 3,
+        "sims": [
+          0.8163,
+          0.9717,
+          0.7313
+        ],
+        "value": 0.8398,
+        "reading": "mean cos = 0.8398（n=3）"
+      },
+      "judge": {
+        "label": 1,
+        "reason": "一致",
+        "span": "单次响应报文体积不得超过 2 MB。",
+        "why": "",
+        "truncated": false,
+        "rubric": "answer_correct"
+      }
+    },
+    {
+      "qid": "q-020",
+      "status": "answer",
+      "conclusion": "信息体地址段从16385开始",
+      "statements": [
+        "信息体地址段从16385开始"
+      ],
+      "verdicts": [
+        {
+          "statement": "信息体地址段从16385开始",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "verdicts_top5": [
+        {
+          "statement": "信息体地址段从16385开始",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "faith_cited": {
+        "n_statements": 1,
+        "n_gradable": 1,
+        "n_unparsable": 0,
+        "n_supported": 1,
+        "value": 1.0,
+        "reading": "1/1 = 100.00%"
+      },
+      "faith_top5": {
+        "n_statements": 1,
+        "n_gradable": 1,
+        "n_unparsable": 0,
+        "n_supported": 1,
+        "value": 1.0,
+        "reading": "1/1 = 100.00%"
+      },
+      "reverse_q": [
+        "信息体地址段的起始编号是多少？",
+        "从16385开始的信息体地址段包含哪些信息？",
+        "这个信息体地址段是从什么时候开始使用的？"
+      ],
+      "answer_relevance": {
+        "n_questions": 3,
+        "sims": [
+          0.697,
+          0.6063,
+          0.6785
+        ],
+        "value": 0.6606,
+        "reading": "mean cos = 0.6606（n=3）"
+      },
+      "judge": {
+        "label": 1,
+        "reason": "一致",
+        "span": "信息体地址段规划为 16385 至 18000。",
+        "why": "",
+        "truncated": false,
+        "rubric": "answer_correct"
+      }
+    },
+    {
+      "qid": "q-021",
+      "status": "answer",
+      "conclusion": "心跳试验帧机制为TESTFH；链路中断等效判定超时为60秒",
+      "statements": [
+        "心跳试验帧机制为TESTFH",
+        "链路中断等效判定超时为60秒"
+      ],
+      "verdicts": [
+        {
+          "statement": "心跳试验帧机制为TESTFH",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "链路中断等效判定超时为60秒",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "verdicts_top5": [
+        {
+          "statement": "心跳试验帧机制为TESTFH",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "链路中断等效判定超时为60秒",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "faith_cited": {
+        "n_statements": 2,
+        "n_gradable": 2,
+        "n_unparsable": 0,
+        "n_supported": 2,
+        "value": 1.0,
+        "reading": "2/2 = 100.00%"
+      },
+      "faith_top5": {
+        "n_statements": 2,
+        "n_gradable": 2,
+        "n_unparsable": 0,
+        "n_supported": 2,
+        "value": 1.0,
+        "reading": "2/2 = 100.00%"
+      },
+      "reverse_q": [
+        "心跳试验帧机制是什么？",
+        "链路中断等效判定超时是多少秒？",
+        "该机制适用于哪些链路？"
+      ],
+      "answer_relevance": {
+        "n_questions": 3,
+        "sims": [
+          0.7486,
+          0.7819,
+          0.4889
+        ],
+        "value": 0.6731,
+        "reading": "mean cos = 0.6731（n=3）"
+      },
+      "judge": {
+        "label": 0,
+        "reason": "结论颠倒",
+        "span": "主站发起周期为 20 秒、连续 2 次未收到应答判定链路中断",
+        "why": "",
+        "truncated": false,
+        "rubric": "answer_correct"
+      }
+    },
+    {
+      "qid": "q-022",
+      "status": "answer",
+      "conclusion": "表计通信规约遵循 DL/T 645-2007 多功能电能表通信协议，地址采用 12 位表号。",
+      "statements": [
+        "表计通信规约遵循DL/T 645-2007多功能电能表通信协议",
+        "地址采用12位表号"
+      ],
+      "verdicts": [
+        {
+          "statement": "表计通信规约遵循DL/T 645-2007多功能电能表通信协议",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "地址采用12位表号",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "verdicts_top5": [
+        {
+          "statement": "表计通信规约遵循DL/T 645-2007多功能电能表通信协议",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "地址采用12位表号",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "faith_cited": {
+        "n_statements": 2,
+        "n_gradable": 2,
+        "n_unparsable": 0,
+        "n_supported": 2,
+        "value": 1.0,
+        "reading": "2/2 = 100.00%"
+      },
+      "faith_top5": {
+        "n_statements": 2,
+        "n_gradable": 2,
+        "n_unparsable": 0,
+        "n_supported": 2,
+        "value": 1.0,
+        "reading": "2/2 = 100.00%"
+      },
+      "reverse_q": [
+        "该回答中的表计通信规约具体指的是哪种设备的通信协议？",
+        "表号采用多少位？",
+        "该通信协议适用于哪些类型的电能表？"
+      ],
+      "answer_relevance": {
+        "n_questions": 3,
+        "sims": [
+          0.5554,
+          0.5817,
+          0.6239
+        ],
+        "value": 0.587,
+        "reading": "mean cos = 0.5870（n=3）"
+      },
+      "judge": {
+        "label": 1,
+        "reason": "一致",
+        "span": "地址采用 12 位表号。",
+        "why": "",
+        "truncated": false,
+        "rubric": "answer_correct"
+      }
+    },
+    {
+      "qid": "q-023",
+      "status": "answer",
+      "conclusion": "接口编号 IF-CHM-0007 的订阅点位规模上限为 8000 个。",
+      "statements": [
+        "接口编号 IF-CHM-0007 的订阅点位规模上限为 8000 个"
+      ],
+      "verdicts": [
+        {
+          "statement": "接口编号 IF-CHM-0007 的订阅点位规模上限为 8000 个",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "verdicts_top5": [
+        {
+          "statement": "接口编号 IF-CHM-0007 的订阅点位规模上限为 8000 个",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "faith_cited": {
+        "n_statements": 1,
+        "n_gradable": 1,
+        "n_unparsable": 0,
+        "n_supported": 1,
+        "value": 1.0,
+        "reading": "1/1 = 100.00%"
+      },
+      "faith_top5": {
+        "n_statements": 1,
+        "n_gradable": 1,
+        "n_unparsable": 0,
+        "n_supported": 1,
+        "value": 1.0,
+        "reading": "1/1 = 100.00%"
+      },
+      "reverse_q": [
+        "接口编号 IF-CHM-0007 的订阅点位规模上限是多少？",
+        "接口编号 IF-CHM-0007 的订阅点位规模上限适用于哪些主体？",
+        "接口编号 IF-CHM-0007 的订阅点位规模上限的有效期是多久？"
+      ],
+      "answer_relevance": {
+        "n_questions": 3,
+        "sims": [
+          0.9542,
+          0.9174,
+          0.8939
+        ],
+        "value": 0.9218,
+        "reading": "mean cos = 0.9218（n=3）"
+      },
+      "judge": {
+        "label": 1,
+        "reason": "一致",
+        "span": "订阅点位规模上限 8000 个",
+        "why": "",
+        "truncated": false,
+        "rubric": "answer_correct"
+      }
+    },
+    {
+      "qid": "q-024",
+      "status": "answer",
+      "conclusion": "IF-CHM-0011 的查询响应时延目标为 P95 不高于 4 秒，单次返回时间序列点数上限 86400 点，超限须分片。",
+      "statements": [
+        "单次返回时间序列点数上限86400点"
+      ],
+      "verdicts": [
+        {
+          "statement": "单次返回时间序列点数上限86400点",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "verdicts_top5": [
+        {
+          "statement": "单次返回时间序列点数上限86400点",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "faith_cited": {
+        "n_statements": 1,
+        "n_gradable": 1,
+        "n_unparsable": 0,
+        "n_supported": 1,
+        "value": 1.0,
+        "reading": "1/1 = 100.00%"
+      },
+      "faith_top5": {
+        "n_statements": 1,
+        "n_gradable": 1,
+        "n_unparsable": 0,
+        "n_supported": 1,
+        "value": 1.0,
+        "reading": "1/1 = 100.00%"
+      },
+      "reverse_q": [
+        "IF-CHM-0011 的 P95 查询响应时延目标是多少？",
+        "单次返回的时间序列点数上限是多少？",
+        "如果时间序列点数超过上限，应该如何处理？"
+      ],
+      "answer_relevance": {
+        "n_questions": 3,
+        "sims": [
+          0.675,
+          0.8319,
+          0.6617
+        ],
+        "value": 0.7229,
+        "reading": "mean cos = 0.7229（n=3）"
+      },
+      "judge": {
+        "label": 1,
+        "reason": "成立",
+        "span": "单次返回时间序列点数上限 86400 点，超限须分片。",
+        "why": "",
+        "truncated": false,
+        "rubric": "answer_correct"
+      }
+    },
+    {
+      "qid": "q-025",
+      "status": "answer",
+      "conclusion": "防爆区域划分依据GB 50058-2014国家标准执行",
+      "statements": [
+        "防爆区域划分依据GB 50058-2014国家标准执行"
+      ],
+      "verdicts": [
+        {
+          "statement": "防爆区域划分依据GB 50058-2014国家标准执行",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "verdicts_top5": [
+        {
+          "statement": "防爆区域划分依据GB 50058-2014国家标准执行",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "faith_cited": {
+        "n_statements": 1,
+        "n_gradable": 1,
+        "n_unparsable": 0,
+        "n_supported": 1,
+        "value": 1.0,
+        "reading": "1/1 = 100.00%"
+      },
+      "faith_top5": {
+        "n_statements": 1,
+        "n_gradable": 1,
+        "n_unparsable": 0,
+        "n_supported": 1,
+        "value": 1.0,
+        "reading": "1/1 = 100.00%"
+      },
+      "reverse_q": [
+        "防爆区域划分的标准是什么？",
+        "执行防爆区域划分的国家标准编号是多少？",
+        "进行防爆区域划分时需要参考哪个版本的标准？"
+      ],
+      "answer_relevance": {
+        "n_questions": 3,
+        "sims": [
+          0.9388,
+          0.8984,
+          0.9184
+        ],
+        "value": 0.9185,
+        "reading": "mean cos = 0.9185（n=3）"
+      },
+      "judge": {
+        "label": 1,
+        "reason": "一致",
+        "span": "防爆区域划分依据GB 50058-2014国家标准执行",
+        "why": "",
+        "truncated": false,
+        "rubric": "answer_correct"
+      }
+    },
+    {
+      "qid": "q-026",
+      "status": "answer",
+      "conclusion": "变更单号 CR-CHM-2024-118 涉及气化单元一路模拟量量程调整，可能间接影响 DCS 联锁逻辑的判定输入，因此需要补做联锁功能验证。；从发起到关闭共耗时 4 小时，其中功能验证 90 分钟。",
+      "statements": [
+        "变更单号 CR-CHM-2024-118 涉及气化单元一路模拟量量程调整",
+        "可能间接影响 DCS 联锁逻辑的判定输入",
+        "需要补做联锁功能验证",
+        "从发起到关闭共耗时 4 小时",
+        "功能验证耗时 90 分钟"
+      ],
+      "verdicts": [
+        {
+          "statement": "变更单号 CR-CHM-2024-118 涉及气化单元一路模拟量量程调整",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "可能间接影响 DCS 联锁逻辑的判定输入",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "需要补做联锁功能验证",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "从发起到关闭共耗时 4 小时",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "功能验证耗时 90 分钟",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "verdicts_top5": [
+        {
+          "statement": "变更单号 CR-CHM-2024-118 涉及气化单元一路模拟量量程调整",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "可能间接影响 DCS 联锁逻辑的判定输入",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "需要补做联锁功能验证",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "从发起到关闭共耗时 4 小时",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "功能验证耗时 90 分钟",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "faith_cited": {
+        "n_statements": 5,
+        "n_gradable": 5,
+        "n_unparsable": 0,
+        "n_supported": 5,
+        "value": 1.0,
+        "reading": "5/5 = 100.00%"
+      },
+      "faith_top5": {
+        "n_statements": 5,
+        "n_gradable": 5,
+        "n_unparsable": 0,
+        "n_supported": 5,
+        "value": 1.0,
+        "reading": "5/5 = 100.00%"
+      },
+      "reverse_q": [
+        "变更单号CR-CHM-2024-118涉及的气化单元模拟量量程调整具体调整了多少？",
+        "整个变更过程从发起到关闭总共涉及多少个步骤？",
+        "进行功能验证的具体时间是从什么时候到什么时候？"
+      ],
+      "answer_relevance": {
+        "n_questions": 3,
+        "sims": [
+          0.6465,
+          0.5769,
+          0.6839
+        ],
+        "value": 0.6358,
+        "reading": "mean cos = 0.6358（n=3）"
+      },
+      "judge": {
+        "label": 1,
+        "reason": "一致",
+        "span": "变更单号 CR-CHM-2024-118 涉及气化单元一路模拟量量程调整，因可能间接影响 DCS 联锁逻辑的判定输入，被要求补做联锁功能验证后方可实施，从发起到关闭共耗时 4 小时，其中功能验证 90 分钟。",
+        "why": "",
+        "truncated": false,
+        "rubric": "answer_correct"
+      }
+    },
+    {
+      "qid": "q-027",
+      "status": "answer",
+      "conclusion": "日间清算高峰3200笔每秒持续60分钟无积压",
+      "statements": [
+        "日间清算高峰3200笔每秒",
+        "持续60分钟无积压"
+      ],
+      "verdicts": [
+        {
+          "statement": "日间清算高峰3200笔每秒",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "持续60分钟无积压",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "verdicts_top5": [
+        {
+          "statement": "日间清算高峰3200笔每秒",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "持续60分钟无积压",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "faith_cited": {
+        "n_statements": 2,
+        "n_gradable": 2,
+        "n_unparsable": 0,
+        "n_supported": 2,
+        "value": 1.0,
+        "reading": "2/2 = 100.00%"
+      },
+      "faith_top5": {
+        "n_statements": 2,
+        "n_gradable": 2,
+        "n_unparsable": 0,
+        "n_supported": 2,
+        "value": 1.0,
+        "reading": "2/2 = 100.00%"
+      },
+      "reverse_q": [
+        "日间清算的最高每秒处理能力是多少？",
+        "持续60分钟的清算过程中是否有积压？",
+        "这个清算高峰发生在一天中的哪个时间段？"
+      ],
+      "answer_relevance": {
+        "n_questions": 3,
+        "sims": [
+          0.8111,
+          0.614,
+          0.7031
+        ],
+        "value": 0.7094,
+        "reading": "mean cos = 0.7094（n=3）"
+      },
+      "judge": {
+        "label": 1,
+        "reason": "一致",
+        "span": "峰值处理能力要求为日间清算高峰3200笔每秒持续60分钟无积压",
+        "why": "",
+        "truncated": false,
+        "rubric": "answer_correct"
+      }
+    },
+    {
+      "qid": "q-028",
+      "status": "answer",
+      "conclusion": "核心清算通道年度可用性目标不低于 99.99%",
+      "statements": [
+        "核心清算通道年度可用性目标不低于99.99%"
+      ],
+      "verdicts": [
+        {
+          "statement": "核心清算通道年度可用性目标不低于99.99%",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "verdicts_top5": [
+        {
+          "statement": "核心清算通道年度可用性目标不低于99.99%",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "faith_cited": {
+        "n_statements": 1,
+        "n_gradable": 1,
+        "n_unparsable": 0,
+        "n_supported": 1,
+        "value": 1.0,
+        "reading": "1/1 = 100.00%"
+      },
+      "faith_top5": {
+        "n_statements": 1,
+        "n_gradable": 1,
+        "n_unparsable": 0,
+        "n_supported": 1,
+        "value": 1.0,
+        "reading": "1/1 = 100.00%"
+      },
+      "reverse_q": [
+        "核心清算通道的年度可用性目标是多少？",
+        "设定99.99%年度可用性目标的主体是谁？",
+        "达到99.99%年度可用性目标的具体时间是什么时候？"
+      ],
+      "answer_relevance": {
+        "n_questions": 3,
+        "sims": [
+          0.8841,
+          0.6303,
+          0.6819
+        ],
+        "value": 0.7321,
+        "reading": "mean cos = 0.7321（n=3）"
+      },
+      "judge": {
+        "label": 1,
+        "reason": "一致",
+        "span": "核心清算通道年度可用性目标不低于 99.99%",
+        "why": "",
+        "truncated": false,
+        "rubric": "answer_correct"
+      }
+    },
+    {
+      "qid": "q-029",
+      "status": "answer",
+      "conclusion": "同期线损率指标；采集数据完整率；台区档案一致率",
+      "statements": [
+        "同期线损率指标",
+        "采集数据完整率",
+        "台区档案一致率"
+      ],
+      "verdicts": [
+        {
+          "statement": "同期线损率指标",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "采集数据完整率",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "台区档案一致率",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "verdicts_top5": [
+        {
+          "statement": "同期线损率指标",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "采集数据完整率",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "台区档案一致率",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "faith_cited": {
+        "n_statements": 3,
+        "n_gradable": 3,
+        "n_unparsable": 0,
+        "n_supported": 3,
+        "value": 1.0,
+        "reading": "3/3 = 100.00%"
+      },
+      "faith_top5": {
+        "n_statements": 3,
+        "n_gradable": 3,
+        "n_unparsable": 0,
+        "n_supported": 3,
+        "value": 1.0,
+        "reading": "3/3 = 100.00%"
+      },
+      "reverse_q": [
+        "这些指标分别代表什么？",
+        "这些指标的计算口径是什么？",
+        "这些指标通常针对哪些主体进行评估？"
+      ],
+      "answer_relevance": {
+        "n_questions": 3,
+        "sims": [
+          0.4479,
+          0.5428,
+          0.4844
+        ],
+        "value": 0.4917,
+        "reading": "mean cos = 0.4917（n=3）"
+      },
+      "judge": {
+        "label": 1,
+        "reason": "成立",
+        "span": "验收核心口径以同期线损率指标、采集数据完整率与台区档案一致率三项为主。",
+        "why": "",
+        "truncated": false,
+        "rubric": "answer_correct"
+      }
+    },
+    {
+      "qid": "q-030",
+      "status": "answer",
+      "conclusion": "验收以装置收率、能耗与平稳率三类指标为核心",
+      "statements": [
+        "验收指标为核心指标"
+      ],
+      "verdicts": [
+        {
+          "statement": "验收指标为核心指标",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "verdicts_top5": [
+        {
+          "statement": "验收指标为核心指标",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "faith_cited": {
+        "n_statements": 1,
+        "n_gradable": 1,
+        "n_unparsable": 0,
+        "n_supported": 1,
+        "value": 1.0,
+        "reading": "1/1 = 100.00%"
+      },
+      "faith_top5": {
+        "n_statements": 1,
+        "n_gradable": 1,
+        "n_unparsable": 0,
+        "n_supported": 1,
+        "value": 1.0,
+        "reading": "1/1 = 100.00%"
+      },
+      "reverse_q": [
+        "验收主要依据哪些指标进行？",
+        "装置收率、能耗与平稳率在验收中各占多大比重？",
+        "哪些类型的装置适用这种验收标准？"
+      ],
+      "answer_relevance": {
+        "n_questions": 3,
+        "sims": [
+          0.5937,
+          0.6775,
+          0.6083
+        ],
+        "value": 0.6265,
+        "reading": "mean cos = 0.6265（n=3）"
+      },
+      "judge": {
+        "label": 1,
+        "reason": "一致",
+        "span": "验收以装置收率、能耗与平稳率三类指标为核心",
+        "why": "",
+        "truncated": false,
+        "rubric": "answer_correct"
+      }
+    },
+    {
+      "qid": "q-031",
+      "status": "answer",
+      "conclusion": "增量作业 P95 时长稳定在 8 分 20 秒，达成 5 个工作日以内作业周期的验收目标。",
+      "statements": [
+        "增量作业P95时长稳定在8分20秒",
+        "达成5个工作日以内作业周期的验收目标"
+      ],
+      "verdicts": [
+        {
+          "statement": "增量作业P95时长稳定在8分20秒",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "达成5个工作日以内作业周期的验收目标",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "verdicts_top5": [
+        {
+          "statement": "增量作业P95时长稳定在8分20秒",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "达成5个工作日以内作业周期的验收目标",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "faith_cited": {
+        "n_statements": 2,
+        "n_gradable": 2,
+        "n_unparsable": 0,
+        "n_supported": 2,
+        "value": 1.0,
+        "reading": "2/2 = 100.00%"
+      },
+      "faith_top5": {
+        "n_statements": 2,
+        "n_gradable": 2,
+        "n_unparsable": 0,
+        "n_supported": 2,
+        "value": 1.0,
+        "reading": "2/2 = 100.00%"
+      },
+      "reverse_q": [
+        "增量作业P95的时长是多少？",
+        "达到5个工作日以内作业周期的验收目标具体是多少时长？",
+        "增量作业P95是在哪个项目中的？"
+      ],
+      "answer_relevance": {
+        "n_questions": 3,
+        "sims": [
+          0.4858,
+          0.5884,
+          0.4888
+        ],
+        "value": 0.521,
+        "reading": "mean cos = 0.5210（n=3）"
+      },
+      "judge": {
+        "label": 1,
+        "reason": "数据一致",
+        "span": "增量作业P95时长稳定在8分20秒，达成5个工作日以内作业周期的验收目标。",
+        "why": "",
+        "truncated": false,
+        "rubric": "answer_correct"
+      }
+    },
+    {
+      "qid": "q-032",
+      "status": "answer",
+      "conclusion": "99.99%",
+      "statements": [
+        "调度自动化系统运维支撑方案V4.0给主站定的年度可用率基线是99.99%"
+      ],
+      "verdicts": [
+        {
+          "statement": "调度自动化系统运维支撑方案V4.0给主站定的年度可用率基线是99.99%",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "verdicts_top5": [
+        {
+          "statement": "调度自动化系统运维支撑方案V4.0给主站定的年度可用率基线是99.99%",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "faith_cited": {
+        "n_statements": 1,
+        "n_gradable": 1,
+        "n_unparsable": 0,
+        "n_supported": 1,
+        "value": 1.0,
+        "reading": "1/1 = 100.00%"
+      },
+      "faith_top5": {
+        "n_statements": 1,
+        "n_gradable": 1,
+        "n_unparsable": 0,
+        "n_supported": 1,
+        "value": 1.0,
+        "reading": "1/1 = 100.00%"
+      },
+      "reverse_q": [
+        "这个数值代表什么？",
+        "这个数值的精确度是多少？",
+        "这个数值适用于哪个主体？"
+      ],
+      "answer_relevance": {
+        "n_questions": 3,
+        "sims": [
+          0.4484,
+          0.5062,
+          0.5104
+        ],
+        "value": 0.4883,
+        "reading": "mean cos = 0.4883（n=3）"
+      },
+      "judge": {
+        "label": 1,
+        "reason": "一致",
+        "span": "主站年度可用率目标不低于99.99%",
+        "why": "",
+        "truncated": false,
+        "rubric": "answer_correct"
+      }
+    },
+    {
+      "qid": "q-033",
+      "status": "answer",
+      "conclusion": "配置与指标口径版本每日备份一次，备份保留 90 天在线、12 个月近线；口径版本变更须保留前后对照表，可支持任意历史时点按当期口径重算，归档调阅响应时限为 4 小时以内。",
+      "statements": [
+        "归档调阅响应时限为 4 小时以内"
+      ],
+      "verdicts": [
+        {
+          "statement": "归档调阅响应时限为 4 小时以内",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "verdicts_top5": [
+        {
+          "statement": "归档调阅响应时限为 4 小时以内",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "faith_cited": {
+        "n_statements": 1,
+        "n_gradable": 1,
+        "n_unparsable": 0,
+        "n_supported": 1,
+        "value": 1.0,
+        "reading": "1/1 = 100.00%"
+      },
+      "faith_top5": {
+        "n_statements": 1,
+        "n_gradable": 1,
+        "n_unparsable": 0,
+        "n_supported": 1,
+        "value": 1.0,
+        "reading": "1/1 = 100.00%"
+      },
+      "reverse_q": [
+        "每日备份的配置与指标口径版本保留多久？",
+        "归档调阅的响应时限是多少？",
+        "口径版本变更时需要保留哪些资料？"
+      ],
+      "answer_relevance": {
+        "n_questions": 3,
+        "sims": [
+          0.6202,
+          0.8752,
+          0.556
+        ],
+        "value": 0.6838,
+        "reading": "mean cos = 0.6838（n=3）"
+      },
+      "judge": {
+        "label": 1,
+        "reason": "一致",
+        "span": "口径版本每日备份一次，备份保留90天在线、12个月近线；归档调阅响应时限为4小时以内。",
+        "why": "",
+        "truncated": false,
+        "rubric": "answer_correct"
+      }
+    },
+    {
+      "qid": "q-034",
+      "status": "answer",
+      "conclusion": "312 项",
+      "statements": [
+        "规划了312项规则"
+      ],
+      "verdicts": [
+        {
+          "statement": "规划了312项规则",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "verdicts_top5": [
+        {
+          "statement": "规划了312项规则",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "faith_cited": {
+        "n_statements": 1,
+        "n_gradable": 1,
+        "n_unparsable": 0,
+        "n_supported": 1,
+        "value": 1.0,
+        "reading": "1/1 = 100.00%"
+      },
+      "faith_top5": {
+        "n_statements": 1,
+        "n_gradable": 1,
+        "n_unparsable": 0,
+        "n_supported": 1,
+        "value": 1.0,
+        "reading": "1/1 = 100.00%"
+      },
+      "reverse_q": [
+        "这项指的是多少个产品？",
+        "这项涵盖了哪些服务？",
+        "这项统计的是什么时间范围的数据？"
+      ],
+      "answer_relevance": {
+        "n_questions": 3,
+        "sims": [
+          0.4802,
+          0.4487,
+          0.461
+        ],
+        "value": 0.4633,
+        "reading": "mean cos = 0.4633（n=3）"
+      },
+      "judge": {
+        "label": 1,
+        "reason": "成立",
+        "span": "规则总量规划为 312 项",
+        "why": "",
+        "truncated": false,
+        "rubric": "answer_correct"
+      }
+    },
+    {
+      "qid": "q-035",
+      "status": "answer",
+      "conclusion": "SIS 回路改造实施方案 V1.1 对单批停车切换窗口的上限不超过 36 小时",
+      "statements": [
+        "SIS回路改造实施方案V1.1对单批停车切换窗口的上限不超过36小时"
+      ],
+      "verdicts": [
+        {
+          "statement": "SIS回路改造实施方案V1.1对单批停车切换窗口的上限不超过36小时",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "verdicts_top5": [
+        {
+          "statement": "SIS回路改造实施方案V1.1对单批停车切换窗口的上限不超过36小时",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "faith_cited": {
+        "n_statements": 1,
+        "n_gradable": 1,
+        "n_unparsable": 0,
+        "n_supported": 1,
+        "value": 1.0,
+        "reading": "1/1 = 100.00%"
+      },
+      "faith_top5": {
+        "n_statements": 1,
+        "n_gradable": 1,
+        "n_unparsable": 0,
+        "n_supported": 1,
+        "value": 1.0,
+        "reading": "1/1 = 100.00%"
+      },
+      "reverse_q": [
+        "单批停车切换窗口的上限是多少小时？",
+        "SIS回路改造实施方案适用于哪些情况？",
+        "该方案的版本号是多少？"
+      ],
+      "answer_relevance": {
+        "n_questions": 3,
+        "sims": [
+          0.8082,
+          0.7094,
+          0.5515
+        ],
+        "value": 0.6897,
+        "reading": "mean cos = 0.6897（n=3）"
+      },
+      "judge": {
+        "label": 1,
+        "reason": "一致",
+        "span": "每批切换窗口不超过 36 小时",
+        "why": "",
+        "truncated": false,
+        "rubric": "answer_correct"
+      }
+    },
+    {
+      "qid": "q-036",
+      "status": "answer",
+      "conclusion": "批生产记录电子化覆盖率不低于 95%",
+      "statements": [
+        "批生产记录电子化覆盖率不低于95%"
+      ],
+      "verdicts": [
+        {
+          "statement": "批生产记录电子化覆盖率不低于95%",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "verdicts_top5": [
+        {
+          "statement": "批生产记录电子化覆盖率不低于95%",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "faith_cited": {
+        "n_statements": 1,
+        "n_gradable": 1,
+        "n_unparsable": 0,
+        "n_supported": 1,
+        "value": 1.0,
+        "reading": "1/1 = 100.00%"
+      },
+      "faith_top5": {
+        "n_statements": 1,
+        "n_gradable": 1,
+        "n_unparsable": 0,
+        "n_supported": 1,
+        "value": 1.0,
+        "reading": "1/1 = 100.00%"
+      },
+      "reverse_q": [
+        "批生产记录电子化覆盖了多少比例？",
+        "哪些生产环节实现了记录电子化？",
+        "这个覆盖率的目标是针对哪些企业或机构？"
+      ],
+      "answer_relevance": {
+        "n_questions": 3,
+        "sims": [
+          0.7927,
+          0.6652,
+          0.6477
+        ],
+        "value": 0.7019,
+        "reading": "mean cos = 0.7019（n=3）"
+      },
+      "judge": {
+        "label": 1,
+        "reason": "一致",
+        "span": "批生产记录电子化覆盖率不低于 95%",
+        "why": "",
+        "truncated": false,
+        "rubric": "answer_correct"
+      }
+    },
+    {
+      "qid": "q-037",
+      "status": "answer",
+      "conclusion": "非计划应急切换须双人确认，两名确认人员须分属运维岗与业务岗。",
+      "statements": [
+        "非计划应急切换须双人确认",
+        "两名确认人员须分属运维岗与业务岗"
+      ],
+      "verdicts": [
+        {
+          "statement": "非计划应急切换须双人确认",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "两名确认人员须分属运维岗与业务岗",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "verdicts_top5": [
+        {
+          "statement": "非计划应急切换须双人确认",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "两名确认人员须分属运维岗与业务岗",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "faith_cited": {
+        "n_statements": 2,
+        "n_gradable": 2,
+        "n_unparsable": 0,
+        "n_supported": 2,
+        "value": 1.0,
+        "reading": "2/2 = 100.00%"
+      },
+      "faith_top5": {
+        "n_statements": 2,
+        "n_gradable": 2,
+        "n_unparsable": 0,
+        "n_supported": 2,
+        "value": 1.0,
+        "reading": "2/2 = 100.00%"
+      },
+      "reverse_q": [
+        "非计划应急切换的确认人员是如何分工的？",
+        "确认人员分别来自哪些岗位？",
+        "进行非计划应急切换时需要几名确认人员？"
+      ],
+      "answer_relevance": {
+        "n_questions": 3,
+        "sims": [
+          0.658,
+          0.5001,
+          0.7021
+        ],
+        "value": 0.6201,
+        "reading": "mean cos = 0.6201（n=3）"
+      },
+      "judge": {
+        "label": 1,
+        "reason": "一致",
+        "span": "非计划应急切换须双人确认，两名确认人员须分属运维岗与业务岗。",
+        "why": "",
+        "truncated": false,
+        "rubric": "answer_correct"
+      }
+    },
+    {
+      "qid": "q-038",
+      "status": "answer",
+      "conclusion": "接口编号 IF-CHM-0007 采用 OPC UA 订阅模式；最小发布间隔为 500 毫秒",
+      "statements": [
+        "接口编号 IF-CHM-0007 采用 OPC UA 订阅模式",
+        "最小发布间隔为 500 毫秒"
+      ],
+      "verdicts": [
+        {
+          "statement": "接口编号 IF-CHM-0007 采用 OPC UA 订阅模式",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "最小发布间隔为 500 毫秒",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "verdicts_top5": [
+        {
+          "statement": "接口编号 IF-CHM-0007 采用 OPC UA 订阅模式",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "最小发布间隔为 500 毫秒",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "faith_cited": {
+        "n_statements": 2,
+        "n_gradable": 2,
+        "n_unparsable": 0,
+        "n_supported": 2,
+        "value": 1.0,
+        "reading": "2/2 = 100.00%"
+      },
+      "faith_top5": {
+        "n_statements": 2,
+        "n_gradable": 2,
+        "n_unparsable": 0,
+        "n_supported": 2,
+        "value": 1.0,
+        "reading": "2/2 = 100.00%"
+      },
+      "reverse_q": [
+        "接口IF-CHM-0007采用的是哪种数据传输模式？",
+        "接口IF-CHM-0007的最小发布间隔是多少？",
+        "接口IF-CHM-0007采用的OPC UA订阅模式的具体含义是什么？"
+      ],
+      "answer_relevance": {
+        "n_questions": 3,
+        "sims": [
+          0.7353,
+          0.8092,
+          0.7813
+        ],
+        "value": 0.7753,
+        "reading": "mean cos = 0.7753（n=3）"
+      },
+      "judge": {
+        "label": 1,
+        "reason": "一致",
+        "span": "接口编号 IF-CHM-0007 定义优化平台向控制层读取实时点位的方式，采用 OPC UA 订阅模式，最小发布间隔 500 毫秒。",
+        "why": "",
+        "truncated": false,
+        "rubric": "answer_correct"
+      }
+    },
+    {
+      "qid": "q-039",
+      "status": "tentative",
+      "conclusion": "P1级故障须在15分钟内启动应急响应，并同时按ITIL P1流程成立事件指挥组",
+      "statements": [
+        "P1级故障须在15分钟内启动应急响应",
+        "同时按ITIL P1流程成立事件指挥组"
+      ],
+      "verdicts": [
+        {
+          "statement": "P1级故障须在15分钟内启动应急响应",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "同时按ITIL P1流程成立事件指挥组",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "verdicts_top5": [
+        {
+          "statement": "P1级故障须在15分钟内启动应急响应",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "同时按ITIL P1流程成立事件指挥组",
+          "verdict": null,
+          "basis": ""
+        }
+      ],
+      "faith_cited": {
+        "n_statements": 2,
+        "n_gradable": 2,
+        "n_unparsable": 0,
+        "n_supported": 2,
+        "value": 1.0,
+        "reading": "2/2 = 100.00%"
+      },
+      "faith_top5": {
+        "n_statements": 2,
+        "n_gradable": 1,
+        "n_unparsable": 1,
+        "n_supported": 1,
+        "value": 1.0,
+        "reading": "1/1 = 100.00%"
+      },
+      "reverse_q": [
+        "P1级故障的应急响应时间是多少？",
+        "成立事件指挥组是否是P1级故障处理的必要步骤？",
+        "ITIL P1流程适用于哪些类型的故障？"
+      ],
+      "answer_relevance": {
+        "n_questions": 3,
+        "sims": [
+          0.6184,
+          0.5852,
+          0.5534
+        ],
+        "value": 0.5857,
+        "reading": "mean cos = 0.5857（n=3）"
+      },
+      "judge": {
+        "label": 1,
+        "reason": "成立",
+        "span": "P1级故障须在15分钟内启动应急响应，并同时按ITIL P1流程成立事件指挥组",
+        "why": "",
+        "truncated": false,
+        "rubric": "answer_correct"
+      }
+    },
+    {
+      "qid": "q-040",
+      "status": "tentative",
+      "conclusion": "联锁失去保护属于P1事件；P1事件要求2小时内到场",
+      "statements": [
+        "联锁失去保护属于P1事件",
+        "P1事件要求2小时内到场"
+      ],
+      "verdicts": [
+        {
+          "statement": "联锁失去保护属于P1事件",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "P1事件要求2小时内到场",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "verdicts_top5": [
+        {
+          "statement": "联锁失去保护属于P1事件",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "P1事件要求2小时内到场",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "faith_cited": {
+        "n_statements": 2,
+        "n_gradable": 2,
+        "n_unparsable": 0,
+        "n_supported": 2,
+        "value": 1.0,
+        "reading": "2/2 = 100.00%"
+      },
+      "faith_top5": {
+        "n_statements": 2,
+        "n_gradable": 2,
+        "n_unparsable": 0,
+        "n_supported": 2,
+        "value": 1.0,
+        "reading": "2/2 = 100.00%"
+      },
+      "reverse_q": [
+        "联锁失去保护属于P1事件的具体定义是什么？",
+        "对于P1事件，要求2小时内到场的标准是什么？",
+        "哪些事件被归类为P1事件？"
+      ],
+      "answer_relevance": {
+        "n_questions": 3,
+        "sims": [
+          0.6362,
+          0.5491,
+          0.3958
+        ],
+        "value": 0.527,
+        "reading": "mean cos = 0.5270（n=3）"
+      },
+      "judge": {
+        "label": 0,
+        "reason": "时间不符",
+        "span": "P1要求2小时内到场，回答中为2小时",
+        "why": "",
+        "truncated": false,
+        "rubric": "answer_correct"
+      }
+    },
+    {
+      "qid": "q-041",
+      "status": "tentative",
+      "conclusion": "心跳超时的判定口径为：探活报文发送间隔 5 秒，连续 3 次未收到应答即判定链路中断，等效超时阈值为 15 秒；",
+      "statements": [
+        "心跳探活报文发送间隔为5秒",
+        "连续3次未收到应答即判定链路中断",
+        "等效超时阈值为15秒"
+      ],
+      "verdicts": [
+        {
+          "statement": "心跳探活报文发送间隔为5秒",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "连续3次未收到应答即判定链路中断",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "等效超时阈值为15秒",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "verdicts_top5": [
+        {
+          "statement": "心跳探活报文发送间隔为5秒",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "连续3次未收到应答即判定链路中断",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "等效超时阈值为15秒",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "faith_cited": {
+        "n_statements": 3,
+        "n_gradable": 3,
+        "n_unparsable": 0,
+        "n_supported": 3,
+        "value": 1.0,
+        "reading": "3/3 = 100.00%"
+      },
+      "faith_top5": {
+        "n_statements": 3,
+        "n_gradable": 3,
+        "n_unparsable": 0,
+        "n_supported": 3,
+        "value": 1.0,
+        "reading": "3/3 = 100.00%"
+      },
+      "reverse_q": [
+        "心跳超时的判定中，探活报文的发送间隔是多少？",
+        "连续未收到应答多少次会被判定为链路中断？",
+        "心跳超时的判定等效超时阈值是多少？"
+      ],
+      "answer_relevance": {
+        "n_questions": 3,
+        "sims": [
+          0.7843,
+          0.532,
+          0.7731
+        ],
+        "value": 0.6965,
+        "reading": "mean cos = 0.6965（n=3）"
+      },
+      "judge": {
+        "label": 1,
+        "reason": "一致",
+        "span": "心跳超时的判定口径为：探活报文发送间隔 5 秒，连续 3 次未收到应答即判定链路中断，等效超时阈值为 15 秒；",
+        "why": "",
+        "truncated": false,
+        "rubric": "answer_correct"
+      }
+    },
+    {
+      "qid": "q-042",
+      "status": "tentative",
+      "conclusion": "抄表同期性约束为全台区采集时间窗不超过15分钟，同期率低于95%的台区其线损结果标记为不可信",
+      "statements": [
+        "全台区采集时间窗不超过15分钟",
+        "同期率低于95%的台区线损结果标记为不可信"
+      ],
+      "verdicts": [
+        {
+          "statement": "全台区采集时间窗不超过15分钟",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "同期率低于95%的台区线损结果标记为不可信",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "verdicts_top5": [
+        {
+          "statement": "全台区采集时间窗不超过15分钟",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "同期率低于95%的台区线损结果标记为不可信",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "faith_cited": {
+        "n_statements": 2,
+        "n_gradable": 2,
+        "n_unparsable": 0,
+        "n_supported": 2,
+        "value": 1.0,
+        "reading": "2/2 = 100.00%"
+      },
+      "faith_top5": {
+        "n_statements": 2,
+        "n_gradable": 2,
+        "n_unparsable": 0,
+        "n_supported": 2,
+        "value": 1.0,
+        "reading": "2/2 = 100.00%"
+      },
+      "reverse_q": [
+        "全台区采集时间窗最长是多少？",
+        "同期率低于多少时线损结果会被标记为不可信？",
+        "哪些台区的线损结果会被标记为不可信？"
+      ],
+      "answer_relevance": {
+        "n_questions": 3,
+        "sims": [
+          0.5877,
+          0.5844,
+          0.6008
+        ],
+        "value": 0.591,
+        "reading": "mean cos = 0.5910（n=3）"
+      },
+      "judge": {
+        "label": 1,
+        "reason": "结论与证据一致",
+        "span": "同期率低于95%的台区其线损结果标记为不可信",
+        "why": "",
+        "truncated": false,
+        "rubric": "answer_correct"
+      }
+    },
+    {
+      "qid": "q-043",
+      "status": "tentative",
+      "conclusion": "现场阶段在停车窗口内完成联锁功能验证 96 项、报警联动验证 214 项，现场阶段全部通过且无一项以跳过方式关闭。现场验证采用注错方式覆盖传感器断线、通道短路与会话超时三类故障注入，每类不少于 30 次。",
+      "statements": [
+        "现场阶段完成联锁功能验证96项",
+        "现场阶段完成报警联动验证214项",
+        "现场阶段全部通过",
+        "现场验证采用注错方式",
+        "覆盖传感器断线故障注入不少于30次",
+        "覆盖通道短路故障注入不少于30次",
+        "覆盖会话超时故障注入不少于30次"
+      ],
+      "verdicts": [
+        {
+          "statement": "现场阶段完成联锁功能验证96项",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "现场阶段完成报警联动验证214项",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "现场阶段全部通过",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "现场验证采用注错方式",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "覆盖传感器断线故障注入不少于30次",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "覆盖通道短路故障注入不少于30次",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "覆盖会话超时故障注入不少于30次",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "verdicts_top5": [
+        {
+          "statement": "现场阶段完成联锁功能验证96项",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "现场阶段完成报警联动验证214项",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "现场阶段全部通过",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "现场验证采用注错方式",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "覆盖传感器断线故障注入不少于30次",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "覆盖通道短路故障注入不少于30次",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "覆盖会话超时故障注入不少于30次",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "faith_cited": {
+        "n_statements": 7,
+        "n_gradable": 7,
+        "n_unparsable": 0,
+        "n_supported": 7,
+        "value": 1.0,
+        "reading": "7/7 = 100.00%"
+      },
+      "faith_top5": {
+        "n_statements": 7,
+        "n_gradable": 7,
+        "n_unparsable": 0,
+        "n_supported": 7,
+        "value": 1.0,
+        "reading": "7/7 = 100.00%"
+      },
+      "reverse_q": [
+        "现场阶段共完成了多少项联锁功能验证？",
+        "在验证过程中，每类故障注入进行了多少次？",
+        "现场阶段的验证是否全部通过，有无未通过的情况？"
+      ],
+      "answer_relevance": {
+        "n_questions": 3,
+        "sims": [
+          0.7396,
+          0.628,
+          0.6357
+        ],
+        "value": 0.6678,
+        "reading": "mean cos = 0.6678（n=3）"
+      },
+      "judge": {
+        "label": 1,
+        "reason": "成立",
+        "span": "现场阶段在停车窗口内完成联锁功能验证 96 项、报警联动验证 214 项，现场阶段全部通过且无一项以跳过方式关闭。",
+        "why": "",
+        "truncated": false,
+        "rubric": "answer_correct"
+      }
+    },
+    {
+      "qid": "q-044",
+      "status": "refuse",
+      "conclusion": "",
+      "statements": [],
+      "verdicts": [],
+      "verdicts_top5": [],
+      "faith_cited": {
+        "n_statements": 0,
+        "n_gradable": 0,
+        "n_unparsable": 0,
+        "n_supported": 0,
+        "value": null,
+        "reading": "不适用（无可判陈述）"
+      },
+      "faith_top5": {
+        "n_statements": 0,
+        "n_gradable": 0,
+        "n_unparsable": 0,
+        "n_supported": 0,
+        "value": null,
+        "reading": "不适用（无可判陈述）"
+      },
+      "reverse_q": [],
+      "answer_relevance": {
+        "n_questions": 0,
+        "value": 0.0,
+        "reading": "noncommittal ⇒ 0.0（RAGAS 官方口径）"
+      },
+      "judge": {
+        "label": null,
+        "reason": "无直接答案",
+        "span": "",
+        "why": "unjudgeable_or_illegal_label",
+        "truncated": false,
+        "rubric": "disposition_correct"
+      }
+    },
+    {
+      "qid": "q-045",
+      "status": "tentative",
+      "conclusion": "联锁摘除有效期不超过24小时",
+      "statements": [
+        "联锁摘除有效期不超过24小时"
+      ],
+      "verdicts": [
+        {
+          "statement": "联锁摘除有效期不超过24小时",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "verdicts_top5": [
+        {
+          "statement": "联锁摘除有效期不超过24小时",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "faith_cited": {
+        "n_statements": 1,
+        "n_gradable": 1,
+        "n_unparsable": 0,
+        "n_supported": 1,
+        "value": 1.0,
+        "reading": "1/1 = 100.00%"
+      },
+      "faith_top5": {
+        "n_statements": 1,
+        "n_gradable": 1,
+        "n_unparsable": 0,
+        "n_supported": 1,
+        "value": 1.0,
+        "reading": "1/1 = 100.00%"
+      },
+      "reverse_q": [
+        "联锁摘除的有效期是多久？",
+        "联锁摘除的最长时间可以持续多久？",
+        "进行联锁摘除的操作通常在什么情况下使用？"
+      ],
+      "answer_relevance": {
+        "n_questions": 3,
+        "sims": [
+          0.805,
+          0.8091,
+          0.7495
+        ],
+        "value": 0.7879,
+        "reading": "mean cos = 0.7879（n=3）"
+      },
+      "judge": {
+        "label": 1,
+        "reason": "材料支持",
+        "span": "联锁摘除有效期不超过24小时，超时须重新审批。",
+        "why": "",
+        "truncated": false,
+        "rubric": "answer_correct"
+      }
+    },
+    {
+      "qid": "q-046",
+      "status": "tentative",
+      "conclusion": "采集网关须在断电后5分钟内以本地缓存方式续录，缓存容量支持4小时连续记录；供电恢复后自动补传并按发生时间重排。",
+      "statements": [
+        "采集网关在断电后5分钟内续录",
+        "缓存容量支持4小时连续记录",
+        "供电恢复后自动补传",
+        "按发生时间重排记录"
+      ],
+      "verdicts": [
+        {
+          "statement": "采集网关在断电后5分钟内续录",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "缓存容量支持4小时连续记录",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "供电恢复后自动补传",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "按发生时间重排记录",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "verdicts_top5": [
+        {
+          "statement": "采集网关在断电后5分钟内续录",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "缓存容量支持4小时连续记录",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "供电恢复后自动补传",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "按发生时间重排记录",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "faith_cited": {
+        "n_statements": 4,
+        "n_gradable": 4,
+        "n_unparsable": 0,
+        "n_supported": 4,
+        "value": 1.0,
+        "reading": "4/4 = 100.00%"
+      },
+      "faith_top5": {
+        "n_statements": 4,
+        "n_gradable": 4,
+        "n_unparsable": 0,
+        "n_supported": 4,
+        "value": 1.0,
+        "reading": "4/4 = 100.00%"
+      },
+      "reverse_q": [
+        "采集网关的本地缓存容量是多少？",
+        "采集网关在断电后可以续录多长时间？",
+        "供电恢复后，采集网关是如何补传数据的？"
+      ],
+      "answer_relevance": {
+        "n_questions": 3,
+        "sims": [
+          0.6119,
+          0.7449,
+          0.6564
+        ],
+        "value": 0.6711,
+        "reading": "mean cos = 0.6711（n=3）"
+      },
+      "judge": {
+        "label": 1,
+        "reason": "成立",
+        "span": "采集网关须在断电后5分钟内以本地缓存方式续录，缓存容量支持4小时连续记录；供电恢复后自动补传并按发生时间重排。",
+        "why": "",
+        "truncated": false,
+        "rubric": "answer_correct"
+      }
+    },
+    {
+      "qid": "q-047",
+      "status": "refuse",
+      "conclusion": "",
+      "statements": [],
+      "verdicts": [],
+      "verdicts_top5": [],
+      "faith_cited": {
+        "n_statements": 0,
+        "n_gradable": 0,
+        "n_unparsable": 0,
+        "n_supported": 0,
+        "value": null,
+        "reading": "不适用（无可判陈述）"
+      },
+      "faith_top5": {
+        "n_statements": 0,
+        "n_gradable": 0,
+        "n_unparsable": 0,
+        "n_supported": 0,
+        "value": null,
+        "reading": "不适用（无可判陈述）"
+      },
+      "reverse_q": [],
+      "answer_relevance": {
+        "n_questions": 0,
+        "value": 0.0,
+        "reading": "noncommittal ⇒ 0.0（RAGAS 官方口径）"
+      },
+      "judge": {
+        "label": 1,
+        "reason": "材料未提及切换阈值",
+        "span": "",
+        "why": "",
+        "truncated": false,
+        "rubric": "disposition_correct"
+      }
+    },
+    {
+      "qid": "q-048",
+      "status": "tentative",
+      "conclusion": "客户当前拨备覆盖率稳定在 182% 至 196% 区间",
+      "statements": [
+        "客户当前拨备覆盖率稳定在182%至196%区间"
+      ],
+      "verdicts": [
+        {
+          "statement": "客户当前拨备覆盖率稳定在182%至196%区间",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "verdicts_top5": [
+        {
+          "statement": "客户当前拨备覆盖率稳定在182%至196%区间",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "faith_cited": {
+        "n_statements": 1,
+        "n_gradable": 1,
+        "n_unparsable": 0,
+        "n_supported": 1,
+        "value": 1.0,
+        "reading": "1/1 = 100.00%"
+      },
+      "faith_top5": {
+        "n_statements": 1,
+        "n_gradable": 1,
+        "n_unparsable": 0,
+        "n_supported": 1,
+        "value": 1.0,
+        "reading": "1/1 = 100.00%"
+      },
+      "reverse_q": [
+        "客户的拨备覆盖率是多少？",
+        "客户的拨备覆盖率波动范围是多少？",
+        "这个信息是针对哪个时间段的？"
+      ],
+      "answer_relevance": {
+        "n_questions": 3,
+        "sims": [
+          0.7683,
+          0.7849,
+          0.5918
+        ],
+        "value": 0.715,
+        "reading": "mean cos = 0.7150（n=3）"
+      },
+      "judge": {
+        "label": 1,
+        "reason": "成立",
+        "span": "客户当前拨备覆盖率稳定在 182% 至 196% 区间",
+        "why": "",
+        "truncated": false,
+        "rubric": "answer_correct"
+      }
+    },
+    {
+      "qid": "q-049",
+      "status": "tentative",
+      "conclusion": "接口IF-FIN-0012使用业务日期加企业流水号双字段联合判重",
+      "statements": [
+        "接口IF-FIN-0012使用业务日期加企业流水号双字段联合判重"
+      ],
+      "verdicts": [
+        {
+          "statement": "接口IF-FIN-0012使用业务日期加企业流水号双字段联合判重",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "verdicts_top5": [
+        {
+          "statement": "接口IF-FIN-0012使用业务日期加企业流水号双字段联合判重",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "faith_cited": {
+        "n_statements": 1,
+        "n_gradable": 1,
+        "n_unparsable": 0,
+        "n_supported": 1,
+        "value": 1.0,
+        "reading": "1/1 = 100.00%"
+      },
+      "faith_top5": {
+        "n_statements": 1,
+        "n_gradable": 1,
+        "n_unparsable": 0,
+        "n_supported": 1,
+        "value": 1.0,
+        "reading": "1/1 = 100.00%"
+      },
+      "reverse_q": [
+        "接口IF-FIN-0012中使用哪些字段进行重复数据检查？",
+        "接口IF-FIN-0012中的业务日期字段具体指的是什么？",
+        "接口IF-FIN-0012中的企业流水号是如何生成的？"
+      ],
+      "answer_relevance": {
+        "n_questions": 3,
+        "sims": [
+          0.5933,
+          0.5257,
+          0.5311
+        ],
+        "value": 0.55,
+        "reading": "mean cos = 0.5500（n=3）"
+      },
+      "judge": {
+        "label": 1,
+        "reason": "成立",
+        "span": "幂等控制以业务日期加企业流水号双字段联合判重，判重窗口保留 7 个自然日。",
+        "why": "",
+        "truncated": false,
+        "rubric": "answer_correct"
+      }
+    },
+    {
+      "qid": "q-050",
+      "status": "answer",
+      "conclusion": "操作员连续拒绝三条建议后，平台会暂停该回路建议30分钟",
+      "statements": [
+        "操作员连续拒绝三条建议",
+        "平台会暂停该回路建议30分钟"
+      ],
+      "verdicts": [
+        {
+          "statement": "操作员连续拒绝三条建议",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "平台会暂停该回路建议30分钟",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "verdicts_top5": [
+        {
+          "statement": "操作员连续拒绝三条建议",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "平台会暂停该回路建议30分钟",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "faith_cited": {
+        "n_statements": 2,
+        "n_gradable": 2,
+        "n_unparsable": 0,
+        "n_supported": 2,
+        "value": 1.0,
+        "reading": "2/2 = 100.00%"
+      },
+      "faith_top5": {
+        "n_statements": 2,
+        "n_gradable": 2,
+        "n_unparsable": 0,
+        "n_supported": 2,
+        "value": 1.0,
+        "reading": "2/2 = 100.00%"
+      },
+      "reverse_q": [
+        "连续拒绝多少条建议后平台会暂停回路？",
+        "暂停回路的时间是多少？",
+        "谁会受到回路暂停的影响？"
+      ],
+      "answer_relevance": {
+        "n_questions": 3,
+        "sims": [
+          0.858,
+          0.6932,
+          0.608
+        ],
+        "value": 0.7197,
+        "reading": "mean cos = 0.7197（n=3）"
+      },
+      "judge": {
+        "label": 1,
+        "reason": "成立",
+        "span": "同一回路连续 3 条建议被操作员拒绝后，平台须暂停该回路建议 30 分钟",
+        "why": "",
+        "truncated": false,
+        "rubric": "answer_correct"
+      }
+    },
+    {
+      "qid": "q-051",
+      "status": "refuse",
+      "conclusion": "",
+      "statements": [],
+      "verdicts": [],
+      "verdicts_top5": [],
+      "faith_cited": {
+        "n_statements": 0,
+        "n_gradable": 0,
+        "n_unparsable": 0,
+        "n_supported": 0,
+        "value": null,
+        "reading": "不适用（无可判陈述）"
+      },
+      "faith_top5": {
+        "n_statements": 0,
+        "n_gradable": 0,
+        "n_unparsable": 0,
+        "n_supported": 0,
+        "value": null,
+        "reading": "不适用（无可判陈述）"
+      },
+      "reverse_q": [],
+      "answer_relevance": {
+        "n_questions": 0,
+        "value": 0.0,
+        "reading": "noncommittal ⇒ 0.0（RAGAS 官方口径）"
+      },
+      "judge": {
+        "label": 1,
+        "reason": "材料未提及工单生成规则",
+        "span": "",
+        "why": "",
+        "truncated": false,
+        "rubric": "disposition_correct"
+      }
+    },
+    {
+      "qid": "q-052",
+      "status": "refuse",
+      "conclusion": "",
+      "statements": [],
+      "verdicts": [],
+      "verdicts_top5": [],
+      "faith_cited": {
+        "n_statements": 0,
+        "n_gradable": 0,
+        "n_unparsable": 0,
+        "n_supported": 0,
+        "value": null,
+        "reading": "不适用（无可判陈述）"
+      },
+      "faith_top5": {
+        "n_statements": 0,
+        "n_gradable": 0,
+        "n_unparsable": 0,
+        "n_supported": 0,
+        "value": null,
+        "reading": "不适用（无可判陈述）"
+      },
+      "reverse_q": [],
+      "answer_relevance": {
+        "n_questions": 0,
+        "value": 0.0,
+        "reading": "noncommittal ⇒ 0.0（RAGAS 官方口径）"
+      },
+      "judge": {
+        "label": 1,
+        "reason": "空回答",
+        "span": "",
+        "why": "",
+        "truncated": false,
+        "rubric": "disposition_correct"
+      }
+    },
+    {
+      "qid": "q-053",
+      "status": "answer",
+      "conclusion": "验收以两地三中心架构下连续两次成功演练为必要条件，且两次演练之间不得存在未闭环的高级缺陷",
+      "statements": [
+        "验收以两地三中心架构下连续两次成功演练为必要条件",
+        "两次演练之间不得存在未闭环的高级缺陷"
+      ],
+      "verdicts": [
+        {
+          "statement": "验收以两地三中心架构下连续两次成功演练为必要条件",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "两次演练之间不得存在未闭环的高级缺陷",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "verdicts_top5": [
+        {
+          "statement": "验收以两地三中心架构下连续两次成功演练为必要条件",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "两次演练之间不得存在未闭环的高级缺陷",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "faith_cited": {
+        "n_statements": 2,
+        "n_gradable": 2,
+        "n_unparsable": 0,
+        "n_supported": 2,
+        "value": 1.0,
+        "reading": "2/2 = 100.00%"
+      },
+      "faith_top5": {
+        "n_statements": 2,
+        "n_gradable": 2,
+        "n_unparsable": 0,
+        "n_supported": 2,
+        "value": 1.0,
+        "reading": "2/2 = 100.00%"
+      },
+      "reverse_q": [
+        "两地三中心架构下的连续两次成功演练是如何定义的？",
+        "高级缺陷未闭环的情况下，是否仍然可以进行验收？",
+        "验收的标准是否适用于所有类型的演练？"
+      ],
+      "answer_relevance": {
+        "n_questions": 3,
+        "sims": [
+          0.6312,
+          0.5502,
+          0.6
+        ],
+        "value": 0.5938,
+        "reading": "mean cos = 0.5938（n=3）"
+      },
+      "judge": {
+        "label": 1,
+        "reason": "成立",
+        "span": "验收以两地三中心架构下连续两次成功演练为必要条件，且两次演练之间不得存在未闭环的高级缺陷",
+        "why": "",
+        "truncated": false,
+        "rubric": "answer_correct"
+      }
+    },
+    {
+      "qid": "q-054",
+      "status": "answer",
+      "conclusion": "现状诊断；方案定型；试点验证；规模推广；成效固化",
+      "statements": [
+        "五步交付法包括现状诊断",
+        "五步交付法包括方案定型",
+        "五步交付法包括试点验证",
+        "五步交付法包括规模推广",
+        "五步交付法包括成效固化"
+      ],
+      "verdicts": [
+        {
+          "statement": "五步交付法包括现状诊断",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "五步交付法包括方案定型",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "五步交付法包括试点验证",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "五步交付法包括规模推广",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "五步交付法包括成效固化",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "verdicts_top5": [
+        {
+          "statement": "五步交付法包括现状诊断",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "五步交付法包括方案定型",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "五步交付法包括试点验证",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "五步交付法包括规模推广",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "五步交付法包括成效固化",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "faith_cited": {
+        "n_statements": 5,
+        "n_gradable": 5,
+        "n_unparsable": 0,
+        "n_supported": 5,
+        "value": 1.0,
+        "reading": "5/5 = 100.00%"
+      },
+      "faith_top5": {
+        "n_statements": 5,
+        "n_gradable": 5,
+        "n_unparsable": 0,
+        "n_supported": 5,
+        "value": 1.0,
+        "reading": "5/5 = 100.00%"
+      },
+      "reverse_q": [
+        "这个项目的整体流程是什么？",
+        "在哪个阶段会进行试点验证？",
+        "最终目的是要达到什么样的成效？"
+      ],
+      "answer_relevance": {
+        "n_questions": 3,
+        "sims": [
+          0.5644,
+          0.4973,
+          0.4231
+        ],
+        "value": 0.4949,
+        "reading": "mean cos = 0.4949（n=3）"
+      },
+      "judge": {
+        "label": 1,
+        "reason": "成立",
+        "span": "交付方法与过程域映射：项目全程按公司五步交付法组织，依次为现状诊断、方案定型、试点验证、规模推广与成效固化五个阶段。",
+        "why": "",
+        "truncated": false,
+        "rubric": "answer_correct"
+      }
+    },
+    {
+      "qid": "q-055",
+      "status": "answer",
+      "conclusion": "P1 判定依据为任一在用的 SIS 安全仪表系统回路失去保护功能或两条以上可燃气体探测回路同时失效。",
+      "statements": [
+        "P1判定依据为任一在用的SIS安全仪表系统回路失去保护功能"
+      ],
+      "verdicts": [
+        {
+          "statement": "P1判定依据为任一在用的SIS安全仪表系统回路失去保护功能",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "verdicts_top5": [
+        {
+          "statement": "P1判定依据为任一在用的SIS安全仪表系统回路失去保护功能",
+          "verdict": 0,
+          "basis": ""
+        }
+      ],
+      "faith_cited": {
+        "n_statements": 1,
+        "n_gradable": 1,
+        "n_unparsable": 0,
+        "n_supported": 1,
+        "value": 1.0,
+        "reading": "1/1 = 100.00%"
+      },
+      "faith_top5": {
+        "n_statements": 1,
+        "n_gradable": 1,
+        "n_unparsable": 0,
+        "n_supported": 0,
+        "value": 0.0,
+        "reading": "0/1 = 0.00%"
+      },
+      "reverse_q": [
+        "P1判定依据是什么？",
+        "哪些情况会被判定为P1？",
+        "SIS安全仪表系统回路失去保护功能的具体情形有哪些？"
+      ],
+      "answer_relevance": {
+        "n_questions": 3,
+        "sims": [
+          0.5851,
+          0.5827,
+          0.4986
+        ],
+        "value": 0.5555,
+        "reading": "mean cos = 0.5555（n=3）"
+      },
+      "judge": {
+        "label": 1,
+        "reason": "成立",
+        "span": "P1 为任一在用的 SIS 安全仪表系统回路失去保护功能或两条以上可燃气体探测回路同时失效。",
+        "why": "",
+        "truncated": false,
+        "rubric": "answer_correct"
+      }
+    },
+    {
+      "qid": "q-056",
+      "status": "answer",
+      "conclusion": "本项目登记了需求管理、项目计划、配置管理与决策分析四个过程域的度量项。；按 CMMI 3 级过程域映射要求登记度量项 9 类。；补充了需求变更管理与配置管理两个过程域的度量口径。；完成需求管理、配置管理与验证三个过程域的度量归档。；归档度量样本 2410 条，需求变更条目 388 条。",
+      "statements": [
+        "本项目登记了需求管理过程域的度量项",
+        "本项目登记了项目计划过程域的度量项",
+        "本项目登记了配置管理过程域的度量项",
+        "本项目登记了决策分析过程域的度量项",
+        "本项目登记了度量项9类",
+        "补充了需求变更管理过程域的度量口径",
+        "补充了配置管理过程域的度量口径",
+        "完成了需求管理过程域的度量归档",
+        "完成了配置管理过程域的度量归档",
+        "完成了验证过程域的度量归档",
+        "归档度量样本2410条",
+        "归档需求变更条目388条"
+      ],
+      "verdicts": [
+        {
+          "statement": "本项目登记了需求管理过程域的度量项",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "本项目登记了项目计划过程域的度量项",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "本项目登记了配置管理过程域的度量项",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "本项目登记了决策分析过程域的度量项",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "本项目登记了度量项9类",
+          "verdict": 0,
+          "basis": ""
+        },
+        {
+          "statement": "补充了需求变更管理过程域的度量口径",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "补充了配置管理过程域的度量口径",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "完成了需求管理过程域的度量归档",
+          "verdict": 0,
+          "basis": ""
+        },
+        {
+          "statement": "完成了配置管理过程域的度量归档",
+          "verdict": 0,
+          "basis": ""
+        },
+        {
+          "statement": "完成了验证过程域的度量归档",
+          "verdict": 0,
+          "basis": ""
+        },
+        {
+          "statement": "归档度量样本2410条",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "归档需求变更条目388条",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "verdicts_top5": [
+        {
+          "statement": "本项目登记了需求管理过程域的度量项",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "本项目登记了项目计划过程域的度量项",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "本项目登记了配置管理过程域的度量项",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "本项目登记了决策分析过程域的度量项",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "本项目登记了度量项9类",
+          "verdict": 0,
+          "basis": ""
+        },
+        {
+          "statement": "补充了需求变更管理过程域的度量口径",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "补充了配置管理过程域的度量口径",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "完成了需求管理过程域的度量归档",
+          "verdict": 0,
+          "basis": ""
+        },
+        {
+          "statement": "完成了配置管理过程域的度量归档",
+          "verdict": 0,
+          "basis": ""
+        },
+        {
+          "statement": "完成了验证过程域的度量归档",
+          "verdict": 0,
+          "basis": ""
+        },
+        {
+          "statement": "归档度量样本2410条",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "归档需求变更条目388条",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "faith_cited": {
+        "n_statements": 12,
+        "n_gradable": 12,
+        "n_unparsable": 0,
+        "n_supported": 8,
+        "value": 0.6667,
+        "reading": "8/12 = 66.67%"
+      },
+      "faith_top5": {
+        "n_statements": 12,
+        "n_gradable": 12,
+        "n_unparsable": 0,
+        "n_supported": 8,
+        "value": 0.6667,
+        "reading": "8/12 = 66.67%"
+      },
+      "reverse_q": [
+        "本项目总共登记了多少类度量项？",
+        "归档的度量样本中，需求管理过程域有多少条度量样本？",
+        "补充了哪些过程域的度量口径？"
+      ],
+      "answer_relevance": {
+        "n_questions": 3,
+        "sims": [
+          0.6541,
+          0.6383,
+          0.6706
+        ],
+        "value": 0.6543,
+        "reading": "mean cos = 0.6543（n=3）"
+      },
+      "judge": {
+        "label": 1,
+        "reason": "成立",
+        "span": "按 CMMI 3 级过程域映射要求登记度量项 9 类。",
+        "why": "",
+        "truncated": false,
+        "rubric": "answer_correct"
+      }
+    },
+    {
+      "qid": "q-057",
+      "status": "answer",
+      "conclusion": "第一道防线为环境隔离，开发测试数据一律使用造数或脱敏数据。；第二道防线为出口管控，任何跨域传输须经审批工单并留存审批链。；第三道防线为内容识别，出口通道部署敏感字段自动识别与阻断。；第四道防线为审计追溯，所有访问与出口行为日志集中留存3年。",
+      "statements": [
+        "第一道防线为环境隔离",
+        "开发测试数据一律使用造数或脱敏数据",
+        "第二道防线为出口管控",
+        "任何跨域传输须经审批工单并留存审批链",
+        "第三道防线为内容识别",
+        "出口通道部署敏感字段自动识别与阻断",
+        "第四道防线为审计追溯",
+        "所有访问与出口行为日志集中留存3年"
+      ],
+      "verdicts": [
+        {
+          "statement": "第一道防线为环境隔离",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "开发测试数据一律使用造数或脱敏数据",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "第二道防线为出口管控",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "任何跨域传输须经审批工单并留存审批链",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "第三道防线为内容识别",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "出口通道部署敏感字段自动识别与阻断",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "第四道防线为审计追溯",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "所有访问与出口行为日志集中留存3年",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "verdicts_top5": [
+        {
+          "statement": "第一道防线为环境隔离",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "开发测试数据一律使用造数或脱敏数据",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "第二道防线为出口管控",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "任何跨域传输须经审批工单并留存审批链",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "第三道防线为内容识别",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "出口通道部署敏感字段自动识别与阻断",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "第四道防线为审计追溯",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "所有访问与出口行为日志集中留存3年",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "faith_cited": {
+        "n_statements": 8,
+        "n_gradable": 8,
+        "n_unparsable": 0,
+        "n_supported": 8,
+        "value": 1.0,
+        "reading": "8/8 = 100.00%"
+      },
+      "faith_top5": {
+        "n_statements": 8,
+        "n_gradable": 8,
+        "n_unparsable": 0,
+        "n_supported": 8,
+        "value": 1.0,
+        "reading": "8/8 = 100.00%"
+      },
+      "reverse_q": [
+        "这四个防线分别是什么？",
+        "每道防线的具体措施有哪些？",
+        "这些防线针对的是什么主体？"
+      ],
+      "answer_relevance": {
+        "n_questions": 3,
+        "sims": [
+          0.684,
+          0.599,
+          0.5852
+        ],
+        "value": 0.6227,
+        "reading": "mean cos = 0.6227（n=3）"
+      },
+      "judge": {
+        "label": 1,
+        "reason": "一致",
+        "span": "第一道为环境隔离，开发测试数据一律使用造数或脱敏数据；",
+        "why": "",
+        "truncated": false,
+        "rubric": "answer_correct"
+      }
+    },
+    {
+      "qid": "q-058",
+      "status": "answer",
+      "conclusion": "防爆区域划分为2区与1区两类主要区域，2区共47个单元、1区共9个单元",
+      "statements": [
+        "防爆区域划分为2区与1区两类主要区域",
+        "2区共47个单元",
+        "1区共9个单元"
+      ],
+      "verdicts": [
+        {
+          "statement": "防爆区域划分为2区与1区两类主要区域",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "2区共47个单元",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "1区共9个单元",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "verdicts_top5": [
+        {
+          "statement": "防爆区域划分为2区与1区两类主要区域",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "2区共47个单元",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "1区共9个单元",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "faith_cited": {
+        "n_statements": 3,
+        "n_gradable": 3,
+        "n_unparsable": 0,
+        "n_supported": 3,
+        "value": 1.0,
+        "reading": "3/3 = 100.00%"
+      },
+      "faith_top5": {
+        "n_statements": 3,
+        "n_gradable": 3,
+        "n_unparsable": 0,
+        "n_supported": 3,
+        "value": 1.0,
+        "reading": "3/3 = 100.00%"
+      },
+      "reverse_q": [
+        "防爆区域划分为哪几类主要区域？",
+        "2区具体有多少个单元？",
+        "1区共有多少个单元？"
+      ],
+      "answer_relevance": {
+        "n_questions": 3,
+        "sims": [
+          0.8056,
+          0.6306,
+          0.6734
+        ],
+        "value": 0.7032,
+        "reading": "mean cos = 0.7032（n=3）"
+      },
+      "judge": {
+        "label": 1,
+        "reason": "一致",
+        "span": "防爆区域划分与作业许可｜装置区按防爆区域划分原则划分为 2 区与 1 区两类主要区域，2 区共 47 个单元、1 区共 9 个单元",
+        "why": "",
+        "truncated": false,
+        "rubric": "answer_correct"
+      }
+    },
+    {
+      "qid": "q-071",
+      "status": "answer",
+      "conclusion": "装置优化平台不能修改 SIS 安全仪表系统的输出回路或整定值。",
+      "statements": [
+        "装置优化平台不能修改SIS安全仪表系统的输出回路",
+        "装置优化平台不能修改SIS安全仪表系统的整定值"
+      ],
+      "verdicts": [
+        {
+          "statement": "装置优化平台不能修改SIS安全仪表系统的输出回路",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "装置优化平台不能修改SIS安全仪表系统的整定值",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "verdicts_top5": [
+        {
+          "statement": "装置优化平台不能修改SIS安全仪表系统的输出回路",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "装置优化平台不能修改SIS安全仪表系统的整定值",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "faith_cited": {
+        "n_statements": 2,
+        "n_gradable": 2,
+        "n_unparsable": 0,
+        "n_supported": 2,
+        "value": 1.0,
+        "reading": "2/2 = 100.00%"
+      },
+      "faith_top5": {
+        "n_statements": 2,
+        "n_gradable": 2,
+        "n_unparsable": 0,
+        "n_supported": 2,
+        "value": 1.0,
+        "reading": "2/2 = 100.00%"
+      },
+      "reverse_q": [
+        "装置优化平台对SIS安全仪表系统的哪些部分不能进行修改？",
+        "哪些回路或整定值是装置优化平台不能修改的？",
+        "装置优化平台是否可以修改SIS安全仪表系统的其他部分？"
+      ],
+      "answer_relevance": {
+        "n_questions": 3,
+        "sims": [
+          0.874,
+          0.8024,
+          0.9318
+        ],
+        "value": 0.8694,
+        "reading": "mean cos = 0.8694（n=3）"
+      },
+      "judge": {
+        "label": 1,
+        "reason": "材料支持",
+        "span": "SIS 安全仪表系统独立于优化平台部署，其输出回路不得由优化类应用写入。",
+        "why": "",
+        "truncated": false,
+        "rubric": "answer_correct"
+      }
+    },
+    {
+      "qid": "q-072",
+      "status": "answer",
+      "conclusion": "进入1区作业须办理受限空间与动火两项作业票",
+      "statements": [
+        "进入1区作业须办理受限空间作业票",
+        "进入1区作业须办理动火作业票"
+      ],
+      "verdicts": [
+        {
+          "statement": "进入1区作业须办理受限空间作业票",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "进入1区作业须办理动火作业票",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "verdicts_top5": [
+        {
+          "statement": "进入1区作业须办理受限空间作业票",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "进入1区作业须办理动火作业票",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "faith_cited": {
+        "n_statements": 2,
+        "n_gradable": 2,
+        "n_unparsable": 0,
+        "n_supported": 2,
+        "value": 1.0,
+        "reading": "2/2 = 100.00%"
+      },
+      "faith_top5": {
+        "n_statements": 2,
+        "n_gradable": 2,
+        "n_unparsable": 0,
+        "n_supported": 2,
+        "value": 1.0,
+        "reading": "2/2 = 100.00%"
+      },
+      "reverse_q": [
+        "进入1区作业需要办理哪些作业票？",
+        "办理受限空间作业票和动火作业票的主体是谁？",
+        "在哪些区域作业需要办理这两项作业票？"
+      ],
+      "answer_relevance": {
+        "n_questions": 3,
+        "sims": [
+          0.8078,
+          0.6561,
+          0.7502
+        ],
+        "value": 0.738,
+        "reading": "mean cos = 0.7380（n=3）"
+      },
+      "judge": {
+        "label": 1,
+        "reason": "结论与证据一致",
+        "span": "进入1区作业须办理受限空间与动火两项作业票，作业票有效期不超过当班8小时且须每日重新确认气体检测合格。",
+        "why": "",
+        "truncated": false,
+        "rubric": "answer_correct"
+      }
+    },
+    {
+      "qid": "q-073",
+      "status": "answer",
+      "conclusion": "客户灾备架构为两地三中心，同城两个中心以双活数据中心方式承载核心业务，异地中心以异步热备方式承载关键业务；接口按控制面与数据面分离设计，控制面接口负责切换指令下发与状态查询，数据面接口仅用于同步链路健康度上报；控制面与数据面分属不同网络区域，跨区访问须经过正反向隔离策略允许的两条专用通道，其余端口一律关闭。",
+      "statements": [
+        "客户灾备架构为两地三中心",
+        "同城两个中心以双活数据中心方式承载核心业务",
+        "异地中心以异步热备方式承载关键业务",
+        "接口按控制面与数据面分离设计",
+        "控制面接口负责切换指令下发与状态查询",
+        "数据面接口仅用于同步链路健康度上报",
+        "控制面与数据面分属不同网络区域",
+        "跨区访问须经过正反向隔离策略允许的两条专用通道",
+        "其余端口一律关闭"
+      ],
+      "verdicts": [
+        {
+          "statement": "客户灾备架构为两地三中心",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "同城两个中心以双活数据中心方式承载核心业务",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "异地中心以异步热备方式承载关键业务",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "接口按控制面与数据面分离设计",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "控制面接口负责切换指令下发与状态查询",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "数据面接口仅用于同步链路健康度上报",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "控制面与数据面分属不同网络区域",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "跨区访问须经过正反向隔离策略允许的两条专用通道",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "其余端口一律关闭",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "verdicts_top5": [
+        {
+          "statement": "客户灾备架构为两地三中心",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "同城两个中心以双活数据中心方式承载核心业务",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "异地中心以异步热备方式承载关键业务",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "接口按控制面与数据面分离设计",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "控制面接口负责切换指令下发与状态查询",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "数据面接口仅用于同步链路健康度上报",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "控制面与数据面分属不同网络区域",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "跨区访问须经过正反向隔离策略允许的两条专用通道",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "其余端口一律关闭",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "faith_cited": {
+        "n_statements": 9,
+        "n_gradable": 9,
+        "n_unparsable": 0,
+        "n_supported": 9,
+        "value": 1.0,
+        "reading": "9/9 = 100.00%"
+      },
+      "faith_top5": {
+        "n_statements": 9,
+        "n_gradable": 9,
+        "n_unparsable": 0,
+        "n_supported": 9,
+        "value": 1.0,
+        "reading": "9/9 = 100.00%"
+      },
+      "reverse_q": [
+        "客户灾备架构中的同城两个中心是如何实现双活数据中心的？",
+        "接口设计中控制面接口和数据面接口各自承担什么功能？",
+        "控制面与数据面之间是如何进行跨区访问的？"
+      ],
+      "answer_relevance": {
+        "n_questions": 3,
+        "sims": [
+          0.5506,
+          0.5583,
+          0.6028
+        ],
+        "value": 0.5706,
+        "reading": "mean cos = 0.5706（n=3）"
+      },
+      "judge": {
+        "label": 1,
+        "reason": "一致",
+        "span": "接口按控制面与数据面分离设计，控制面接口负责切换指令下发与状态查询，数据面接口仅用于同步链路健康度上报",
+        "why": "",
+        "truncated": false,
+        "rubric": "answer_correct"
+      }
+    },
+    {
+      "qid": "q-074",
+      "status": "answer",
+      "conclusion": "银企直联通道改造；清算规则引擎替换；两地三中心灾备链路验证",
+      "statements": [
+        "银企直联通道改造",
+        "清算规则引擎替换",
+        "两地三中心灾备链路验证"
+      ],
+      "verdicts": [
+        {
+          "statement": "银企直联通道改造",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "清算规则引擎替换",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "两地三中心灾备链路验证",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "verdicts_top5": [
+        {
+          "statement": "银企直联通道改造",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "清算规则引擎替换",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "两地三中心灾备链路验证",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "faith_cited": {
+        "n_statements": 3,
+        "n_gradable": 3,
+        "n_unparsable": 0,
+        "n_supported": 3,
+        "value": 1.0,
+        "reading": "3/3 = 100.00%"
+      },
+      "faith_top5": {
+        "n_statements": 3,
+        "n_gradable": 3,
+        "n_unparsable": 0,
+        "n_supported": 3,
+        "value": 1.0,
+        "reading": "3/3 = 100.00%"
+      },
+      "reverse_q": [
+        "正在进行哪些具体的系统改造？",
+        "灾备链路验证的目的是什么？",
+        "清算规则引擎替换后会对清算流程产生什么影响？"
+      ],
+      "answer_relevance": {
+        "n_questions": 3,
+        "sims": [
+          0.5587,
+          0.4258,
+          0.5845
+        ],
+        "value": 0.523,
+        "reading": "mean cos = 0.5230（n=3）"
+      },
+      "judge": {
+        "label": 1,
+        "reason": "结论与证据一致",
+        "span": "交付范围含银企直联通道改造、清算规则引擎替换与两地三中心灾备链路验证。",
+        "why": "",
+        "truncated": false,
+        "rubric": "answer_correct"
+      }
+    },
+    {
+      "qid": "q-075",
+      "status": "answer",
+      "conclusion": "42分钟（全量恢复）；71分钟（含校核的端到端恢复）",
+      "statements": [
+        "全量恢复42分钟",
+        "含校核的端到端恢复71分钟"
+      ],
+      "verdicts": [
+        {
+          "statement": "全量恢复42分钟",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "含校核的端到端恢复71分钟",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "verdicts_top5": [
+        {
+          "statement": "全量恢复42分钟",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "含校核的端到端恢复71分钟",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "faith_cited": {
+        "n_statements": 2,
+        "n_gradable": 2,
+        "n_unparsable": 0,
+        "n_supported": 2,
+        "value": 1.0,
+        "reading": "2/2 = 100.00%"
+      },
+      "faith_top5": {
+        "n_statements": 2,
+        "n_gradable": 2,
+        "n_unparsable": 0,
+        "n_supported": 2,
+        "value": 1.0,
+        "reading": "2/2 = 100.00%"
+      },
+      "reverse_q": [
+        "全量恢复的平均时间是多少？",
+        "包含校核在内的端到端恢复的总时间是多少？",
+        "这次恢复操作是针对什么系统的？"
+      ],
+      "answer_relevance": {
+        "n_questions": 3,
+        "sims": [
+          0.5429,
+          0.6824,
+          0.5643
+        ],
+        "value": 0.5965,
+        "reading": "mean cos = 0.5965（n=3）"
+      },
+      "judge": {
+        "label": 1,
+        "reason": "成立",
+        "span": "实测全量恢复时长为 42 分钟、含校核的端到端恢复时长为 71 分钟",
+        "why": "",
+        "truncated": false,
+        "rubric": "answer_correct"
+      }
+    },
+    {
+      "qid": "q-076",
+      "status": "answer",
+      "conclusion": "现状诊断阶段完成8.4万个台区的线损分布画像；成效固化阶段交付指标维持机制与责任矩阵",
+      "statements": [
+        "现状诊断阶段完成8.4万个台区的线损分布画像",
+        "成效固化阶段交付指标维持机制与责任矩阵"
+      ],
+      "verdicts": [
+        {
+          "statement": "现状诊断阶段完成8.4万个台区的线损分布画像",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "成效固化阶段交付指标维持机制与责任矩阵",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "verdicts_top5": [
+        {
+          "statement": "现状诊断阶段完成8.4万个台区的线损分布画像",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "成效固化阶段交付指标维持机制与责任矩阵",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "faith_cited": {
+        "n_statements": 2,
+        "n_gradable": 2,
+        "n_unparsable": 0,
+        "n_supported": 2,
+        "value": 1.0,
+        "reading": "2/2 = 100.00%"
+      },
+      "faith_top5": {
+        "n_statements": 2,
+        "n_gradable": 2,
+        "n_unparsable": 0,
+        "n_supported": 2,
+        "value": 1.0,
+        "reading": "2/2 = 100.00%"
+      },
+      "reverse_q": [
+        "现状诊断阶段完成了多少个台区的线损分布画像？",
+        "成效固化阶段交付了哪些指标维持机制？",
+        "成效固化阶段的责任矩阵是如何构建的？"
+      ],
+      "answer_relevance": {
+        "n_questions": 3,
+        "sims": [
+          0.7149,
+          0.5886,
+          0.5118
+        ],
+        "value": 0.6051,
+        "reading": "mean cos = 0.6051（n=3）"
+      },
+      "judge": {
+        "label": 1,
+        "reason": "一致",
+        "span": "现状诊断阶段完成 8.4 万个台区的线损分布画像；成效固化阶段交付指标维持机制与责任矩阵",
+        "why": "",
+        "truncated": false,
+        "rubric": "answer_correct"
+      }
+    },
+    {
+      "qid": "q-077",
+      "status": "answer",
+      "conclusion": "金融线 P1 判定为清算链路整体中断或资金差错外溢；P1 事件须在 15 分钟内启动应急响应，并同时按 ITIL P1 流程成立事件指挥组",
+      "statements": [
+        "金融线P1判定为清算链路整体中断或资金差错外溢",
+        "P1事件须在15分钟内启动应急响应",
+        "P1事件同时按ITILP1流程成立事件指挥组"
+      ],
+      "verdicts": [
+        {
+          "statement": "金融线P1判定为清算链路整体中断或资金差错外溢",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "P1事件须在15分钟内启动应急响应",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "P1事件同时按ITILP1流程成立事件指挥组",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "verdicts_top5": [
+        {
+          "statement": "金融线P1判定为清算链路整体中断或资金差错外溢",
+          "verdict": 0,
+          "basis": ""
+        },
+        {
+          "statement": "P1事件须在15分钟内启动应急响应",
+          "verdict": 0,
+          "basis": ""
+        },
+        {
+          "statement": "P1事件同时按ITILP1流程成立事件指挥组",
+          "verdict": 0,
+          "basis": ""
+        }
+      ],
+      "faith_cited": {
+        "n_statements": 3,
+        "n_gradable": 3,
+        "n_unparsable": 0,
+        "n_supported": 3,
+        "value": 1.0,
+        "reading": "3/3 = 100.00%"
+      },
+      "faith_top5": {
+        "n_statements": 3,
+        "n_gradable": 3,
+        "n_unparsable": 0,
+        "n_supported": 0,
+        "value": 0.0,
+        "reading": "0/3 = 0.00%"
+      },
+      "reverse_q": [
+        "金融线P1事件的定义是什么？",
+        "P1事件的应急响应时间要求是多少？",
+        "成立事件指挥组的依据是什么流程？"
+      ],
+      "answer_relevance": {
+        "n_questions": 3,
+        "sims": [
+          0.6722,
+          0.6681,
+          0.5093
+        ],
+        "value": 0.6165,
+        "reading": "mean cos = 0.6165（n=3）"
+      },
+      "judge": {
+        "label": 1,
+        "reason": "一致",
+        "span": "P1 为清算链路整体中断或资金差错外溢；P1 事件须在 15 分钟内启动应急响应，并同时按 ITIL P1 流程成立事件指挥组",
+        "why": "",
+        "truncated": false,
+        "rubric": "answer_correct"
+      }
+    },
+    {
+      "qid": "q-078",
+      "status": "answer",
+      "conclusion": "P1 为 SCADA 主站功能失效或 30 座以上厂站失联；须在 15 分钟内启动应急响应并同步报告客户调度部门；处置过程中每一关键动作均须口头复述确认并录音留存",
+      "statements": [
+        "P1 为 SCADA 主站功能失效或 30 座以上厂站失联",
+        "须在 15 分钟内启动应急响应",
+        "同步报告客户调度部门",
+        "处置过程中每一关键动作均须口头复述确认并录音留存"
+      ],
+      "verdicts": [
+        {
+          "statement": "P1 为 SCADA 主站功能失效或 30 座以上厂站失联",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "须在 15 分钟内启动应急响应",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "同步报告客户调度部门",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "处置过程中每一关键动作均须口头复述确认并录音留存",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "verdicts_top5": [
+        {
+          "statement": "P1 为 SCADA 主站功能失效或 30 座以上厂站失联",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "须在 15 分钟内启动应急响应",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "同步报告客户调度部门",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "处置过程中每一关键动作均须口头复述确认并录音留存",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "faith_cited": {
+        "n_statements": 4,
+        "n_gradable": 4,
+        "n_unparsable": 0,
+        "n_supported": 4,
+        "value": 1.0,
+        "reading": "4/4 = 100.00%"
+      },
+      "faith_top5": {
+        "n_statements": 4,
+        "n_gradable": 4,
+        "n_unparsable": 0,
+        "n_supported": 4,
+        "value": 1.0,
+        "reading": "4/4 = 100.00%"
+      },
+      "reverse_q": [
+        "P1 主站功能失效或30座以上厂站失联的应急响应时间是多少？",
+        "处置过程中需要录音留存的关键动作有哪些？",
+        "应急响应启动后需要向哪些部门报告？"
+      ],
+      "answer_relevance": {
+        "n_questions": 3,
+        "sims": [
+          0.6484,
+          0.4326,
+          0.511
+        ],
+        "value": 0.5307,
+        "reading": "mean cos = 0.5307（n=3）"
+      },
+      "judge": {
+        "label": 1,
+        "reason": "一致",
+        "span": "P1 为 SCADA 主站功能失效或 30 座以上厂站失联；须在 15 分钟内启动应急响应并同步报告客户调度部门；处置过程中每一关键动作均须口头复述确认并录音留存",
+        "why": "",
+        "truncated": false,
+        "rubric": "answer_correct"
+      }
+    },
+    {
+      "qid": "q-079",
+      "status": "answer",
+      "conclusion": "防爆区域划分依据GB 50058-2014标准；边界密封核查386处，发现21处不合规并全部整改",
+      "statements": [
+        "防爆区域划分依据GB 50058-2014标准",
+        "边界密封核查386处",
+        "发现21处不合规",
+        "不合规的边界密封全部整改"
+      ],
+      "verdicts": [
+        {
+          "statement": "防爆区域划分依据GB 50058-2014标准",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "边界密封核查386处",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "发现21处不合规",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "不合规的边界密封全部整改",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "verdicts_top5": [
+        {
+          "statement": "防爆区域划分依据GB 50058-2014标准",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "边界密封核查386处",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "发现21处不合规",
+          "verdict": 1,
+          "basis": ""
+        },
+        {
+          "statement": "不合规的边界密封全部整改",
+          "verdict": 1,
+          "basis": ""
+        }
+      ],
+      "faith_cited": {
+        "n_statements": 4,
+        "n_gradable": 4,
+        "n_unparsable": 0,
+        "n_supported": 4,
+        "value": 1.0,
+        "reading": "4/4 = 100.00%"
+      },
+      "faith_top5": {
+        "n_statements": 4,
+        "n_gradable": 4,
+        "n_unparsable": 0,
+        "n_supported": 4,
+        "value": 1.0,
+        "reading": "4/4 = 100.00%"
+      },
+      "reverse_q": [
+        "防爆区域依据的是哪个国家标准？",
+        "进行了边界密封核查的总共有多少处？",
+        "整改了多少处不合规的边界密封？"
+      ],
+      "answer_relevance": {
+        "n_questions": 3,
+        "sims": [
+          0.7947,
+          0.6091,
+          0.6067
+        ],
+        "value": 0.6702,
+        "reading": "mean cos = 0.6702（n=3）"
+      },
+      "judge": {
+        "label": 1,
+        "reason": "一致",
+        "span": "防爆区域划分依据GB 50058-2014标准；边界密封核查386处，发现21处不合规并全部整改",
+        "why": "",
+        "truncated": false,
+        "rubric": "answer_correct"
+      }
+    }
+  ],
+  "elapsed_sec": 530.0
+}

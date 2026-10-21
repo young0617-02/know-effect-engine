@@ -82,6 +82,26 @@ class Settings(BaseSettings):
     # 本机测试要覆盖这条通道时，由 `tests/conftest.py` 显式打开，不在生产默认里留后门。
     allow_header_identity: bool = False
 
+    # ---- 可观测（Prometheus 指标 / 结构化日志 / Langfuse 上报） ----
+    # /metrics 只暴露闭合枚举标签（无查询文本、无用户名、无文档 id）。API 刻意只绑回环、
+    # Nginx 不反代 /metrics，所以抓取通路是「宿主 → Prometheus 容器」，不经浏览器。
+    # 要彻底关掉：KEE_METRICS_ENABLED=false，端点变 404，指标层仍在计数但没人取。
+    metrics_enabled: bool = True
+    log_level: str = "INFO"
+    log_json: bool = True
+    # Langfuse 一律**自托管**：上报载荷含问题与结论原文，云端 SaaS 等于把「数据不出域」
+    # 交给别人的运维承诺——那条约束不由代码承担，所以默认关，且开了也要过域内地址闸门。
+    langfuse_enabled: bool = False
+    langfuse_host: str = "http://127.0.0.1:30090"
+    # pk/sk 只从环境变量或 .env 读（`.env` 已被 gitignore），绝不写进任何入库文件。
+    langfuse_public_key: str = ""
+    langfuse_secret_key: str = ""
+    langfuse_flush_interval_sec: float = 2.0
+    langfuse_max_batch: int = 50
+    langfuse_timeout_sec: float = 5.0
+    # 显式越过「目标必须是回环/私网」那道闸门。开它等于书面承认数据出域，风险登记要跟上。
+    langfuse_allow_remote: bool = False
+
     # ---- 运行产物 ----
     artifact_dir: Path = Field(default=PROJECT_ROOT / "var/gate0")
 

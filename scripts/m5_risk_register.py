@@ -373,6 +373,70 @@ ADDED = [
      "重排失败时量纲标记出现 / 正常跑一个标记都不出现 / 闸门拒绝 >1 的读数 / **空分数列表不判通过**"
      "（防「空集上的真」）。既有产物的 `degraded` 列会出现新值 ⇒ 引用历史读数须附"
      "「上报口径于 2026-10-15 收紧」"),
+    ("可观测流程（A1）：无指标暴露、无链路追踪、无集中日志——MVP 里最薄的一块", CLOSED,
+     "**2026-10-16 落地**（用户令「在项目中实现 Langfuse / Prometheus / Grafana 三项功能」）。"
+     "改动只加旁路、不动判定：新增 `src/kee/obs/`（`metrics.py` / `logging.py` / `langfuse.py`）、"
+     "`infra/prometheus/` + `infra/grafana/` + `infra/docker-compose.observability.yml`、"
+     "`scripts/obs_targets.py` + `scripts/m5_observability_probe.py`，`pyproject` 加一个 `prometheus-client`。"
+     "**在线链路的门禁逻辑一行未改**：把这一层整层拔掉，问答链路照样跑；`/metrics` 是只读出口。"
+     "实测证据（`reports/m5/M5_可观测接入实测.md` + `var/gate0/m5_observability.json`）："
+     "① 七条**计数器恒等式用增量互查全绿**（轮次==e2e 样本、缓存 hit==cached=hit 轮、hit+miss==带缓存轮、"
+     "store≤miss、disabled==无缓存端点调用、top_score 样本==带缓存轮、响应体 degraded==计数增量）；"
+     "② 宿主 `/metrics` 与 Prometheus 侧同一累计值对账一致（12==12）；"
+     "③ 看板 + 告警共 **31 条 PromQL 逐条在真实例上执行：有数 22 / 本轮空 9 / 报错 0**，"
+     "另走 Grafana 的 `/api/ds/query`（面板实际用的端点）验到整条通路有值；"
+     "④ `/metrics` 文本对本轮问题原文、用户名、文档 id **零命中**；"
+     "⑤ 防回归 37 条单测（指标层 17 + Langfuse 上报器 19，含 10 条域内地址闸门矩阵 + 1 条测试替名签名护栏），"
+     "`pytest` 252 → 288。"
+     "**口径没有被稀释**：看板分位数是桶上近似值且含全部轮次，看板 p95 e2e 实测 31.5s 而 ① 门禁那条达标，"
+     "两个数都对、说的是两件事——这句话写在指标模块 docstring、看板第一块文字面板和《用户操作手册》§10.3 三处"),
+    ("埋点会不会拖慢在线链路（观测手段反噬被观测对象）", CLOSED,
+     "**2026-10-16 实测**。方法上先错后对：第一版按「先 50 次开指标、再 50 次关指标」跑两份实例，"
+     "同一端点的 Δ 在两次运行里从 −0.3ms 翻到 **+7.1ms**——**符号会翻的差不是差**，量的是进程状态；"
+     "改成**配对交错**（每对请求 A/B 各一发、奇偶换序）并在测量期间 `docker stop kee-prom`"
+     "（每 15s 那次抓取只给开指标那侧加一条竞争）。跨运行的结论**由历史账"
+     "`var/gate0/m5_observability_ab_history.json` 推导**，不写死在脚本里——写死的那句会在下一次跑完"
+     "自动变成假话，而且假得看不出来。累计 **7 次配对运行 / 21 个端点轮次**（截至 2026-10-16，"
+     "当前数以 `var/gate0/m5_observability_ab_history.json` 与报告为准——带日期就可证否）："
+     "配对差中位数分布 **−1.09 ~ +1.89ms、8 个为负、均值 0.36±0.77ms（5% 置信半宽）** ⇒ `|mean| < 临界`，"
+     "**既拒绝「有 2ms 开销」，也拿不出「确有正开销」的证据**，能站住的只有「不高于 2ms、与噪声同量级」。"
+     "同批微基准（同进程 2000 次）：`observe_qa_result` **17µs/轮**、`observe_retrieval` 5µs/轮、"
+     "`render()` 1.2ms/次 ⇒ 那不到 1ms 若真存在，来源是**多一层 `BaseHTTPMiddleware` 的包装成本**，不是打点。"
+     "为省这 ≤2ms 把计时改成纯 ASGI 中间件，会破坏与另两处中间件同构的写法，本版没做，代价如实记在这里。"
+     "两条硬约束由测试钉住：Langfuse 上报在目标端挂掉/队列满时**只计数不抛**"
+     "（`tests/test_langfuse_exporter.py::test_dead_sink_never_breaks_the_answer`），"
+     "抓取期探针异常时 `/metrics` **仍返回**（`test_scrape_probe_failure_does_not_break_metrics`）"),
+    ("`/metrics` 免鉴权：把部署形态暴露成可读时序", OPEN,
+     "**2026-10-16 新登记，且是本次改动带来的唯一新增敞口**。端点本身不返回业务内容"
+     "（标签全闭合枚举，实测对本轮问题原文/用户名/文档 id 零命中），但请求量、各阶段耗时、降级率、"
+     "依赖健康这些时序合起来能推断出系统规模与作息。当前由**三条同时成立**收口："
+     "API 只绑 127.0.0.1（`serve_api.py` 明文拒绝非回环绑定）、Nginx 只反代 `/api/`·`/healthz`·静态资源"
+     "（`/metrics` 不在里面）、标签无业务内容。**这三条里任何一条在交付方网络里不成立，就必须"
+     "`KEE_METRICS_ENABLED=false` 或给该路径加鉴权/源地址限制**——关法已实测（关掉后端点返回 404，"
+     "指标层仍在计数）。登记为敞口而不是已闭合，是因为它靠部署条件、不靠代码；"
+     "本机实测证据见 `M5_可观测接入实测.md` 第五节，代码注释在 `api/app.py:prometheus_metrics`"),
+    ("Langfuse 自托管容器未实跑（只验到契约面）", CLOSED,
+     "**2026-10-19 已实跑并闭合**（用户令「去跑一下，我要看真实 Trace 界面」）。"
+     "**代价账与出稿时的估计不符，按实测更正**：只需拉一个镜像 `langfuse/langfuse:2` = **1.12GB**"
+     "（PG18 / Redis8 本机已有，未新增下载），3 个容器常驻实测 **~259MiB 内存、CPU 0%**，"
+     "PG 数据卷 67MB 且落 `D:\\project\\var\\observability\\langfuse-pg`（**不在 C 盘**——"
+     "出稿时那句「落 C 盘 WSL2 虚拟盘」对 app 镜像成立、对数据卷不成立，因为数据卷走 bind mount）。"
+     "真服务器**收下并渲染**了走生产入口（真 HTTP + Bearer）问的三轮：trace 名 `kee.qa.round`，"
+     "瀑布 `SPAN qa.retrieve 26.46s → GENERATION qa.generate 11.21s`，Usage **1,253 → 121 token**，"
+     "Tags `cache:miss / model:hybrid / status:answer`，Metadata 里 `degraded=[dense_timeout>2500ms]` "
+     "直接可见，User=`verify-owner`、Session=`s-lf-*` 都对得上；"
+     "**拒答那条只有 retrieve span、转人工那条 0 observation**——与「早退路径不编造一次调用」的既有设计一致，"
+     "界面上如实呈现而不是补一条假的。截图 `docs/assets/langfuse/traces-list.png` 与 `trace-detail.png`。"
+     "**实跑照出两个出稿缺陷**（都在 `infra/docker-compose.langfuse.yml`，本轮已修）："
+     "① PG 挂载点写成 `/var/lib/postgresql/data`，而 **PG18 要求挂 `/var/lib/postgresql`** ⇒ 容器 crash-loop，"
+     "这个坑主栈 `docker-compose.gate0.yml` 早踩过并留了注释，这份没跑过所以原样带了进来；"
+     "② `depends_on` 没有健康条件 ⇒ Langfuse 入口的 Prisma 迁移赶在 PG 可连之前跑，"
+     "`P1001 Can't reach database server` 然后整个容器退出。已补 `healthcheck` + `service_healthy`。"
+     "**这两条正是「只验契约面」换不到的东西**：stub 采集器永远不会告诉你你的部署文件起不来。"
+     "**仍未验的三条边界留着**：① 真服务器对**非法事件**的字段级校验与部分拒绝（本轮 6 个事件全被收，"
+     "`errorList` 那条路径仍只有 stub 背书）；② 界面 Total Cost 恒 $0.00，因为 `qwen2.5:7b` 在 "
+     "Langfuse 模型价表里没有条目——要出钱数得先建 Model 定义；③ 长期保留策略、多副本、升 v3（ClickHouse）未验。"
+     "**交付默认值一字未动**：`langfuse_enabled=False`，只有本机 `.env` 打开（备份 `var/langfuse.env.bak`）"),
 ]
 
 
@@ -484,6 +548,15 @@ def main() -> int:
           "的唯一来源），接 SSO 后是降级成「外部主体 → 本地授权」的映射表，还是让 claim 直接携带部门/密级；"
           "以及网关签发的 JWT 与现有「Bearer > 请求头、头只在无登录态时生效」这条优先级的关系。"
           "留着的代价是明确的：交付物自带一套口令体系，接企业网络时是**替换**而不是配置。",
+          "8. **Langfuse 自托管要不要拉这一次镜像** —— **2026-10-19 已拍并已实跑，不再是待拍项**。"
+          "实际代价比出稿时估的小：只多一个镜像 `langfuse/langfuse:2` = **1.12GB**（PG/Redis 本机已有），"
+          "3 个容器常驻 **~259MiB 内存 / CPU 0%**，数据卷 67MB 落 `D:\\project\\var` 不是 C 盘。"
+          "跑起来之后真服务器收下事件并渲染出阶段瀑布与逐轮 I/O，**顺带照出这份 compose 的两个起不来的缺陷**"
+          "（PG18 挂载点、迁移抢跑在 PG 就绪之前），这两条是 stub 契约测试永远给不出来的——"
+          "**「只验契约面」的账在这里结清了**。仍然不影响任何门禁读数、也不作废任何人工标注；"
+          "交付默认值 `langfuse_enabled=False` 一字未动，只有本机 `.env` 打开（备份 `var/langfuse.env.bak`）。"
+          "留着的三条未验边界写在同名敞口条目里（真服务器的字段级部分拒绝、模型价表缺条目所以 Cost 恒 $0、"
+          "长期保留与 v3/ClickHouse）。",
           "", "> ADR-12（API 容器化）**已于 2026-10-12 定案**：维持「存储 + 前端进容器、API 在宿主」，"
           "「整机断网下端到端问答」划出承诺范围——它不再挂在待裁清单上。", "",
           "## 四、M5 的收口结论", "",

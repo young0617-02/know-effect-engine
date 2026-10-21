@@ -16,6 +16,7 @@ from contextlib import contextmanager
 import pytest
 
 from kee.eval.probe_guard import score_scale_violation
+from kee.retrieval.cache import SearchCache
 from kee.retrieval.milvus_store import Hit
 from kee.retrieval.pipeline import HybridRetriever
 from kee.retrieval.rbac import AccessContext
@@ -147,3 +148,73 @@ def test_score_scale_guard_on_empty_scores_reports_nothing():
     """空集不判废也不判通过——它压根没读数。这里刻意断言 None 并写明理由，
     免得日后有人把「没拒绝」读成「量纲检查过了」。"""
     assert score_scale_violation([]) is None
+
+
+class RecordingCache:
+    """只记录键的缓存替身。`make_key` 直接委托生产实现，
+    这样钉的是真的键构造，而不是替身自己定的约定。"""
+
+    def __init__(self) -> None:
+        self.keys: list[str] = []
+
+    def make_key(self, query: str, mode: str, expr: str, top_k: int) -> str:
+        return SearchCache.make_key(query, mode, expr, top_k)
+
+    def get(self, key: str, kind: str = "search"):
+        self.keys.append(key)
+        return None
+
+    def set(self, key: str, value: object, kind: str = "search") -> None:
+        return None
+
+
+def _sparse_retriever(cache: RecordingCache) -> HybridRetriever:
+    # sparse + 不重排：稠密腿不进门，测试只跑键构造这一件事
+    return HybridRetriever(FakeStore([], sparse_hits(0.9, 0.8)), scheduler=FakeSched(), cache=cache,
+                           rewrite_mode="off", mode="sparse", use_rerank=False)
+
+
+def test_rbac_expression_reaches_the_cache_key_through_the_real_call_site():
+    """权限表达式进缓存键是**越权问题**不是命中率问题：键里没有 expr，
+    金融新人问过的结果就会被能源工程师直接命中——检索层的过滤被缓存旁路掉了。"""
+    low = AccessContext(role="newcomer", industries=["金融"], max_security_level=1)
+    high = AccessContext(role="delivery_engineer", industries=["能源"], max_security_level=2)
+    cache = RecordingCache()
+    rt = _sparse_retriever(cache)
+    q = "清算链路 P1 多久响应"
+    rt.retrieve(q, low, top_k=5)
+    rt.retrieve(q, high, top_k=5)
+    assert len(cache.keys) == 2 and cache.keys[0] != cache.keys[1]
+
+    # 同身份同参数重复问 ⇒ 同一个键，否则缓存等于没开
+    again = RecordingCache()
+    rt2 = _sparse_retriever(again)
+    rt2.retrieve(q, low, top_k=5)
+    rt2.retrieve(q, low, top_k=5)
+    assert again.keys[0] == again.keys[1]
+
+
+def test_cache_key_components_are_all_live():
+    """改写模式、mode、top_k 任一分量变了都得换键——`rewrite_mode` 是折在 mode 字段里的，
+    所以这条同时钉住「换消融配置不会读到上一格的结果」。"""
+    expr = 'security_level <= 2 and industry in ["金融"]'
+    base = SearchCache.make_key("点表", "sparse+rw:off", expr, 5)
+    assert base.startswith("kee:search:")  # clear_namespace 扫这个前缀，前缀改了清场就静默失效
+    assert SearchCache.make_key("点表", "sparse+rw:off", expr, 5) == base
+    assert SearchCache.make_key("点表", "sparse+rw:sparse", expr, 5) != base
+    assert SearchCache.make_key("点表", "hybrid+rw:off", expr, 5) != base
+    assert SearchCache.make_key("点表", "sparse+rw:off", expr, 10) != base
+    assert SearchCache.make_key("点表", "sparse+rw:off", 'security_level <= 1', 5) != base
+    assert SearchCache.make_key("点表 清单", "sparse+rw:off", expr, 5) != base
+
+
+def test_cache_key_only_strips_the_query():
+    """归一化只有 `strip()`：大小写与句中空白不同仍是两个键。这是**有意的弱归一化**
+    （宁可少命中，也不要把两个语义可能不同的查询并成一个键），别读成"缓存做了查询规范化"。"""
+    expr = 'security_level <= 1'
+    assert SearchCache.make_key("RTO 要求", "sparse+rw:off", expr, 5) == \
+        SearchCache.make_key("  RTO 要求  ", "sparse+rw:off", expr, 5)
+    assert SearchCache.make_key("rto 要求", "sparse+rw:off", expr, 5) != \
+        SearchCache.make_key("RTO 要求", "sparse+rw:off", expr, 5)
+    assert SearchCache.make_key("RTO  要求", "sparse+rw:off", expr, 5) != \
+        SearchCache.make_key("RTO 要求", "sparse+rw:off", expr, 5)

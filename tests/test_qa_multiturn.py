@@ -198,7 +198,12 @@ def test_sensitive_question_with_history_never_reaches_the_rewriter():
 
 
 class MemoryCache:
-    """按 SearchCache.make_key 的同样算法实现，这样测的才是真的键构造。"""
+    """按 SearchCache.make_key 的同样算法实现，这样测的才是真的键构造。
+
+    `kind` 不是装饰：真 `SearchCache.get/set` 用它把「检索块缓存」与「改写缓存」
+    分开计数（同一实例上混着算命中率会把「检索没命中、改写命中」读成一次命中）。
+    签名一致性由 `test_memory_cache_signature_matches_search_cache` 钉住。
+    """
 
     def __init__(self):
         self.store: dict[str, dict] = {}
@@ -207,10 +212,10 @@ class MemoryCache:
         payload = json.dumps([query.strip(), mode, expr, top_k], ensure_ascii=False)
         return "kee:test:" + hashlib.sha1(payload.encode("utf-8")).hexdigest()
 
-    def get(self, key):
+    def get(self, key, kind="search"):
         return self.store.get(key)
 
-    def set(self, key, value):
+    def set(self, key, value, kind="search"):
         self.store[key] = value
 
 
@@ -289,3 +294,25 @@ def test_two_contexts_of_equal_length_and_equal_tail_still_get_own_entries():
     assert a.expanded == "甲项目的月结时限"
     assert b.expanded == "乙项目的月结时限", f"上文串了：拿到 {b.expanded}"
     assert llm.n == 2, "两条不同上文只发了一次模型调用，说明键撞在一起"
+
+def test_memory_cache_signature_matches_search_cache() -> None:
+    """测试替名的签名必须与真 `SearchCache` 一致。
+
+    这次的教训就是 `get()` 多了一个 `kind=` 参数：真实现改了、替名没跟，
+    症状是 4 个用例在 `rewrite.py:157` 抛 TypeError。那种失败至少会红；
+    更坏的形状是替名**能**吞掉多余参数（`**kw`），于是测试继续绿、生产路径没人测过。
+    """
+    import inspect
+
+    from kee.retrieval.cache import SearchCache
+
+    def params(fn) -> list[str]:
+        names = list(inspect.signature(fn).parameters)
+        # 只剥实例方法的 self：`SearchCache.make_key` 是 staticmethod，本来就没有 self，
+        # 无条件砍掉第一个参数会把 `query` 砍没（这条测试第一次跑就是这样误报的）。
+        return names[1:] if names and names[0] == "self" else names
+
+    for name in ("get", "set", "make_key"):
+        fake = params(getattr(MemoryCache, name))
+        real = params(getattr(SearchCache, name))
+        assert fake == real, f"{name} 的参数表分叉了：替名 {fake} vs 真实现 {real}"

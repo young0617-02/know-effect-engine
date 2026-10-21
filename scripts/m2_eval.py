@@ -183,6 +183,10 @@ def main() -> int:
                          "换了尺子要指到改前留档那份，由指纹检查判定可不可比）")
     ap.add_argument("--update-prev", action="store_true",
                     help="跑完把本轮读数写成对照基线（**只有确认这轮是新尺子的基准时才用**）")
+    ap.add_argument("--out", default=None,
+                    help="本轮读数写到这个路径。复验脚本必须带上它：默认路径 "
+                         "`var/gate0/m2_eval.json` 是**带 dev 网格**的那份历史证据，"
+                         "回归复跑只用 `--skip-grid`，写回去会把 `grid_dev` 抹成空 dict。")
     args = ap.parse_args()
 
     s = get_settings()
@@ -321,16 +325,18 @@ def main() -> int:
         "best_grid_cell_is_not_evidence": "网格只在 dev 上跑，用于诊断；门禁只认基线配置的全样本值",
     }
     art.mkdir(parents=True, exist_ok=True)
-    (art / "m2_eval.json").write_text(json.dumps(out, ensure_ascii=False, indent=2, default=str), encoding="utf-8")
+    out_path = Path(args.out) if args.out else art / "m2_eval.json"
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text(json.dumps(out, ensure_ascii=False, indent=2, default=str), encoding="utf-8")
     if args.update_prev:
         # 排在落盘之后：要留作基准的是**本轮**读数，而不是上一轮那份
-        shutil.copyfile(art / "m2_eval.json", prev_path)
+        shutil.copyfile(out_path, prev_path)
         print(f"[prev 指针] 本轮读数已设为对照基线：{prev_path.name}")
     store.close()
     print("\n判定:", json.dumps(gates, ensure_ascii=False), "→", "通过" if out["gates_passed"] else "不通过")
     if regression:
         print("回归:", json.dumps(regression, ensure_ascii=False))
-    print("证据：", art / "m2_eval.json")
+    print("证据：", out_path)
     if regression and regression["regressed"] is True:
         return 2
     return 0 if out["gates_passed"] else 1

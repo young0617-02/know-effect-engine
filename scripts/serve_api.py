@@ -74,6 +74,15 @@ def main() -> int:
           "内网工具确需该通道时显式设 KEE_ALLOW_HEADER_IDENTITY=true。")
     print(f"  前端：docker compose -f infra/docker-compose.m4.yml up -d"
           f"（API 不在 38000 时同批传 KEE_API_PORT={PORT}，否则 38080 反代 502）")
+    from kee.config import get_settings as _gs
+
+    s = _gs()
+    # 抓取目标端口不是常量（Windows 会随机保留 TCP 段），所以「改了端口要补哪一条」打在启动信息里
+    print(f"  指标：GET /metrics {'开' if s.metrics_enabled else '关（KEE_METRICS_ENABLED=false，端点 404）'}"
+          f" ；观测栈：uv run python scripts/obs_targets.py --port {PORT}"
+          " && docker compose -f infra/docker-compose.observability.yml up -d")
+    print(f"  Langfuse 上报：{'开 → ' + s.langfuse_host if s.langfuse_enabled else '关（默认）'}"
+          "；载荷含问题与结论原文，目标地址必须回环/私网")
     # 绑定地址只允许回环：非回环绑定等于把可伪造身份的接口开放给局域网
     if HOST not in ("127.0.0.1", "localhost", "::1"):
         print(f"[拒绝启动] KEE_API_HOST={HOST} 不是回环地址；数据不出域是硬约束。")

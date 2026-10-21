@@ -1,0 +1,159 @@
+{
+  "uid": "kee-rag",
+  "title": "KEE 知效引擎 · 在线链路",
+  "tags": ["kee", "rag"],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "30s",
+  "editable": false,
+  "time": { "from": "now-6h", "to": "now" },
+  "annotations": { "list": [] },
+  "links": [],
+  "templating": { "list": [] },
+  "__inputs": [],
+  "panels": [
+    {
+      "id": 1, "type": "stat", "title": "请求速率（近 5m）", "datasource": { "type": "prometheus", "uid": "kee" },
+      "gridPos": { "h": 5, "w": 5, "x": 0, "y": 0 },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "unit": "reqps" },
+      "targets": [{ "refId": "A", "expr": "sum(rate(kee_http_requests_total[5m]))" }]
+    },
+    {
+      "id": 2, "type": "stat", "title": "问答轮次（近 15m）", "datasource": { "type": "prometheus", "uid": "kee" },
+      "gridPos": { "h": 5, "w": 5, "x": 5, "y": 0 },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "unit": "short" },
+      "targets": [{ "refId": "A", "expr": "sum(increase(kee_qa_rounds_total[15m]))" }]
+    },
+    {
+      "id": 3, "type": "stat", "title": "检索块缓存命中率（近 30m）", "datasource": { "type": "prometheus", "uid": "kee" },
+      "gridPos": { "h": 5, "w": 5, "x": 10, "y": 0 },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "unit": "percentunit", "min": 0, "max": 1 },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(increase(kee_search_cache_ops_total{kind=\"search\",result=\"hit\"}[30m])) / clamp_min(sum(increase(kee_search_cache_ops_total{kind=\"search\",result=~\"hit|miss\"}[30m])), 0.001)"
+        }
+      ]
+    },
+    {
+      "id": 4, "type": "stat", "title": "检索最高分 ≤ 闸门 0.2 的占比（近 30m）", "datasource": { "type": "prometheus", "uid": "kee" },
+      "gridPos": { "h": 5, "w": 4, "x": 15, "y": 0 },
+      "description": "桶边界 le=0.2 就是 min_retrieval_score 那条闸门。这个数是「没过闸」的占比，越高越该去看降级那张图。注意缓存命中轮的 degraded 恒为 0。分母取 `_count`：直方图的 `_count`/`_sum` 各只有一条序列（不带 le），所以直接 sum 不会被桶数放大——这一点是实测核对过的（本机 13 个桶对应 1 条 _count）。",
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "unit": "percentunit", "min": 0, "max": 1, "thresholds": { "steps": [ { "color": "green", "value": null }, { "color": "red", "value": 0.5 } ] } },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(increase(kee_qa_top_score_bucket{le=\"0.2\"}[30m])) / clamp_min(sum(increase(kee_qa_top_score_count[30m])), 0.001)"
+        }
+      ]
+    },
+    {
+      "id": 5, "type": "stat", "title": "依赖健康（min over deps）", "datasource": { "type": "prometheus", "uid": "kee" },
+      "gridPos": { "h": 5, "w": 5, "x": 19, "y": 0 },
+      "description": "抓取期由宿主 API 实测，与 /healthz 同一份代码。1 = 全部可用。",
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "unit": "short",
+        "thresholds": { "steps": [ { "color": "red", "value": null }, { "color": "green", "value": 1 } ] } },
+      "targets": [
+        { "refId": "A", "expr": "min(kee_dependency_up)" },
+        { "refId": "B", "legendFormat": "{{dep}}", "expr": "kee_dependency_up" }
+      ]
+    },
+    {
+      "id": 6, "type": "timeseries", "title": "端到端与各阶段分位数（桶上近似值）", "datasource": { "type": "prometheus", "uid": "kee" },
+      "gridPos": { "h": 9, "w": 12, "x": 0, "y": 5 },
+      "description": "门禁那条 6s 延迟口径的权威读数由 scripts/ 离线探针产出（6s + 仅作答轮次 + first_visible）；这张图用来盯趋势与告警复现，不用来对外报数。",
+      "fieldConfig": { "defaults": { "unit": "s", "custom": { "lineWidth": 2, "fillOpacity": 8 } }, "overrides": [] },
+      "targets": [
+        { "refId": "A", "legendFormat": "e2e p95", "expr": "histogram_quantile(0.95, sum by (le) (rate(kee_qa_stage_seconds_bucket{stage=\"e2e\"}[15m])))" },
+        { "refId": "B", "legendFormat": "e2e p50", "expr": "histogram_quantile(0.50, sum by (le) (rate(kee_qa_stage_seconds_bucket{stage=\"e2e\"}[15m])))" },
+        { "refId": "C", "legendFormat": "retrieval p95", "expr": "histogram_quantile(0.95, sum by (le) (rate(kee_qa_stage_seconds_bucket{stage=\"retrieval\"}[15m])))" },
+        { "refId": "D", "legendFormat": "generate p95", "expr": "histogram_quantile(0.95, sum by (le) (rate(kee_qa_stage_seconds_bucket{stage=\"generate\"}[15m])))" },
+        { "refId": "E", "legendFormat": "first_token p95", "expr": "histogram_quantile(0.95, sum by (le) (rate(kee_qa_stage_seconds_bucket{stage=\"first_token\"}[15m])))" }
+      ]
+    },
+    {
+      "id": 7, "type": "timeseries", "title": "出口闸门分布（每 30m 轮次）", "datasource": { "type": "prometheus", "uid": "kee" },
+      "gridPos": { "h": 9, "w": 12, "x": 12, "y": 5 },
+      "description": "answered = 七个节点全走完。其余是图上的早退出口（`state[\"gated\"]` 的实际取值，本机 8 个：sensitive / weak_retrieval / generation_failed / unparseable / declared_no_evidence / no_citation / marginal_evidence_no_derivation / empty_conclusion）；出现 other 说明图上新开了出口而 GATED_LABELS 没登记，那条单测会先红。",
+      "fieldConfig": { "defaults": { "unit": "short", "custom": { "drawStyle": "line", "stacking": { "mode": "normal" } } }, "overrides": [] },
+      "targets": [
+        { "refId": "A", "legendFormat": "{{exit_gate}} / {{status}}", "expr": "sum by (exit_gate, status) (increase(kee_qa_rounds_total[30m]))" }
+      ]
+    },
+    {
+      "id": 8, "type": "timeseries", "title": "检索降级速率（按原因类）", "datasource": { "type": "prometheus", "uid": "kee" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 14 },
+      "description": "原因类是白名单收敛后的值；score_scale_out_of_range 一旦非零就是量纲漏出，属 critical（离线评测那边会直接拒出读数）。",
+      "fieldConfig": { "defaults": { "unit": "ops", "custom": { "lineWidth": 2 } }, "overrides": [] },
+      "targets": [
+        { "refId": "A", "legendFormat": "{{reason}}", "expr": "sum by (reason) (rate(kee_retrieval_degraded_total[5m]))" }
+      ]
+    },
+    {
+      "id": 9, "type": "timeseries", "title": "检索各阶段平均耗时（GPU 分时驻留看这条）", "datasource": { "type": "prometheus", "uid": "kee" },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 14 },
+      "description": "均值 = sum/count。缓存命中轮只记 cache_read，其余阶段自然没有样本——分母用的是「真的有这一步的轮次」。",
+      "fieldConfig": { "defaults": { "unit": "s", "custom": { "lineWidth": 2 } }, "overrides": [] },
+      "targets": [
+        { "refId": "A", "legendFormat": "{{stage}}", "expr": "sum by (stage) (rate(kee_qa_stage_seconds_sum{stage=~\"embed|dense|sparse|sparse_rw|rerank|fuse|rewrite\"}[15m])) / clamp_min(sum by (stage) (rate(kee_qa_stage_seconds_count{stage=~\"embed|dense|sparse|sparse_rw|rerank|fuse|rewrite\"}[15m])), 0.001)" }
+      ]
+    },
+    {
+      "id": 10, "type": "timeseries", "title": "统一错误码速率", "datasource": { "type": "prometheus", "uid": "kee" },
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 22 },
+      "description": "E4xx 客户端 / E5xx 服务端 / E9xx 依赖。E901 是权威源不可用，E900 是向量库不可用。",
+      "fieldConfig": { "defaults": { "unit": "ops" }, "overrides": [] },
+      "targets": [
+        { "refId": "A", "legendFormat": "{{code}}", "expr": "sum by (code) (rate(kee_api_errors_total[5m]))" }
+      ]
+    },
+    {
+      "id": 11, "type": "timeseries", "title": "各路由请求量（top 8）", "datasource": { "type": "prometheus", "uid": "kee" },
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 22 },
+      "description": "标签是路由模板（/api/v1/documents/{doc_id}），不含文档 id、会话 id、用户名。/metrics 自身不在内。",
+      "fieldConfig": { "defaults": { "unit": "reqps" }, "overrides": [] },
+      "targets": [
+        { "refId": "A", "legendFormat": "{{route}} {{status}}", "expr": "topk(8, sum by (route, status) (rate(kee_http_requests_total[5m])))" }
+      ]
+    },
+    {
+      "id": 12, "type": "timeseries", "title": "流式撤回（provisional → 未成为答案）", "datasource": { "type": "prometheus", "uid": "kee" },
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 22 },
+      "description": "conclusion = 结论级撤回轮次；item = 被引用强制丢掉的已闭合条目数。这条比例若高，token 级流式对知识服务是负收益（M4 起就在量它）。",
+      "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] },
+      "targets": [
+        { "refId": "A", "legendFormat": "{{kind}}", "expr": "sum by (kind) (increase(kee_qa_stream_retractions_total[30m]))" }
+      ]
+    },
+    {
+      "id": 13, "type": "timeseries", "title": "每轮引用条数均值 / 规则分分布", "datasource": { "type": "prometheus", "uid": "kee" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 30 },
+      "description": "composite 是**规则分不是概率**（basis 标签明写 rule_composite_not_probability），M3-04a 实测其 93% 是常数偏移、对标签 AUC 0.346。用来看漂移，不要用来判对错。",
+      "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] },
+      "targets": [
+        { "refId": "A", "legendFormat": "引用条数/轮", "expr": "sum(rate(kee_qa_citation_count_sum[15m])) / clamp_min(sum(rate(kee_qa_citation_count_count[15m])), 0.001)" },
+        { "refId": "B", "legendFormat": "composite p50", "expr": "histogram_quantile(0.5, sum by (le) (rate(kee_qa_composite_score_bucket[30m])))" },
+        { "refId": "C", "legendFormat": "composite p95", "expr": "histogram_quantile(0.95, sum by (le) (rate(kee_qa_composite_score_bucket[30m])))" }
+      ]
+    },
+    {
+      "id": 14, "type": "timeseries", "title": "Langfuse 上报计数（默认关闭 ⇒ 应为空）", "datasource": { "type": "prometheus", "uid": "kee" },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 30 },
+      "description": "disabled / enqueued / flushed / error / dropped。持续出现 dropped 或 error 时，Langfuse 里的 trace 是不完整样本，不能拿去比对答案质量。",
+      "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] },
+      "targets": [
+        { "refId": "A", "legendFormat": "{{result}}", "expr": "sum by (result) (increase(kee_langfuse_events_total[30m]))" },
+        { "refId": "B", "legendFormat": "队列深度", "expr": "kee_langfuse_queue_depth" }
+      ]
+    },
+    {
+      "id": 15, "type": "text", "title": "口径声明", "datasource": null,
+      "gridPos": { "h": 5, "w": 24, "x": 0, "y": 38 },
+      "options": {
+        "mode": "markdown",
+        "content": "**这张看板不产出门禁读数。**\n\n- 分位数是直方图**桶上线性插值的近似值**；门禁（① 端到端 6s、③ 检索召回、⑤ 引用强制/置信）的权威读数一律由 `scripts/` 下的离线探针按各自口径产出，两者不一致时以离线探针为准。\n- 标签全是闭合枚举：查询文本、用户名、会话 id、文档 id、分数值都不进标签，所以图上没有任何一张表能回答「谁问了什么」——那是 `audit_log` 的职责（追加写、禁改删）。\n- 缓存命中那一轮的 `degraded` 与改写来历在检索层就被抹掉了（既有边界），因此命中轮的降级计数恒为 0，这是「用户当时看到的」口径，不是统计漏了。\n- 指标进程内累计、**不落库**：API 重启即归零。要跨重启的历史就看这张板子所在的 Prometheus；要单轮的事实就看 `session_turn`。\n- Langfuse 默认关闭且只允许回环/私网目标（数据不出域）。"
+      }
+    }
+  ]
+}

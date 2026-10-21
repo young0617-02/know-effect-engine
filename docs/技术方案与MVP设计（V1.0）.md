@@ -1,4 +1,4 @@
-# 企业级知识库 RAG Agent · 技术方案与 MVP 设计（V1.0.37）
+# 企业级知识库 RAG Agent · 技术方案与 MVP 设计（V1.0.39）
 
 > **基准行业**：数字技术服务 / IT 服务与数字化运营（面向多行业的咨询、解决方案与交付服务）。
 > **文档用途**：为个人自研项目给出可对外展示的技术方案全景、五维选型决策、可行性验证门禁（Gate 0）与 MVP 交付定义；
@@ -10,7 +10,47 @@
 > **执行主体**：个人独立设计与开发。
 > **日期**：2026-10-09。
 > **与 V1.1 的关系**：本文以《企业级知识库 RAG Agent · 项目定义（数字技术服务企业版 V1.1）》为**唯一基准**，是其第十节「技术方案概览」与第十一节「关键能力设计」的**工程化展开与 MVP 定型**；凡本文与 V1.1 冲突，以 V1.1 口径为准。约束继承 V1.1 第八节（数据不出域、行业/项目/密级隔离、单机部署、GPU 显存 8GB 硬瓶颈、本地优先云端兜底、Windows 11 + WSL2 + Docker Desktop、合规对标 CMMI/ISO/CCRC/ITSS）。
-> **版本**：V1.0.37（**四条安全敞口按用户裁决落地：请求头身份默认关闭 / 退出撤销全部会话 + 强制下线 / 审计 TRUNCATE 绕过堵住 / hybrid 单腿量纲闸门**，与《项目定义》V1.35 同批；**阈值与既有读数一字未动**，动的是权限面与上报口径）。
+> **版本**：V1.0.42（**Langfuse 自托管真跑通**：`langfuse/langfuse:2` = **1.12GB 只一个镜像**（PG18/Redis8 本机已有）、
+> 3 容器常驻 **~259MiB 内存 / CPU 0%**、数据卷 67MB 落 `D:\project\var`（不是 C 盘）；Docker Hub 直连不可达但
+> **走 Docker Desktop 已配的 registry mirror 拉通了**——以后判断「能不能拉镜像」别按直连结论。
+> 走生产入口（真 HTTP + Bearer）问三轮，真服务器收下并渲染 `kee.qa.round → SPAN qa.retrieve → GENERATION qa.generate`、
+> Usage 1,253→121 token、Metadata 里 `degraded=[dense_timeout>2500ms]` 可见、转人工那条 0 observation（早退不编造）。
+> **实跑照出并修掉 `infra/docker-compose.langfuse.yml` 两处起不来的缺陷**：PG18 挂载点应为 `/var/lib/postgresql`
+> （原写 `/var/lib/postgresql/data` ⇒ crash-loop）、`depends_on` 需配 `healthcheck` + `service_healthy`
+> （否则 Prisma 迁移抢在 PG 可连前跑 ⇒ `P1001` 后容器退出）。**这两条 stub 契约测试给不出来**。
+> 截图 `docs/assets/langfuse/`；风险登记册那条待裁决 → 已闭合（现待裁 0 条）；
+> **交付默认值 `langfuse_enabled=False` 一字未动**，只有本机 `.env` 打开。与《项目定义》V1.40 同批；阈值与既有读数未动。）
+> **上一版**：V1.0.41（**RAGAS 补齐到四条并逐条对 §6.1 目标值判过/不过**：新增 Context Precision（逐块判相关性 +
+> **名次加权** Σ P@k·v_k / 相关块数）与 Context Recall（参考答案拆声明 → 逐条归因到检索块），
+> 两条的 contexts 一律用**复跑 Top-5**（测检索面，与被引块分工不同）。实测
+> F(Top-5) **0.9382** > 0.85 过 / CP **0.9209** > 0.80 过 / CR **0.9460** > 0.85 过 / **AR 0.6582 > 0.90 不过**——
+> **这条不过是量纲不是质量**：装置里常驻了一条标尺「题面 vs 它自己的参考答案」= **0.6662**（最高 0.8075、
+> **0 行 ≥ 0.90**），本地 BGE-M3 尺度上「完全切题」本身就到不了 0.90，而 0.90 是照 RAGAS 默认的 OpenAI embedding 写的
+> ⇒ **目标值待裁，本轮没自行改线**。CR 最低两行 **q-044 = 0.0、q-013 = 0.0**，与 #58 检索漏召、
+> 人判「证据层引错块」**独立对上**。护栏 5 → **7 道**（新增「检索面换成别题 ⇒ CP/CR 必须掉」；
+> 该条第一版判废过一次，根因是把「换面后一块都不相关 ⇒ CP 未定义」当成「没下降」，而未定义在这里就是最大下降）。
+> 另堵一类静默劣化：`cost.max_prompt_tokens` 实测 1295（服务默认 `num_ctx=4096`，超长提示会从头部截且不报错）。
+> 三轮整套独立重跑六条读数逐位相同；后端单测 289 → **346**；与《项目定义》V1.39 同批；**阈值一字未动**。）
+> **上一版**：V1.0.40（**RAGAS 两指标与 LLM-as-Judge 落地为可跑装置——自研复现，ragas 库仍未引入**：
+> `src/kee/eval/ragas.py`（Faithfulness 两步：拆原子陈述 → 每条只依据材料判支持性；Answer Relevance：反向生成 3 问 ×
+> BGE-M3 余弦均值）+ `src/kee/eval/judge.py`（判据卡驱动的本地裁判，两张卡分别管作答行与拒答行，判据照真人工单原文、
+> **明写不给参考答案**）+ `scripts/m5_ragas_eval.py`（三阶段显存换乘：evict 7B → 复跑检索取 Top-5 → warm 7B 判定 →
+> evict 7B → 载 BGE-M3 算余弦；**读真人标签配对的那代留档产物、不重跑生成 ⇒ 62 行人判读数零作废**）。
+> 实测 F(cited) **0.9866**（n=62，95% CI [0.9651, 1.0]）/ F(Top-5 原口径) **0.9382** / AR 作答行 **0.6582**；
+> 裁判与真人判一致率 86.36% 但 **κ = −0.0645**（真人判错的 6 行抓到 0 行）⇒ **两条指标都是报告值、不进门禁，
+> 且这套裁判现在不能当人工初筛**。五道反面对照护栏全过、两轮整套独立重跑四个指标逐位相同；481 次 7B 调用 / 整套 530s。
+> 不引库的硬理由：ragas 0.4.3 依赖闭包拖 `scikit-network`→`numba`（有 numpy 上限），会顶掉本项目 `numpy==2.5.3`
+> 而 torch 是经 `.pth` 挂进 `.venv` 的；且官方默认走 OpenAI 客户端，数据不出域仍要自写本地 wrapper。
+> 与《项目定义》V1.38 同批；**阈值与既有门禁读数一字未动**，后端单测 289 → **327**。详见文末 V1.0.40。）
+> **上一版**：V1.0.39（**本机复验强制点落地：`scripts/ci_local.sh` 十一阶段，把「版本回归」接成闸门**：
+> `eval` 段跑 `m2_eval.py --skip-grid --out`，与 `m2_eval_prev.json` 同尺子对照，退出码分开报「门禁没过」与「回归」；
+> 新增 `warm` 段（`api_warm.py`）——第一次全量复验的三连红根因是重启后没预热，本机实测首个问答 177.4s、第二趟 3.5s。
+> 与《项目定义》V1.37 同批；**阈值与既有门禁读数一字未动**，`eval` 首跑四条全过、`delta_strict=0.0`。详见 7.4 节与文末 V1.0.39。）
+> **上一版**：V1.0.38（**可观测体系落地**：Prometheus `/metrics` + Grafana 看板与告警 + 结构化日志已实跑实测；
+> Langfuse 上报器与自托管部署文件出稿、**容器未拉取待裁**。与《项目定义》V1.36 同批；
+> **阈值与既有门禁读数一字未动**，指标层不写 state、不改判定；`pytest` 252 → 289，
+> `scripts/m5_observability_probe.py` 七条计数器恒等式与宿主/Prometheus 对账全绿）。
+> **上一版**：V1.0.37（**四条安全敞口按用户裁决落地：请求头身份默认关闭 / 退出撤销全部会话 + 强制下线 / 审计 TRUNCATE 绕过堵住 / hybrid 单腿量纲闸门**，与《项目定义》V1.35 同批；**阈值与既有读数一字未动**，动的是权限面与上报口径）。
 > 一处原清单**不可执行**已如实登记：`ALTER ROLE kee NOSUPERUSER` 被 PG 拒绝（`kee` 是 initdb 的 bootstrap 超级用户），
 > 终态改用非特权应用角色 `kee_app` 达成同一防线——**部署多了一个必经步骤**：存储栈起好后先跑
 > `scripts/harden_audit_store.py`，否则 `kee_app` 不存在、服务连不上库。
@@ -203,7 +243,7 @@ BM25 排 7/17/28、融合落 26/37/52，被重排池（前 20）漏掉；喂进�
 | **确定性优先** | 在线主链路行为可预测、可复现、可回归 | LangGraph StateGraph 固化为有限状态机；每步类型化（Pydantic）；避免开放式自主循环 |
 | **本地优先** | 数据不出域，能力默认本地闭环，云端仅兜底 | Ollama 本地模型为主；LiteLLM 网关在低置信度时才路由云端，设 token 预算熔断 |
 | **可溯源** | 每条结论可回溯到原文片段 | 引用强制 + 分块级来源标注（文档/章节/页码/片段 ID） |
-| **可评估** | 关键环节有量化门禁，可离线回归 | RAGAS + 自建评测集 + 消融对照 + 版本回归 |
+| **可评估** | 关键环节有量化门禁，可离线回归 | RAGAS 两指标（**V1.0.40 起为自研复现装置，ragas 库未引入**）+ 自建评测集 + 消融对照 + 版本回归 |
 | **可降级** | 任一环节失败不返回错误答案，而是显式降级 | 检索超时降纯关键词；生成失败降"仅片段+标注"；低置信度降级"初步判断" |
 | **最小权限** | "搜得到"的前提是"有权限看" | RBAC 在**检索层**做过滤，而非答案层裁剪 |
 | **单一权威源** | 消除多存储静默不一致 | PostgreSQL 为元数据/版本/审计唯一权威源，向量索引可重建 |
@@ -214,7 +254,7 @@ BM25 排 7/17/28、融合落 26/37/52，被重排池（前 20）漏掉；喂进�
 | 维度 | 目标（设计目标 / 验收门禁） |
 |---|---|
 | 检索质量 | **V1.0.3 修订口径**：主判定 **Hit@5 ≥ 95%** + **strict gold Recall@5 ≥ 85%** + MRR ≥ 0.75；section gold Recall@5 降为**报告值**（不设门禁），且任何 Recall 类数字必须同时给出样本量 n 与 95% 置信区间。原口径「Recall@5 ≥ 85%」未写明按哪套 gold 判定——section 级 gold 把相关章节内**所有**子块都算 gold，一道 gold=13 的题 Recall@5 理论上限只有 5/13，该口径测的其实是章节大小而不是检索能力（依据见文末 V1.0.3） |
-| 生成可信 | **引用落 gold 率 ≥ 90%（门禁，机械可复算）**；**答案正确率（人判，报告值，附 n 与覆盖边界）**；Faithfulness / Answer Relevance **未接入（RAGAS 从未引入，V1.0.30 名实对齐）**——实际装置是数字落地率（机械）+ 人判答案正确率；幻觉率 ≤ 10% 只有**代理读数**（编造数字检测 + 无依据却出结论，后者分母为 0） |
+| 生成可信 | **引用落 gold 率 ≥ 90%（门禁，机械可复算）**；**答案正确率（人判，报告值，附 n 与覆盖边界）**；Faithfulness / Answer Relevance **V1.0.40 已落地为自研复现装置（ragas 库未引入），V1.0.41 补齐 Context Precision / Context Recall 成四条**——四条**都是报告值、不进门禁**，实测 F(Top-5 原口径) **0.9382** / F(cited) 0.9866 / CP **0.9209** / CR **0.9460** / AR **0.6582**（对 §6.1 的 > 0.90 不过，**经查是 BGE-M3 量纲不是质量：题面 vs 自己的参考答案也才 0.6662、0 行 ≥ 0.90**）；机械装置数字落地率 + 人判答案正确率仍在跑、并列不互替；LLM-as-Judge 与真人判一致率 86.36% 而 **κ = −0.0645**（真人判错的 6 行抓到 0 行 ⇒ 现在不能当人工初筛）；幻觉率 ≤ 10% 只有**代理读数**（编造数字检测 + 无依据却出结论，后者分母为 0） |
 | 校准与结构化 | ECE ≤ 0.10；结构化输出首次成功率 ≥ 90% |
 | 延迟 | P95 检索延迟 < 800ms（**#56 净环境：p95 334ms，达标**，n=100 轮次）；**P95 端到端 < 6s —— V1.0.23 定案口径：只统计作答轮次**（实测 p50 3287 / p95 4118.8ms、0% 超 6s；含拒答轮次则 max 7854.6ms、4% 超 6s，须另并报）；流式首 token < 1.2s，**口径钉 `first_visible_ms`**——**#56 净环境复测：p50 3287ms / p95 4118.8ms / max 4548.5ms（n=76 进生成的轮次，4 轮合并）⇒ <6s 过、<3s 不过（68.4% 超 3s）**，客户端与服务端两把尺都报（服务端 p95 4063.1ms），3s vs 6s 至此**只差一个口径裁决**；流式首 token < 1.2s（**#56 已按净环境 + 清缓存重测：达标**。三种读法同轮量齐 n=24——信封首字节与首事件 p50 324ms，**最严的「首个可读字」p50 695.4 / p95 859.2 / max 1008.6ms**。⚠ **作废 M4 那条「按可见内容口径达不到（p50 1642.7ms、仅 1.85% 低于 1.2s）」**：那是非净环境、且缓存状态当时未记录下的读数；信封首字符只是 `{`，**不拿来充数**。token 级流式覆盖面与撤回读数不变：54/58=93.1%（未覆盖 4 题全是合法拒答，按答出来的题算 54/54=100%），结论级撤回 0、条目级丢失 0）——本地命中路径口径。原口径「P95 端到端 < 3s」经 Gate 0 ① 实测判定在 8GB 单卡 + 本地 7B 路径上不可达（256 token 档实测 P95 4.4s），已于 V1.0.2 修订。**测量纪律（#56 起写进工具）**：走生产入口、一问一 session、冷启动单列、**起跑前清 Redis 检索缓存**（TTL 300s 内复跑同题会整条检索腿短路，p50 掉 ~250ms，那不是噪声是换了被测系统）、分位数只取未命中轮次；轮间 p50 极差 93.6ms = 本机噪声地板，小于它的 Δ 不得写成改善或恶化。证据 `var/gate0/m5_latency_replicates.json`，工具 `scripts/m5_latency_clean.py` + `m5_latency_merge.py` |
 | 业务 | **V1.0.29 修订口径（用户裁「测试用户可替代真实用户」）**：**模拟自助解答率 ≥ 60%**（门禁；剧本=评测集全量自动派生、走生产 HTTP 入口与真实角色身份）＋ 一次通过率 / 权限拦截正确率 / 转人工触发率作同族报告值。**仍不可测两条**：重复性提问占比「下降 ≥30%」要上线前基线、新人上手周期「缩短 ≥30%」要真人时间维度——测试用户都给不出，**不得因「有测试用户」被读成已闭合**（依据见文末 V1.0.29 与 `reports/m5/M5_测试用户运行验收.md`） |
@@ -631,6 +671,8 @@ START → sensitive_gate → rewrite → retrieve → retrieval_gate → generat
 | — | （未开端点） | 草图的 `/qa/followup` **不单独开**：`POST /api/v1/answers` 带 `session_id` 即追问，上文从 `session_turn` 读。单开端点会让同一条链路有两个入口、两套审计，而多轮与单轮走的图是同一张 |
 | GET | `/api/v1/sessions` | **V1.0.34 新增**。当前身份的会话列表（左侧「会话历史」栏）：`id / n_turns / title(首轮问题) / last_status / last_at`，按最近活动排序，**只返回自己的**（`user_id == actor`）且**过滤掉零轮次**的空会话。治理角色也看不到别人的——能读全库密级不等于能读别人的提问历史，这条判的是**归属**不是角色。列表不落审计（逐条列表各落一行只会把表灌成噪声），点开某一条才落 `session_read` |
 | GET | `/api/v1/sessions/{id}` | 单条会话的轮次。V1.0.34 起**带 `answer` 整包**（要点 / 引用落点 / 规则分 / 判定记录）——只回结论的历史记录是**被削薄过的**，看着完整其实少了可核对的那几栏；检索概况由 `answer.retrieval` 复原，取不到就不显示那一行（**用 0 凑等于把「没记录」画成「检索到 0 块」**）。非本人读取 E403、不存在 E404 |
+| GET | `/metrics` | **V1.0.38 新增**。Prometheus 文本格式，**19 个 `kee_*` 指标族**。**免鉴权是权衡过的**：标签全是闭合枚举（无查询文本、无用户名、无文档 id），且这条通路有两道结构性收口——API 只绑回环、Nginx 只反代 `/api/`、`/healthz` 与静态资源，**不含 `/metrics`**。要彻底关掉设 `KEE_METRICS_ENABLED=false`，那时返回 404。抓取期跑依赖探针（与 `/healthz` 同一份代码），所以它也是「看板上的绿」与「healthz 的绿」不会各说一套的原因 |
+| GET | `/api/v1/observability/status` | **V1.0.38 新增**。这台实例的观测面开成了什么样：指标开关、日志格式、Langfuse 状态（含**被关闭的原因原文**）、依赖自检，并原样带出一条口径声明——看板分位数是桶近似值，门禁读数仍由离线探针产出。限治理角色（与审计读同权限面：它报的是部署形态，本身是运维信息） |
 | POST | `/api/v1/documents/upload` | 文档上传 | req: file, meta(industry/project/security_level)；resp: doc_id, admission_status |
 | GET | `/api/v1/documents` | 知识管理查询 | 分页 + 权限过滤 |
 | POST | `/api/v1/documents/{id}/review` | 文档复核（职责分离：上传者不得复核自己的） | `pass` → 文档转 active **且给该版本盖复核章** `reviewed_by/reviewed_at`；`reject` → 版本 superseded + 撤索引。V1.0.14 起：**章在版本上，闸在答案层**（未复核可检索、不进答案） |
@@ -696,6 +738,73 @@ PG 明文拒绝摘它的 SUPERUSER；且降级后系统不留任何管理入口�
 **部署因此多了一个必经步骤**：存储栈起好后必须先跑一次 `scripts/harden_audit_store.py`，
 否则 `kee_app` 不存在、服务连不上库。
 
+### 7.2.2 观测面清单：19 个指标族、一条实采 trace、三块真截图（V1.0.38）
+
+**指标族**。`curl -s <api>/metrics | grep '^# TYPE kee_'` 去掉 `_created` 就是这张表，
+清单本身也由 `scripts/m5_observability_probe.py` 逐条打进报告，不靠这份手抄。
+
+| 族 | 类型 | 标签（全是闭合枚举） | 回答什么问题 |
+|---|---|---|---|
+| `kee_http_requests_total` | counter | `route`(模板)·`method`·`status` | 哪些接口在被打、返回码分布 |
+| `kee_http_request_seconds` | histogram | `route` | 接口耗时。⚠ SSE 端点只量到**响应头**，整轮看 `kee_qa_stage_seconds` |
+| `kee_api_errors_total` | counter | `code` | E4xx/E5xx/E9xx 各多少（唯一收口是 `_fail()`，六个 handler + 三处直接 return 都经过它） |
+| `kee_qa_rounds_total` | counter | `status`·`exit_gate` | 一轮问答走到哪个出口（`answered` = 七个节点全走完） |
+| `kee_qa_stage_seconds` | histogram | `stage` ∈ e2e/retrieval/generate/first_token/rewrite/embed/dense/sparse/sparse_rw/rerank/fuse/cache_read/rewrite_leg | **三阶段耗时分解**、首 token |
+| `kee_qa_top_score` | histogram | 仅 `le` | 检索最高分分布；`le="0.2"` 那一档就是**没过检索闸门**的占比。记的是闸门实际比较的那个数（复核闸摘完之后） |
+| `kee_qa_composite_score` | histogram | `basis` | 规则分漂移；`basis` 恒为 `rule_composite_not_probability`，不许当概率读 |
+| `kee_qa_citation_count` | histogram | 仅 `le` | 每轮对外给出几条引用 |
+| `kee_qa_stream_retractions_total` | counter | `kind` ∈ conclusion/item | 流式撤回率（M4 起就在量那个数） |
+| `kee_retrieval_rounds_total` | counter | `mode`·`cached` ∈ hit/miss/**disabled** | 检索轮次。`disabled` = 没配缓存（`/retrieval/search` 与全部离线评测），**不进命中率分母** |
+| `kee_retrieval_degraded_total` | counter | `reason`（13 类白名单） | 降级原因构成。带数值的标记已收敛成原因类，否则每个新分数一条时序 |
+| `kee_search_cache_ops_total` | counter | `kind` ∈ search/rewrite·`result` ∈ hit/miss/store/error | 缓存命中率与 Redis 故障（两类缓存共用一个实例，混算就把「检索没命中、改写命中」读成一次命中） |
+| `kee_dependency_up` | gauge | `dep` ∈ milvus/postgres | **抓取期实测**，与 `/healthz` 同一份代码 |
+| `kee_milvus_chunks` / `kee_pg_documents` | gauge | — | 索引与权威源规模（界面状态条上那两个数的同源版） |
+| `kee_scrape_probe_errors_total` | counter | — | 探针自己挂了——此时上面三个 Gauge 停在最后一次成功的值上，**不可信** |
+| `kee_langfuse_events_total` | counter | `result` ∈ enqueued/flushed/error/dropped/disabled | 上报链路健康；`dropped` 非零 ⇒ trace 是不完整样本 |
+| `kee_langfuse_queue_depth` | gauge | — | 上报队列深度 |
+| `kee_process_start_timestamp_seconds` | gauge | — | 累计值对账的窗口基准（counter 进程内累计、重启归零） |
+
+⚠ **「有多少个指标」只能数声明族**：`prometheus_client` 会给每个 counter/histogram 另发一条
+`<名>_created` 序列，而它**只在指标被摸过之后才出现** ⇒ 数 `# TYPE kee_` 行数是个浮动的数
+（本机先后见过 23 / 24 / 32）。同理 `/metrics` 按当前状态生成：同一进程内实测从
+**7,102 字节 / 62 样本**（刚起、零星流量）长到 **41,455 字节 / 480+ 样本**（跑过一轮验收之后）。
+
+**一条实采的 trace**。`scripts/obs_langfuse_capture.py` 起一个本地采集器、把宿主 API 的
+`KEE_LANGFUSE_HOST` 指过去，走真实 HTTP 问三轮，落盘 `var/gate0/m5_langfuse_capture.json`。
+**收下这批字节的是本机采集器而不是 Langfuse UI**（真容器仍未拉，见 §十二 V1.0.38 待裁那条），
+但字节就是我们会送进 `/api/public/ingestion` 的东西，一个字段没改：
+
+| 轮次（真实出口） | 事件构成 | 说明 |
+|---|---|---|
+| `tentative`（作答，引用 4 条） | trace + `qa.retrieve` span + `qa.generate` **generation** = 3 | retrieve `03:49:18.654→03:49:31.245`(12591.4ms)，generate `03:49:31.261→03:49:43.518`(12257.0ms)，**首尾相接不重叠** |
+| `escalate`（敏感闸在检索前拦下） | 只有 trace = 1 | 没有任何计时 ⇒ 不编造 span |
+| `refuse`（证据不足） | trace + `qa.retrieve` span = 2 | 没进生成 ⇒ 没有 generation 事件 |
+
+trace 上挂的字段：`input`=问题原文、`output`={status, conclusion, key_points, needs_human}、
+`sessionId`、`userId`=actor、`tags`=[status/mode/cache]、`metadata`={kee_trace_id, role, notes,
+degraded, cache_hit, top_score, confidence(含 `score_basis`), timings_ms, **residual_unmeasured_ms**}；
+generation 另带 `model`、`usage={input,output,TOKENS}`、`done_reason`、`prompt_chars`、
+`json_valid_first_attempt`。每批都是 `POST /api/public/ingestion` + `Authorization: Basic <pk:sk>`。
+
+**这一趟实采照出两个我自己写的错**（都已修 + 有单测）：
+① span 的**起止方向反了**——`_shift()` 的偏移量语义是「距本轮结束多少毫秒、越大越早」，
+我当成起点用，于是实采里出现 `03:42:26 → 03:41:36`（结束早于开始）；
+② `qa.generate` **同时发 span 和 generation**，同一阶段在 Langfuse 里挂两遍。
+钉法：`tests/test_langfuse_exporter.py::test_span_times_ordered_and_generate_not_duplicated`
+断言每个子事件 `startTime < endTime`、`qa.generate` 只出现一次、且 retrieve 的结束不晚于 generate 的开始。
+
+**三块面板的真截图**（Microsoft Edge 1600×1200、`?kiosk` 模式，登录 admin 后采集）：
+
+| 文件 | 面板 | 看什么 |
+|---|---|---|
+| ![面板1](assets/obs/面板1.png) | #1 请求速率 | `sum(rate(kee_http_requests_total[5m]))`，QPS |
+| ![面板6](assets/obs/面板6.png) | #6 端到端与各阶段分位数 | e2e/retrieval/generate/first_token 的 p50/p95（**桶上近似值，不是门禁那条**） |
+| ![面板9](assets/obs/面板9.png) | #9 检索各阶段平均耗时 | embed/dense/sparse/rerank/fuse 分解——GPU 分时驻留就盯这条 |
+| [整页](assets/obs/看板全页.png) | 全部 | 15 个面板全渲染，整页只有 **1 块 No data**（#14 Langfuse，因为默认关闭） |
+
+截图里那些**断档**是 API 进程重启把 counter 归零造成的（指标不落库），不是采集缺口——
+这正是上面那条「`kee_process_start_timestamp_seconds` 存在的理由」。
+
 ### 7.3 统一错误码 / 超时 / 重试 / 幂等契约
 
 | 项 | 约定 |
@@ -704,6 +813,44 @@ PG 明文拒绝摘它的 SUPERUSER；且降级后系统不留任何管理入口�
 | **超时** | 检索、重排、生成分设超时；超时触发降级分支 |
 | **重试** | 仅对 `retryable=true` 的幂等操作做**指数退避**；生成不盲目重试 |
 | **幂等** | 写操作以 `idempotency_key` 保证幂等，防重复上传/重复提问副作用 |
+
+### 7.4 本机复验强制点（V1.0.39 新增：`scripts/ci_local.sh`）
+
+**为什么是「本机」而不是 CI 服务**：仓库无 remote（用户定过不推），而且被测系统绑着 D 盘的 CUDA 权重、
+本机 Ollama、Milvus 与宿主回环端口——搬到第三方 runner 上既跑不动，也会把带业务原文的测试语料送出域外。
+所以这一层的形态是**一条命令、顺序固定、失败即停、产物留档、服务状态复原**，不是服务。
+
+| 阶段 | 跑什么 | 判据 |
+|---|---|---|
+| `preflight` | `check_stack.py`：torch/CUDA、权重目录、Milvus/PG/Redis、Ollama 模型、容器健康 | 后面每段的前置事实 |
+| `static` | `ci_static.py`：`compileall` × 3 + JSON 解析 + 四份 compose `config -q` + `promtool check config` | 拦当场炸的形状（少收尾花括号 / 告警 YAML 两行各带引号） |
+| `backend` / `frontend` | `pytest -q` 全量 / 前端单测 + `npm run build` | 构建产物就是 `kee-web` 挂的那份 `dist` |
+| `verify-m1` / `verify-m3` / **`eval`** | 先 `api_down`（8GB 零余量，两边同时占模型是静默退化不是报错） | 三支都要独占 GPU |
+| `warm` | `api_warm.py`：登录 + 一次非流式问答 | 只付冷装载的账，不产生读数 |
+| `verify-m4`（直连 + 经 Nginx）/ `obs-probe` | 真 HTTP 通路、观测面实测 | `warm` 未过则**跳过**而非带病出数 |
+| `test-user` / `reports` | 默认跳过，需 `--with-test-user` / `--regen-reports` | 前者刷新带 LLM 漂移的业务读数，后者重写 `reports/m5/*.md` |
+
+**这一层把「版本回归」从口径变成强制点。** `m2_eval.py` 早就有回归对照（`--prev` 指针 + `ruler` 尺子指纹 +
+`regressed` 判定，见 V1.0.18 第 ⑤ 条），但**没人跑就等于没有**。接进来的做法是 `--skip-grid`：只跑预先声明的
+基线配置、67 秒出一行读数；`--out` 让它写到本次运行目录——默认路径 `var/gate0/m2_eval.json` 是**带 dev 网格**的
+历史证据，`--skip-grid` 写回去会把 `grid_dev` 抹成空 dict，那是毁证据不是复跑。
+退出码分开有实义：`1` = 四条检索门禁有条没过，`2` = 同尺子 strict Recall@5 掉超 0.02（回归），两者修法不同。
+2026-10-16 首跑读数：四条全过、`comparable=true`、`delta_strict=0.0`、`regressed=false`。
+
+**`warm` 这一格是撞出来的，不是设想出来的。** 正因为 `verify-m1/m3/eval` 要独占 GPU，脚本会先停宿主 API
+再起回来；而起回来那一刻进程是冷的——`/healthz` 立刻 200（它不碰模型），但首个问答要把 BGE-M3 与 reranker
+装进一张 Ollama 已占 4.7GB 的卡。本机 2026-10-16 两次实测首个问答：**177.4s**（检索段 162.7s、生成 14.2s）
+与 **27.5s**（检索段 22.3s）——同一台机器差 6.5 倍，没拆到成分级，所以**没法预先预算**，只能先付。
+而 `verify_m4` 的 httpx 超时是 180s。第一次全量复验因此三连红（`verify-m4-direct` 185s 超时、
+`verify-m4-web` 3s 拿到 Nginx 的 502 HTML、`obs-probe` 424s socket 超时）——**那不是回归，是没预热**；
+加 `warm` 后同三段变 **11s / 10s / 71s 全通过**，十一阶段全绿、`var/gate0` 证据 md5 一字未变。
+
+两处顺带钉住的默认值不一致（都会导致「冷启动那一次必红」）：`infra/docker-compose.m4.yml` 的 nginx 模板取
+`${KEE_API_PORT:-38000}`，而 `serve_api.py` / `obs_targets.py` 的默认也是 38000，复验脚本用 28000
+⇒ 脚本现在 `export KEE_API_PORT`，compose / 宿主服务 / file_sd 目标三处同源。
+`ruff` 在本机装了但仓库从来没有 `[tool.ruff]` 配置，其默认规则集在现有代码上报 590 项（263 项是 `RUF100`：
+满仓 `# noqa: BLE001` 注的都是没启用的规则）⇒ **只报数、不判失败**；升级成门禁需要「写配置 + 清 590 项」，
+那是独立一次改动，不属于复验脚本。同理，脚本刻意不装任何东西。
 
 ---
 
@@ -752,7 +899,7 @@ PG 明文拒绝摘它的 SUPERUSER；且降级后系统不留任何管理入口�
 |---|---|---|---|
 | 1 | Must 链端到端可演示 | 9 条 Must 全链路可跑通 | 第九节停止条件① |
 | 2 | 检索质量 | **V1.0.3 修订口径**：Hit@5 ≥ 95% 且 strict gold Recall@5 ≥ 85% 且 MRR ≥ 0.75 为达标；section gold Recall@5 作报告值随附（须给 n 与 95% CI）。原口径「Recall@5 ≥ 85%；MRR ≥ 0.75」见 2.2 节的 gold 口径说明 | 第六节技术指标 |
-| 3 | 引用可信 | **引用落 gold 率 ≥ 90%（门禁）**；**答案正确率（人判）为报告值，不当门禁**；幻觉率 ≤ 10%（**代理读数**：编造数字检测 + 人判「无依据却出结论」；RAGAS Faithfulness 未接入，V1.0.30 名实对齐） | 第六节 |
+| 3 | 引用可信 | **引用落 gold 率 ≥ 90%（门禁）**；**答案正确率（人判）为报告值，不当门禁**；幻觉率 ≤ 10%（**代理读数**：编造数字检测 + 人判「无依据却出结论」；RAGAS 两指标与 LLM-as-Judge 已于 V1.0.40 落地为**自研复现装置**，同样只是报告值，ragas 库未引入） | 第六节 |
 | 4 | 校准与结构化 | ECE ≤ 0.10；结构化输出首次成功率 ≥ 90% | 第六节 |
 | 5 | 延迟 | P95 检索 < 800ms；**P95 端到端 < 6s，且只统计作答轮次（`status ∈ {answer, tentative}`）**——拒答/转人工不计入门禁、但每次验证须另并报其分位数与两条路径的成本差；流式首 token 门禁口径 = **`first_visible_ms`（首个可读字）** < 1.2s | 第六节（V1.0.23 定案，实测依据见《项目定义》V1.21 与 `reports/m5/M5_净环境延迟复测.md`） |
 | 6 | 业务 | **V1.0.29 修订口径**：**模拟自助解答率 ≥ 60%** 为门禁，测量装置 = `scripts/m5_test_user_run.py`（测试用户任务剧本按评测集全量派生、角色按可见性自动指派、走生产 HTTP 入口）；「重复性提问占比下降 ≥30%」「新人上手周期缩短 ≥30%」两条**继续标不可测**（一个缺上线前基线、一个缺真人时间维度）。状态由产物推导，**缺产物时写「产物缺失」而不是「不可测」** | 第六节（V1.0.29 定案，证据 `var/gate0/m5_test_user.json`） |
@@ -878,6 +1025,211 @@ PG 明文拒绝摘它的 SUPERUSER；且降级后系统不留任何管理入口�
 ---
 
 ## 十二、修订记录
+
+### V1.0.41（2026-10-19，RAGAS 四条齐了：一条「不过」经查是量纲，护栏从五道加到七道）
+
+用户下发《6.1 RAGAS 自动化指标》四条目标值并要求「我只要这四个值」。这张表原先不在仓库里
+（本文 §6.1 是「知识库构建与文档解析」），属新增口径；**阈值一条都没自行改**，只报实测并判过/不过。
+
+**两条新指标的算法要点（都写在代码注释里，不靠记忆）**
+- `Context Precision` = Σ_k (Precision@k × v_k) / 相关块总数，v_k ∈ {0,1} 由 LLM 判「这块是否含有支撑
+  **参考答案**所需的信息」。两处刻意的设计：
+  ① **未定义 ≠ 0**：分母是相关块数，「整面里一块都不相关」时该式无定义，本装置报「不适用」并单独计数
+  （官方实现折成 0.0 计入均值 ⇒ 两种写法数值不同，引用必须说明是哪一种）；
+  ② **漏答的那一块按「不给信用」处理，不从名次序列里删**——删了会让后面的块自动升位，
+  等于用一次 JSON 故障换一个更高的 Precision。这与 Faithfulness 的分母纪律（None 不进分母）**故意不一致**，
+  因为两处危险方向相反。单测 `test_unjudged_context_gets_no_credit_instead_of_promoting_the_ones_behind_it`
+  就是专门造出「删位版本分更高」这个形状来钉它的。
+- `Context Recall`：参考答案拆声明（均值 2.7612 条/题）→ 逐条判能否归因到检索块 → 覆盖比例。
+  拆解复用 `decompose`（RAGAS 的 StatementGenerator 同样喂 question + reference）。
+  需要参考答案与人工工单「不给参考答案」那条纪律不冲突：那条管「结论对不对」，这条测「检索面够不够」。
+- **两条都用复跑 Top-5，不用被引块**：CP/CR 测检到了没有，F 测说出来的有没有依据，
+  所以同一题 F=1.0 而 CP=0.2 不是矛盾。覆盖全 67 行（含 5 道拒答/转人工——「该答却检不到」正是这里要暴露的）。
+
+**读数**：F(Top-5) **0.9382**（CI [0.879, 0.9839]，n=62）过 > 0.85｜CP **0.9209**（CI [0.8697, 0.9627]，n=67）过 > 0.80｜
+CR **0.9460**（CI [0.8963, 0.9846]，n=67）过 > 0.85｜AR **0.6582**（CI [0.6205, 0.6928]，n=62）**不过 > 0.90**。
+
+**那条「不过」差点被我写成「质量不达标」**——这是本轮最值钱的判断。装置里常驻一条标尺：
+同批 62 题「**题面 vs 它自己的参考答案**」的余弦 = 均值 **0.6662**、最高 **0.8075**、**≥0.90 占比 0.0**，
+也就是本地 BGE-M3 尺度上「完全切题」这个上限本身就够不到 0.90，而 AR 实测与它只差 0.008；
+下界对照（同题配别题答案）= 0.4588。结论：**0.90 是照 RAGAS 默认 OpenAI embedding 写的线，换 embedding 不能原样搬**。
+这条标尺进了产物（`summary.answer_relevance_scale_anchor`）与报告第一节，**不是一次性探针**。
+三种处置（改成本尺度绝对值 / 改成相对判据 / 显式声明用哪种 embedding）交给用户裁，登记在《待定流程清单》。
+
+**新装置第二次复现了老缺口**：CR 最低两行 **q-044 = 0.0**（#58 检索漏召，书面语词法缺口，已按证据决定不修）
+与 **q-013 = 0.0**（人判归因里的「证据层」错行：引了讲 1oo1→1oo2 的块，题问 2oo3）；
+CP 最低三行 q-050 0.20 / q-040 0.25 / q-044 0.25。这是独立于 Hit@5 / strict Recall@5 的第二条证据链。
+
+**护栏 5 → 7 道，且新那道第一版判废过**：新增「检索面换成别题的 Top-5 ⇒ CP / CR 必须显著下降」。
+第一次冒烟报「CP 下降:不过」——**根因不是装置失灵，是我的对照规则**：换成别题的面之后模型判「一块都不相关」
+⇒ CP 未定义，而我把未定义当成了「没测到」剔除。未定义在这里恰恰是**最大下降**，所以只在对照口径里按 0 计
+（读数口径仍报不适用），修完 10 对全过。CP 这道护栏的价值是它按名次加权：**若模型没真在逐块看，
+换成别题的面照样给高分，那条指标就是装饰**。
+
+**顺手堵一类静默劣化**：本机 8GB 下 Ollama 默认按显存算 `num_ctx=4096`，超长提示会从**头部截掉且不报错**
+（症状是模型在看一段没有材料的判定提示）。`cost.max_prompt_tokens` 现在是实测上报值（本轮 **1295**），
+另手算过最坏情形 2100 token ⇒ 有余量。改 prompt 后要回看这一列。
+
+**环境事实**：本轮跑前 Ollama 已经不在（11434 无监听、进程消失），按本机口径
+`OLLAMA_MODELS=D:\.ollama\models` 起回来后**先核 `/api/tags` 有两个模型**再跑——端口通不代表模型在。
+
+**复现性与账**：三轮整套独立重跑六条读数**逐位相同**、裁判 label 翻转 0/67；本轮 712 次调用 / 837s。
+后端单测 289 → **346**（本装置 57 条）；`ci_local.sh --only reports --regen-reports` 全绿；
+DoD 汇总仍 **达标 3 / 部分达标 4 / 不达标 0**——四条 RAGAS 全是报告值，一格状态都没推动。
+
+### V1.0.40（2026-10-16，RAGAS 两指标与 LLM-as-Judge：装置、护栏与一处自抓的假绿）
+
+工程上是四件独立的事，分开记，因为它们的失败模式不同。
+
+**1. 为什么不引 `ragas` 包（依赖层的决定，不是偷懒）**
+`ragas` 0.4.3 的直接依赖 21+ 个包：`numpy<3,>=1.21` / `datasets>=4`（→ pyarrow、pandas、huggingface-hub）/
+`tiktoken` / `openai` / `instructor` / `langchain` + `langchain-community` + `langchain_openai` /
+`scikit-network` / `networkx` / `typer` / `rich` / `diskcache` / `appdirs` / `nest-asyncio`。两处硬冲突：
+① `scikit-network`→`numba` 有 numpy 上限，而本项目 `pyproject` 钉 `numpy==2.5.3`、
+torch/transformers 由 `D:\py312-torch` 经 `.pth` 挂进 `.venv`（`.venv` 是 trampoline），
+解析器一旦为 numba 降 numpy，症状不是报错而是**检索栈静默失效**；
+② 官方 `Faithfulness`/`AnswerRelevance` 的 LLM 与 Embeddings 默认走 OpenAI 兼容客户端，
+数据不出域要求下仍要自写 Ollama + BGE-M3 的 wrapper ⇒ 装了库也不省改造。
+这与 V1.36 那批「刻意不装 `langfuse` SDK」是同一判断：**每个依赖都要过 `m5_version_lock.py` 的
+「声明≠用到」闸门，为默认关闭或可用 300 行替掉的功能不值得**。**结果零新依赖**，闸门不受影响。
+
+**2. 装置形态**
+- `src/kee/eval/ragas.py`：纯函数 + `RagasRunner`（注入 LLM 客户端）。
+  `faithfulness_from_verdicts` 的分母**只计判得出的陈述**，全判不出 ⇒ `value=None` + reading「不适用」；
+  `parse_statements(None)` 与 `parse_statements({"statements": []})` 是两个不同含义（信封坏 ≠ 回答里没陈述）；
+  `parse_verdict` 只认 0/1，`2`/`"也许"`/坏 JSON 一律 None；
+  `answer_relevance_from_vectors` 里 noncommittal ⇒ 0.0 是**官方行为**，但把「解析失败」与「回答确实不含信息」
+  分成两支（前者 None），否则一次 JSON 崩故障会伪装成「相关性很低」。
+- `src/kee/eval/judge.py`：`Rubric` 判据卡 ×2 + `LlmJudge` + `agreement_with_human`。
+  判据文字照真人 `answer_correct` 工单原文，含「**不给参考答案**（给了就是抄）」这条——
+  裁判拿到参考答案就退化成抄写比对，量不到「成立与否」。非作答行的观测域是**系统实际检到的 Top-5**，
+  与真人 #57 工单给标注人的同一套材料；复跑检索被跳过时这一格记「没证据面所以没判」，不拿空材料判「该不该拒」。
+- `scripts/m5_ragas_eval.py`：三阶段换乘 + 五道反面对照 + 噪声地板 + `--tag`/`--render-only`。
+  读 `var/gate0/pre_reprobe/m3_confidence_probe.json`（md5 与 qid 双向对齐进产物），**不重跑生成**——
+  重跑会改 ~7.46% 行的结论文本，人判标签与裁判标签就配不到同一段输出上了。
+
+**3. 两处偏离，都带护栏而不是带免责声明**
+- **Faithfulness 第二步默认批量判定**（一题 N 条陈述合成一趟调用）。实测依据：逐条在 67 题 × 两口径下
+  ~740 次调用、整套约 2 小时（第一次全量跑到第 18 行才崩，那批数据就是这么等出来的时间），批量版 ~5 次/题、整套 530s。
+  风险是模型一次要看全部陈述、可能漏答 ⇒ 漏答记 None 不进分母，而「证据换成别题的块，分数必须掉」那道护栏
+  专门兜这种失明（实测平均掉 0.9、9/10 逐对下降；裁判 label 9/10 翻转）。要原口径 `--per-statement`。
+- **两口径共用同一次拆句**。早先各拆各的，差值里混着「这次拆得不一样」，量到的不是证据面宽度；
+  现在 `decompose` 每行只调一次，`verify_set` 换 contexts 复用于 cited / top5。
+
+**4. 自己抓到的一处反向假绿（值得单独留痕）**
+`agreement_with_human` 的"真人判错的行被裁判抓到多少"这一列，分子误取了 `human0_judge1`
+——那是裁判与人判**不一致**的行数。真值应为 `human0_judge0`。后果是**一行都没抓到会被报成"抓到 100%"**，
+与 V1.30 那次把「证据充分但仍转人工」算成 12.5% 误拒是同一形状的错，方向相反。
+补的测试一开始也拦不住：`test_agreement_*` 用的是对称数据（人判错 2 行、裁判各判一半），
+分子取错也凑出同一个 0.5。**改成"点头机形状"才拦得住**：一致率 0.4、κ 为负、recall 必须 0
+（`test_yes_sayer_shape_has_high_agreement_but_zero_recall`）——教训是**测方向的用例必须让两种算法输出不同的数**。
+
+**5. 实测与边界**（详见 `reports/m5/M5_RAGAS与LLM裁判实测.md`）
+F(cited) 0.9866（n=62，CI [0.9651, 1.0]）｜ F(Top-5) 0.9382（CI [0.879, 0.9839]，3 行整行判 0——
+被引块 67/67 都在复跑 Top-5 内，所以是长上下文稀释，不是证据变窄）｜ AR 作答行 0.6582、全行档 0.6091
+（官方口径把「拒得对」记 0，单独引这一档等于说反话；本地 BGE-M3 余弦压在 0.55–0.75，
+**不可与论文里 OpenAI embedding 的数比**，标尺是错配对照掉 0.2918）｜
+裁判 vs 真人判：一致率 86.36%（57/66）、**κ = −0.0645**、点头率 95.45%、**真人判错 6 行抓到 0 行**、1 行判不出。
+噪声地板：裁判重跑翻转 0/67、Faithfulness 抽 19 行平均变化 0.0、**两轮整套独立重跑四个指标逐位相同**。
+成本 481 次调用 / 模型侧 468s / prompt 221,632 + completion 18,326 token / 整套 530s。
+**两条指标一律报告值、不进门禁**；`scripts/m5_dod_check.py` 的 DoD#3 直接取 `ragas_eval.json`，
+装置没跑时那一格显式写「装置未跑」，不留空当通过。
+
+**没因此改变的三件事**：① 幻觉率 ≤10% 那半边仍是「不适用」（非作答题上系统真给出结论的样本还是 0 个）；
+② 真人 `answer_correct` 仍是「结论对不对」的唯一读数来源，LLM 判不覆盖它；
+③ 与门禁无关的 6 项未实现清单（图谱 / IM 插件 / 反馈闭环 / LiteLLM / Socket.IO / prompt 压缩）一字未动。
+
+### V1.0.39（2026-10-16，本机复验强制点：把「版本回归」从口径做成闸门）
+
+**一、缺口在哪。** 此前项目的复验是**人按顺序跑八支脚本**：`check_stack` → 单测 → 前端 → `verify_m1/m3/m4` →
+观测探针。没有 remote（用户定过不推），被测系统又绑着 D 盘权重、本机 Ollama、Milvus 与宿主回环端口，
+第三方 runner 既跑不动也会把带业务原文的语料送出域外——所以做的不是 CI 服务，是**本机强制点**
+`scripts/ci_local.sh`：一条命令、十一阶段、失败即停、日志与清单落 `var/ci/<RUN_ID>/`、服务状态按原状复原。
+
+**二、接进来的两件要紧事。**
+① **检索侧版本回归**（这就是 7.4 节所说「从口径变闸门」）：`eval` 段跑 `m2_eval.py --skip-grid --out`。
+`m2_eval` 早就有 `--prev` 对照 + `ruler` 尺子指纹 + `regressed` 判定（V1.0.18 第 ⑤ 条修的），
+但**没人跑就等于没有**。给它加 `--out` 是必须的而不是方便：默认路径 `var/gate0/m2_eval.json` 是**带 dev 网格**的
+历史证据，`--skip-grid` 写回去会把 `grid_dev` 抹成空 dict——那是毁证据不是复跑。退出码分开有实义：
+`1` = 四条门禁有条没过，`2` = 同尺子 strict Recall@5 掉超 0.02（回归），修法不同。
+本机首跑读数：**四条门禁全过、`comparable=true`、`prev_strict 0.9779 → now 0.9779`、`delta_strict=0.0`、`regressed=false`**（68s）。
+② **静态层**（`scripts/ci_static.py`）：`compileall` × 3 + JSON 解析 + 四份 compose `config -q` + `promtool check config`。
+它拦的正是这两天真发生过的两类形状——`dict` 少收尾花括号（改脚本时踩了两次，第二次靠重跑才发现）、
+告警 YAML 写成两行各自带引号（症状是 Prometheus 整个起不来）。
+
+**三、第一次全量复验三连红，照出来的是「没预热」而不是回归。** `verify-m1/m3/eval` 要独占 GPU ⇒ 脚本先停宿主 API
+再起回来；起回来那一刻进程是冷的（`/healthz` 立刻 200，它不碰模型）。实测首个问答 **177.4s / 27.5s** 两次
+（同一台机器差 6.5 倍，未拆到成分级 ⇒ 没法预算，只能先付），而 `verify_m4` 的 httpx 超时 180s。
+新增 `scripts/api_warm.py`（登录 + 一次非流式问答，只打印冷/热两个数、不写产物、不进任何读数），
+且 `warm` 未过就**跳过**真 HTTP 三段而不是让它们带病出数。加前后对照：185s 失败 / 3s 失败 / 424s 失败
+→ **11s / 10s / 71s 全通过**，最终**十一阶段全绿、`var/gate0` 证据 md5 一字未变**。
+
+**四、顺带钉掉两处「冷启动那一次必红」的默认值不同步。** `infra/docker-compose.m4.yml` 的 nginx 模板取
+`${KEE_API_PORT:-38000}`，`serve_api.py` 与 `obs_targets.py` 的默认也是 38000，而复验脚本用 28000
+⇒ 现在脚本 `export KEE_API_PORT`，compose / 宿主服务 / file_sd 目标三处同源。
+另把 `ci_static.py` 里「命令不在 PATH 就记 ✓ 跳过」改成**记 ✗ 未测**——那是「空集上的真」的另一种写法。
+
+**五、`ruff` 降为只报数、不判失败（是决定，不是遗漏）。** 本机装了 ruff 0.16.8，但仓库从来没有 `[tool.ruff]` 配置，
+其默认规则集在现有代码上报 **590 项**，其中 263 项是 `RUF100`（满仓 `# noqa: BLE001` 注的都是没启用的规则）。
+让这种状态判失败＝给复验脚本装一条永远红的闸门。查过那 3 条 `F821`：`m4_cpu_path_probe.py` 第 112 行
+`del emb, rer`（故意释显存）造成的**误报**，闭包在 `del` 之前已调用完，不是潜在 NameError，不动。
+升级成门禁需要「写配置 + 清 590 项」，属独立一次改动；脚本刻意**不装任何东西**。
+
+**六、边界（别把这一层读成它没有的能力）。** 它是**本机**闸门，不会在我不在场时跑，没有 push 触发；
+「装了闸门」不等于「有人按时拉闸门」。`test-user` 与 `reports` 两段默认跳过（前者刷新带 LLM 漂移的业务读数、
+后者重写 `reports/m5/*.md`），要跑须显式加 `--with-test-user` / `--regen-reports`。人工标注工单没有任何阶段会写。
+本次复验同一天两趟 `pytest` 分别 **320 passed**（16:00）与 **326 passed**（16:14）、前端 **37 passed + 构建干净**——
+增量全部来自另一路会话正在进行的 RAGAS 工作（`src/kee/eval/ragas.py` 16:08、`tests/test_ragas_metrics.py` 16:10 两次写入），
+**所以这个数不取为本版基线，谁做完 RAGAS 谁定数**（同期这些文件在本仓库里是未跟踪的在写状态，与本文 6.4/§九
+「RAGAS 未引入」的记载不冲突：那句话说的是**读数与门禁**，不是"树里没有代码"）。
+
+### V1.0.38（2026-10-16，可观测体系：把「最薄的一块」补成「有抓手的一块」）
+
+**范围**：新增 `src/kee/obs/`（`metrics.py` / `logging.py` / `langfuse.py`）、`infra/prometheus/`、`infra/grafana/`、
+`infra/docker-compose.observability.yml`、`infra/docker-compose.langfuse.yml`、`scripts/obs_targets.py`、
+`scripts/m5_observability_probe.py`；`pyproject` 加一个 `prometheus-client`。**在线链路的判定逻辑一行未改**：
+指标层不写 state、不改门禁，把它整层拔掉问答链路照样跑。
+
+| # | 决定 | 为什么这么定 |
+|---|---|---|
+| 1 | **标签一律闭合枚举**，数值走直方图 | 查询文本、用户名、会话 id、文档 id 都不进标签：一是基数无界会把 Prometheus 压垮，二是这些恰恰是最不该外泄的字段。副作用是**没有任何一张图能回答「谁问了什么」**——那是 `audit_log` 的职责，两者不互相替代。`degraded` 的原因类是唯一像开放集合的，按生产者白名单收敛（`KNOWN_DEGRADED`），并有单测反向扫 `pipeline.py` / `rewrite.py` 的 `degraded.append(` 核对登记 |
+| 2 | 出口标签取 `state["gated"]` 的**实际取值**，不靠 `notes` 子串猜 | `notes` 是给人看的，里面夹着 `secret_level_cited`、`unreviewed_evidence_dropped` 这类与出口无关的东西；拿它判出口迟早看走眼。图上 8 个 `gated` 值全部登记在 `GATED_LABELS`，单测扫源码：**新开出口没登记就红**——「一共有几个出口」不能靠读代码确认 |
+| 3 | `kee_qa_top_score` 记在**检索闸门实际比较的那个数**上（复核闸摘完之后、在 `graph.retrieve` 里） | 摘之前的最高分与判定用的最高分可以不同；记早了，看板上 `le="0.2"` 那一档算出来的就不是过闸率 |
+| 4 | `cached` 用三值 `hit / miss / disabled` | `cache=None` 的调用（`/api/v1/retrieval/search` 与全部离线评测）没有「未命中」这回事。并进 `miss` 会让命中率的分母混进不该参与的轮次，而缓存命中率是要当**报告值**对外说的（§十 指标表第 331 行） |
+| 5 | 注册表是**模块私有**的，不用 `prometheus_client` 全局默认注册表 | 同进程里 `create_app()` 会被调很多次（契约测试、验收脚本、宿主实例各一次），全局注册表第二次就撞名，撞名后的症状是 `/metrics`「部分可用」——那种半坏最难发现 |
+| 6 | 抓取期依赖探针与 `/healthz` **共用同一份代码**（`dep_snapshot()`） | 两处各写一遍就会分叉，于是「健康检查说绿、看板说红」这种最难查的矛盾会真实发生。顺序也刻意：先跑探针再序列化，否则报出去的是**上一次**抓取的状态 |
+| 7 | 指标间**恒等式**是漏计探测器 | `m5_observability_probe.py` 用增量互查七条（轮次==e2e 样本、缓存 hit==cached=hit 轮、hit+miss==带缓存轮、store≤miss、disabled==无缓存端点调用、top_score 样本==带缓存轮、响应体 degraded==计数增量）。`pipeline.py` 三个 `return` 全部走 `_emit()`，并有单测扫源码禁止出现未接 `_emit` 的出口：漏一条 = 那条出口的降级计数**永久为 0**，而「永久为 0」在看板上和「真的没降级」长得一样 |
+| 8 | 观测开销用**配对交错 A/B** 量，测量期间暂停抓取器，且**跨运行结论由历史账推导** | 第一版按「先 50 次开指标、再 50 次关指标」跑，同一端点的 Δ 在两次运行里从 −0.3ms 翻到 +7.1ms——**符号会翻的差不是差**，量的是进程状态。改成每对请求 A/B 交替、奇偶换序，并 `docker stop kee-prom` 排除每 15s 那次抓取的竞争；累计 **7 次配对运行 / 21 个端点轮次**（截至 2026-10-16；当前数以 `var/gate0/m5_observability_ab_history.json` 与报告为准——带日期就可证否，不带就是等着腐烂）：配对差中位数分布 **−1.09 ~ +1.89ms、8 个为负、均值 0.36±0.77ms（5% 置信半宽）** ⇒ `|mean| < 临界`，**既拒绝「有 2ms 开销」也证明不了有正开销**，只能报「不高于 2ms、与噪声同量级」。这句话写在脚本里会随下一次运行变成假话，所以它由 `var/gate0/m5_observability_ab_history.json` 推导。计数器微基准 **17µs/轮**（差三个数量级）⇒ 若那不到 1ms 真存在，来源是**多一层 `BaseHTTPMiddleware` 的包装成本**、不是打点；为省它改纯 ASGI 中间件会破坏与本文件另两处中间件同构的写法，本版没做 |
+| 9 | Langfuse **自拼官方 ingestion 批量接口**，不装 SDK | SDK v3 走 OpenTelemetry，会拖进一整套 exporter/protobuf；而每个依赖都要过 `scripts/m5_version_lock.py` 的「声明≠用到」闸门。为一个默认关闭的功能引 6 个包不值。`/api/public/ingestion`（Basic = pk:sk）v2/v3 同形，将来升 v3 不用改代码 |
+| 10 | Langfuse **默认关闭 + 域内地址硬闸门** | 载荷含问题与结论原文，所以 `langfuse_host` 必须是回环/私网或显式名字白名单，公网目标直接判不可用；越过它要 `KEE_LANGFUSE_ALLOW_REMOTE=true`，而这个开关的存在本身就是一条风险登记。与 `scripts/serve_api.py` 拒绝非回环绑定同性质：**「数据不出域」由代码承担，不由部署说明承担** |
+| 11 | 上报在后台线程、队列满就**丢并计数** | 采集器不许反噬被采集的对象：网络抖动不能把用户的问答拖慢或打挂。代价是 Langfuse 里的 trace 可能不完整，所以 `dropped` 有独立计数器 + 一条告警，`/api/v1/observability/status` 也报队列深度 |
+| 12 | 抓取目标走 `file_sd`，端口由 `scripts/obs_targets.py` 生成 | 宿主 API 端口不是常量（Windows 会随机保留 TCP 段，本机就从 38000 挪到过 28000）。写死在 `prometheus.yml` 里就是上一轮 Nginx 反代 502 的同一个坑：改了端口、观测面静默变成「一直 No data」，而那副样子和「指标坏了」一模一样 |
+| 13 | 看板与告警的每条 PromQL **逐条在真 Prometheus 上执行**，另走 Grafana 的 `/api/ds/query` | 一条写错的表达式在 UI 上只表现为 No data，与「这个指标本轮没发生」不可分辨；只测 Prometheus 侧也证明不了 Grafana 那层的数据源、鉴权、POST 编码通。本轮 31 条：有数 22 / 空 9 / **报错 0** |
+| 14 | 看板分位数与门禁读数**不互相替代** | 直方图分位是桶上线性插值的近似值，且这张图统计**全部**轮次；① 那条 6s 门禁的口径是「6s + 仅作答轮次 + first_visible」，权威读数仍由离线探针产出。实测就是证据：看板 p95 e2e 报 **31.5s**（含 `dense_timeout` 的冷启动轮），而门禁那条是达标的——两个数都对，说的是两件事 |
+
+**如实登记的边界**（不是缺陷清单，是不许被读成别的东西）：
+
+- 指标**进程内累计、不落库**：API 重启即归零。跨重启的历史在 Prometheus 的 TSDB 里，单轮的事实仍在 `session_turn`。
+- `/metrics` 免鉴权的前提是「只绑回环 + Nginx 不反代该路径 + 标签无业务内容」三条同时成立，缺一条就要开鉴权。
+- SSE 端点的 HTTP 直方图量到**响应头**为止（`BaseHTTPMiddleware` 的性质），整轮耗时看 `kee_qa_stage_seconds{stage="e2e"}`。
+- 缓存命中轮的 `degraded` 与改写来历在检索层就被抹掉（**既有边界，V1.0.38 未改行为**），所以命中轮的降级计数恒为 0——现在这件事在指标上看得见，但仍然只是「记下来」。
+- Langfuse 的 generation 事件带 `usage` 与 `done_reason`，但**原始 prompt 与模型原文不在 `AnswerResult` 里**（`llm_meta` 只有 `prompt_chars` 与 metrics）；要上报逐字 prompt/completion 得改收口字段，那会动响应契约，本版没做。
+- 时间轴是按各阶段耗时**顺序回推重建**的（图上三个节点本来不计时），残差进 `metadata.residual_unmeasured_ms`，不摊平。
+- **Langfuse 容器未实跑**：代码侧 19 项测试对本地 stub 采集器全绿（另含一条实采照出来的「span 起止方向 / 重复上报」回归测试），真容器要拉 `langfuse/langfuse:2`（GB 级、落 C 盘 Docker VM），与本机「大件不重复下载 / 重资产留 D 盘」冲突，等一次裁决。
+- 顺带证否一条我自己的推断：原以为 `sum(increase(直方图_count))` 会被 `le` 放大桶数倍，实测 **13 个桶对应 1 条 `_count`**（`_count`/`_sum` 不带 le），故面板保持朴素 `sum(...)` 写法。
+- **同批还证否了我自己写进文档的一个数**：「`/metrics` 有 24 个 `kee_*` 家族」是错的，真数 **19**。
+  原因是计数方式：`prometheus_client` 给每个 counter/histogram 额外发一条 `<名>_created` 时间戳序列，
+  而它**只在指标被摸过之后才出现** ⇒ 「数 `# TYPE kee_` 的行数」是个随运行浮动的数
+  （本机先后见过 23 / 24 / 32）。现在探针分开报「声明族数 / `_created` 派生族数」并把声明族清单打进报告。
+  ⚠ 同一机制的另一面：`/metrics` 是**按当前状态生成**的，体积随已触发的标签组合增长——
+  同一进程实测：刚起且只有零星流量时 **7,102 字节 / 62 条样本**，跑过一轮验收与观测流量之后
+  **41,455 字节 / 480+ 条样本**（p50 26.1ms、p95 47.6ms、min 15.8ms、max 47.8ms，20 次连抓）。
+  所以「抓取一次多贵」只能按**同一个进程的当前体积**报，跨进程比这两个数就是把重启当成劣化。
+
+**重验**：`pytest` 252 → **289 passed**（新增 37 项：指标层 17 + Langfuse 上报器 19〔含 10 条域内地址矩阵〕
++ 1 条测试替名签名护栏；另修一处测试替名落后于 `SearchCache.get(kind=…)` 的签名分叉）；
+`m5_observability_probe.py` 退出码 0；两份 compose `config -q` 通过；`promtool check config` 通过（9 条规则）；
+存储栈 + 观测栈 + 宿主 API 同时在跑，`/healthz` 仍报 milvus 193 块 / postgres 24 篇（语料未动）。
 
 ### V1.0.37（2026-10-15，四条安全敞口按裁决落地：身份默认值 / 会话撤销 / 审计防篡改 / 检索量纲）
 

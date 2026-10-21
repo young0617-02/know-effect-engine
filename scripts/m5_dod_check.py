@@ -127,6 +127,73 @@ def build() -> dict:
     ac_acc = f"{pct(ap['accuracy'])}（{ap['n_correct']}/{ap['n']}）" if ap.get("n") else "无数（#40 answer_correct 工单未回收）"
     ac_ece = f"{ap['ece']}" if ap.get("n") else "无数（同上）"
 
+    # ---- RAGAS 复现与 LLM 裁判：读数全部从 ragas_eval.json 取，装置没跑就明写没跑 ----
+    rg = load("ragas_eval.json")
+    rg_s = rg.get("summary", {})
+
+    def kappa_str(agree: dict) -> str:
+        k = agree.get("kappa") or {}
+        return f"{k.get('kappa')}（{k.get('note')}）" if "note" in k else str(k.get("kappa"))
+
+    def ragas_reading() -> str:
+        if not rg_s:
+            return "RAGAS 复现与 LLM-as-Judge：**装置未跑**（跑 `scripts/m5_ragas_eval.py` 再引这一格）"
+        fc, ft = rg_s.get("faithfulness_cited", {}), rg_s.get("faithfulness_top5", {})
+        cp, crc = rg_s.get("context_precision", {}), rg_s.get("context_recall", {})
+        ar, ar_all = rg_s.get("answer_relevance_answered", {}), rg_s.get("answer_relevance_all_rows", {})
+        ag, ag2 = rg_s.get("judge_vs_human_all", {}), rg_s.get("judge_vs_human_answered", {})
+        fl = rg.get("floor", {}).get("judge", {})
+        gate = rg.get("controls_gate", {})
+        n_pass = sum(1 for c in gate.get("checks", {}).values() if c.get("pass"))
+        tg = {t["key"]: (t["name"], t["target"]) for t in rg.get("targets", [])}
+
+        def hit(key: str) -> str:
+            v = rg_s.get(key, {}).get("mean")
+            if v is None or key not in tg:
+                return "—"
+            name, target = tg[key]
+            return f"{'**过**' if v > target else '**不过**'}（目标 > {target}）"
+        return (f"Faithfulness(Top-5 原口径) **{ft.get('mean')}**｜{hit('faithfulness_top5')} "
+                f"（cited 口径 {fc.get('mean')}，n={fc.get('n')}，95% CI {fc.get('ci95')}）｜ "
+                f"**Context Precision {cp.get('mean')}**（n={cp.get('n')}，CI {cp.get('ci95')}；"
+                f"相关块数为 0 的行 {cp.get('n_rows_no_relevant_context')} 报不适用）｜{hit('context_precision')}｜ "
+                f"**Context Recall {crc.get('mean')}**（n={crc.get('n')}，CI {crc.get('ci95')}，"
+                f"参考答案声明数均值 {crc.get('claims_mean')}）｜{hit('context_recall')}｜ "
+                f"Answer Relevance **{ar.get('mean')}**｜{hit('answer_relevance_answered')} "
+                f"（全行档含「正确拒答按官方口径记 0」= {ar_all.get('mean')}）｜ "
+                f"**LLM 裁判 vs 真人判：一致率 {ag.get('reading')}、κ={kappa_str(ag)}**"
+                f"（只看作答行 {ag2.get('reading')}）｜ 裁判点头率 {ag.get('judge_yes_rate')}、"
+                f"真人判错的 {ag.get('n_human_wrong')} 行抓到 {ag.get('recall_on_human_wrong')}｜ 裁判判不出 "
+                f"{len(rg_s.get('judge_unjudgeable_rows', []))} 行｜ "
+                f"护栏 {n_pass}/{len(gate.get('checks', {}))} " + ("全过" if gate.get("all_pass") else "**有不过**")
+                + f"｜ 噪声地板：裁判重跑翻转率 {fl.get('flip_rate')}")
+
+    def ragas_say() -> str:
+        if not rg_s:
+            return "（这一格此刻没有读数，不得在对外材料里写成「已具备 RAGAS / LLM-as-Judge」。）"
+        ag = rg_s.get("judge_vs_human_all", {})
+        kap = (ag.get("kappa") or {}).get("kappa")
+        verdict = ""
+        if kap is not None and kap < 0.2:
+            verdict = (f"**而且这套裁判目前不合格当人工初筛**：κ={kap} 意味着它与真人判的一致"
+                       "没有超出偶然（人判正类本身占九成，光靠点头就能凑出那个一致率）——"
+                       f"真人判错的 {ag.get('n_human_wrong')} 行它抓到 {ag.get('recall_on_human_wrong')} 行。"
+                       "把它写成「LLM 自动评测已可用」是假绿。")
+        return ("**这两项是 2026-10-16 才落地的自研复现装置，不是 ragas 库**（官方包拖 "
+                "scikit-network→numba，会顶掉本项目硬钉的 numpy==2.5.3；且它默认走 OpenAI 客户端，"
+                "数据不出域仍要自写本地 wrapper）——算法照 RAGAS 公开两步实现、prompt 中文，"
+                "对外只能写「KEE 复现版 Faithfulness / Answer Relevance」。"
+                "**裁判模型与生成模型同为 qwen2.5:7b**，自偏好偏置未经外部对照，"
+                "所以引用它必须连着上面那条一致率/κ 一起引；一致率撑不住时它的绝对值没有引用资格。"
+                + verdict +
+                "**全部为报告值，不进门禁**（用户 2026-10-16 裁决；门禁只收机械可复算判据这条纪律不变）。"
+                "读数配的是**真人标签那一代留档输出**（未重跑生成 ⇒ 人判读数零作废），"
+                "不是「系统此刻的输出」。两口径并报不挑高那条：Top-5 原口径比 cited 口径低 "
+                "0.0484（材料从 1 块变 5 块后 7B 找不到支撑，长上下文稀释）。"
+                "Answer Relevance 是本地 BGE-M3 的余弦，量纲与论文里用 OpenAI embedding 的数不可比，"
+                "可解释的标尺是「同题配别题答案时均值掉 0.2918、10/10 逐对下降」那道对照。"
+                "Answer Relevance 的全行档把「拒得对」按官方口径记成 0 分，单独引它等于说反话。")
+
     cause_short = "、".join(f"{n}×{k.split('：')[0]}"
                             for k, n in Counter(v.split("：")[0] for v in ac.get("wrong_row_causes", {}).values()).items())
 
@@ -204,18 +271,22 @@ def build() -> dict:
             "**V1.22 定案**：门禁 = **引用落 gold 率 ≥ 90%**（机械可复算）；"
             "**答案正确率（真人判 answer_correct）= 报告值**，须附 n 与覆盖边界，不当门禁；"
             "幻觉率 ≤ 10%（**代理读数**——编造数字检测 + 人判「无依据却出结论」；"
-            "RAGAS Faithfulness 从未接入，V1.28 名实对齐，别再挂一个没有装置的名字）",
+            "RAGAS Faithfulness 已作为**自研复现装置**落地（V1.38，2026-10-16），但**只是报告值**；"
+            "ragas 库未引入，对外不得写「跑了 RAGAS」）",
             f"行级引用落 gold {ans.get('行级引用落gold')} ｜ **人判答案正确性（#40 已回收）{ac_acc}** ｜ 数字落地率均值 "
             f"{round(statistics.mean(grounded), 4) if grounded else 'NA'}（{len(grounded)} 题可判）｜ "
             f"含编造数字的题 {len(invented)} 道 ｜ 零引用结论 {ans.get('契约拦下的空结论')} 条 ｜ "
             f"**#57 十二道非作答题人判（已回收）**：处置正确率 {hread('behavior_correct')}、"
             f"误拒 {hread('over_refusal_had_evidence_but_refused')}、"
             f"该转未转 {hread('should_escalate_but_did_not')}、"
-            f"真幻觉（无依据却出结论）{hread('hallucination_unsupported_conclusion')}",
+            f"真幻觉（无依据却出结论）{hread('hallucination_unsupported_conclusion')} ｜ "
+            f"**RAGAS 复现与 LLM 裁判（V1.38 落地，报告值）**：{ragas_reading()}",
             ["var/gate0/m3_answer_probe.json", "var/gate0/m3_confidence_probe.json",
              "var/gate0/answer_correct_calibration.json", "scripts/m5_answer_correct_calibration.py",
              "var/gate0/hallucination_fill.csv", "var/gate0/hallucination_run.json",
-             "scripts/m5_hallucination_sheet.py", "scripts/m5_hallucination_rate.py"],
+             "scripts/m5_hallucination_sheet.py", "scripts/m5_hallucination_rate.py",
+             "var/gate0/ragas_eval.json", "scripts/m5_ragas_eval.py",
+             "reports/m5/M5_RAGAS与LLM裁判实测.md"],
             "这一格现在有**两种不同的可信**：出处可信（引用落 gold）与结论可信（真人判 answer_correct）。"
             f"后者首次有数：{ap.get('n')} 行给出答案的行里 {ap.get('n_wrong')} 行结论错"
             f"（错行归因：{cause_short}；明细见 `var/gate0/answer_correct_calibration.json`）。"
@@ -233,7 +304,8 @@ def build() -> dict:
             "（q-066…q-069）系统没做检索就被敏感闸拦下，那几行的「证据够不够」按构造不可判；"
             "而 q-070 是「证据充分但仍转人工」——按密级规则这是**正确**处置，"
             "不计入误拒（这条口径错过一次：修复前它被机械定义算成误拒，报了个 12.5% 的假红）。"
-            "观测域是**系统实际检到的 Top-5 证据面**，不是全库——「该检到却没检到」属 #58，不在本表职责内"),
+            "观测域是**系统实际检到的 Top-5 证据面**，不是全库——「该检到却没检到」属 #58，不在本表职责内"
+            + ragas_say()),
         row("4", "校准与结构化", "部分达标", "ECE ≤ 0.10；结构化输出首次成功率 ≥ 90%",
             f"结构化首次成功率 {pct(struct_ok / n_gen) if n_gen else 'NA'}（{struct_ok}/{n_gen}，被截断 {concl.get('被截断数')}）｜ "
             f"ECE（真人 answer_correct，n={ap.get('n', 0)}）**{ac_ece}**"

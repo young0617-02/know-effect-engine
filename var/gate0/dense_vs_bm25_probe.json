@@ -1,0 +1,673 @@
+{
+  "ts": "2026-10-17T15:00:35+0800",
+  "collection": "kb_chunks",
+  "analyzer": "jieba",
+  "chunk_count": 193,
+  "config": "HybridRetriever(mode=dense|sparse, use_rerank=False, cache=None, rewrite_mode=off), top_k=5",
+  "warmup": {
+    "retrieval_total_ms": 727.1,
+    "degraded": []
+  },
+  "queries": [
+    {
+      "key": "Q1",
+      "type": "纯编号",
+      "query": "IF-FIN-0012",
+      "gold": [
+        "fin-ifspec-prj-fin-2024-017@v1#1.2#c1",
+        "fin-ifspec-prj-fin-2024-017@v1#1.2#c2"
+      ],
+      "gold_from": "q-018（同一接口的金额上限题）",
+      "legs": {
+        "dense": {
+          "top5": [
+            {
+              "rank": 1,
+              "chunk_id": "fin-ifspec-prj-fin-2024-017@v1#1.2#c1",
+              "score_raw": 0.6128,
+              "gold": true,
+              "other_leg_rank": 1,
+              "doc_id": "fin-ifspec-prj-fin-2024-017",
+              "section_no": "1.2",
+              "table_row": false,
+              "text_head": "接口编号 IF-FIN-0012 汇款指令接口｜接口编号 IF-FIN-0012 为对公汇款指令下发接口，请求方向为企业端至银行端，同步应答时限 2 秒，超时即"
+            },
+            {
+              "rank": 2,
+              "chunk_id": "fin-ifspec-prj-fin-2024-033@v1#2.1#c1",
+              "score_raw": 0.5612,
+              "gold": false,
+              "other_leg_rank": 4,
+              "doc_id": "fin-ifspec-prj-fin-2024-033",
+              "section_no": "2.1",
+              "table_row": false,
+              "text_head": "数据同步链路接口 IF-FIN-0028｜接口编号 IF-FIN-0028 用于双活数据中心之间的数据同步链路健康度上报，上报周期 10 秒，上报内容含同步延迟"
+            },
+            {
+              "rank": 3,
+              "chunk_id": "fin-ifspec-prj-fin-2024-017@v1#1.3#c1",
+              "score_raw": 0.5439,
+              "gold": false,
+              "other_leg_rank": 8,
+              "doc_id": "fin-ifspec-prj-fin-2024-017",
+              "section_no": "1.3",
+              "table_row": false,
+              "text_head": "接口编号 IF-FIN-0013 余额与回单查询｜接口编号 IF-FIN-0013 提供账户实时余额与电子回单查询能力，余额查询单账户调用频率上限为每分钟 60"
+            },
+            {
+              "rank": 4,
+              "chunk_id": "fin-ifspec-prj-fin-2024-017@v1#1.2#c2",
+              "score_raw": 0.5414,
+              "gold": true,
+              "other_leg_rank": 2,
+              "doc_id": "fin-ifspec-prj-fin-2024-017",
+              "section_no": "1.2",
+              "table_row": false,
+              "text_head": "接口编号 IF-FIN-0012 汇款指令接口｜该接口日终批量窗口为 17 时 30 分至 19 时 00 分，窗口内限流阈值调整为 800 笔每秒，窗口外按日"
+            },
+            {
+              "rank": 5,
+              "chunk_id": "fin-ifspec-prj-fin-2024-033@v1#2.2#c1",
+              "score_raw": 0.4979,
+              "gold": false,
+              "other_leg_rank": 6,
+              "doc_id": "fin-ifspec-prj-fin-2024-033",
+              "section_no": "2.2",
+              "table_row": false,
+              "text_head": "切换编排接口 IF-FIN-0031｜按灾备切换编排方案 V2.0，接口编号 IF-FIN-0031 为切换指令下发接口，支持计划内切换、演练切换与非计划应急切"
+            }
+          ],
+          "window": [
+            "fin-ifspec-prj-fin-2024-017@v1#1.2#c1",
+            "fin-ifspec-prj-fin-2024-033@v1#2.1#c1",
+            "fin-ifspec-prj-fin-2024-017@v1#1.3#c1",
+            "fin-ifspec-prj-fin-2024-017@v1#1.2#c2",
+            "fin-ifspec-prj-fin-2024-033@v1#2.2#c1",
+            "chm-ifspec-prj-chm-2024-003@v1#1.2#c1",
+            "fin-ifspec-prj-fin-2024-033@v1#2.1#c2",
+            "ene-ifspec-prj-ene-2025-011@v1#1.2#c1",
+            "ene-ifspec-prj-ene-2025-011@v1#2.1#c2",
+            "ene-ifspec-prj-ene-2024-006@v1#1.2#c1",
+            "ene-ifspec-prj-ene-2025-011@v1#2.1#c1",
+            "chm-ifspec-prj-chm-2024-003@v1#2.2#c1",
+            "ene-ifspec-prj-ene-2024-006@v1#1.2#c2",
+            "ene-ifspec-prj-ene-2024-006@v1#2.1#c1",
+            "fin-ifspec-prj-fin-2024-017@v1#1.1#c1",
+            "ene-ifspec-prj-ene-2025-011@v1#1.1#c1",
+            "ene-ifspec-prj-ene-2024-006@v1#2.1#c2",
+            "chm-ifspec-prj-chm-2024-003@v1#2.1#c1",
+            "chm-ifspec-prj-chm-2024-003@v1#1.2#c2",
+            "fin-closeout-prj-fin-2024-017@v1#1.1#c2"
+          ],
+          "gold_ranks": [
+            {
+              "gold_id": "fin-ifspec-prj-fin-2024-017@v1#1.2#c1",
+              "rank": 1
+            },
+            {
+              "gold_id": "fin-ifspec-prj-fin-2024-017@v1#1.2#c2",
+              "rank": 4
+            }
+          ],
+          "timings_ms": {
+            "embed_ms": 37.5,
+            "dense_ms": 5.9,
+            "retrieval_total_ms": 43.4
+          },
+          "degraded": []
+        },
+        "sparse": {
+          "top5": [
+            {
+              "rank": 1,
+              "chunk_id": "fin-ifspec-prj-fin-2024-017@v1#1.2#c1",
+              "score_raw": 12.047,
+              "gold": true,
+              "other_leg_rank": 1,
+              "doc_id": "fin-ifspec-prj-fin-2024-017",
+              "section_no": "1.2",
+              "table_row": false,
+              "text_head": "接口编号 IF-FIN-0012 汇款指令接口｜接口编号 IF-FIN-0012 为对公汇款指令下发接口，请求方向为企业端至银行端，同步应答时限 2 秒，超时即"
+            },
+            {
+              "rank": 2,
+              "chunk_id": "fin-ifspec-prj-fin-2024-017@v1#1.2#c2",
+              "score_raw": 8.9036,
+              "gold": true,
+              "other_leg_rank": 4,
+              "doc_id": "fin-ifspec-prj-fin-2024-017",
+              "section_no": "1.2",
+              "table_row": false,
+              "text_head": "接口编号 IF-FIN-0012 汇款指令接口｜该接口日终批量窗口为 17 时 30 分至 19 时 00 分，窗口内限流阈值调整为 800 笔每秒，窗口外按日"
+            },
+            {
+              "rank": 3,
+              "chunk_id": "ene-ifspec-prj-ene-2025-011@v1#1.1#c1",
+              "score_raw": 5.725,
+              "gold": false,
+              "other_leg_rank": 16,
+              "doc_id": "ene-ifspec-prj-ene-2025-011",
+              "section_no": "1.1",
+              "table_row": false,
+              "text_head": "接口范围与编号规则｜本规范适用于场站边缘节点至区域汇聚层的接口设计，接口编号采用 IF-ENE-加四位流水号形式，与省级电网项目共用编号资源池但区间隔离：本项目"
+            },
+            {
+              "rank": 4,
+              "chunk_id": "fin-ifspec-prj-fin-2024-033@v1#2.1#c1",
+              "score_raw": 5.5417,
+              "gold": false,
+              "other_leg_rank": 2,
+              "doc_id": "fin-ifspec-prj-fin-2024-033",
+              "section_no": "2.1",
+              "table_row": false,
+              "text_head": "数据同步链路接口 IF-FIN-0028｜接口编号 IF-FIN-0028 用于双活数据中心之间的数据同步链路健康度上报，上报周期 10 秒，上报内容含同步延迟"
+            },
+            {
+              "rank": 5,
+              "chunk_id": "chm-ifspec-prj-chm-2024-003@v1#2.2#c1",
+              "score_raw": 5.3988,
+              "gold": false,
+              "other_leg_rank": 12,
+              "doc_id": "chm-ifspec-prj-chm-2024-003",
+              "section_no": "2.2",
+              "table_row": false,
+              "text_head": "接口编号 IF-CHM-0011 历史与事件回溯｜接口编号 IF-CHM-0011 提供历史点位与操作事件的回溯查询，任意点位在 2 年内支持 1 分钟粒度查询"
+            }
+          ],
+          "window": [
+            "fin-ifspec-prj-fin-2024-017@v1#1.2#c1",
+            "fin-ifspec-prj-fin-2024-017@v1#1.2#c2",
+            "ene-ifspec-prj-ene-2025-011@v1#1.1#c1",
+            "fin-ifspec-prj-fin-2024-033@v1#2.1#c1",
+            "chm-ifspec-prj-chm-2024-003@v1#2.2#c1",
+            "fin-ifspec-prj-fin-2024-033@v1#2.2#c1",
+            "ene-ifspec-prj-ene-2024-006@v1#2.1#c1",
+            "fin-ifspec-prj-fin-2024-017@v1#1.3#c1",
+            "chm-ifspec-prj-chm-2024-003@v1#2.1#c1",
+            "ene-ifspec-prj-ene-2024-006@v1#1.2#c1",
+            "ene-ifspec-prj-ene-2025-011@v1#2.1#c1",
+            "ene-ifspec-prj-ene-2025-011@v1#1.2#c1",
+            "chm-ifspec-prj-chm-2024-003@v1#1.2#c1",
+            "ene-ifspec-prj-ene-2024-006@v1#1.2#c2",
+            "ene-ifspec-prj-ene-2024-006@v1#1.1#c1",
+            "fin-ifspec-prj-fin-2024-033@v1#2.1#c2",
+            "ene-ifspec-prj-ene-2024-006@v1#2.1#c2",
+            "ene-ifspec-prj-ene-2025-011@v1#1.2#c2",
+            "ene-ifspec-prj-ene-2025-011@v1#2.1#c2",
+            "chm-ifspec-prj-chm-2024-003@v1#1.2#c2"
+          ],
+          "gold_ranks": [
+            {
+              "gold_id": "fin-ifspec-prj-fin-2024-017@v1#1.2#c1",
+              "rank": 1
+            },
+            {
+              "gold_id": "fin-ifspec-prj-fin-2024-017@v1#1.2#c2",
+              "rank": 2
+            }
+          ],
+          "timings_ms": {
+            "sparse_ms": 7.7,
+            "retrieval_total_ms": 7.8
+          },
+          "degraded": []
+        }
+      },
+      "overlap": {
+        "top5_common": [
+          "fin-ifspec-prj-fin-2024-017@v1#1.2#c1",
+          "fin-ifspec-prj-fin-2024-017@v1#1.2#c2",
+          "fin-ifspec-prj-fin-2024-033@v1#2.1#c1"
+        ],
+        "top5_only_dense": [
+          "fin-ifspec-prj-fin-2024-017@v1#1.3#c1",
+          "fin-ifspec-prj-fin-2024-033@v1#2.2#c1"
+        ],
+        "top5_only_sparse": [
+          "chm-ifspec-prj-chm-2024-003@v1#2.2#c1",
+          "ene-ifspec-prj-ene-2025-011@v1#1.1#c1"
+        ],
+        "jaccard_top5": 0.4286,
+        "top1_equal": true,
+        "jaccard_window20": 0.8182
+      }
+    },
+    {
+      "key": "Q2",
+      "type": "口语化",
+      "query": "操作员连着拒了几条系统建议，平台会把它这条回路晾多久？",
+      "gold": [
+        "chm-ifspec-prj-chm-2024-003@v1#2.1#c1"
+      ],
+      "gold_from": "q-050",
+      "legs": {
+        "dense": {
+          "top5": [
+            {
+              "rank": 1,
+              "chunk_id": "chm-ifspec-prj-chm-2024-003@v1#2.1#c1",
+              "score_raw": 0.6155,
+              "gold": true,
+              "other_leg_rank": 1,
+              "doc_id": "chm-ifspec-prj-chm-2024-003",
+              "section_no": "2.1",
+              "table_row": false,
+              "text_head": "接口编号 IF-CHM-0009 设定值建议下发｜接口编号 IF-CHM-0009 用于向操作站下发设定值建议，属建议通道而非控制通道，控制层不得自动执行；下发"
+            },
+            {
+              "rank": 2,
+              "chunk_id": "chm-closeout-prj-chm-2024-003@v1#2.2#c2",
+              "score_raw": 0.5628,
+              "gold": false,
+              "other_leg_rank": 5,
+              "doc_id": "chm-closeout-prj-chm-2024-003",
+              "section_no": "2.2",
+              "table_row": false,
+              "text_head": "DCS 联锁逻辑与安全边界｜写入权限开通须经客户书面变更单授权，单张变更单有效期不超过 72 小时且仅限单个回路，超期未使用自动失效；全部写入动作在操作站与平台"
+            },
+            {
+              "rank": 3,
+              "chunk_id": "chm-closeout-prj-chm-2024-003@v1#4.1#c1",
+              "score_raw": 0.5594,
+              "gold": false,
+              "other_leg_rank": 2,
+              "doc_id": "chm-closeout-prj-chm-2024-003",
+              "section_no": "4.1",
+              "table_row": false,
+              "text_head": "HAZOP 分析配合与安全审查｜项目期间参与客户组织的 HAZOP 分析共 3 场次，覆盖重整反应器、再分离与催化剂再生三个节点组，累计提出建议项 22 条，其"
+            },
+            {
+              "rank": 4,
+              "chunk_id": "fin-ifspec-prj-fin-2024-017@v1#2.2#c2",
+              "score_raw": 0.5579,
+              "gold": false,
+              "other_leg_rank": null,
+              "doc_id": "fin-ifspec-prj-fin-2024-017",
+              "section_no": "2.2",
+              "table_row": false,
+              "text_head": "报文安全与超时重试约束｜重试策略按接口类型区分：查询类接口允许最多 3 次重试、退避基数 500 毫秒；指令类接口除网络层连接失败外一律禁止重试，避免资金类业务"
+            },
+            {
+              "rank": 5,
+              "chunk_id": "fin-retro-prj-fin-2023-041@v1#3.1#c2",
+              "score_raw": 0.5563,
+              "gold": false,
+              "other_leg_rank": null,
+              "doc_id": "fin-retro-prj-fin-2023-041",
+              "section_no": "3.1",
+              "table_row": false,
+              "text_head": "性能问题与容量评估偏差｜复盘同时认定监控缺口一项：批处理作业无时长基线告警，仅设失败告警，导致超时问题延后两天才被发现；已补充作业时长基线告警，基线取近 30 "
+            }
+          ],
+          "window": [
+            "chm-ifspec-prj-chm-2024-003@v1#2.1#c1",
+            "chm-closeout-prj-chm-2024-003@v1#2.2#c2",
+            "chm-closeout-prj-chm-2024-003@v1#4.1#c1",
+            "fin-ifspec-prj-fin-2024-017@v1#2.2#c2",
+            "fin-retro-prj-fin-2023-041@v1#3.1#c2",
+            "chm-retro-prj-chm-2024-003@v1#2.2#c1",
+            "chm-compliance-prj-chm-2023-021@v1#3.2#c1",
+            "ene-runbook-prj-ene-2025-011@v1#4.1#c1",
+            "chm-closeout-prj-chm-2023-021@v1#5.1#c1",
+            "chm-runbook-prj-chm-2025-014@v1#4.1#c1",
+            "chm-compliance-prj-chm-2023-021@v1#3.1#c1",
+            "ene-ifspec-prj-ene-2024-006@v1#2.2#c1",
+            "chm-retro-prj-chm-2024-003@v1#4.1#c1",
+            "ene-ifspec-prj-ene-2024-006@v1#2.1#c1",
+            "ene-ifspec-prj-ene-2025-011@v1#4.1#c1",
+            "fin-closeout-prj-fin-2024-017@v1#4.2#c1",
+            "fin-compliance-prj-fin-2025-008@v1#2.2#c1",
+            "chm-closeout-prj-chm-2023-021@v1#5.1#c2",
+            "fin-closeout-prj-fin-2024-017@v1#1.1#c2",
+            "chm-runbook-prj-chm-2023-021@v1#6.1#c1"
+          ],
+          "gold_ranks": [
+            {
+              "gold_id": "chm-ifspec-prj-chm-2024-003@v1#2.1#c1",
+              "rank": 1
+            }
+          ],
+          "timings_ms": {
+            "embed_ms": 64.7,
+            "dense_ms": 4.9,
+            "retrieval_total_ms": 69.7
+          },
+          "degraded": []
+        },
+        "sparse": {
+          "top5": [
+            {
+              "rank": 1,
+              "chunk_id": "chm-ifspec-prj-chm-2024-003@v1#2.1#c1",
+              "score_raw": 14.7457,
+              "gold": true,
+              "other_leg_rank": 1,
+              "doc_id": "chm-ifspec-prj-chm-2024-003",
+              "section_no": "2.1",
+              "table_row": false,
+              "text_head": "接口编号 IF-CHM-0009 设定值建议下发｜接口编号 IF-CHM-0009 用于向操作站下发设定值建议，属建议通道而非控制通道，控制层不得自动执行；下发"
+            },
+            {
+              "rank": 2,
+              "chunk_id": "chm-closeout-prj-chm-2024-003@v1#4.1#c1",
+              "score_raw": 13.1885,
+              "gold": false,
+              "other_leg_rank": 3,
+              "doc_id": "chm-closeout-prj-chm-2024-003",
+              "section_no": "4.1",
+              "table_row": false,
+              "text_head": "HAZOP 分析配合与安全审查｜项目期间参与客户组织的 HAZOP 分析共 3 场次，覆盖重整反应器、再分离与催化剂再生三个节点组，累计提出建议项 22 条，其"
+            },
+            {
+              "rank": 3,
+              "chunk_id": "chm-closeout-prj-chm-2024-003@v1#2.1#c2",
+              "score_raw": 12.3583,
+              "gold": false,
+              "other_leg_rank": null,
+              "doc_id": "chm-closeout-prj-chm-2024-003",
+              "section_no": "2.1",
+              "table_row": false,
+              "text_head": "装置优化成效｜关键工艺参数平稳率由 88.6% 提升至 96.3%，操作报警日均条数由 214 条降至 68 条，操作干预次数下降 58%；操作员对系统建议的采"
+            },
+            {
+              "rank": 4,
+              "chunk_id": "chm-closeout-prj-chm-2024-003@v1#2.2#c1",
+              "score_raw": 11.4666,
+              "gold": false,
+              "other_leg_rank": null,
+              "doc_id": "chm-closeout-prj-chm-2024-003",
+              "section_no": "2.2",
+              "table_row": false,
+              "text_head": "DCS 联锁逻辑与安全边界｜优化引擎与 DCS 之间采用单向建议加有限写入的模式，可写回路仅 12 个且全部为调节回路设定值，单次写入幅值不超过工艺允许区间的 "
+            },
+            {
+              "rank": 5,
+              "chunk_id": "chm-closeout-prj-chm-2024-003@v1#2.2#c2",
+              "score_raw": 10.1675,
+              "gold": false,
+              "other_leg_rank": 2,
+              "doc_id": "chm-closeout-prj-chm-2024-003",
+              "section_no": "2.2",
+              "table_row": false,
+              "text_head": "DCS 联锁逻辑与安全边界｜写入权限开通须经客户书面变更单授权，单张变更单有效期不超过 72 小时且仅限单个回路，超期未使用自动失效；全部写入动作在操作站与平台"
+            }
+          ],
+          "window": [
+            "chm-ifspec-prj-chm-2024-003@v1#2.1#c1",
+            "chm-closeout-prj-chm-2024-003@v1#4.1#c1",
+            "chm-closeout-prj-chm-2024-003@v1#2.1#c2",
+            "chm-closeout-prj-chm-2024-003@v1#2.2#c1",
+            "chm-closeout-prj-chm-2024-003@v1#2.2#c2",
+            "ene-presale-prj-ene-2025-011@v1#1.1#c2",
+            "ene-ifspec-prj-ene-2025-011@v1#1.2#c2",
+            "chm-closeout-prj-chm-2024-003@v1#1.1#c1",
+            "chm-presale-prj-chm-2025-014@v1#2.1#c1",
+            "chm-compliance-prj-chm-2023-021@v1#2.1#c2",
+            "chm-runbook-prj-chm-2023-021@v1#1.1#c1",
+            "chm-compliance-prj-chm-2023-021@v1#3.2#c1",
+            "chm-retro-prj-chm-2024-003@v1#2.1#c2",
+            "chm-runbook-prj-chm-2023-021@v1#2.1#c1",
+            "ene-runbook-prj-ene-2025-011@v1#3.1#c1",
+            "chm-closeout-prj-chm-2023-021@v1#1.1#c1",
+            "ene-retro-prj-ene-2024-006@v1#2.1#c1",
+            "ene-retro-prj-ene-2024-006@v1#3.1#c1",
+            "chm-retro-prj-chm-2024-003@v1#4.1#c1",
+            "chm-runbook-prj-chm-2023-021@v1#2.2#c1"
+          ],
+          "gold_ranks": [
+            {
+              "gold_id": "chm-ifspec-prj-chm-2024-003@v1#2.1#c1",
+              "rank": 1
+            }
+          ],
+          "timings_ms": {
+            "sparse_ms": 3.9,
+            "retrieval_total_ms": 3.9
+          },
+          "degraded": []
+        }
+      },
+      "overlap": {
+        "top5_common": [
+          "chm-closeout-prj-chm-2024-003@v1#2.2#c2",
+          "chm-closeout-prj-chm-2024-003@v1#4.1#c1",
+          "chm-ifspec-prj-chm-2024-003@v1#2.1#c1"
+        ],
+        "top5_only_dense": [
+          "fin-ifspec-prj-fin-2024-017@v1#2.2#c2",
+          "fin-retro-prj-fin-2023-041@v1#3.1#c2"
+        ],
+        "top5_only_sparse": [
+          "chm-closeout-prj-chm-2024-003@v1#2.1#c2",
+          "chm-closeout-prj-chm-2024-003@v1#2.2#c1"
+        ],
+        "jaccard_top5": 0.4286,
+        "top1_equal": true,
+        "jaccard_window20": 0.1429
+      }
+    },
+    {
+      "key": "Q3",
+      "type": "混合",
+      "query": "IF-FIN-0012 那笔汇款超了上限，钱还能不能走，得怎么接着办？",
+      "gold": [
+        "fin-ifspec-prj-fin-2024-017@v1#1.2#c1",
+        "fin-ifspec-prj-fin-2024-017@v1#1.2#c2"
+      ],
+      "gold_from": "q-018",
+      "legs": {
+        "dense": {
+          "top5": [
+            {
+              "rank": 1,
+              "chunk_id": "fin-ifspec-prj-fin-2024-017@v1#1.2#c1",
+              "score_raw": 0.7286,
+              "gold": true,
+              "other_leg_rank": 1,
+              "doc_id": "fin-ifspec-prj-fin-2024-017",
+              "section_no": "1.2",
+              "table_row": false,
+              "text_head": "接口编号 IF-FIN-0012 汇款指令接口｜接口编号 IF-FIN-0012 为对公汇款指令下发接口，请求方向为企业端至银行端，同步应答时限 2 秒，超时即"
+            },
+            {
+              "rank": 2,
+              "chunk_id": "fin-ifspec-prj-fin-2024-017@v1#1.2#c2",
+              "score_raw": 0.7173,
+              "gold": true,
+              "other_leg_rank": 2,
+              "doc_id": "fin-ifspec-prj-fin-2024-017",
+              "section_no": "1.2",
+              "table_row": false,
+              "text_head": "接口编号 IF-FIN-0012 汇款指令接口｜该接口日终批量窗口为 17 时 30 分至 19 时 00 分，窗口内限流阈值调整为 800 笔每秒，窗口外按日"
+            },
+            {
+              "rank": 3,
+              "chunk_id": "fin-ifspec-prj-fin-2024-017@v1#1.3#c1",
+              "score_raw": 0.6448,
+              "gold": false,
+              "other_leg_rank": 3,
+              "doc_id": "fin-ifspec-prj-fin-2024-017",
+              "section_no": "1.3",
+              "table_row": false,
+              "text_head": "接口编号 IF-FIN-0013 余额与回单查询｜接口编号 IF-FIN-0013 提供账户实时余额与电子回单查询能力，余额查询单账户调用频率上限为每分钟 60"
+            },
+            {
+              "rank": 4,
+              "chunk_id": "fin-ifspec-prj-fin-2024-033@v1#2.1#c2",
+              "score_raw": 0.6001,
+              "gold": false,
+              "other_leg_rank": null,
+              "doc_id": "fin-ifspec-prj-fin-2024-033",
+              "section_no": "2.1",
+              "table_row": false,
+              "text_head": "数据同步链路接口 IF-FIN-0028｜异地异步链路的可容忍延迟显著放宽，正常水位 8 秒、告警门限 30 秒，超过 60 秒时须评估 RPO 是否已突破承诺"
+            },
+            {
+              "rank": 5,
+              "chunk_id": "ene-ifspec-prj-ene-2024-006@v1#2.2#c1",
+              "score_raw": 0.57,
+              "gold": false,
+              "other_leg_rank": 19,
+              "doc_id": "ene-ifspec-prj-ene-2024-006",
+              "section_no": "2.2",
+              "table_row": false,
+              "text_head": "链路管理与会话约束｜长连接心跳采用 IEC 60870-5-104 约定的 TESTFH 试验帧机制，主站发起周期为 20 秒、连续 2 次未收到应答判定链路中"
+            }
+          ],
+          "window": [
+            "fin-ifspec-prj-fin-2024-017@v1#1.2#c1",
+            "fin-ifspec-prj-fin-2024-017@v1#1.2#c2",
+            "fin-ifspec-prj-fin-2024-017@v1#1.3#c1",
+            "fin-ifspec-prj-fin-2024-033@v1#2.1#c2",
+            "ene-ifspec-prj-ene-2024-006@v1#2.2#c1",
+            "fin-ifspec-prj-fin-2024-033@v1#2.2#c1",
+            "fin-ifspec-prj-fin-2024-017@v1#2.1#c2",
+            "chm-ifspec-prj-chm-2024-003@v1#2.1#c1",
+            "fin-ifspec-prj-fin-2024-017@v1#2.1#c1",
+            "fin-ifspec-prj-fin-2024-033@v1#2.1#c1",
+            "ene-ifspec-prj-ene-2024-006@v1#2.1#c1",
+            "fin-closeout-prj-fin-2024-017@v1#3.1#c2",
+            "fin-runbook-prj-fin-2024-017@v1#2.2#c1",
+            "fin-compliance-prj-fin-2025-008@v1#2.2#c1",
+            "fin-ifspec-prj-fin-2024-017@v1#2.2#c1",
+            "ene-ifspec-prj-ene-2024-006@v1#2.1#c2",
+            "fin-ifspec-prj-fin-2024-017@v1#1.1#c1",
+            "ene-ifspec-prj-ene-2025-011@v1#2.1#c2",
+            "ene-ifspec-prj-ene-2025-011@v1#1.2#c1",
+            "fin-compliance-prj-fin-2025-008@v1#3.1#c1"
+          ],
+          "gold_ranks": [
+            {
+              "gold_id": "fin-ifspec-prj-fin-2024-017@v1#1.2#c1",
+              "rank": 1
+            },
+            {
+              "gold_id": "fin-ifspec-prj-fin-2024-017@v1#1.2#c2",
+              "rank": 2
+            }
+          ],
+          "timings_ms": {
+            "embed_ms": 33.1,
+            "dense_ms": 4.2,
+            "retrieval_total_ms": 37.3
+          },
+          "degraded": []
+        },
+        "sparse": {
+          "top5": [
+            {
+              "rank": 1,
+              "chunk_id": "fin-ifspec-prj-fin-2024-017@v1#1.2#c1",
+              "score_raw": 28.7585,
+              "gold": true,
+              "other_leg_rank": 1,
+              "doc_id": "fin-ifspec-prj-fin-2024-017",
+              "section_no": "1.2",
+              "table_row": false,
+              "text_head": "接口编号 IF-FIN-0012 汇款指令接口｜接口编号 IF-FIN-0012 为对公汇款指令下发接口，请求方向为企业端至银行端，同步应答时限 2 秒，超时即"
+            },
+            {
+              "rank": 2,
+              "chunk_id": "fin-ifspec-prj-fin-2024-017@v1#1.2#c2",
+              "score_raw": 18.3242,
+              "gold": true,
+              "other_leg_rank": 2,
+              "doc_id": "fin-ifspec-prj-fin-2024-017",
+              "section_no": "1.2",
+              "table_row": false,
+              "text_head": "接口编号 IF-FIN-0012 汇款指令接口｜该接口日终批量窗口为 17 时 30 分至 19 时 00 分，窗口内限流阈值调整为 800 笔每秒，窗口外按日"
+            },
+            {
+              "rank": 3,
+              "chunk_id": "fin-ifspec-prj-fin-2024-017@v1#1.3#c1",
+              "score_raw": 10.5385,
+              "gold": false,
+              "other_leg_rank": 3,
+              "doc_id": "fin-ifspec-prj-fin-2024-017",
+              "section_no": "1.3",
+              "table_row": false,
+              "text_head": "接口编号 IF-FIN-0013 余额与回单查询｜接口编号 IF-FIN-0013 提供账户实时余额与电子回单查询能力，余额查询单账户调用频率上限为每分钟 60"
+            },
+            {
+              "rank": 4,
+              "chunk_id": "ene-ifspec-prj-ene-2024-006@v1#2.1#c2",
+              "score_raw": 8.3925,
+              "gold": false,
+              "other_leg_rank": 16,
+              "doc_id": "ene-ifspec-prj-ene-2024-006",
+              "section_no": "2.1",
+              "table_row": false,
+              "text_head": "接口编号 IF-ENE-0024 遥控与参数下装｜定值下装须先在主站完成版本比对，差异项超过 8 项时强制走现场作业；下装结果以终端回读为准，回读值与下发值不一"
+            },
+            {
+              "rank": 5,
+              "chunk_id": "fin-presale-prj-fin-2023-041@v1#4.1#c1",
+              "score_raw": 8.3118,
+              "gold": false,
+              "other_leg_rank": null,
+              "doc_id": "fin-presale-prj-fin-2023-041",
+              "section_no": "4.1",
+              "table_row": false,
+              "text_head": "商务报价与参考客户口径｜本报价有效期 90 个自然日，合同金额区间为 2380 万元至 2760 万元，含平台许可、实施服务与首年运维支持三部分，其中实施服务占"
+            }
+          ],
+          "window": [
+            "fin-ifspec-prj-fin-2024-017@v1#1.2#c1",
+            "fin-ifspec-prj-fin-2024-017@v1#1.2#c2",
+            "fin-ifspec-prj-fin-2024-017@v1#1.3#c1",
+            "ene-ifspec-prj-ene-2024-006@v1#2.1#c2",
+            "fin-presale-prj-fin-2023-041@v1#4.1#c1",
+            "chm-ifspec-prj-chm-2024-003@v1#2.2#c1",
+            "fin-ifspec-prj-fin-2024-033@v1#2.2#c1",
+            "ene-ifspec-prj-ene-2024-006@v1#1.1#c1",
+            "chm-ifspec-prj-chm-2024-003@v1#1.2#c2",
+            "ene-ifspec-prj-ene-2025-011@v1#2.1#c1",
+            "ene-ifspec-prj-ene-2025-011@v1#1.2#c1",
+            "chm-ifspec-prj-chm-2024-003@v1#1.2#c1",
+            "ene-ifspec-prj-ene-2025-011@v1#1.1#c1",
+            "ene-compliance-prj-ene-2023-019@v1#2.2#c1",
+            "fin-ifspec-prj-fin-2024-033@v1#2.1#c1",
+            "fin-closeout-prj-fin-2024-017@v1#2.1#c2",
+            "fin-ifspec-prj-fin-2024-017@v1#2.1#c2",
+            "chm-closeout-prj-chm-2024-003@v1#3.1#c2",
+            "ene-ifspec-prj-ene-2024-006@v1#2.2#c1",
+            "ene-ifspec-prj-ene-2024-006@v1#2.1#c1"
+          ],
+          "gold_ranks": [
+            {
+              "gold_id": "fin-ifspec-prj-fin-2024-017@v1#1.2#c1",
+              "rank": 1
+            },
+            {
+              "gold_id": "fin-ifspec-prj-fin-2024-017@v1#1.2#c2",
+              "rank": 2
+            }
+          ],
+          "timings_ms": {
+            "sparse_ms": 2.8,
+            "retrieval_total_ms": 2.9
+          },
+          "degraded": []
+        }
+      },
+      "overlap": {
+        "top5_common": [
+          "fin-ifspec-prj-fin-2024-017@v1#1.2#c1",
+          "fin-ifspec-prj-fin-2024-017@v1#1.2#c2",
+          "fin-ifspec-prj-fin-2024-017@v1#1.3#c1"
+        ],
+        "top5_only_dense": [
+          "ene-ifspec-prj-ene-2024-006@v1#2.2#c1",
+          "fin-ifspec-prj-fin-2024-033@v1#2.1#c2"
+        ],
+        "top5_only_sparse": [
+          "ene-ifspec-prj-ene-2024-006@v1#2.1#c2",
+          "fin-presale-prj-fin-2023-041@v1#4.1#c1"
+        ],
+        "jaccard_top5": 0.4286,
+        "top1_equal": true,
+        "jaccard_window20": 0.3333
+      }
+    }
+  ]
+}

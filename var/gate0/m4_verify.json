@@ -1,217 +1,217 @@
 {
  "base": "http://127.0.0.1:38080",
  "question": "SIS 安全仪表系统采用的表决逻辑是什么？",
- "first_delta_ms": 2044,
- "first_visible_cold_ms": 2044,
- "first_visible_hot_ms": 413,
+ "first_delta_ms": 980,
+ "first_visible_cold_ms": 980,
+ "first_visible_hot_ms": 349,
  "events": [
   [
    "retrieval",
-   943
+   402
   ],
   [
    "delta",
-   2044
+   980
   ],
   [
    "delta",
-   2072
+   1004
   ],
   [
    "delta",
-   2114
+   1030
   ],
   [
    "delta",
-   2135
+   1054
   ],
   [
    "delta",
-   2197
+   1077
   ],
   [
    "delta",
-   2268
+   1101
   ],
   [
    "delta",
-   2316
+   1124
   ],
   [
    "delta",
-   2383
+   1147
   ],
   [
    "delta",
-   2467
+   1170
   ],
   [
    "delta",
-   2530
+   1195
   ],
   [
    "delta",
-   2587
+   1220
   ],
   [
    "delta",
-   2621
+   1250
   ],
   [
    "delta",
-   2702
+   1276
   ],
   [
    "delta",
-   2766
+   1299
   ],
   [
    "delta",
-   2836
+   1324
   ],
   [
    "delta",
-   2918
+   1348
   ],
   [
    "delta",
-   2977
+   1371
   ],
   [
    "delta",
-   3016
+   1393
   ],
   [
    "delta",
-   3045
+   1414
   ],
   [
    "delta",
-   3065
+   1436
   ],
   [
    "delta",
-   3109
+   1457
   ],
   [
    "delta",
-   3129
+   1480
   ],
   [
    "delta",
-   3187
+   1525
   ],
   [
    "delta",
-   3234
+   1544
   ],
   [
    "delta",
-   3267
+   1569
   ],
   [
    "delta",
-   3297
+   1589
   ],
   [
    "delta",
-   3317
+   1610
   ],
   [
    "delta",
-   3369
+   1629
   ],
   [
    "delta",
-   3397
+   1653
   ],
   [
    "delta",
-   3448
+   1674
   ],
   [
    "delta",
-   3497
+   1696
   ],
   [
    "delta",
-   3588
+   1716
   ],
   [
    "delta",
-   3676
+   1742
   ],
   [
    "delta",
-   3744
+   1759
   ],
   [
    "delta",
-   3821
+   1786
   ],
   [
    "delta",
-   3897
+   1807
   ],
   [
    "delta",
-   3976
+   1826
   ],
   [
    "delta",
-   4028
+   1849
   ],
   [
    "delta",
-   4087
+   1873
   ],
   [
    "delta",
-   4142
+   1895
   ],
   [
    "delta",
-   4231
+   1916
   ],
   [
    "delta",
-   4315
+   1941
   ],
   [
    "delta",
-   4398
+   1966
   ],
   [
    "delta",
-   4475
+   1984
   ],
   [
    "delta",
-   4537
+   2007
   ],
   [
    "delta",
-   4593
+   2027
   ],
   [
    "delta",
-   4656
+   2052
   ],
   [
    "delta",
-   4744
+   2071
   ],
   [
    "delta",
-   4822
+   2096
   ],
   [
    "delta",
-   4873
+   2116
   ],
   [
    "answer",
-   7944
+   3973
   ]
  ],
  "checks": [
@@ -255,7 +255,7 @@
    "clause": "①",
    "name": "热态首个可读字 < 1.2s（V1.0.23 定案口径 first_visible_ms）",
    "ok": true,
-   "detail": "热态 first_visible=413ms（冷态第一呼 2044ms 单列）"
+   "detail": "热态 first_visible=349ms（冷态第一呼 980ms 单列）"
   },
   {
    "clause": "第五节",
@@ -285,7 +285,7 @@
    "clause": "第五节",
    "name": "引用片段读取留了审计（chunks_read）",
    "ok": true,
-   "detail": "['answer_generated', 'chunks_read', 'login', 'login_failed', 'logout', 'session_read', 'user_force_logout', 'user_regist"
+   "detail": "['answer_generated', 'chunks_read', 'document_ingested', 'document_review_pass', 'document_review_reject', 'document_rol"
   },
   {
    "clause": "C-1",

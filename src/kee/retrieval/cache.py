@@ -9,6 +9,7 @@ from typing import Any
 import redis
 
 from kee.config import get_settings
+from kee.obs import metrics
 
 
 class SearchCache:
@@ -25,23 +26,30 @@ class SearchCache:
         payload = json.dumps([query.strip(), mode, expr, top_k], ensure_ascii=False)
         return "kee:search:" + hashlib.sha1(payload.encode("utf-8")).hexdigest()
 
-    def get(self, key: str) -> Any | None:
+    def get(self, key: str, kind: str = "search") -> Any | None:
+        """`kind` 只用于指标标签：检索块缓存与改写缓存在同一实例上，混在一起算命中率
+        会把「检索没命中、改写命中」读成一次命中——那两个数的处置方式不同。"""
         try:
             raw = self._r.get(key)
         except redis.exceptions.RedisError:
             self.errors += 1
+            metrics.observe_cache(kind, "error")
             return None
         if raw is None:
             self.misses += 1
+            metrics.observe_cache(kind, "miss")
             return None
         self.hits += 1
+        metrics.observe_cache(kind, "hit")
         return json.loads(raw)
 
-    def set(self, key: str, value: Any) -> None:
+    def set(self, key: str, value: Any, kind: str = "search") -> None:
         try:
             self._r.set(key, json.dumps(value, ensure_ascii=False), ex=self.ttl_sec)
+            metrics.observe_cache(kind, "store")
         except redis.exceptions.RedisError:
             self.errors += 1
+            metrics.observe_cache(kind, "error")
 
     def hit_rate(self) -> float:
         total = self.hits + self.misses

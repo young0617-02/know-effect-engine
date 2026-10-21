@@ -31,6 +31,11 @@ dependencies = [
     # 装完 CUDA 仍 available、84 项单测仍绿（见 reports/m3 的 spike 记录）。
     "langgraph>=1.2,<2",
     "langgraph-checkpoint-postgres>=3.1,<4",
+    # 可观测层（`src/kee/obs/`）。只引这一个包：Prometheus 文本格式由它生成，
+    # Langfuse 上报走官方 ingestion 批量接口（httpx + Basic），**刻意不装 `langfuse` SDK**——
+    # SDK v3 拖进 OpenTelemetry 一整套 exporter/protobuf，为一个默认关闭的功能不值，
+    # 且每个依赖都要过 `scripts/m5_version_lock.py` 的「声明≠用到」闸门。
+    "prometheus-client>=0.21",
 ]
 
 [project.optional-dependencies]

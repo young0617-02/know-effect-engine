@@ -8,6 +8,7 @@
 
 from __future__ import annotations
 
+import time
 import uuid
 from typing import Any
 from urllib.parse import unquote
@@ -15,7 +16,8 @@ from urllib.parse import unquote
 import psycopg
 from fastapi import FastAPI, File, Form, Header, Request, UploadFile
 from fastapi.exceptions import RequestValidationError
-from fastapi.responses import JSONResponse, StreamingResponse
+from fastapi.responses import JSONResponse, Response, StreamingResponse
+from prometheus_client import CONTENT_TYPE_LATEST
 from pydantic import BaseModel, Field
 from pymilvus.exceptions import MilvusException
 
@@ -36,6 +38,9 @@ from kee.db.reconcile import Reconciler
 from kee.db.vector_store import VectorStore
 from kee.ingest.parsers import UnsupportedFormat
 from kee.ingest.service import AdmissionRejected, DuplicateDocument, IngestionService
+from kee.obs import metrics
+from kee.obs.langfuse import get_exporter
+from kee.obs.logging import configure_logging
 from kee.retrieval.milvus_store import KbStore
 from kee.retrieval.rbac import AccessContext, build_filter_expr
 
@@ -70,6 +75,9 @@ def _load_calibration(settings) -> dict[str, Any]:
 
 
 def _fail(code: str, status: int, message: str, trace_id: str) -> JSONResponse:
+    # 错误计数的唯一 choke point：六个 exception_handler 与三处直接 return 都经过这里，
+    # 所以「E9xx 依赖故障数」不会因为在某条新路径上忘了打点而偏低。
+    metrics.observe_api_error(code)
     return JSONResponse(
         status_code=status,
         content={
@@ -151,6 +159,10 @@ def create_app(*, skip_embedding: bool = False, scheduler: Any | None = None, co
     app.state.service = service
     app.state.scheduler = scheduler
     app.state.skip_embedding = skip_embedding
+    configure_logging(settings.log_level, settings.log_json)
+    # 进程内单例：一个后台线程 + 一个队列，被同进程里所有 create_app() 实例共用。
+    # 默认关闭时它不建 httpx client、不起线程，`record_qa` 只做一次计数。
+    app.state.langfuse = get_exporter(settings)
 
     def ensure_scheduler():
         """嵌入器只有检索端点在建 —— 上传/回滚走的是同一条嵌入路径，
@@ -245,6 +257,22 @@ def create_app(*, skip_embedding: bool = False, scheduler: Any | None = None, co
         else:
             current_user.set(None)
         return await call_next(request)
+
+    @app.middleware("http")
+    async def metrics_layer(request: Request, call_next):
+        """请求计数与耗时。注册在最后 ⇒ Starlette 把它放到栈顶，所以量的是含身份解析在内的一整次。
+
+        `/metrics` 自身排除：Prometheus 每 15s 抓一次，不排除的话「请求量」这张图会被抓取
+        本身灌满，真实流量看不见了（而且抓取耗时还含序列化，比业务请求慢）。
+        """
+        if not settings.metrics_enabled or request.url.path == "/metrics":
+            return await call_next(request)
+        t0 = time.perf_counter()
+        response = await call_next(request)
+        route = metrics.route_label(request.scope, request.url.path)
+        metrics.REQUESTS.labels(route=route, method=request.method, status=str(response.status_code)).inc()
+        metrics.REQUEST_SECONDS.labels(route=route).observe(time.perf_counter() - t0)
+        return response
 
     def _audit(actor: str, action: str, target: str, payload: dict, trace_id: str = "") -> None:
         pg.append_audit(actor=actor, action=action, target=target, trace_id=trace_id, payload=payload)
@@ -359,8 +387,9 @@ def create_app(*, skip_embedding: bool = False, scheduler: Any | None = None, co
         _audit(actor, "user_force_logout", username, {"revoked": n}, request.state.trace_id)
         return {"username": username, "revoked": n, "by": actor}
 
-    @app.get("/healthz")
-    def healthz() -> dict[str, Any]:
+    def dep_snapshot() -> dict[str, Any]:
+        """依赖自检。**/healthz 与 /metrics 的抓取期探针共用这一份**：
+        两处各写一遍就会分叉，于是「健康检查说绿、看板说红」这种最难查的矛盾会真实发生。"""
         deps: dict[str, Any] = {}
         try:
             deps["milvus"] = {"ok": True, "collection": kb.collection, "chunks": kb.count()}
@@ -371,7 +400,57 @@ def create_app(*, skip_embedding: bool = False, scheduler: Any | None = None, co
                 deps["postgres"] = {"ok": True, "documents": conn.execute("SELECT count(*) AS c FROM document").fetchone()["c"]}
         except Exception as e:  # noqa: BLE001
             deps["postgres"] = {"ok": False, "error": f"{type(e).__name__}"}
+        return deps
+
+    @app.get("/healthz")
+    def healthz() -> dict[str, Any]:
+        deps = dep_snapshot()
         return {"status": "ok" if all(d.get("ok") for d in deps.values()) else "degraded", "deps": deps}
+
+    def scrape_probe() -> None:
+        """被抓取时刷新 Gauge。探针异常由 `metrics.run_scrape_probe` 兜住，不打挂 /metrics。"""
+        for dep, info in dep_snapshot().items():
+            metrics.DEPENDENCY_UP.labels(dep=dep).set(1 if info.get("ok") else 0)
+            if dep == "milvus":
+                metrics.MILVUS_CHUNKS.set(info.get("chunks") or 0)
+            elif dep == "postgres":
+                metrics.PG_DOCUMENTS.set(info.get("documents") or 0)
+
+    metrics.set_scrape_probe(scrape_probe)
+
+    @app.get("/metrics", include_in_schema=False)
+    def prometheus_metrics() -> Response:
+        """Prometheus 文本格式。
+
+        无鉴权是**权衡过的**：暴露的是闭合枚举标签的计数与直方图（没有查询文本、用户名、
+        文档 id），而这条通路有两道结构性收口——API 只绑回环（`scripts/serve_api.py` 明文拒绝
+        非回环绑定），Nginx 只反代 `/api/`、`/healthz` 与静态资源，`/metrics` 不在里面。
+        要彻底关掉就设 `KEE_METRICS_ENABLED=false`，那时这里是 404。
+        """
+        if not settings.metrics_enabled:
+            raise ApiError("E404", 404, "本实例已关闭指标暴露（KEE_METRICS_ENABLED=false）", "")
+        return Response(content=metrics.render(), media_type=CONTENT_TYPE_LATEST)
+
+    @app.get("/api/v1/observability/status")
+    def observability_status(request: Request, x_kee_role: str | None = Header(None),
+                             x_kee_actor: str | None = Header(None)) -> dict[str, Any]:
+        """这台实例的观测面开成了什么样，以及**看板数字为什么不能当门禁读数引用**。
+
+        限治理角色（与审计读同权限面）：它报的是部署形态——端口、开关、上报目标地址，
+        这些本身是运维信息。
+        """
+        ctx, _ = context_of(x_kee_role, x_kee_actor, None, None)
+        if ctx.role not in AUDIT_READ_ROLES:
+            raise ApiError("E403", 403, "观测状态需 knowledge_owner 或 system_admin 角色", request.state.trace_id)
+        return {
+            "metrics": {"enabled": settings.metrics_enabled, "path": "/metrics",
+                        "auth": "无（只绑回环 + Nginx 不反代该路径）"},
+            "logging": {"format": "json" if settings.log_json else "text", "level": settings.log_level},
+            "langfuse": app.state.langfuse.status(),
+            "deps": dep_snapshot(),
+            "caveat": "看板上的分位数是直方图桶上的近似值；门禁（延迟/召回/置信）的权威读数"
+                      "仍由 scripts/ 下的离线探针产出，两者口径见 reports/m5/M5_可观测接入实测.md",
+        }
 
     @app.post("/api/v1/documents/upload")
     async def upload(
@@ -685,6 +764,7 @@ def create_app(*, skip_embedding: bool = False, scheduler: Any | None = None, co
         out = {**res.as_dict(), "session_id": session_id, "turn_no": turn_no, "new_session": fresh}
         if idempotency_key:
             pg.store_idempotency(idempotency_key, out)
+        app.state.langfuse.record_qa(res, ctx=ctx, session_id=session_id, actor=actor, stream=False)
         return out
 
     @app.post("/api/v1/answers/stream")
@@ -784,6 +864,7 @@ def create_app(*, skip_embedding: bool = False, scheduler: Any | None = None, co
                 # 反过来（先发后落）会让客户端拿不到轮次号，多轮就接不上。
                 payload["session_id"] = session_id
                 payload["turn_no"] = turn_no
+                app.state.langfuse.record_qa(payload, ctx=ctx, session_id=session_id, actor=actor, stream=True)
                 yield f"event: answer\ndata: {_json.dumps(payload, ensure_ascii=False, default=str)}\n\n"
 
         return StreamingResponse(events(), media_type="text/event-stream")

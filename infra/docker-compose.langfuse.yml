@@ -1,0 +1,117 @@
+# Langfuse 自托管（**2026-10-19 已实跑：镜像 1.12GB、3 容器 ~259MiB 内存、CPU 0%**）。
+#
+# 实跑结论与两处修过的缺陷：
+#   * 代码侧的 Langfuse 上报此前只验过契约面——`tests/test_langfuse_exporter.py` 用本地 stub 采集器
+#     验了批量形状、Basic 鉴权、trace/span/generation 串联、2xx 里 `errorList` 的部分拒绝计数、
+#     目标端挂掉时不抛、公网目标直接拒发。
+#   * **2026-10-19 真跑通了**：走生产入口（真 HTTP + Bearer）问三轮，真服务器收下并渲染出
+#     `kee.qa.round` → `SPAN qa.retrieve` → `GENERATION qa.generate`，Usage 1,253→121 token，
+#     Metadata 里 `degraded=[dense_timeout>2500ms]` 直接可见；截图在 `docs/assets/langfuse/`。
+#   * **实跑照出两个「起不来」的缺陷，已在本文件修掉**（stub 测试永远给不出这两条）：
+#     ① PG 挂载点原先写 `/var/lib/postgresql/data`，而 **PG18 要求挂 `/var/lib/postgresql`** ⇒ 容器 crash-loop；
+#     ② `depends_on` 原先没有健康条件 ⇒ 入口的 Prisma 迁移抢在 PG 可连之前跑，`P1001` 后整个容器退出。
+#   * 代价比出稿时估计的小：只多一个镜像 `langfuse/langfuse:2`（1.12GB），PG18/Redis8 本机已有；
+#     数据卷走 bind mount 落 `D:\project\var\observability\langfuse-pg`（**不是 C 盘**，
+#     原先那句「落 C 盘 WSL2 虚拟盘」只对镜像层成立）。
+#
+# 六个密钥/口令一律占位（`grep -n 待填_ infra/docker-compose.langfuse.yml`）：**故意不入库**，
+# 含 `POSTGRES_PASSWORD` 与 `DATABASE_URL` 里那一段——上一版这里写的是**当前正在跑的栈的真口令**，
+# 入库等于把它公布出去；这个文件后来被实跑过一轮，正好把这条照出来了。
+# 本机实跑时由脚本生成随机值、渲染一份可跑副本到 `var/`（在 .gitignore 的 `var/*` 之内），
+# 凭据落 `var/langfuse_credentials.json`。生成方式：
+#     ./.venv/Scripts/python.exe -c "import secrets;print(secrets.token_hex(32))"   # ENCRYPTION_KEY 要 32 字节 hex
+#     ./.venv/Scripts/python.exe -c "import secrets;print(secrets.token_urlsafe(12))"  # PG 口令
+# 注：主存储栈的 `待填_KEE_PG_APP_PASSWORD` 仍写在 `.env.example` 与若干脚本里（同一个「本机开发值」口径），
+# 要不要按这条一起收紧是另一个决定，不在本次改动内。
+#
+# 跑法（裁决之后）：
+#     docker compose -f infra/docker-compose.langfuse.yml --profile langfuse up -d
+#     浏览器开 http://127.0.0.1:30090 建 org/project 与 API key（或由 LANGFUSE_INIT_* 自动建）
+#     .env 里补：KEE_LANGFUSE_ENABLED=true / PUBLIC_KEY / SECRET_KEY，然后重启宿主 API
+# 验证通路：`curl -u "$PK:$SK" http://127.0.0.1:30090/api/public/health`，再问一轮看 trace 有没有落。
+#
+# 为什么选 v2 单容器而不是 v3：v3 额外要 ClickHouse + worker + S3/blob（四个服务、GB 级），
+# 而这条链路上报的是「一轮问答的输入输出与各阶段耗时」，v2 的数据模型已经够用。
+# 上报端 `/api/public/ingestion` 在 v2/v3 同形，将来升 v3 不用改代码。
+#
+# 端口全部只绑 127.0.0.1；30090/35433/36380 落 3xxxx 段（Windows 会随机保留端口段，
+# 起不来时先 `netsh interface ipv4 show excludedportrange protocol=tcp` 看是不是被占了）。
+
+name: kee-langfuse
+
+services:
+  kee-langfuse:
+    image: langfuse/langfuse:2   # ← 本机唯一需要下载的镜像：已拉取（1.12GB）并实跑通过
+    container_name: kee-langfuse
+    restart: unless-stopped
+    profiles: ["langfuse"]       # 加了 profile，`up -d` 不会顺手把它带起来——要显式 --profile
+    ports:
+      - "127.0.0.1:30090:3000"
+    environment:
+      - DATABASE_URL=postgresql://langfuse:待填_LANGFUSE_PG_PASSWORD@host.docker.internal:35433/langfuse
+      - REDIS_HOST=host.docker.internal
+      - REDIS_PORT=36380
+      - SALT=待填_LANGFUSE_SALT
+      - NEXTAUTH_SECRET=待填_LANGFUSE_NEXTAUTH_SECRET
+      - NEXTAUTH_URL=http://127.0.0.1:30090
+      - ENCRYPTION_KEY=待填_LANGFUSE_ENCRYPTION_KEY_32BYTES_HEX
+      # 自动建 org/project/管理员与一对 API key，省掉「先点界面才能拿 pk/sk」这步
+      - LANGFUSE_INIT_ORG_ID=kee
+      - LANGFUSE_INIT_PROJECT_ID=kee-qa
+      - LANGFUSE_INIT_PROJECT_NAME=KEE 在线链路
+      - LANGFUSE_INIT_PROJECT_PUBLIC_KEY=待填_KEE_LANGFUSE_PUBLIC_KEY
+      # secret key 与界面口令留占位：`sk-lf-*` 长成一副真凭据的样子，写进入库文件迟早被人当成泄露去查
+      - LANGFUSE_INIT_PROJECT_SECRET_KEY=待填_LANGFUSE_PROJECT_SECRET_KEY
+      - LANGFUSE_INIT_USER_EMAIL=admin@kee.local
+      - LANGFUSE_INIT_USER_NAME=KEE
+      - LANGFUSE_INIT_USER_PASSWORD=待填_LANGFUSE_UI_PASSWORD
+      # 遥测关掉：这份部署的存在理由就是数据不出域
+      - TELEMETRY_ENABLED=false
+      - LANGFUSE_ENABLE_EXPERIMENTAL_FEATURES=false
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      # 必须等 PG 真能接连接再起：v2 入口脚本先跑 Prisma 迁移，**连不上就整个容器退出**
+      # （`Error: P1001: Can't reach database server`，然后 `Applying database migrations failed. Exiting...`）。
+      # 光写 `depends_on: [service]` 只保证「容器起过」，不保证数据库可用——第一次实跑就是这么起的死锁。
+      kee-langfuse-pg:
+        condition: service_healthy
+      kee-langfuse-redis:
+        condition: service_started
+
+  kee-langfuse-pg:
+    image: postgres:18           # 本机已有镜像
+    container_name: kee-langfuse-pg
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:35433:5432"
+    environment:
+      - POSTGRES_DB=langfuse
+      - POSTGRES_USER=langfuse
+      # 口令同样留占位：实跑那套的真值只在 gitignore 的 var/observability/langfuse.runnable.yml 里。
+      # 上一版这里写的是**正在跑的那个栈的真口令**（`langfuse_dev`），入库等于把它公布出去，已改回占位。
+      - POSTGRES_PASSWORD=待填_LANGFUSE_PG_PASSWORD
+      - PGDATA=/var/lib/postgresql/data
+    volumes:
+      # PG18 镜像要求挂载点为 /var/lib/postgresql（不是 /var/lib/postgresql/data）——
+      # 挂错的话容器直接拒绝启动并打出「there appears to be PostgreSQL data in ...
+      # (unused mount/volume)」这段长告警。主栈 `docker-compose.gate0.yml` 早就踩过了，
+      # 注释写在它的 volumes 上方；**这份出稿时没跑过，所以把同一个坑原样带了进来**。
+      # 现在按 PG18 的约定挂 /var/lib/postgresql，并用 PGDATA 指回 data 子目录，
+      # 数据仍落在这个 bind mount 里（与其他版本布局兼容）。
+      - ../../var/observability/langfuse-pg:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U langfuse -d langfuse"]
+      interval: 3s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+    # 单独起一个 PG 实例而不是往 `kee-postgres` 里建库：`kee-postgres` 是「唯一权威源」，
+    # 它的备份面与权限面（`scripts/harden_audit_store.py`）不为第三方数据负责。
+
+  kee-langfuse-redis:
+    image: redis:8               # 本机已有镜像
+    container_name: kee-langfuse-redis
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:36380:6379"

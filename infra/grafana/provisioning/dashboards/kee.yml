@@ -1,0 +1,14 @@
+apiVersion: 1
+
+providers:
+  - name: kee
+    orgId: 1
+    folder: KEE
+    type: file
+    disableDeletion: true
+    updateIntervalSeconds: 30
+    allowUiUpdates: false
+    options:
+      # JSON 是文件里的字面量：改面板 = 改仓库里的这个文件 + `docker compose restart kee-grafana`。
+      # 关掉 UI 修改是有意的——在看板上手改出来的东西不会被任何人复现，那与「读数可复核」相反。
+      path: /var/lib/grafana/dashboards

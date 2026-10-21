@@ -32,7 +32,7 @@
           "索引条数": 4,
           "解析告警": 1,
           "元数据告警": 0,
-          "耗时s": 123.109
+          "耗时s": 15.012
         },
         "txt": {
           "doc_id": "m1-xunjian-prj-ene-2025-008",
@@ -44,7 +44,7 @@
           "索引条数": 3,
           "解析告警": 1,
           "元数据告警": 0,
-          "耗时s": 11.776
+          "耗时s": 11.767
         },
         "docx": {
           "doc_id": "m1-shishi-prj-fin-2024-017",
@@ -56,7 +56,7 @@
           "索引条数": 2,
           "解析告警": 2,
           "元数据告警": 0,
-          "耗时s": 9.232
+          "耗时s": 8.981
         },
         "pdf": {
           "doc_id": "m1-anquan-prj-mfg-2024-001",
@@ -68,7 +68,7 @@
           "索引条数": 21,
           "解析告警": 4,
           "元数据告警": 0,
-          "耗时s": 9.883
+          "耗时s": 10.84
         },
         "secret": {
           "doc_id": "m1-mi-mfg-2024-002",
@@ -80,7 +80,7 @@
           "索引条数": 2,
           "解析告警": 1,
           "元数据告警": 0,
-          "耗时s": 11.879
+          "耗时s": 11.905
         }
       }
     },
@@ -206,7 +206,7 @@
           "短段并入前段：16｜经销商。",
           "触发原因：文本层过薄（1 页）"
         ],
-        "耗时s": 14.669,
+        "耗时s": 9.618,
         "检索命中": [
           {
             "doc": "m1-saomiao-prj-mfg-2024-003",
@@ -325,21 +325,21 @@
       "ok": true,
       "detail": {
         "动作分布": {
-          "answer_generated": 59,
-          "chunks_read": 148,
-          "document_ingested": 16,
-          "document_review_pass": 7,
-          "document_review_reject": 2,
-          "document_rollback": 2,
+          "answer_generated": 310,
+          "chunks_read": 230,
+          "document_ingested": 40,
+          "document_review_pass": 10,
+          "document_review_reject": 5,
+          "document_rollback": 5,
           "hardening_check": 1,
-          "login": 112,
-          "login_failed": 32,
-          "logout": 29,
-          "reconciliation_run": 2,
-          "session_read": 33,
-          "user_force_logout": 4,
-          "user_registered": 116,
-          "user_role_granted": 33
+          "login": 302,
+          "login_failed": 55,
+          "logout": 62,
+          "reconciliation_run": 5,
+          "session_read": 64,
+          "user_force_logout": 15,
+          "user_registered": 237,
+          "user_role_granted": 66
         },
         "篡改被拒": "permission denied for table audit_log"
       }
@@ -352,8 +352,8 @@
         "连接角色": "kee_app",
         "该角色超级用户": false,
         "audit_log 属主": "postgres",
-        "行数_前": 596,
-        "行数_后": 596
+        "行数_前": 1407,
+        "行数_后": 1407
       }
     },
     {
@@ -367,10 +367,10 @@
     }
   ],
   "timings_sec": {
-    "upload_5_docs": 166.16,
-    "retrieval_probes": 8.46,
-    "reconcile_run": 12.55,
-    "whole_run": 382.48
+    "upload_5_docs": 58.74,
+    "retrieval_probes": 5.51,
+    "reconcile_run": 12.34,
+    "whole_run": 265.41
   },
   "baseline": {
     "collection": "kb_chunks",
@@ -407,12 +407,12 @@
         },
         "timings_sec": {
           "parse": 0.0,
-          "authoritative_write": 0.162,
-          "embed": 121.317,
-          "index": 1.63,
-          "total": 123.109
+          "authoritative_write": 0.103,
+          "embed": 13.323,
+          "index": 1.586,
+          "total": 15.012
         },
-        "trace_id": "api-2f38758dc79e"
+        "trace_id": "api-2b5a2bbe739e"
       }
     },
     "txt": {
@@ -443,13 +443,13 @@
           "remaining_pending": 0
         },
         "timings_sec": {
-          "parse": 0.0,
-          "authoritative_write": 0.121,
-          "embed": 0.039,
-          "index": 11.616,
-          "total": 11.776
+          "parse": 0.001,
+          "authoritative_write": 0.117,
+          "embed": 0.04,
+          "index": 11.61,
+          "total": 11.767
         },
-        "trace_id": "api-ea343c380971"
+        "trace_id": "api-8f087f1df726"
       }
     },
     "docx": {
@@ -481,13 +481,13 @@
           "remaining_pending": 0
         },
         "timings_sec": {
-          "parse": 0.299,
-          "authoritative_write": 0.128,
-          "embed": 0.21,
-          "index": 8.596,
-          "total": 9.232
+          "parse": 0.129,
+          "authoritative_write": 0.125,
+          "embed": 0.119,
+          "index": 8.609,
+          "total": 8.981
         },
-        "trace_id": "api-aa49e11a8eaf"
+        "trace_id": "api-91c84885238f"
       }
     },
     "pdf": {
@@ -521,13 +521,13 @@
           "remaining_pending": 0
         },
         "timings_sec": {
-          "parse": 0.979,
-          "authoritative_write": 0.117,
-          "embed": 0.184,
+          "parse": 1.734,
+          "authoritative_write": 0.12,
+          "embed": 0.383,
           "index": 8.603,
-          "total": 9.883
+          "total": 10.84
         },
-        "trace_id": "api-54581fc0cc27"
+        "trace_id": "api-26214c94aaa3"
       }
     },
     "secret": {
@@ -559,12 +559,12 @@
         },
         "timings_sec": {
           "parse": 0.0,
-          "authoritative_write": 0.089,
-          "embed": 0.171,
-          "index": 11.619,
-          "total": 11.879
+          "authoritative_write": 0.101,
+          "embed": 0.207,
+          "index": 11.597,
+          "total": 11.905
         },
-        "trace_id": "api-0390264b7b30"
+        "trace_id": "api-5c294ac73bda"
       }
     }
   },

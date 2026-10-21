@@ -27,6 +27,7 @@ from typing import Any, TypedDict
 
 from langgraph.graph import END, START, StateGraph
 
+from kee.obs import metrics
 from kee.qa.answer import (
     ESCORT_SECURITY_LEVEL,
     SYSTEM_PROMPT,
@@ -170,6 +171,10 @@ def build_qa_graph(engine):
             query, state["ctx"], top_k=state.get("top_k"), already_rewritten=resolved
         )
         dropped_unreviewed = engine.gate_unreviewed(res)
+        top_score = max((c.score for c in res.chunks), default=0.0)
+        # 指标记在**闸门实际比较的那个数**上（复核闸摘完之后），不是摘之前——
+        # 否则 `le="0.2"` 那一档算出来的是「没过检索闸的比例」，看着像过闸率却少算了被摘掉的那批。
+        metrics.observe_top_score(top_score)
         timings["retrieval_ms"] = res.timings_ms.get("retrieval_total_ms", 0.0)
         timings.update({f"stage_{k}": v for k, v in res.timings_ms.items() if k != "retrieval_total_ms"})
         extra_notes = [f"unreviewed_evidence_dropped:{dropped_unreviewed}"] if dropped_unreviewed else []
@@ -186,7 +191,7 @@ def build_qa_graph(engine):
                 "top_chunk_ids": [c.chunk_id for c in res.chunks],
                 "query_used": query,
             },
-            "top_score": max((c.score for c in res.chunks), default=0.0),
+            "top_score": top_score,
         }
 
     def retrieval_gate(state: QAState) -> dict[str, Any]:
@@ -465,7 +470,7 @@ def result_from_state(state: QAState) -> AnswerResult:
     # 收口放在这个唯一的出口处：所有结束路径都要有 e2e。
     if "e2e_ms" not in timings and state.get("t_start"):
         timings["e2e_ms"] = round((time.perf_counter() - state["t_start"]) * 1000, 1)
-    return AnswerResult(
+    res = AnswerResult(
         question=state["question"],
         status=state.get("status", "refuse"),
         conclusion=state.get("conclusion", ""),
@@ -480,6 +485,10 @@ def result_from_state(state: QAState) -> AnswerResult:
         trace_id=state.get("trace_id", ""),
         notes=list(state.get("notes") or []),
     )
+    # 指标只在**这一个收口**记：run_qa（非流式）与 iter_qa_events（流式）都经过这里，
+    # 分两处记就会一条链路算两次、或某条早退路径静默失踪。出口标签用 `gated` 原值。
+    metrics.observe_qa_result(res, gated=state.get("gated") or "")
+    return res
 
 
 def run_qa(engine, question: str, ctx, top_k=None, history=None) -> AnswerResult:

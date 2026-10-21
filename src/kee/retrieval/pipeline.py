@@ -8,6 +8,7 @@ from dataclasses import dataclass, field
 from kee.config import get_settings
 from kee.ingest.chunking import TABLE_ROW_MARK
 from kee.models.registry import ResidencyScheduler
+from kee.obs import metrics
 from kee.retrieval.cache import SearchCache
 from kee.retrieval.fusion import rrf_fuse
 from kee.retrieval.milvus_store import Hit, KbStore
@@ -50,6 +51,21 @@ def _to_chunk(h: Hit) -> RetrievedChunk:
     return RetrievedChunk(
         chunk_id=h.chunk_id, text=h.fields.get("text", ""), score=h.score, fields=h.fields
     )
+
+
+def _emit(res: RetrievalResult, cached: str) -> RetrievalResult:
+    """检索结果的唯一出口旁路：计数 + 直方图，然后原样返回。
+
+    三个 return 都走这里（缓存命中、彻底失败、正常），所以「降级计数对不上」
+    只可能是某条新 return 漏接——那种遗漏会被 `tests/test_observability_metrics.py`
+    的源码扫描抓到，而不是等到看板上出现一个说不清的 0。
+
+    `cached` 由调用方给而不是从 res 推断：`cache=None` 的检索（`/api/v1/retrieval/search`
+    与全部离线评测）没有「未命中」这回事，把它算进 miss 会让命中率曲线随前端调用量漂移，
+    而那个比率是要当报告值看的。
+    """
+    metrics.observe_retrieval(res, cached=cached)
+    return res
 
 
 class HybridRetriever:
@@ -182,13 +198,16 @@ class HybridRetriever:
         if key and self.cache:
             cached = self.cache.get(key)
             if cached is not None:
-                return RetrievalResult(
-                    query=query,
-                    mode=self.mode,
-                    chunks=[RetrievedChunk(**c) for c in cached],
-                    timings_ms={"cache_ms": 0.0},
-                    expr=expr,
-                    cache_hit=True,
+                return _emit(
+                    RetrievalResult(
+                        query=query,
+                        mode=self.mode,
+                        chunks=[RetrievedChunk(**c) for c in cached],
+                        timings_ms={"cache_ms": 0.0},
+                        expr=expr,
+                        cache_hit=True,
+                    ),
+                    cached="hit",
                 )
 
         degraded: list[str] = []
@@ -232,16 +251,19 @@ class HybridRetriever:
                 degraded.append(f"sparse_rw_error:{type(e).__name__}")
 
         if not rankings:
-            return RetrievalResult(
-                query=query,
-                mode=self.mode,
-                chunks=[],
-                timings_ms=timings,
-                expr=expr,
-                degraded=degraded + ["retrieval_total_failure"],
-                rewritten=rw.effective if rw else "",
-                rewrite_ms=rw.ms if rw else 0.0,
-                rewrite_mode=self.rewrite_mode,
+            return _emit(
+                RetrievalResult(
+                    query=query,
+                    mode=self.mode,
+                    chunks=[],
+                    timings_ms=timings,
+                    expr=expr,
+                    degraded=degraded + ["retrieval_total_failure"],
+                    rewritten=rw.effective if rw else "",
+                    rewrite_ms=rw.ms if rw else 0.0,
+                    rewrite_mode=self.rewrite_mode,
+                ),
+                cached="miss" if key else "disabled",
             )
 
         if len(rankings) == 1:
@@ -275,14 +297,17 @@ class HybridRetriever:
             degraded.append(f"score_scale_out_of_range:{round(max(c.score for c in chunks), 4)}")
         if key and self.cache:
             self.cache.set(key, [c.as_dict() for c in chunks])
-        return RetrievalResult(
-            query=query,
-            mode=self.mode,
-            chunks=chunks,
-            timings_ms=timings,
-            expr=expr,
-            degraded=degraded,
-            rewritten=rw.effective if rw else "",
-            rewrite_ms=rw.ms if rw else 0.0,
-            rewrite_mode=self.rewrite_mode,
+        return _emit(
+            RetrievalResult(
+                query=query,
+                mode=self.mode,
+                chunks=chunks,
+                timings_ms=timings,
+                expr=expr,
+                degraded=degraded,
+                rewritten=rw.effective if rw else "",
+                rewrite_ms=rw.ms if rw else 0.0,
+                rewrite_mode=self.rewrite_mode,
+            ),
+            cached="miss" if key else "disabled",
         )

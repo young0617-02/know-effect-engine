@@ -32,6 +32,7 @@ import threading
 from collections.abc import Iterator
 from typing import Any
 
+from kee.obs import metrics
 from kee.qa.graph import initial_state, result_from_state
 from kee.qa.stream_json import partial_array_items, partial_string_field
 
@@ -111,8 +112,11 @@ def iter_qa_events(
             final["provisional_retracted"] = retracted
             final["provisional_lost"] = len(lost)
             final["provisional_lost_samples"] = [t[:60] for t in lost[:3]]
+            metrics.observe_stream_outcome(retracted, len(lost))
             out.put(("answer", final))
         except Exception as exc:  # noqa: BLE001 - 流必须以事件收尾，不能靠异常把连接掐断
+            # 图抛出异常时 `result_from_state` 没跑到，这轮在 kee_qa_rounds_total 里本来会静默失踪
+            metrics.observe_error_exit("graph_exception")
             out.put(("error", {"code": "E500", "message": f"{type(exc).__name__}: {exc}"[:200]}))
         finally:
             out.put(("__end__", {}))

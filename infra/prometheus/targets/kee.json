@@ -1,0 +1,11 @@
+[
+  {
+    "targets": [
+      "host.docker.internal:28000"
+    ],
+    "labels": {
+      "service": "kee-api",
+      "note": "由 scripts/obs_targets.py 生成于端口 28000"
+    }
+  }
+]

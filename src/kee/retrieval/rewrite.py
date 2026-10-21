@@ -154,7 +154,7 @@ class QueryRewriter:
         res.triggered = True
 
         if self.cache is not None:
-            hit = self.cache.get(self._cache_key(q, context))
+            hit = self.cache.get(self._cache_key(q, context), kind="rewrite")
             if hit is not None:
                 res.expanded = hit.get("expanded", q)
                 res.changed = res.expanded != q
@@ -207,7 +207,7 @@ class QueryRewriter:
         if res.changed:
             self.stats["changed"] += 1
             if self.cache is not None:
-                self.cache.set(self._cache_key(q, context), {"expanded": cand})
+                self.cache.set(self._cache_key(q, context), {"expanded": cand}, kind="rewrite")
         return res
 
     def summary(self) -> dict[str, int]:

@@ -1,0 +1,598 @@
+{
+  "生成时间": "2026-10-16T08:08:25+00:00",
+  "api": "http://127.0.0.1:28000",
+  "prometheus": {
+    "healthy": "Prometheus Server is Healthy.",
+    "对账窗口": "7m",
+    "轮次对账": {
+      "宿主": 9.0,
+      "Prometheus": {
+        "状态": "OK",
+        "序列数": 1,
+        "首值": 9.0
+      },
+      "一致": true,
+      "等待抓取尝试": 3,
+      "口径": "累计值相等才叫一致；不等时先确认不是「还没抓到」"
+    }
+  },
+  "grafana": {
+    "health": {
+      "commit": "5b85c4c2fcf5d32d4f68aaef345c53096359b2f1",
+      "database": "ok",
+      "version": "11.1.0"
+    },
+    "datasource": {
+      "id": 1,
+      "uid": "kee",
+      "orgId": 1,
+      "name": "kee-prometheus",
+      "type": "prometheus",
+      "typeLogoUrl": "public/app/plugins/datasource/prometheus/img/prometheus_logo.svg",
+      "access": "proxy",
+      "url": "http://host.docker.internal:39090",
+      "user": "",
+      "database": "",
+      "basicAuth": false,
+      "basicAuthUser": "",
+      "withCredentials": false,
+      "isDefault": true,
+      "jsonData": {
+        "httpMethod": "POST",
+        "timeInterval": "15s"
+      },
+      "secureJsonFields": {},
+      "version": 1,
+      "readOnly": true,
+      "apiVersion": ""
+    },
+    "datasource_health": {
+      "details": {
+        "application": "Prometheus",
+        "features": {
+          "rulerApiEnabled": false
+        }
+      },
+      "message": "Successfully queried the Prometheus API.",
+      "status": "OK"
+    },
+    "dashboard": {
+      "uid": "kee-rag",
+      "标题": "KEE 知效引擎 · 在线链路",
+      "面板数": 15,
+      "可改": false,
+      "provisioned_version": 3
+    },
+    "面板级实查询": [
+      {
+        "面板": "面板#1 请求速率",
+        "expr": "sum(rate(kee_http_requests_total[5m]))",
+        "序列有值": true,
+        "值": 0.5042118230204915
+      },
+      {
+        "面板": "面板#5 依赖健康",
+        "expr": "min(kee_dependency_up)",
+        "序列有值": true,
+        "值": 1
+      },
+      {
+        "面板": "面板#6 e2e p95（桶近似）",
+        "expr": "histogram_quantile(0.95, sum by (le) (rate(kee_qa_stage_seconds_bucket{stage=\"e2e\"}[30m])))",
+        "序列有值": true,
+        "值": 150
+      }
+    ]
+  },
+  "命令行": "--api http://127.0.0.1:28000 --prom http://127.0.0.1:39090",
+  "端点形状": {
+    "次数": 20,
+    "字节": 35287,
+    "声明族数": 19,
+    "声明族清单": [
+      "kee_api_errors_total",
+      "kee_dependency_up",
+      "kee_http_request_seconds",
+      "kee_http_requests_total",
+      "kee_langfuse_events_total",
+      "kee_langfuse_queue_depth",
+      "kee_milvus_chunks",
+      "kee_pg_documents",
+      "kee_process_start_timestamp_seconds",
+      "kee_qa_citation_count",
+      "kee_qa_composite_score",
+      "kee_qa_rounds_total",
+      "kee_qa_stage_seconds",
+      "kee_qa_stream_retractions_total",
+      "kee_qa_top_score",
+      "kee_retrieval_degraded_total",
+      "kee_retrieval_rounds_total",
+      "kee_scrape_probe_errors_total",
+      "kee_search_cache_ops_total"
+    ],
+    "created派生族数": 13,
+    "样本数": 460,
+    "耗时ms": {
+      "p50": 24.69,
+      "p95": 42.17,
+      "max": 68.64,
+      "min": 14.74
+    },
+    "http": 200
+  },
+  "微基准": {
+    "observe_qa_result_每次us": 46.84,
+    "observe_retrieval_每次us": 13.9,
+    "render_一次ms": 2.0,
+    "n": 2000,
+    "注": "同一进程连跑 2000 次的均值，不含 Redis/Milvus 往返；它是埋点开销的**下界口径**"
+  },
+  "真流量": {
+    "账号": "verify-owner（走真实登录换 Bearer）",
+    "冷轮": {
+      "status": "tentative",
+      "用时ms": 7736.5,
+      "degraded": [],
+      "cache_hit": false,
+      "composite": 0.735,
+      "引用数": 4,
+      "timings_ms": {
+        "retrieval_ms": 580.9,
+        "stage_embed_ms": 53.3,
+        "stage_dense_ms": 4.9,
+        "stage_sparse_ms": 3.2,
+        "stage_fuse_ms": 0.0,
+        "stage_rerank_ms": 519.1,
+        "generate_ms": 7050.0,
+        "e2e_ms": 7643.8
+      }
+    },
+    "缓存轮": {
+      "status": "tentative",
+      "用时ms": 7111.6,
+      "degraded": [],
+      "cache_hit": true,
+      "composite": 0.735,
+      "引用数": 4
+    },
+    "流式轮": {
+      "事件": {
+        "retrieval": 1,
+        "delta": 6,
+        "answer": 1
+      },
+      "用时ms": 3255.6,
+      "status": "answer",
+      "degraded": [],
+      "provisional_retracted": false,
+      "provisional_lost": 0
+    },
+    "检索端点": {
+      "mode": "sparse",
+      "degraded": [],
+      "hits": 5
+    },
+    "未登录": {
+      "http": 401,
+      "code": "E401"
+    }
+  },
+  "恒等式": [
+    {
+      "恒等式": "每轮问答恰好计一次（轮次增量 == e2e 直方图样本增量）",
+      "左": 3.0,
+      "右": 3.0,
+      "依据": "两者都记在 `result_from_state` 这一个收口上；分开两处记就会一条多一条少",
+      "成立": true
+    },
+    {
+      "恒等式": "缓存 get 的两个记账点重合（hit 次数 == cached=hit 轮数）",
+      "左": 1.0,
+      "右": 1.0,
+      "依据": "`SearchCache.get` 与 `pipeline._emit` 各记一次，必须同增",
+      "成立": true
+    },
+    {
+      "恒等式": "hit + miss == 带缓存的检索轮数",
+      "左": 3.0,
+      "右": 3.0,
+      "依据": "每次 retrieve() 最多做一次 get",
+      "成立": true
+    },
+    {
+      "恒等式": "store <= miss（`retrieval_total_failure` 那条出口在 set 之前返回）",
+      "左": 2.0,
+      "右": 2.0,
+      "依据": "两条出口顺序不同，所以只能是不等式",
+      "成立": true
+    },
+    {
+      "恒等式": "cached=disabled 轮数 == 不带缓存的端点调用数",
+      "左": 1.0,
+      "右": 1,
+      "依据": "`/api/v1/retrieval/search` 用 `cache=None`；把它并进 miss 会让命中率的分母混进不该参与的轮次",
+      "成立": true
+    },
+    {
+      "恒等式": "top_score 样本增量 == 带缓存的检索轮数",
+      "左": 3.0,
+      "右": 3.0,
+      "依据": "`graph.retrieve` 每轮记一次（含命中轮与零命中轮）；对不上就是漏了某条出口",
+      "成立": true
+    },
+    {
+      "恒等式": "响应体里的 degraded 条数 == degraded 计数增量",
+      "左": 0,
+      "右": 0.0,
+      "依据": "缓存命中轮的 degraded 恒为 0（既有边界），响应体与计数器要**一起**少；只少一边是漏计",
+      "成立": true
+    }
+  ],
+  "恒等式口径": "打了流量→用增量互查；`--skip-traffic`→两侧都是 0，属真空通过，不作证据",
+  "恒等式全部成立": true,
+  "外泄面": {
+    "命中词": [],
+    "路由标签样例": [
+      "/api/v1/answers",
+      "/api/v1/answers/stream",
+      "/api/v1/audit",
+      "/api/v1/auth/login",
+      "/api/v1/auth/me",
+      "/api/v1/chunks/batch",
+      "/api/v1/documents",
+      "/api/v1/retrieval/search"
+    ],
+    "路由标签数": 9
+  },
+  "A_B对照": {
+    "每端点对数": 60,
+    "采样方式": "配对交错（同一次抖动同时落在两侧）",
+    "抓取器已暂停": true,
+    "行": [
+      {
+        "端点": "GET /healthz（含依赖自检）",
+        "开指标": {
+          "p50": 34.25,
+          "p95": 57.34,
+          "均值": 36.59
+        },
+        "关指标": {
+          "p50": 34.66,
+          "p95": 52.22,
+          "均值": 35.39
+        },
+        "Δp50ms": -0.41,
+        "配对差中位数ms": 0.99,
+        "配对差p95ms": 20.48,
+        "n": 60
+      },
+      {
+        "端点": "GET /api/v1/auth/me（含令牌解析）",
+        "开指标": {
+          "p50": 24.36,
+          "p95": 41.14,
+          "均值": 24.95
+        },
+        "关指标": {
+          "p50": 26.07,
+          "p95": 39.15,
+          "均值": 25.12
+        },
+        "Δp50ms": -1.71,
+        "配对差中位数ms": -0.91,
+        "配对差p95ms": 25.97,
+        "n": 60
+      },
+      {
+        "端点": "GET /api/v1/documents（含 RBAC 过滤）",
+        "开指标": {
+          "p50": 33.23,
+          "p95": 49.44,
+          "均值": 34.72
+        },
+        "关指标": {
+          "p50": 38.95,
+          "p95": 52.13,
+          "均值": 35.6
+        },
+        "Δp50ms": -5.72,
+        "配对差中位数ms": -1.0,
+        "配对差p95ms": 23.15,
+        "n": 60
+      }
+    ],
+    "历史账": {
+      "按端点": {
+        "GET /healthz（含依赖自检）": {
+          "n次": 8,
+          "均值ms": 0.38,
+          "标准差ms": 0.85,
+          "5%临界ms": 1.18,
+          "判定": "拒绝「有 2ms 开销」且无法证明有正开销"
+        },
+        "GET /api/v1/auth/me（含令牌解析）": {
+          "n次": 8,
+          "均值ms": 0.34,
+          "标准差ms": 0.9,
+          "5%临界ms": 1.24,
+          "判定": "拒绝「有 2ms 开销」且无法证明有正开销"
+        },
+        "GET /api/v1/documents（含 RBAC 过滤）": {
+          "n次": 8,
+          "均值ms": 0.11,
+          "标准差ms": 1.14,
+          "5%临界ms": 1.58,
+          "判定": "拒绝「有 2ms 开销」且无法证明有正开销"
+        }
+      },
+      "结论": "合并 24 个端点轮次的配对差中位数：分布 -1.09 ~ 1.89ms，其中 10 个为负；均值 0.28±0.75ms（5% 置信半宽）。**|mean| 低于临界 ⇒ 既拒绝「有 2ms 开销」，也拿不出「确有正开销」的证据**，只能报「不高于 2ms、与噪声同量级」。"
+    },
+    "历史文件": "var\\gate0\\m5_observability_ab_history.json",
+    "读法": "只看「配对差中位数」那一列；**单次运行不足以定开销**，跨运行的结论由 `m5_observability_ab_history.json` 推导（见下面「按端点」与「结论」）。计数器微基准 17µs/轮，比这里小三个数量级——所以若真有毫秒级开销，来源是**多一层 BaseHTTPMiddleware 的包装成本**、不是打点。第一版按「先 50 次开、再 50 次关」跑时，同一端点的 Δ 会翻符号，那量的是进程状态；配对交错 + 暂停抓取器才把它压进噪声里。要省掉它得把计时改成纯 ASGI 中间件，本版没做，代价记在风险册。"
+  },
+  "表达式": [
+    {
+      "来源": "看板面板#1 请求速率（近 5m）",
+      "expr": "sum(rate(kee_http_requests_total[5m]))",
+      "状态": "OK",
+      "序列数": 1,
+      "首值": 0.358582
+    },
+    {
+      "来源": "看板面板#2 问答轮次（近 15m）",
+      "expr": "sum(increase(kee_qa_rounds_total[15m]))",
+      "状态": "OK",
+      "序列数": 1,
+      "首值": 5.747307
+    },
+    {
+      "来源": "看板面板#3 检索块缓存命中率（近 30m）",
+      "expr": "sum(increase(kee_search_cache_ops_total{kind=\"search\",result=\"hit\"}[30m])) / clamp_min(sum(increase(kee_search_cache_ops_total{kind=\"search\",result=~\"hit|miss\"}[30m])), 0.001)",
+      "状态": "OK",
+      "序列数": 1,
+      "首值": 0.722865
+    },
+    {
+      "来源": "看板面板#4 检索最高分 ≤ 闸门 0.2 的占比（近 30m）",
+      "expr": "sum(increase(kee_qa_top_score_bucket{le=\"0.2\"}[30m])) / clamp_min(sum(increase(kee_qa_top_score_count[30m])), 0.001)",
+      "状态": "OK",
+      "序列数": 1,
+      "首值": 0.0
+    },
+    {
+      "来源": "看板面板#5 依赖健康（min over deps）",
+      "expr": "min(kee_dependency_up)",
+      "状态": "OK",
+      "序列数": 1,
+      "首值": 1.0
+    },
+    {
+      "来源": "看板面板#5 依赖健康（min over deps）",
+      "expr": "kee_dependency_up",
+      "状态": "OK",
+      "序列数": 2,
+      "首值": 1.0
+    },
+    {
+      "来源": "看板面板#6 端到端与各阶段分位数（桶上近似值）",
+      "expr": "histogram_quantile(0.95, sum by (le) (rate(kee_qa_stage_seconds_bucket{stage=\"e2e\"}[15m])))",
+      "状态": "OK",
+      "序列数": 1,
+      "首值": 7.475
+    },
+    {
+      "来源": "看板面板#6 端到端与各阶段分位数（桶上近似值）",
+      "expr": "histogram_quantile(0.50, sum by (le) (rate(kee_qa_stage_seconds_bucket{stage=\"e2e\"}[15m])))",
+      "状态": "OK",
+      "序列数": 1,
+      "首值": 4.4
+    },
+    {
+      "来源": "看板面板#6 端到端与各阶段分位数（桶上近似值）",
+      "expr": "histogram_quantile(0.95, sum by (le) (rate(kee_qa_stage_seconds_bucket{stage=\"retrieval\"}[15m])))",
+      "状态": "OK",
+      "序列数": 1,
+      "首值": 0.6625
+    },
+    {
+      "来源": "看板面板#6 端到端与各阶段分位数（桶上近似值）",
+      "expr": "histogram_quantile(0.95, sum by (le) (rate(kee_qa_stage_seconds_bucket{stage=\"generate\"}[15m])))",
+      "状态": "OK",
+      "序列数": 1,
+      "首值": 7.475
+    },
+    {
+      "来源": "看板面板#6 端到端与各阶段分位数（桶上近似值）",
+      "expr": "histogram_quantile(0.95, sum by (le) (rate(kee_qa_stage_seconds_bucket{stage=\"first_token\"}[15m])))",
+      "状态": "OK",
+      "序列数": 1,
+      "首值": 0.7125
+    },
+    {
+      "来源": "看板面板#7 出口闸门分布（每 30m 轮次）",
+      "expr": "sum by (exit_gate, status) (increase(kee_qa_rounds_total[30m]))",
+      "状态": "OK",
+      "序列数": 2,
+      "首值": 5.752484
+    },
+    {
+      "来源": "看板面板#8 检索降级速率（按原因类）",
+      "expr": "sum by (reason) (rate(kee_retrieval_degraded_total[5m]))",
+      "状态": "OK",
+      "序列数": 2,
+      "首值": 0.0
+    },
+    {
+      "来源": "看板面板#9 检索各阶段平均耗时（GPU 分时驻留看这条）",
+      "expr": "sum by (stage) (rate(kee_qa_stage_seconds_sum{stage=~\"embed|dense|sparse|sparse_rw|rerank|fuse|rewrite\"}[15m])) / clamp_min(sum by (stage) (rate(kee_qa_stage_seconds_count{stage=~\"embed|dense|sparse|sparse_rw|rerank|fuse|rewrite\"}[15m])), 0.001)",
+      "状态": "OK",
+      "序列数": 5,
+      "首值": 0.0421
+    },
+    {
+      "来源": "看板面板#10 统一错误码速率",
+      "expr": "sum by (code) (rate(kee_api_errors_total[5m]))",
+      "状态": "OK",
+      "序列数": 1,
+      "首值": 0.002851
+    },
+    {
+      "来源": "看板面板#11 各路由请求量（top 8）",
+      "expr": "topk(8, sum by (route, status) (rate(kee_http_requests_total[5m])))",
+      "状态": "OK",
+      "序列数": 8,
+      "首值": 0.152857
+    },
+    {
+      "来源": "看板面板#12 流式撤回（provisional → 未成为答案）",
+      "expr": "sum by (kind) (increase(kee_qa_stream_retractions_total[30m]))",
+      "状态": "EMPTY",
+      "序列数": 0,
+      "首值": null
+    },
+    {
+      "来源": "看板面板#13 每轮引用条数均值 / 规则分分布",
+      "expr": "sum(rate(kee_qa_citation_count_sum[15m])) / clamp_min(sum(rate(kee_qa_citation_count_count[15m])), 0.001)",
+      "状态": "OK",
+      "序列数": 1,
+      "首值": 1.666667
+    },
+    {
+      "来源": "看板面板#13 每轮引用条数均值 / 规则分分布",
+      "expr": "histogram_quantile(0.5, sum by (le) (rate(kee_qa_composite_score_bucket[30m])))",
+      "状态": "OK",
+      "序列数": 1,
+      "首值": 0.75
+    },
+    {
+      "来源": "看板面板#13 每轮引用条数均值 / 规则分分布",
+      "expr": "histogram_quantile(0.95, sum by (le) (rate(kee_qa_composite_score_bucket[30m])))",
+      "状态": "OK",
+      "序列数": 1,
+      "首值": 0.795
+    },
+    {
+      "来源": "看板面板#14 Langfuse 上报计数（默认关闭 ⇒ 应为空）",
+      "expr": "sum by (result) (increase(kee_langfuse_events_total[30m]))",
+      "状态": "OK",
+      "序列数": 1,
+      "首值": 8.055944
+    },
+    {
+      "来源": "看板面板#14 Langfuse 上报计数（默认关闭 ⇒ 应为空）",
+      "expr": "kee_langfuse_queue_depth",
+      "状态": "OK",
+      "序列数": 1,
+      "首值": 0.0
+    },
+    {
+      "来源": "告警 KeeApiScrapeFailing",
+      "expr": "up{job=\"kee-api\"} == 0",
+      "状态": "EMPTY",
+      "序列数": 0,
+      "首值": null
+    },
+    {
+      "来源": "告警 KeeDependencyDown",
+      "expr": "kee_dependency_up == 0",
+      "状态": "EMPTY",
+      "序列数": 0,
+      "首值": null
+    },
+    {
+      "来源": "告警 KeeScrapeProbeFailed",
+      "expr": "increase(kee_scrape_probe_errors_total[10m]) > 0",
+      "状态": "EMPTY",
+      "序列数": 0,
+      "首值": null
+    },
+    {
+      "来源": "告警 KeeScoreScaleOutOfBound",
+      "expr": "increase(kee_retrieval_degraded_total{reason=\"score_scale_out_of_range\"}[5m]) > 0",
+      "状态": "EMPTY",
+      "序列数": 0,
+      "首值": null
+    },
+    {
+      "来源": "告警 KeeE2eP95Over6s",
+      "expr": "histogram_quantile(0.95, sum by (le) (rate(kee_qa_stage_seconds_bucket{stage=\"e2e\"}[10m]))) > 6",
+      "状态": "OK",
+      "序列数": 1,
+      "首值": 7.475
+    },
+    {
+      "来源": "告警 KeeRetrievalDegradedSpike",
+      "expr": "sum(rate(kee_retrieval_degraded_total[5m])) > 0.5",
+      "状态": "EMPTY",
+      "序列数": 0,
+      "首值": null
+    },
+    {
+      "来源": "告警 KeeNoAnsweredRounds",
+      "expr": "sum(increase(kee_qa_rounds_total{exit_gate=\"answered\"}[15m])) == 0 and sum(increase(kee_qa_rounds_total[15m])) > 0",
+      "状态": "EMPTY",
+      "序列数": 0,
+      "首值": null
+    },
+    {
+      "来源": "告警 KeeCacheBackendErrors",
+      "expr": "increase(kee_search_cache_ops_total{result=\"error\"}[10m]) > 0",
+      "状态": "EMPTY",
+      "序列数": 0,
+      "首值": null
+    },
+    {
+      "来源": "告警 KeeLangfuseEventsDropped",
+      "expr": "increase(kee_langfuse_events_total{result=\"dropped\"}[15m]) > 0",
+      "状态": "EMPTY",
+      "序列数": 0,
+      "首值": null
+    }
+  ],
+  "表达式统计": {
+    "总数": 31,
+    "OK": 22,
+    "EMPTY": 9,
+    "ERROR": 0,
+    "必备表达式": [
+      {
+        "expr": "sum(rate(kee_http_requests_total[5m]))",
+        "状态": "OK",
+        "序列数": 1,
+        "首值": 0.359255
+      },
+      {
+        "expr": "sum(increase(kee_qa_rounds_total[15m]))",
+        "状态": "OK",
+        "序列数": 1,
+        "首值": 5.75766
+      },
+      {
+        "expr": "kee_dependency_up",
+        "状态": "OK",
+        "序列数": 2,
+        "首值": 1.0
+      },
+      {
+        "expr": "min(kee_dependency_up)",
+        "状态": "OK",
+        "序列数": 1,
+        "首值": 1.0
+      }
+    ]
+  },
+  "langfuse": {
+    "enabled": false,
+    "host": "",
+    "reason": "未启用（KEE_LANGFUSE_ENABLED=false，默认）",
+    "queue_depth": 0,
+    "payload": "question/结论/引用要点（域内主机硬闸门）",
+    "enqueued": 0,
+    "flushed": 0,
+    "errors": 0,
+    "dropped": 0,
+    "batches": 0,
+    "last_error": "",
+    "last_flush_ts": ""
+  }
+}

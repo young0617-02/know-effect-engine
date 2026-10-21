@@ -1,0 +1,230 @@
+{
+  "ts": "2026-10-17T15:02:56+0800",
+  "collection": "kb_chunks",
+  "analyzer": "jieba",
+  "chunk_count": 193,
+  "config": "HybridRetriever(mode=dense|sparse, use_rerank=False, cache=None, rewrite_mode=off), top_k=5",
+  "query_set": "control",
+  "warmup": {
+    "retrieval_total_ms": 598.2,
+    "degraded": []
+  },
+  "queries": [
+    {
+      "key": "C1",
+      "type": "口语化-低词面重合（构造对照）",
+      "query": "厂里那套自动给数值的玩意儿，被人连着压了三回不搭理，它自己会消停多长时间？",
+      "gold": [
+        "chm-ifspec-prj-chm-2024-003@v1#2.1#c1"
+      ],
+      "gold_from": "q-050 同一块（答案：同一回路连续 3 条建议被操作员拒绝后暂停 30 分钟）",
+      "legs": {
+        "dense": {
+          "top5": [
+            {
+              "rank": 1,
+              "chunk_id": "ene-runbook-prj-ene-2023-019@v1#2.2#c1",
+              "score_raw": 0.543,
+              "gold": false,
+              "other_leg_rank": null,
+              "doc_id": "ene-runbook-prj-ene-2023-019",
+              "section_no": "2.2",
+              "table_row": false,
+              "text_head": "数据刷新与断面异常处置｜SCADA 主站的实时数据刷新周期为 2 秒，人机界面画面刷新不超过 3 秒；若连续 30 秒未收到某厂站任何报文即判定该厂站数据中断并"
+            },
+            {
+              "rank": 2,
+              "chunk_id": "chm-closeout-prj-chm-2023-021@v1#1.1#c1",
+              "score_raw": 0.5265,
+              "gold": false,
+              "other_leg_rank": null,
+              "doc_id": "chm-closeout-prj-chm-2023-021",
+              "section_no": "1.1",
+              "table_row": false,
+              "text_head": "项目概况与验收结论｜本项目为某煤化工企业三套生产装置的安全仪表与报警系统改造，交付范围含 SIS 安全仪表系统逻辑重构、可燃气体探测点位补强、报警分级治理与操作"
+            },
+            {
+              "rank": 3,
+              "chunk_id": "fin-compliance-prj-fin-2025-008@v1#2.1#c1",
+              "score_raw": 0.5232,
+              "gold": false,
+              "other_leg_rank": null,
+              "doc_id": "fin-compliance-prj-fin-2025-008",
+              "section_no": "2.1",
+              "table_row": false,
+              "text_head": "第三级安全计算环境要求｜按 GB/T 22239-2019 第 8.1.4 条关于安全计算环境的要求，须对登录用户实现身份标识与鉴别、最小权限分配、登录失败处理"
+            },
+            {
+              "rank": 4,
+              "chunk_id": "fin-ifspec-prj-fin-2024-017@v1#2.2#c1",
+              "score_raw": 0.5226,
+              "gold": false,
+              "other_leg_rank": null,
+              "doc_id": "fin-ifspec-prj-fin-2024-017",
+              "section_no": "2.2",
+              "table_row": false,
+              "text_head": "报文安全与超时重试约束｜报文签名算法采用 SM2 加 SM3 组合，签名验证失败连续 3 次即临时封锁该企业证书，封锁时长 30 分钟并同步通知客户侧安全管理员"
+            },
+            {
+              "rank": 5,
+              "chunk_id": "chm-closeout-prj-chm-2024-003@v1#1.1#c1",
+              "score_raw": 0.5178,
+              "gold": false,
+              "other_leg_rank": null,
+              "doc_id": "chm-closeout-prj-chm-2024-003",
+              "section_no": "1.1",
+              "table_row": false,
+              "text_head": "项目概况与验收结论｜本项目为某大型炼化企业连续重整装置智能优化实施，交付范围含数据接口改造、软测量模型建设、在线优化引擎与操作引导界面四部分，覆盖重整、催化剂连"
+            }
+          ],
+          "window": [
+            "ene-runbook-prj-ene-2023-019@v1#2.2#c1",
+            "chm-closeout-prj-chm-2023-021@v1#1.1#c1",
+            "fin-compliance-prj-fin-2025-008@v1#2.1#c1",
+            "fin-ifspec-prj-fin-2024-017@v1#2.2#c1",
+            "chm-closeout-prj-chm-2024-003@v1#1.1#c1",
+            "chm-runbook-prj-chm-2025-014@v1#4.1#c1",
+            "chm-closeout-prj-chm-2023-021@v1#5.1#c1",
+            "ene-ifspec-prj-ene-2024-006@v1#2.1#c1",
+            "chm-retro-prj-chm-2024-003@v1#4.1#c1",
+            "ene-runbook-prj-ene-2023-019@v1#3.1#c2",
+            "ene-ifspec-prj-ene-2025-011@v1#2.1#c1",
+            "fin-runbook-prj-fin-2024-017@v1#2.2#c1",
+            "chm-runbook-prj-chm-2023-021@v1#6.1#c1",
+            "fin-runbook-prj-fin-2024-017@v1#3.1#c2",
+            "chm-closeout-prj-chm-2023-021@v1#2.1#c2",
+            "chm-closeout-prj-chm-2024-003@v1#2.1#c2",
+            "ene-ifspec-prj-ene-2024-006@v1#1.2#c1",
+            "chm-runbook-prj-chm-2023-021@v1#1.1#c1",
+            "ene-closeout-prj-ene-2024-006@v1#3.1#c1",
+            "fin-ifspec-prj-fin-2024-033@v1#3.1#c1"
+          ],
+          "gold_ranks": [
+            {
+              "gold_id": "chm-ifspec-prj-chm-2024-003@v1#2.1#c1",
+              "rank": null
+            }
+          ],
+          "timings_ms": {
+            "embed_ms": 32.3,
+            "dense_ms": 4.4,
+            "retrieval_total_ms": 36.8
+          },
+          "degraded": []
+        },
+        "sparse": {
+          "top5": [
+            {
+              "rank": 1,
+              "chunk_id": "chm-runbook-prj-chm-2025-014@v1#2.2#c2",
+              "score_raw": 10.2294,
+              "gold": false,
+              "other_leg_rank": null,
+              "doc_id": "chm-runbook-prj-chm-2025-014",
+              "section_no": "2.2",
+              "table_row": false,
+              "text_head": "GMP 数据完整性核查｜系统时间偏差控制目标为不超过 2 秒，采用双时间源并对时结果日核；一旦时间源失效超过 10 分钟，记录产生时间字段自动打上不可信标记，被"
+            },
+            {
+              "rank": 2,
+              "chunk_id": "chm-retro-prj-chm-2024-003@v1#2.1#c2",
+              "score_raw": 9.4332,
+              "gold": false,
+              "other_leg_rank": null,
+              "doc_id": "chm-retro-prj-chm-2024-003",
+              "section_no": "2.1",
+              "table_row": false,
+              "text_head": "软测量模型漂移与再标定｜过程监控层面补充两项基线：模型误差的周度趋势告警与样本覆盖度的月度评估，覆盖度低于 70% 即冻结自动建议并转人工判断；该机制在后续两套"
+            },
+            {
+              "rank": 3,
+              "chunk_id": "chm-runbook-prj-chm-2025-014@v1#2.1#c1",
+              "score_raw": 8.0326,
+              "gold": false,
+              "other_leg_rank": null,
+              "doc_id": "chm-runbook-prj-chm-2025-014",
+              "section_no": "2.1",
+              "table_row": false,
+              "text_head": "批生产记录巡检项｜批生产记录的日巡共 12 项，重点核对记录及时率、复核队列积压、签名链完整性与采集缺口四类；记录及时率定义为记录产生时间与事实发生时间之差的合"
+            },
+            {
+              "rank": 4,
+              "chunk_id": "ene-presale-prj-ene-2025-011@v1#2.1#c2",
+              "score_raw": 7.2978,
+              "gold": false,
+              "other_leg_rank": null,
+              "doc_id": "ene-presale-prj-ene-2025-011",
+              "section_no": "2.1",
+              "table_row": false,
+              "text_head": "方案总体架构｜设备可靠性分析模块以故障树加运行时长双因素建模，输出关键设备的剩余寿命区间与检修建议；模型输入自场站缺陷记录与运行日志抽取，样本覆盖不少于 24 "
+            },
+            {
+              "rank": 5,
+              "chunk_id": "ene-ifspec-prj-ene-2025-011@v1#1.2#c2",
+              "score_raw": 6.7886,
+              "gold": false,
+              "other_leg_rank": null,
+              "doc_id": "ene-ifspec-prj-ene-2025-011",
+              "section_no": "1.2",
+              "table_row": false,
+              "text_head": "接口编号 IF-ENE-0044 场站指标汇聚｜指标口径以场站电能量采集装置读数为准，自用电量纳入场站用电统计；客户侧曾要求把自用电并入上网电量口径，经比对确认"
+            }
+          ],
+          "window": [
+            "chm-runbook-prj-chm-2025-014@v1#2.2#c2",
+            "chm-retro-prj-chm-2024-003@v1#2.1#c2",
+            "chm-runbook-prj-chm-2025-014@v1#2.1#c1",
+            "ene-presale-prj-ene-2025-011@v1#2.1#c2",
+            "ene-ifspec-prj-ene-2025-011@v1#1.2#c2",
+            "chm-ifspec-prj-chm-2024-003@v1#3.1#c1",
+            "fin-closeout-prj-fin-2024-017@v1#4.1#c1",
+            "chm-closeout-prj-chm-2024-003@v1#2.2#c2",
+            "ene-retro-prj-ene-2024-006@v1#1.1#c1",
+            "ene-compliance-prj-ene-2023-019@v1#2.1#c2",
+            "ene-ifspec-prj-ene-2024-006@v1#1.1#c1",
+            "chm-ifspec-prj-chm-2024-003@v1#2.1#c1",
+            "fin-ifspec-prj-fin-2024-017@v1#1.1#c1",
+            "chm-compliance-prj-chm-2023-021@v1#3.1#c2",
+            "ene-closeout-prj-ene-2024-006@v1#2.2#c1",
+            "chm-presale-prj-chm-2025-014@v1#4.1#c1",
+            "ene-runbook-prj-ene-2023-019@v1#1.1#c1",
+            "chm-runbook-prj-chm-2023-021@v1#5.1#c1",
+            "ene-compliance-prj-ene-2023-019@v1#3.1#c1",
+            "ene-runbook-prj-ene-2025-011@v1#2.2#c1"
+          ],
+          "gold_ranks": [
+            {
+              "gold_id": "chm-ifspec-prj-chm-2024-003@v1#2.1#c1",
+              "rank": 12
+            }
+          ],
+          "timings_ms": {
+            "sparse_ms": 3.9,
+            "retrieval_total_ms": 4.0
+          },
+          "degraded": []
+        }
+      },
+      "overlap": {
+        "top5_common": [],
+        "top5_only_dense": [
+          "chm-closeout-prj-chm-2023-021@v1#1.1#c1",
+          "chm-closeout-prj-chm-2024-003@v1#1.1#c1",
+          "ene-runbook-prj-ene-2023-019@v1#2.2#c1",
+          "fin-compliance-prj-fin-2025-008@v1#2.1#c1",
+          "fin-ifspec-prj-fin-2024-017@v1#2.2#c1"
+        ],
+        "top5_only_sparse": [
+          "chm-retro-prj-chm-2024-003@v1#2.1#c2",
+          "chm-runbook-prj-chm-2025-014@v1#2.1#c1",
+          "chm-runbook-prj-chm-2025-014@v1#2.2#c2",
+          "ene-ifspec-prj-ene-2025-011@v1#1.2#c2",
+          "ene-presale-prj-ene-2025-011@v1#2.1#c2"
+        ],
+        "jaccard_top5": 0.0,
+        "top1_equal": false,
+        "jaccard_window20": 0.0
+      }
+    }
+  ]
+}

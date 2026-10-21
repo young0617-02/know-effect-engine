@@ -1,0 +1,79 @@
+# 可观测栈：Prometheus + Grafana，**本机自托管、零外呼、零下载**。
+#
+# 镜像刻意钉在本机**已有**的版本上（`prom/prometheus:v2.53.1`、`grafana/grafana:11.1.0` 今天
+# 就在 `docker images` 里），所以这条 compose 不拉任何 GB 级东西——这与本机
+# 「大件不重复下载、重资产留 D 盘」的约束一致。换机器时若这两个镜像不在，先
+# `docker image pull` 或改成本地已有的 tag，别让它变成「看不见的那只眼」。
+#
+# 为什么单独一个 compose 项目（`kee-obs`）而不 include 进 m4：
+#   * Gate 0 ⑥ 那条「容器无出网时核心链路可跑」的断网验证跑在 `kee-gate0` 项目里，
+#     把观测栈混进去会让「谁在出网」这件事重新变成一笔糊涂账。
+#   * 观测栈挂了不应该影响问答链路；反过来也不会。
+# 两个项目唯一的接触点是：Prometheus 经 `host.docker.internal` 抓宿主 API 的 `/metrics`。
+#
+# 跑法（仓库根目录，先起好宿主 API）：
+#   uv run python scripts/obs_targets.py --port 28000     # 告诉 Prometheus API 在哪个端口
+#   docker compose -f infra/docker-compose.observability.yml up -d
+#   Prometheus  http://127.0.0.1:39090/targets
+#   Grafana     http://127.0.0.1:33000/d/kee-rag  （admin / 待填_KEE_GRAFANA_ADMIN_PASSWORD，仅本机看板）
+#
+# 数据落在 `var/observability/`（已 gitignore，且在 D 盘），时序默认留 15 天。
+
+name: kee-obs
+
+services:
+  kee-prom:
+    image: prom/prometheus:v2.53.1
+    container_name: kee-prom
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:39090:9090"
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=15d
+      # 抓取宿主 API 一次要序列化几百条时序；10s 上限够用又不至于让抓取把业务请求拖住
+      - --scrape.discovery-reload-interval=15s
+      - --web.listen-address=0.0.0.0:9090
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./prometheus/alerts.yml:/etc/prometheus/alerts.yml:ro
+      # file_sd 的目标文件：`obs_targets.py` 重写它之后 Prometheus 自己刷新，不用重启
+      - ./prometheus/targets:/etc/prometheus/targets:ro
+      - ../../var/observability/prometheus-data:/prometheus
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - kee-obs-net
+
+  kee-grafana:
+    image: grafana/grafana:11.1.0
+    container_name: kee-grafana
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:33000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      # 只绑 127.0.0.1 的本机看板口令，不是生产凭据；要对外提供服务前必须换掉
+      - GF_SECURITY_ADMIN_PASSWORD=待填_KEE_GRAFANA_ADMIN_PASSWORD
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_AUTH_ANONYMOUS_ENABLED=false
+      # 这两条是为了「数据不出域」这件事不需要口头承诺：不检查更新、不上报使用统计
+      - GF_ANALYTICS_CHECK_FOR_UPDATES=false
+      - GF_ANALYTICS_REPORTING_ENABLED=false
+      - GF_DASHBOARDS_MIN_REFRESH_INTERVAL=10s
+      - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - ../../var/observability/grafana-data:/var/lib/grafana
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - kee-prom
+    networks:
+      - kee-obs-net
+
+networks:
+  kee-obs-net:
+    driver: bridge

@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-15T14:47:04",
+  "generated_at": "2026-10-19T16:49:37",
   "principle": "取不到就标 未固定 并写原因；未固定项 = 可移植性缺口，MVP 收口前逐条销掉或明写接受",
   "host": {
     "os": "Windows 11",
@@ -19,7 +19,7 @@
     "python": "3.12.8",
     "python_prefix": "D:\\project\\know-effect-engine\\.venv",
     "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU, 8188 MiB, 616.56",
-    "shell": "C:\\Program Files\\Git\\bin\\bash.exe"
+    "shell": "C:\\Program Files\\Git\\usr\\bin\\bash.exe"
   },
   "toolchain": {
     "uv": "uv 0.11.31 (b7fdec626 2026-07-21 x86_64-pc-windows-msvc)",
@@ -30,8 +30,8 @@
   },
   "python_lock": {
     "file": "uv.lock",
-    "sha256_head": "6b7dcdc079d1",
-    "pyproject": "f4ea615cca0e"
+    "sha256_head": "1f684b3c9d03",
+    "pyproject": "edc810247e27"
   },
   "declared_dep_usage": {
     "pymilvus": {
@@ -59,6 +59,7 @@
         "scripts\\check_stack.py",
         "scripts\\harden_audit_store.py",
         "scripts\\m5_dod_check.py",
+        "scripts\\m5_ragas_eval.py",
         "scripts\\m5_version_lock.py",
         "scripts\\reset_audit_state.py",
         "scripts\\serve_api.py",
@@ -88,10 +89,12 @@
       ],
       "前缀来源": "已安装文件树首层模块名",
       "命中文件": [
+        "scripts\\api_warm.py",
         "scripts\\check_stack.py",
         "scripts\\m2_eval.py",
         "scripts\\verify_m4.py",
-        "src\\kee\\llm\\ollama.py"
+        "src\\kee\\llm\\ollama.py",
+        "src\\kee\\obs\\langfuse.py"
       ]
     },
     "pydantic": {
@@ -170,6 +173,7 @@
         "tests\\test_api_answers_contract.py",
         "tests\\test_api_chunks_audit.py",
         "tests\\test_auth.py",
+        "tests\\test_observability_metrics.py",
         "tests\\test_sessions_history.py"
       ]
     },
@@ -269,6 +273,18 @@
       ],
       "前缀来源": "脚本内人工映射（命名空间包，元数据会误导）",
       "命中文件": []
+    },
+    "prometheus-client": {
+      "判定": "在用",
+      "前缀": [
+        "prometheus_client"
+      ],
+      "前缀来源": "包元数据 top_level.txt",
+      "命中文件": [
+        "src\\kee\\api\\app.py",
+        "src\\kee\\obs\\metrics.py",
+        "tests\\test_observability_metrics.py"
+      ]
     }
   },
   "key_packages": {
@@ -341,6 +357,7 @@
       "kindest/node:v1.36.1\t3489c7674813",
       "alpine:3.20\td9e853e87e55",
       "quay.io/coreos/etcd:v3.5.25\t52f17f7e56e4",
+      "langfuse/langfuse:2\t85c278dcab96",
       "tdengine/tsdb:3.3.8.0\t36e2bf82f151",
       "swr.cn-east-2.myhuaweicloud.com/kuboard/kuboard:v3\td4fa05057802",
       "golang:1.23-alpine\t383395b794df",
@@ -357,12 +374,17 @@
       "swr.cn-east-2.myhuaweicloud.com/library/nginx:latest\tc0b69559d28f"
     ],
     "required_by_compose": [
+      "grafana/grafana:11.1.0",
+      "langfuse/langfuse:2   # ← 本机唯一需要下载的镜像，尚未拉取",
       "milvusdb/milvus:v3.0.0",
       "minio/minio:RELEASE.2024-12-18T13-15-44Z",
       "nginx:1.27-alpine",
       "postgres:18",
+      "postgres:18           # 本机已有镜像",
+      "prom/prometheus:v2.53.1",
       "quay.io/coreos/etcd:v3.5.25",
-      "redis:8"
+      "redis:8",
+      "redis:8               # 本机已有镜像"
     ],
     "compose_files": {
       "docker-compose.gate0.yml": "0feafc8850ec",
@@ -397,7 +419,7 @@
     }
   ],
   "ollama": {
-    "raw": "NAME              ID              SIZE      MODIFIED    \nqwen2.5:7b        845dbda0ea48    4.7 GB    3 weeks ago    \ndeepseek-r1:7b    755ced02ce7b    4.7 GB    3 weeks ago",
+    "raw": "NAME              ID              SIZE      MODIFIED    \nqwen2.5:7b        845dbda0ea48    4.7 GB    4 weeks ago    \ndeepseek-r1:7b    755ced02ce7b    4.7 GB    4 weeks ago",
     "digest_fixed": true,
     "digests": {
       "状态": "已固定（按 digest 认权重，不按 tag 认）",

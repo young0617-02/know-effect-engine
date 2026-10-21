@@ -1,0 +1,38 @@
+# Prometheus 抓取配置（本机自托管，零外呼）。
+#
+# **为什么 KEE 的目标不写死在这里**：宿主 API 的端口不是常量——Windows 会随机保留一段 TCP
+# 范围（`netsh interface ipv4 show excludedportrange protocol=tcp`），本机就因为它从 38000 挪到
+# 28000 过。把端口写死在配置文件里，就是上一轮刚在 Nginx 上修掉的那类 bug：改了端口、
+# 观测面静默变成「一直 No data」，看起来像指标坏了。
+# 所以目标走 `file_sd`：端口由 `scripts/obs_targets.py --port <端口>` 写进
+# `infra/prometheus/targets/kee.json`，Prometheus 每 20s 自己刷新，**不用重启容器**。
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    # 单实例部署也打标：换机或再起一套时，跨实例查询不会把两个进程的数字加在一起
+    stack: kee-local
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: []   # 本机没有 Alertmanager；表达式仍每秒评估，告警在 Prometheus UI 里看
+
+rule_files:
+  - /etc/prometheus/alerts.yml
+
+scrape_configs:
+  - job_name: kee-api
+    metrics_path: /metrics
+    scheme: http
+    file_sd_configs:
+      - files: ["/etc/prometheus/targets/kee.json"]
+        refresh_interval: 20s
+    # 抓取本身不该被算进业务 QPS：/metrics 已在应用侧排除计数，这里再打一个 scrape 标签便于核对
+    relabel_configs:
+      - target_label: tier
+        replacement: host-api
+
+  - job_name: prometheus
+    static_configs:
+      - targets: ["localhost:9090"]
