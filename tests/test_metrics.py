@@ -40,6 +40,18 @@ def test_percentile_linear_interpolation():
     assert percentile(vals, 100) == 40
 
 
+def test_percentile_takes_0_to_100_not_a_fraction():
+    """口径陷阱（两个 M1 脚本都踩过，字段名写着 p50 而值其实是 0.5 分位≈近最小值）。
+
+    故意用递增样本让两种传法**产出不同的数**——对称样本测不出方向错，
+    传 0.5 会安静地报出偏小的「中位数」而不报任何错。
+    """
+    vals = list(range(1, 11))
+    assert percentile(vals, 50) == 5.5
+    assert percentile(vals, 0.5) == pytest.approx(1.045)
+    assert percentile(vals, 0.5) < percentile(vals, 50)
+
+
 def test_temperature_scaling_moves_confidence_toward_accuracy():
     # 过度自信：预测 0.9 但只有 40% 正确
     logits = [math.log(0.9 / 0.1)] * 10

@@ -1,0 +1,4832 @@
+{
+  "generated_at": "2026-10-21T15:19:41",
+  "tag": "",
+  "void": false,
+  "why_this_exists": "Child vs 固定分块：把同批内容重塑成「长章节」，两套分块各建一个 scratch 集合做真对照。\n\n**为什么必须换形状**（C7 的来历，实测不是推测）：生产语料里父块正文被它自家子块覆盖的比例中位 **1.000**、\n父块字数减子块字数合计中位 **28 字**、**62.14% 的父块只含 1 个子块** ⇒ 「父块」实质是子块副本加一行抬头，\n两方案在这份语料上近乎产出同一批块。所以上一轮四档消融那句「接上父块无收益」只对**这个形状**成立，\n拿它当「Parent-Child 没用」是把不可分辨的对照当成结论。本轮把相邻小节并成**长章节**（父块相对子块有数倍增量），\n再回答「相对固定分块到底有没有效果」。\n\n",
+  "shape": {
+    "sections_per_chapter": 2,
+    "child_max": 280,
+    "overlap": 40,
+    "n_docs": 24,
+    "p_children": 197,
+    "f_children": 169,
+    "p_parents": 73,
+    "questions": 68,
+    "dropped": []
+  },
+  "structure": {
+    "parent_chars_median": 603,
+    "child_chars_median": 251,
+    "children_per_parent_dist": {
+      "1": 4,
+      "2": 26,
+      "3": 31,
+      "4": 12
+    },
+    "parents_with_ge2_children_rate": 0.9452,
+    "f_mean_chapters_touched": 1.32,
+    "f_cross_chapter_rate": 0.3195,
+    "p_len_vs_f_len_p50": [
+      251.0,
+      280.0
+    ]
+  },
+  "retrieval": {
+    "P": {
+      "n": 68,
+      "hit@5": 0.9706,
+      "sentence_recall@5": 0.9279,
+      "mrr": 0.8865,
+      "n_gold_chunks_total": 87
+    },
+    "F": {
+      "n": 68,
+      "hit@5": 0.9559,
+      "sentence_recall@5": 0.7991,
+      "mrr": 0.8657,
+      "n_gold_chunks_total": 117
+    }
+  },
+  "generation": {
+    "F_flat": {
+      "n": 68,
+      "key_grounding": 0.6029,
+      "completion_rate": 0.9118,
+      "cited_in_gold": 0.8088,
+      "status_dist": {
+        "answer": 52,
+        "tentative": 10,
+        "refuse": 5,
+        "escalate": 1
+      }
+    },
+    "P_child": {
+      "n": 68,
+      "key_grounding": 0.6029,
+      "completion_rate": 0.9118,
+      "cited_in_gold": 0.8676,
+      "status_dist": {
+        "answer": 52,
+        "tentative": 10,
+        "refuse": 4,
+        "escalate": 2
+      }
+    },
+    "P_parent": {
+      "n": 68,
+      "key_grounding": 0.5882,
+      "completion_rate": 0.8382,
+      "cited_in_gold": 0.6912,
+      "status_dist": {
+        "answer": 48,
+        "tentative": 9,
+        "refuse": 6,
+        "escalate": 5
+      }
+    },
+    "P_parent_trim": {
+      "n": 68,
+      "key_grounding": 0.5735,
+      "completion_rate": 0.8824,
+      "cited_in_gold": 0.7941,
+      "status_dist": {
+        "answer": 50,
+        "tentative": 10,
+        "refuse": 4,
+        "escalate": 4
+      }
+    }
+  },
+  "cost_by_arm": {
+    "F_flat": {
+      "calls": 64,
+      "prompt_tokens_p50": 1538.5,
+      "prompt_tokens_max": 1592,
+      "prompt_tokens_mean": 1519.3,
+      "truncated": 0,
+      "ms_p50": 3300.5
+    },
+    "P_child": {
+      "calls": 128,
+      "prompt_tokens_p50": 1470.5,
+      "prompt_tokens_max": 1596,
+      "prompt_tokens_mean": 1441.2,
+      "truncated": 0,
+      "ms_p50": 3426.4
+    },
+    "P_parent": {
+      "calls": 192,
+      "prompt_tokens_p50": 1539.5,
+      "prompt_tokens_max": 4092,
+      "prompt_tokens_mean": 2115.7,
+      "truncated": 0,
+      "ms_p50": 3968.4
+    },
+    "P_parent_trim": {
+      "calls": 256,
+      "prompt_tokens_p50": 1545.5,
+      "prompt_tokens_max": 4092,
+      "prompt_tokens_mean": 2024.1,
+      "truncated": 0,
+      "ms_p50": 3955.4
+    }
+  },
+  "gates": {
+    "G0 span 全部可在重塑语料定位（否则两臂量的不是同一批事实）": {
+      "pass": true,
+      "basis": "因结构性原因剔除 0 题，其中 span 定位失败 0 题"
+    },
+    "G1 检索零降级（单腿答会让两臂都不可信）": {
+      "pass": true,
+      "basis": "降级行 0/136（例 []）"
+    },
+    "G2 两臂块长可比（否则比的是谁塞的字多）": {
+      "pass": true,
+      "basis": "子块 p50 251.0 vs 窗口块 p50 280.0"
+    },
+    "G3 对照真的成立（F 臂必须跨章、P 臂父块必须多子）": {
+      "pass": true,
+      "basis": "F 跨章块占比 0.3195（平均触章 1.32）；含 ≥2 子块的父块占比 0.9452；「父块字数 / 其全部子块字数合计」中位 0.924（≈1 说明子块已覆盖整章，父块是副本而非增量）"
+    },
+    "G4 生成层三档提示成本必须分层（证明注入与去重都真的落地了）": {
+      "pass": true,
+      "basis": "证据字数 p50：F_flat 1772.0｜P_child 1536.5｜P_parent 4810.5｜P_parent_trim 1859.5（最大值 5762.0 vs 3815.0）；prompt 均值 1441.2 → 2115.7 → 2024.1；p50 仅供参考：F_flat 1538.5｜P_child 1470.5｜P_parent 1539.5｜P_parent_trim 1545.5；注入生效要求 P_parent 均值 > P_child，去重生效要求 P_parent_trim 均值 < P_parent（两者同高说明 trim 其实是同一个档）；逐题注入次数 p50 {'F_flat': 0.0, 'P_child': 0.0, 'P_parent': 5.0, 'P_parent_trim': 3.0}；p50 列一并给出供参考，不参与判定"
+    },
+    "G5 主对照三档不撞上下文窗口（撞了量到的就是截断不是分块）": {
+      "pass": true,
+      "basis": "truncated 计数 {'F_flat': 0, 'P_child': 0, 'P_parent': 0, 'P_parent_trim': 0}｜P_parent 撞窗**不判废**——「整章逐条贴」在长章节上先撞 num_ctx=4096 正是这一档的实测缺陷，但如果 F_flat / P_child / P_parent_trim 也撞，主对照就整体失真"
+    }
+  },
+  "rows": {
+    "F_flat": [
+      {
+        "qid": "q-001",
+        "status": "answer",
+        "conclusion": "银企直联实时清算方案 V3.2 的灾备切换目标按 RTO 小于 15 分钟设定",
+        "injected": 0,
+        "evidence_chars": 1699,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "15分钟",
+          "3.2",
+          "30",
+          "53分钟",
+          "99.99%"
+        ]
+      },
+      {
+        "qid": "q-002",
+        "status": "answer",
+        "conclusion": "法人账户日间头寸预测偏差绝对值由改造前的 3.7% 收敛至 1.2%",
+        "injected": 0,
+        "evidence_chars": 1776,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "05分",
+          "1.2%",
+          "15",
+          "16",
+          "2.4亿元",
+          "2100万元"
+        ]
+      },
+      {
+        "qid": "q-003",
+        "status": "escalate",
+        "conclusion": "",
+        "injected": 0,
+        "evidence_chars": 1475,
+        "n_citations": 0,
+        "cited_in_gold": false,
+        "key_hit": false,
+        "keys": [
+          "1.8%",
+          "150%",
+          "182%",
+          "196%",
+          "214万",
+          "21个"
+        ]
+      },
+      {
+        "qid": "q-004",
+        "status": "answer",
+        "conclusion": "信贷资产风险分类结果按五级类别落库，即正常、关注、次级、可疑与损失。",
+        "injected": 0,
+        "evidence_chars": 1768,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": false,
+        "keys": [
+          "方案采用规则引擎加模型评"
+        ]
+      },
+      {
+        "qid": "q-005",
+        "status": "answer",
+        "conclusion": "改造报文字段映射 214 项",
+        "injected": 0,
+        "evidence_chars": 1553,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "119项",
+          "214项",
+          "38项",
+          "57项",
+          "58200条",
+          "6周"
+        ]
+      },
+      {
+        "qid": "q-006",
+        "status": "answer",
+        "conclusion": "双活数据中心同城链路正常水位不超过 800 毫秒",
+        "injected": 0,
+        "evidence_chars": 1773,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "0028",
+          "10秒",
+          "2000毫秒",
+          "3个",
+          "5000毫秒",
+          "800毫秒"
+        ]
+      },
+      {
+        "qid": "q-007",
+        "status": "answer",
+        "conclusion": "92%",
+        "injected": 0,
+        "evidence_chars": 1611,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": false,
+        "keys": [
+          "1860万",
+          "24小时",
+          "2680万",
+          "5个",
+          "70%",
+          "74人"
+        ]
+      },
+      {
+        "qid": "q-008",
+        "status": "answer",
+        "conclusion": "清算平台的 P1 级故障须在 15 分钟内启动应急响应",
+        "injected": 0,
+        "evidence_chars": 1774,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "15分钟",
+          "1个",
+          "4小时"
+        ]
+      },
+      {
+        "qid": "q-009",
+        "status": "answer",
+        "conclusion": "SCADA 主站的实时数据刷新周期为 2 秒。",
+        "injected": 0,
+        "evidence_chars": 1775,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "10分钟",
+          "24小时",
+          "2秒",
+          "30秒",
+          "3秒",
+          "95%"
+        ]
+      },
+      {
+        "qid": "q-010",
+        "status": "answer",
+        "conclusion": "接口编号 IF-ENE-0021 用于配电自动化终端的遥测数据上送，信息体地址段规划为 16385 至 18000，覆盖三相电流、三相电压、有功与无功功率及功率因数共 14 个测点。",
+        "injected": 0,
+        "evidence_chars": 1773,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "0021",
+          "14个",
+          "16385",
+          "18000",
+          "2%",
+          "3个"
+        ]
+      },
+      {
+        "qid": "q-011",
+        "status": "answer",
+        "conclusion": "用电信息采集成功率由治理前的 91.6% 提升至 99.3%",
+        "injected": 0,
+        "evidence_chars": 1776,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "5个",
+          "63.8%",
+          "74条",
+          "91.6%",
+          "98.5%",
+          "99.3%"
+        ]
+      },
+      {
+        "qid": "q-012",
+        "status": "answer",
+        "conclusion": "终端与信息管理大区之间的数据交换必须经正反向隔离装置单向传输",
+        "injected": 0,
+        "evidence_chars": 1776,
+        "n_citations": 2,
+        "cited_in_gold": true,
+        "key_hit": false,
+        "keys": [
+          "104",
+          "17",
+          "386项",
+          "4.6万",
+          "60870"
+        ]
+      },
+      {
+        "qid": "q-013",
+        "status": "answer",
+        "conclusion": "SIS 安全仪表系统采用的表决逻辑由 1oo1 升级为 1oo2 加冗余通道的 29 项",
+        "injected": 0,
+        "evidence_chars": 1778,
+        "n_citations": 1,
+        "cited_in_gold": false,
+        "key_hit": false,
+        "keys": [
+          "12个",
+          "17项",
+          "3项",
+          "41项",
+          "5%"
+        ]
+      },
+      {
+        "qid": "q-014",
+        "status": "answer",
+        "conclusion": "涉及 DCS 联锁逻辑的点位一律设为只读",
+        "injected": 0,
+        "evidence_chars": 1777,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": false,
+        "keys": [
+          "0007",
+          "12个",
+          "17项",
+          "2.0",
+          "3项",
+          "41项"
+        ]
+      },
+      {
+        "qid": "q-015",
+        "status": "answer",
+        "conclusion": "结项文档连同验收原始记录须完整归档并保留3年",
+        "injected": 0,
+        "evidence_chars": 1595,
+        "n_citations": 2,
+        "cited_in_gold": true,
+        "key_hit": false,
+        "keys": [
+          "032",
+          "1.7万",
+          "11次",
+          "12",
+          "20",
+          "2项"
+        ]
+      },
+      {
+        "qid": "q-016",
+        "status": "answer",
+        "conclusion": "第三级安全计算环境的身份鉴别与会话锁定要求出自 GB/T 22239-2019 第 8.1.4 条",
+        "injected": 0,
+        "evidence_chars": 1783,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "15分钟",
+          "1年",
+          "2019",
+          "22239",
+          "30分钟",
+          "3个"
+        ]
+      },
+      {
+        "qid": "q-017",
+        "status": "answer",
+        "conclusion": "SLA-A1 对应 PRJ-FIN-2024-017 项目",
+        "injected": 0,
+        "evidence_chars": 1745,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "00",
+          "017",
+          "12个月",
+          "1402条",
+          "1468条",
+          "20"
+        ]
+      },
+      {
+        "qid": "q-018",
+        "status": "answer",
+        "conclusion": "单笔汇款金额上限为 500 万元",
+        "injected": 0,
+        "evidence_chars": 1769,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "0012",
+          "2秒",
+          "31项",
+          "500万元",
+          "7个"
+        ]
+      },
+      {
+        "qid": "q-019",
+        "status": "answer",
+        "conclusion": "接口编号 IF-FIN-0013 提供账户实时余额与电子回单查询能力，单次响应报文体积不得超过 2 MB。",
+        "injected": 0,
+        "evidence_chars": 1769,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "0013",
+          "1.4个",
+          "2024年",
+          "2个",
+          "312",
+          "5分钟"
+        ]
+      },
+      {
+        "qid": "q-020",
+        "status": "answer",
+        "conclusion": "信息体地址段从16385开始",
+        "injected": 0,
+        "evidence_chars": 1769,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "0021",
+          "14个",
+          "16385",
+          "18000",
+          "2%",
+          "3个"
+        ]
+      },
+      {
+        "qid": "q-021",
+        "status": "answer",
+        "conclusion": "心跳试验帧机制为TESTFH；链路中断等效判定超时为60秒",
+        "injected": 0,
+        "evidence_chars": 1772,
+        "n_citations": 1,
+        "cited_in_gold": false,
+        "key_hit": false,
+        "keys": [
+          "104",
+          "10分钟",
+          "20秒",
+          "2次",
+          "300秒",
+          "4096"
+        ]
+      },
+      {
+        "qid": "q-022",
+        "status": "answer",
+        "conclusion": "表计地址采用12位表号",
+        "injected": 0,
+        "evidence_chars": 1772,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "0047",
+          "118",
+          "12",
+          "15分钟",
+          "2007",
+          "24"
+        ]
+      },
+      {
+        "qid": "q-023",
+        "status": "answer",
+        "conclusion": "订阅点位规模上限 8000 个",
+        "injected": 0,
+        "evidence_chars": 1769,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "0007",
+          "2.0",
+          "500毫秒",
+          "8000个"
+        ]
+      },
+      {
+        "qid": "q-024",
+        "status": "answer",
+        "conclusion": "IF-CHM-0011 单次返回时间序列点数上限 86400 点",
+        "injected": 0,
+        "evidence_chars": 1769,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "0011",
+          "10分钟",
+          "180天",
+          "1分钟",
+          "2年",
+          "4秒"
+        ]
+      },
+      {
+        "qid": "q-025",
+        "status": "answer",
+        "conclusion": "防爆区域划分依据GB 50058-2014国家标准执行",
+        "injected": 0,
+        "evidence_chars": 1781,
+        "n_citations": 2,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "2014",
+          "21",
+          "22个",
+          "386",
+          "47个",
+          "50058"
+        ]
+      },
+      {
+        "qid": "q-026",
+        "status": "answer",
+        "conclusion": "变更单号 CR-CHM-2024-118 涉及气化单元一路模拟量量程调整，可能间接影响 DCS 联锁逻辑的判定输入，因此需要补做联锁功能验证。",
+        "injected": 0,
+        "evidence_chars": 1780,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "118",
+          "2024",
+          "2024年",
+          "24小时",
+          "27次",
+          "4小时"
+        ]
+      },
+      {
+        "qid": "q-027",
+        "status": "answer",
+        "conclusion": "日间清算高峰3200笔每秒持续60分钟无积压",
+        "injected": 0,
+        "evidence_chars": 1765,
+        "n_citations": 1,
+        "cited_in_gold": false,
+        "key_hit": true,
+        "keys": [
+          "142毫秒",
+          "180毫秒",
+          "3.2",
+          "3200",
+          "3760",
+          "60分钟"
+        ]
+      },
+      {
+        "qid": "q-028",
+        "status": "answer",
+        "conclusion": "不低于99.99%",
+        "injected": 0,
+        "evidence_chars": 1767,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "15分钟",
+          "3.2",
+          "30",
+          "53分钟",
+          "99.99%"
+        ]
+      },
+      {
+        "qid": "q-029",
+        "status": "answer",
+        "conclusion": "验收核心口径以同期线损率指标、采集数据完整率与台区档案一致率三项为主",
+        "injected": 0,
+        "evidence_chars": 1776,
+        "n_citations": 1,
+        "cited_in_gold": false,
+        "key_hit": false,
+        "keys": [
+          "006",
+          "2.1",
+          "2024"
+        ]
+      },
+      {
+        "qid": "q-030",
+        "status": "answer",
+        "conclusion": "验收以装置收率、能耗与平稳率三类指标为核心",
+        "injected": 0,
+        "evidence_chars": 1775,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": false,
+        "keys": [
+          "1.4",
+          "12",
+          "176个",
+          "2024年",
+          "28"
+        ]
+      },
+      {
+        "qid": "q-031",
+        "status": "answer",
+        "conclusion": "方案拆分作业后达成了5个工作日以内的作业周期目标",
+        "injected": 0,
+        "evidence_chars": 1768,
+        "n_citations": 1,
+        "cited_in_gold": false,
+        "key_hit": false,
+        "keys": [
+          "1.0",
+          "12台",
+          "15分钟",
+          "20秒",
+          "214万",
+          "3.8"
+        ]
+      },
+      {
+        "qid": "q-032",
+        "status": "answer",
+        "conclusion": "99.99%",
+        "injected": 0,
+        "evidence_chars": 1777,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": false,
+        "keys": [
+          "214",
+          "28台",
+          "2人",
+          "30分钟",
+          "4.0",
+          "6个"
+        ]
+      },
+      {
+        "qid": "q-033",
+        "status": "answer",
+        "conclusion": "配置与指标口径版本每日备份一次，备份保留 90 天在线、12 个月近线；口径版本变更须保留前后对照表，可支持任意历史时点按当期口径重算，归档调阅响应时限为 4 小时以内。",
+        "injected": 0,
+        "evidence_chars": 1741,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "00",
+          "11分钟",
+          "12个月",
+          "15分钟",
+          "1条",
+          "2.3"
+        ]
+      },
+      {
+        "qid": "q-034",
+        "status": "answer",
+        "conclusion": "312 项",
+        "injected": 0,
+        "evidence_chars": 1613,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "1.2",
+          "14天",
+          "168项",
+          "312项",
+          "48项",
+          "5年"
+        ]
+      },
+      {
+        "qid": "q-035",
+        "status": "answer",
+        "conclusion": "单批切换窗口不超过36小时",
+        "injected": 0,
+        "evidence_chars": 1778,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": false,
+        "keys": [
+          "021",
+          "1.1",
+          "12",
+          "2023",
+          "2023年",
+          "2024年"
+        ]
+      },
+      {
+        "qid": "q-036",
+        "status": "answer",
+        "conclusion": "批生产记录电子化覆盖率不低于 95%",
+        "injected": 0,
+        "evidence_chars": 1773,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "1.0",
+          "2天",
+          "95%",
+          "99%"
+        ]
+      },
+      {
+        "qid": "q-037",
+        "status": "answer",
+        "conclusion": "非计划应急切换须双人确认，两名确认人员须分属运维岗与业务岗。",
+        "injected": 0,
+        "evidence_chars": 1699,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": false,
+        "keys": [
+          "0031",
+          "2.0",
+          "30秒",
+          "3年",
+          "48"
+        ]
+      },
+      {
+        "qid": "q-038",
+        "status": "answer",
+        "conclusion": "采用 OPC UA 订阅模式，最小发布间隔 500 毫秒",
+        "injected": 0,
+        "evidence_chars": 1769,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "0007",
+          "2.0",
+          "500毫秒",
+          "8000个"
+        ]
+      },
+      {
+        "qid": "q-039",
+        "status": "tentative",
+        "conclusion": "P1级故障须在15分钟内启动应急响应",
+        "injected": 0,
+        "evidence_chars": 1774,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "15分钟",
+          "1个",
+          "4小时"
+        ]
+      },
+      {
+        "qid": "q-040",
+        "status": "refuse",
+        "conclusion": "",
+        "injected": 0,
+        "evidence_chars": 0,
+        "n_citations": 0,
+        "cited_in_gold": false,
+        "key_hit": false,
+        "keys": [
+          "1个",
+          "2小时",
+          "30分钟",
+          "3个",
+          "8小时"
+        ]
+      },
+      {
+        "qid": "q-041",
+        "status": "tentative",
+        "conclusion": "心跳超时判定参数为发送间隔 5 秒、连续丢失 3 次判定为链路中断，等效超时阈值为 15 秒。",
+        "injected": 0,
+        "evidence_chars": 1770,
+        "n_citations": 2,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "15秒",
+          "180天",
+          "1年",
+          "30分钟",
+          "3个",
+          "3分钟"
+        ]
+      },
+      {
+        "qid": "q-042",
+        "status": "tentative",
+        "conclusion": "台区电量抄表同期性约束为全台区采集时间窗不超过15分钟",
+        "injected": 0,
+        "evidence_chars": 1743,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "15分钟",
+          "2300",
+          "95%",
+          "97.2%"
+        ]
+      },
+      {
+        "qid": "q-043",
+        "status": "tentative",
+        "conclusion": "现场验证采用注错方式覆盖传感器断线、通道短路与会话超时三类故障注入，每类不少于30次。",
+        "injected": 0,
+        "evidence_chars": 1782,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "1284项",
+          "214项",
+          "2项",
+          "30次",
+          "92.3%",
+          "96项"
+        ]
+      },
+      {
+        "qid": "q-044",
+        "status": "refuse",
+        "conclusion": "",
+        "injected": 0,
+        "evidence_chars": 0,
+        "n_citations": 0,
+        "cited_in_gold": false,
+        "key_hit": false,
+        "keys": [
+          "方案以记录模板引擎加电子"
+        ]
+      },
+      {
+        "qid": "q-045",
+        "status": "tentative",
+        "conclusion": "联锁摘除有效期不超过24小时",
+        "injected": 0,
+        "evidence_chars": 1778,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "118",
+          "2024",
+          "2024年",
+          "24小时",
+          "27次",
+          "30"
+        ]
+      },
+      {
+        "qid": "q-046",
+        "status": "tentative",
+        "conclusion": "采集网关须在断电后5分钟内以本地缓存方式续录，缓存容量支持4小时连续记录；供电恢复后自动补传",
+        "injected": 0,
+        "evidence_chars": 1775,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "10分钟",
+          "2025年",
+          "20秒",
+          "2次",
+          "44次",
+          "4小时"
+        ]
+      },
+      {
+        "qid": "q-047",
+        "status": "refuse",
+        "conclusion": "",
+        "injected": 0,
+        "evidence_chars": 1695,
+        "n_citations": 0,
+        "cited_in_gold": false,
+        "key_hit": false,
+        "keys": [
+          "0028",
+          "10秒",
+          "2000毫秒",
+          "3个",
+          "5000毫秒",
+          "800毫秒"
+        ]
+      },
+      {
+        "qid": "q-048",
+        "status": "tentative",
+        "conclusion": "客户当前拨备覆盖率稳定在 182% 至 196% 区间",
+        "injected": 0,
+        "evidence_chars": 1646,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "1.8%",
+          "150%",
+          "182%",
+          "196%",
+          "214万",
+          "21个"
+        ]
+      },
+      {
+        "qid": "q-049",
+        "status": "tentative",
+        "conclusion": "判重字段为业务日期加企业流水号双字段联合判重",
+        "injected": 0,
+        "evidence_chars": 1773,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": false,
+        "keys": [
+          "0012",
+          "2秒",
+          "31项",
+          "500万元",
+          "7个"
+        ]
+      },
+      {
+        "qid": "q-050",
+        "status": "tentative",
+        "conclusion": "单次下发针对同一路径的建议间隔不小于 60 秒，同一回路连续 3 条建议被操作员拒绝后，平台须暂停该回路建议 30 分钟并回传拒绝原因供模型侧分析。",
+        "injected": 0,
+        "evidence_chars": 1778,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "0009",
+          "120秒",
+          "30分钟",
+          "3条",
+          "4001",
+          "60秒"
+        ]
+      },
+      {
+        "qid": "q-051",
+        "status": "refuse",
+        "conclusion": "",
+        "injected": 0,
+        "evidence_chars": 0,
+        "n_citations": 0,
+        "cited_in_gold": false,
+        "key_hit": false,
+        "keys": [
+          "0047",
+          "118",
+          "12",
+          "15分钟",
+          "2007",
+          "24"
+        ]
+      },
+      {
+        "qid": "q-052",
+        "status": "refuse",
+        "conclusion": "",
+        "injected": 0,
+        "evidence_chars": 0,
+        "n_citations": 0,
+        "cited_in_gold": false,
+        "key_hit": false,
+        "keys": [
+          "10个",
+          "7次",
+          "9个"
+        ]
+      },
+      {
+        "qid": "q-053",
+        "status": "answer",
+        "conclusion": "切换演练年度计划为4次，其中至少1次为非计划场景的盲演、至少1次覆盖异地中心启动；每次演练须输出时长明细表、异常清单与改进项，改进项在下次演练前完成验证，未验证项不得关闭。验收以两地三中心架构下连续两次成功演练为必要条件，且两次演练之间不得存在未闭环的高级缺陷。",
+        "injected": 0,
+        "evidence_chars": 1692,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "1次",
+          "2024年",
+          "4次",
+          "6个月"
+        ]
+      },
+      {
+        "qid": "q-054",
+        "status": "answer",
+        "conclusion": "现状诊断；方案定型；试点验证；规模推广；成效固化",
+        "injected": 0,
+        "evidence_chars": 1777,
+        "n_citations": 5,
+        "cited_in_gold": true,
+        "key_hit": false,
+        "keys": [
+          "10周",
+          "17",
+          "1826条",
+          "19万",
+          "1条",
+          "23"
+        ]
+      },
+      {
+        "qid": "q-055",
+        "status": "answer",
+        "conclusion": "P1 为任一在用的 SIS 安全仪表系统回路失去保护功能或两条以上可燃气体探测回路同时失效；P1 级须在 30 分钟内启动应急响应并要求 2 小时内到场",
+        "injected": 0,
+        "evidence_chars": 1774,
+        "n_citations": 1,
+        "cited_in_gold": false,
+        "key_hit": true,
+        "keys": [
+          "1个",
+          "2小时",
+          "30分钟",
+          "3个",
+          "8小时"
+        ]
+      },
+      {
+        "qid": "q-056",
+        "status": "answer",
+        "conclusion": "本项目登记了需求管理、项目计划、配置管理与决策分析四个过程域的度量项。；按 CMMI 3 级过程域映射要求，本项目补充了需求变更管理与配置管理两个过程域的度量口径。；按 CMMI 3 级过程域映射完成需求管理、配置管理与验证三个过程域的度量归档。",
+        "injected": 0,
+        "evidence_chars": 1445,
+        "n_citations": 3,
+        "cited_in_gold": true,
+        "key_hit": false,
+        "keys": [
+          "1187条",
+          "12个",
+          "1340条",
+          "1826条",
+          "214条",
+          "55%"
+        ]
+      },
+      {
+        "qid": "q-057",
+        "status": "answer",
+        "conclusion": "环境隔离；出口审批；内容识别；审计追溯",
+        "injected": 0,
+        "evidence_chars": 1697,
+        "n_citations": 2,
+        "cited_in_gold": true,
+        "key_hit": false,
+        "keys": [
+          "17.3%",
+          "214次",
+          "37次",
+          "3年"
+        ]
+      },
+      {
+        "qid": "q-058",
+        "status": "answer",
+        "conclusion": "防爆区域划分为1区与2区，1区共9个单元，2区共47个单元",
+        "injected": 0,
+        "evidence_chars": 1781,
+        "n_citations": 3,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "47个",
+          "8小时",
+          "9个"
+        ]
+      },
+      {
+        "qid": "q-071",
+        "status": "answer",
+        "conclusion": "优化平台不能写入SIS安全仪表系统的输出回路",
+        "injected": 0,
+        "evidence_chars": 1779,
+        "n_citations": 2,
+        "cited_in_gold": true,
+        "key_hit": false,
+        "keys": [
+          "0007",
+          "2.0",
+          "500毫秒",
+          "61511",
+          "8000个"
+        ]
+      },
+      {
+        "qid": "q-072",
+        "status": "answer",
+        "conclusion": "进入1区作业须办理受限空间与动火两项作业票",
+        "injected": 0,
+        "evidence_chars": 1781,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": false,
+        "keys": [
+          "47个",
+          "8小时",
+          "9个"
+        ]
+      },
+      {
+        "qid": "q-073",
+        "status": "answer",
+        "conclusion": "客户灾备架构为两地三中心，同城两个中心以双活数据中心方式承载核心业务，异地中心以异步热备方式承载关键业务；接口按控制面与数据面分离设计，控制面接口负责切换指令下发与状态查询，数据面接口仅用于同步链路健康度上报；控制面与数据面分属不同网络区域，跨区访问须经过正反向隔离策略允许的两条专用通道，其余端口一律关闭。",
+        "injected": 0,
+        "evidence_chars": 1769,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "客户灾备架构为两地三中心"
+        ]
+      },
+      {
+        "qid": "q-074",
+        "status": "answer",
+        "conclusion": "银企直联通道改造；清算规则引擎替换；两地三中心灾备链路验证",
+        "injected": 0,
+        "evidence_chars": 1765,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": false,
+        "keys": [
+          "11",
+          "12家",
+          "176家",
+          "2024年",
+          "231个",
+          "240个"
+        ]
+      },
+      {
+        "qid": "q-075",
+        "status": "tentative",
+        "conclusion": "备份按两地三中心布局分布在同城机房与异地机房两处；实测全量恢复时长为 42 分钟、含校核的端到端恢复时长为 71 分钟",
+        "injected": 0,
+        "evidence_chars": 1631,
+        "n_citations": 2,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "15分钟",
+          "1年",
+          "20个",
+          "30天",
+          "42分钟",
+          "71分钟"
+        ]
+      },
+      {
+        "qid": "q-076",
+        "status": "answer",
+        "conclusion": "现状诊断阶段完成8.4万个台区的线损分布画像；成效固化阶段交付指标维持机制与责任矩阵",
+        "injected": 0,
+        "evidence_chars": 1776,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "2个",
+          "3个月",
+          "4210条",
+          "8.4万"
+        ]
+      },
+      {
+        "qid": "q-077",
+        "status": "answer",
+        "conclusion": "P1 为清算链路整体中断或资金差错外溢；须在 15 分钟内启动应急响应，并同时按 ITIL P1 流程成立事件指挥组",
+        "injected": 0,
+        "evidence_chars": 1774,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "15分钟",
+          "1个",
+          "4小时"
+        ]
+      },
+      {
+        "qid": "q-078",
+        "status": "answer",
+        "conclusion": "电力线 P1 判定含厂站失联数量；P1 级故障须在 15 分钟内启动应急响应并同步报告客户调度部门",
+        "injected": 0,
+        "evidence_chars": 1774,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "10",
+          "15分钟",
+          "1个",
+          "2小时",
+          "30",
+          "30分钟"
+        ]
+      },
+      {
+        "qid": "q-079",
+        "status": "answer",
+        "conclusion": "防爆区域划分依据GB 50058-2014的分区原则，以释放源位置与通风条件为依据。；防爆区域内的设备新增或替换须提交区域等级证明与选型核对表。；边界密封核查386处，发现21处不合规并全部整改。",
+        "injected": 0,
+        "evidence_chars": 1784,
+        "n_citations": 3,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "2014",
+          "21",
+          "22个",
+          "386",
+          "47个",
+          "50058"
+        ]
+      },
+      {
+        "qid": "q-080",
+        "status": "answer",
+        "conclusion": "优化平台不能改变 SIS 安全仪表系统的整定值",
+        "injected": 0,
+        "evidence_chars": 1779,
+        "n_citations": 1,
+        "cited_in_gold": false,
+        "key_hit": false,
+        "keys": [
+          "1.4",
+          "12",
+          "176个",
+          "2024年",
+          "28"
+        ]
+      }
+    ],
+    "P_child": [
+      {
+        "qid": "q-001",
+        "status": "answer",
+        "conclusion": "银企直联实时清算方案 V3.2 的灾备切换目标按 RTO 小于 15 分钟、RPO 等于 0 设定。",
+        "injected": 0,
+        "evidence_chars": 1595,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "15分钟",
+          "3.2",
+          "30",
+          "53分钟",
+          "99.99%"
+        ]
+      },
+      {
+        "qid": "q-002",
+        "status": "answer",
+        "conclusion": "头寸管理模块上线后，法人账户日间头寸预测偏差绝对值由改造前的 3.7% 收敛至 1.2%",
+        "injected": 0,
+        "evidence_chars": 1317,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "05分",
+          "1.2%",
+          "15",
+          "16",
+          "2.4亿元",
+          "2100万元"
+        ]
+      },
+      {
+        "qid": "q-003",
+        "status": "escalate",
+        "conclusion": "",
+        "injected": 0,
+        "evidence_chars": 1463,
+        "n_citations": 0,
+        "cited_in_gold": false,
+        "key_hit": false,
+        "keys": [
+          "1.8%",
+          "150%",
+          "182%",
+          "196%",
+          "214万",
+          "21个"
+        ]
+      },
+      {
+        "qid": "q-004",
+        "status": "answer",
+        "conclusion": "信贷资产风险分类结果按五级类别落库，即正常、关注、次级、可疑与损失。",
+        "injected": 0,
+        "evidence_chars": 1684,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": false,
+        "keys": [
+          "方案采用规则引擎加模型评"
+        ]
+      },
+      {
+        "qid": "q-005",
+        "status": "answer",
+        "conclusion": "人行支付报文字段映射共214项",
+        "injected": 0,
+        "evidence_chars": 1633,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "119项",
+          "214项",
+          "38项",
+          "57项",
+          "58200条",
+          "6周"
+        ]
+      },
+      {
+        "qid": "q-006",
+        "status": "answer",
+        "conclusion": "双活数据中心同城链路正常水位不超过 800 毫秒",
+        "injected": 0,
+        "evidence_chars": 1422,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "0028",
+          "10秒",
+          "2000毫秒",
+          "3个",
+          "5000毫秒",
+          "800毫秒"
+        ]
+      },
+      {
+        "qid": "q-007",
+        "status": "answer",
+        "conclusion": "客户现有一阶段规则引擎以关键词与阈值类规则为主，反洗钱可疑交易监测的误报率长期高于 92%。",
+        "injected": 0,
+        "evidence_chars": 1452,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": false,
+        "keys": [
+          "1860万",
+          "24小时",
+          "2680万",
+          "5个",
+          "70%",
+          "74人"
+        ]
+      },
+      {
+        "qid": "q-008",
+        "status": "answer",
+        "conclusion": "15 分钟内启动应急响应",
+        "injected": 0,
+        "evidence_chars": 1703,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "15分钟",
+          "1个",
+          "4小时"
+        ]
+      },
+      {
+        "qid": "q-009",
+        "status": "answer",
+        "conclusion": "2秒",
+        "injected": 0,
+        "evidence_chars": 1429,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "10分钟",
+          "24小时",
+          "2秒",
+          "30秒",
+          "3秒",
+          "95%"
+        ]
+      },
+      {
+        "qid": "q-010",
+        "status": "answer",
+        "conclusion": "配电自动化终端的遥测数据上送覆盖三相电流、三相电压、有功与无功功率及功率因数共 14 个测点",
+        "injected": 0,
+        "evidence_chars": 1542,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "0021",
+          "14个",
+          "16385",
+          "18000",
+          "2%",
+          "3个"
+        ]
+      },
+      {
+        "qid": "q-011",
+        "status": "answer",
+        "conclusion": "用电信息采集成功率由治理前的 91.6% 提升至 99.3%。",
+        "injected": 0,
+        "evidence_chars": 1346,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "5个",
+          "63.8%",
+          "74条",
+          "91.6%",
+          "98.5%",
+          "99.3%"
+        ]
+      },
+      {
+        "qid": "q-012",
+        "status": "answer",
+        "conclusion": "配电自动化终端与信息管理大区之间的数据交换必须经正反向隔离装置单向传输",
+        "injected": 0,
+        "evidence_chars": 1599,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": false,
+        "keys": [
+          "104",
+          "17",
+          "386项",
+          "4.6万",
+          "60870"
+        ]
+      },
+      {
+        "qid": "q-013",
+        "status": "answer",
+        "conclusion": "SIS 安全仪表系统独立于优化平台部署，其 2oo3 表决逻辑与整定值不随优化目标调整。",
+        "injected": 0,
+        "evidence_chars": 1820,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": false,
+        "keys": [
+          "12个",
+          "17项",
+          "3项",
+          "41项",
+          "5%"
+        ]
+      },
+      {
+        "qid": "q-014",
+        "status": "answer",
+        "conclusion": "涉及 DCS 联锁逻辑的点位一律设为只读",
+        "injected": 0,
+        "evidence_chars": 1753,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": false,
+        "keys": [
+          "0007",
+          "12个",
+          "17项",
+          "2.0",
+          "3项",
+          "41项"
+        ]
+      },
+      {
+        "qid": "q-015",
+        "status": "answer",
+        "conclusion": "结项文档连同验收原始记录须完整归档并保留 3 年",
+        "injected": 0,
+        "evidence_chars": 1420,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": false,
+        "keys": [
+          "032",
+          "1.7万",
+          "11次",
+          "12",
+          "20",
+          "2项"
+        ]
+      },
+      {
+        "qid": "q-016",
+        "status": "answer",
+        "conclusion": "第三级安全计算环境要求身份标识与鉴别、最小权限分配、登录失败处理与会话空闲超时锁定四项基本控制。；登录失败5次锁定30分钟、会话空闲15分钟强制注销。",
+        "injected": 0,
+        "evidence_chars": 1312,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "15分钟",
+          "1年",
+          "2019",
+          "22239",
+          "30分钟",
+          "3个"
+        ]
+      },
+      {
+        "qid": "q-017",
+        "status": "answer",
+        "conclusion": "SLA-A1 对应的服务级别协议未明确指出具体平台",
+        "injected": 0,
+        "evidence_chars": 1613,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": false,
+        "keys": [
+          "00",
+          "017",
+          "12个月",
+          "1402条",
+          "1468条",
+          "20"
+        ]
+      },
+      {
+        "qid": "q-018",
+        "status": "answer",
+        "conclusion": "单笔汇款金额上限为 500 万元",
+        "injected": 0,
+        "evidence_chars": 1529,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "0012",
+          "2秒",
+          "31项",
+          "500万元",
+          "7个"
+        ]
+      },
+      {
+        "qid": "q-019",
+        "status": "answer",
+        "conclusion": "接口编号 IF-FIN-0013 提供账户实时余额与电子回单查询能力，单次响应报文体积不得超过 2 MB。",
+        "injected": 0,
+        "evidence_chars": 1532,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "0013",
+          "1.4个",
+          "2024年",
+          "2个",
+          "312",
+          "5分钟"
+        ]
+      },
+      {
+        "qid": "q-020",
+        "status": "answer",
+        "conclusion": "信息体地址段从16385开始",
+        "injected": 0,
+        "evidence_chars": 1557,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "0021",
+          "14个",
+          "16385",
+          "18000",
+          "2%",
+          "3个"
+        ]
+      },
+      {
+        "qid": "q-021",
+        "status": "answer",
+        "conclusion": "心跳试验帧机制为 TESTFH；链路中断等效判定超时为 60 秒",
+        "injected": 0,
+        "evidence_chars": 1413,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": false,
+        "keys": [
+          "104",
+          "10分钟",
+          "20秒",
+          "2次",
+          "300秒",
+          "4096"
+        ]
+      },
+      {
+        "qid": "q-022",
+        "status": "answer",
+        "conclusion": "表计通信规约遵循 DL/T 645-2007 多功能电能表通信协议，地址采用 12 位表号。",
+        "injected": 0,
+        "evidence_chars": 1507,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "0047",
+          "118",
+          "12",
+          "15分钟",
+          "2007",
+          "24"
+        ]
+      },
+      {
+        "qid": "q-023",
+        "status": "answer",
+        "conclusion": "8000个",
+        "injected": 0,
+        "evidence_chars": 1574,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "0007",
+          "2.0",
+          "500毫秒",
+          "8000个"
+        ]
+      },
+      {
+        "qid": "q-024",
+        "status": "answer",
+        "conclusion": "IF-CHM-0011 提供历史点位与操作事件的回溯查询，单次返回时间序列点数上限 86400 点。",
+        "injected": 0,
+        "evidence_chars": 1737,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "0011",
+          "10分钟",
+          "180天",
+          "1分钟",
+          "2年",
+          "4秒"
+        ]
+      },
+      {
+        "qid": "q-025",
+        "status": "answer",
+        "conclusion": "GB 50058-2014",
+        "injected": 0,
+        "evidence_chars": 1333,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "2014",
+          "21",
+          "22个",
+          "386",
+          "47个",
+          "50058"
+        ]
+      },
+      {
+        "qid": "q-026",
+        "status": "answer",
+        "conclusion": "变更单号 CR-CHM-2024-118 涉及气化单元一路模拟量量程调整，可能间接影响 DCS 联锁逻辑的判定输入，因此需要补做联锁功能验证。；从发起到关闭共耗时 4 小时，其中功能验证 90 分钟。",
+        "injected": 0,
+        "evidence_chars": 1471,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "118",
+          "2024",
+          "2024年",
+          "24小时",
+          "27次",
+          "4小时"
+        ]
+      },
+      {
+        "qid": "q-027",
+        "status": "answer",
+        "conclusion": "日间清算高峰3200笔每秒持续60分钟无积压",
+        "injected": 0,
+        "evidence_chars": 1581,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "142毫秒",
+          "180毫秒",
+          "3.2",
+          "3200",
+          "3760",
+          "60分钟"
+        ]
+      },
+      {
+        "qid": "q-028",
+        "status": "answer",
+        "conclusion": "清算链路可用性目标为年度可用性不低于99.99%，全年累计非计划中断时长控制在53分钟以内。",
+        "injected": 0,
+        "evidence_chars": 1654,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "15分钟",
+          "3.2",
+          "30",
+          "53分钟",
+          "99.99%"
+        ]
+      },
+      {
+        "qid": "q-029",
+        "status": "answer",
+        "conclusion": "同期线损率指标；采集数据完整率；台区档案一致率",
+        "injected": 0,
+        "evidence_chars": 1521,
+        "n_citations": 1,
+        "cited_in_gold": false,
+        "key_hit": false,
+        "keys": [
+          "006",
+          "2.1",
+          "2024"
+        ]
+      },
+      {
+        "qid": "q-030",
+        "status": "escalate",
+        "conclusion": "",
+        "injected": 0,
+        "evidence_chars": 1415,
+        "n_citations": 0,
+        "cited_in_gold": false,
+        "key_hit": false,
+        "keys": [
+          "1.4",
+          "12",
+          "176个",
+          "2024年",
+          "28"
+        ]
+      },
+      {
+        "qid": "q-031",
+        "status": "answer",
+        "conclusion": "增量作业每 15 分钟一次、全量校准作业每周一次，改造后增量作业 P95 时长稳定在 8 分 20 秒，达成 5 个工作日以内作业周期的验收目标。",
+        "injected": 0,
+        "evidence_chars": 1662,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "1.0",
+          "12台",
+          "15分钟",
+          "20秒",
+          "214万",
+          "3.8"
+        ]
+      },
+      {
+        "qid": "q-032",
+        "status": "answer",
+        "conclusion": "99.99%",
+        "injected": 0,
+        "evidence_chars": 1642,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": false,
+        "keys": [
+          "214",
+          "28台",
+          "2人",
+          "30分钟",
+          "4.0",
+          "6个"
+        ]
+      },
+      {
+        "qid": "q-033",
+        "status": "answer",
+        "conclusion": "配置与指标口径版本每日备份一次，备份保留 90 天在线、12 个月近线；口径版本变更须保留前后对照表，可支持任意历史时点按当期口径重算，归档调阅响应时限为 4 小时以内。",
+        "injected": 0,
+        "evidence_chars": 1706,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "00",
+          "11分钟",
+          "12个月",
+          "15分钟",
+          "1条",
+          "2.3"
+        ]
+      },
+      {
+        "qid": "q-034",
+        "status": "answer",
+        "conclusion": "312 项",
+        "injected": 0,
+        "evidence_chars": 1541,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "1.2",
+          "14天",
+          "168项",
+          "312项",
+          "48项",
+          "5年"
+        ]
+      },
+      {
+        "qid": "q-035",
+        "status": "answer",
+        "conclusion": "单批切换窗口不超过 36 小时",
+        "injected": 0,
+        "evidence_chars": 1673,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": false,
+        "keys": [
+          "021",
+          "1.1",
+          "12",
+          "2023",
+          "2023年",
+          "2024年"
+        ]
+      },
+      {
+        "qid": "q-036",
+        "status": "answer",
+        "conclusion": "批生产记录电子化覆盖率不低于 95%",
+        "injected": 0,
+        "evidence_chars": 1350,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "1.0",
+          "2天",
+          "95%",
+          "99%"
+        ]
+      },
+      {
+        "qid": "q-037",
+        "status": "answer",
+        "conclusion": "非计划应急切换须双人确认，两名确认人员须分属运维岗与业务岗。",
+        "injected": 0,
+        "evidence_chars": 1531,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": false,
+        "keys": [
+          "0031",
+          "2.0",
+          "30秒",
+          "3年",
+          "48"
+        ]
+      },
+      {
+        "qid": "q-038",
+        "status": "answer",
+        "conclusion": "接口编号 IF-CHM-0007 定义优化平台向控制层读取实时点位的方式，采用 OPC UA 订阅模式",
+        "injected": 0,
+        "evidence_chars": 1574,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "0007",
+          "2.0",
+          "500毫秒",
+          "8000个"
+        ]
+      },
+      {
+        "qid": "q-039",
+        "status": "tentative",
+        "conclusion": "半夜发生的 P1 级故障须在 15 分钟内启动应急响应，并同时按 ITIL P1 流程成立事件指挥组。",
+        "injected": 0,
+        "evidence_chars": 1651,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "15分钟",
+          "1个",
+          "4小时"
+        ]
+      },
+      {
+        "qid": "q-040",
+        "status": "tentative",
+        "conclusion": "P1 事件在处置完成后 24 小时内须提交初步报告、5 个工作日内提交根因报告",
+        "injected": 0,
+        "evidence_chars": 1204,
+        "n_citations": 1,
+        "cited_in_gold": false,
+        "key_hit": false,
+        "keys": [
+          "1个",
+          "2小时",
+          "30分钟",
+          "3个",
+          "8小时"
+        ]
+      },
+      {
+        "qid": "q-041",
+        "status": "tentative",
+        "conclusion": "心跳超时的判定口径为：探活报文发送间隔 5 秒，连续 3 次未收到应答即判定链路中断，等效超时阈值为 15 秒。",
+        "injected": 0,
+        "evidence_chars": 1413,
+        "n_citations": 2,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "15秒",
+          "180天",
+          "1年",
+          "30分钟",
+          "3个",
+          "3分钟"
+        ]
+      },
+      {
+        "qid": "q-042",
+        "status": "tentative",
+        "conclusion": "台区采集时间窗不超过15分钟，同期率低于95%的台区其线损结果标记为不可信",
+        "injected": 0,
+        "evidence_chars": 1486,
+        "n_citations": 2,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "15分钟",
+          "2300",
+          "95%",
+          "97.2%"
+        ]
+      },
+      {
+        "qid": "q-043",
+        "status": "tentative",
+        "conclusion": "验证与测试执行按工厂阶段和现场阶段进行；现场阶段通过注错方式覆盖传感器断线、通道短路与会话超时三类故障注入",
+        "injected": 0,
+        "evidence_chars": 1565,
+        "n_citations": 2,
+        "cited_in_gold": true,
+        "key_hit": false,
+        "keys": [
+          "1284项",
+          "214项",
+          "2项",
+          "30次",
+          "92.3%",
+          "96项"
+        ]
+      },
+      {
+        "qid": "q-044",
+        "status": "refuse",
+        "conclusion": "",
+        "injected": 0,
+        "evidence_chars": 0,
+        "n_citations": 0,
+        "cited_in_gold": false,
+        "key_hit": false,
+        "keys": [
+          "方案以记录模板引擎加电子"
+        ]
+      },
+      {
+        "qid": "q-045",
+        "status": "tentative",
+        "conclusion": "联锁摘除有效期不超过24小时，超时须重新审批并在操作台账中挂牌提醒。",
+        "injected": 0,
+        "evidence_chars": 1236,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "118",
+          "2024",
+          "2024年",
+          "24小时",
+          "27次",
+          "30"
+        ]
+      },
+      {
+        "qid": "q-046",
+        "status": "tentative",
+        "conclusion": "采集网关须在断电后5分钟内以本地缓存方式续录，缓存容量支持4小时连续记录；供电恢复后自动补传并按发生时间重排。",
+        "injected": 0,
+        "evidence_chars": 1249,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "10分钟",
+          "2025年",
+          "20秒",
+          "2次",
+          "44次",
+          "4小时"
+        ]
+      },
+      {
+        "qid": "q-047",
+        "status": "refuse",
+        "conclusion": "",
+        "injected": 0,
+        "evidence_chars": 0,
+        "n_citations": 0,
+        "cited_in_gold": false,
+        "key_hit": false,
+        "keys": [
+          "0028",
+          "10秒",
+          "2000毫秒",
+          "3个",
+          "5000毫秒",
+          "800毫秒"
+        ]
+      },
+      {
+        "qid": "q-048",
+        "status": "tentative",
+        "conclusion": "客户当前拨备覆盖率稳定在 182% 至 196% 区间",
+        "injected": 0,
+        "evidence_chars": 1453,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "1.8%",
+          "150%",
+          "182%",
+          "196%",
+          "214万",
+          "21个"
+        ]
+      },
+      {
+        "qid": "q-049",
+        "status": "tentative",
+        "conclusion": "接口编号 IF-FIN-0012 汇款指令接口使用业务日期加企业流水号双字段联合判重",
+        "injected": 0,
+        "evidence_chars": 1293,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "0012",
+          "2秒",
+          "31项",
+          "500万元",
+          "7个"
+        ]
+      },
+      {
+        "qid": "q-050",
+        "status": "tentative",
+        "conclusion": "单次下发针对同一路径的建议间隔不小于 60 秒，同一回路连续 3 条建议被操作员拒绝后，平台须暂停该回路建议 30 分钟并回传拒绝原因供模型侧分析。",
+        "injected": 0,
+        "evidence_chars": 1360,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "0009",
+          "120秒",
+          "30分钟",
+          "3条",
+          "4001",
+          "60秒"
+        ]
+      },
+      {
+        "qid": "q-051",
+        "status": "refuse",
+        "conclusion": "",
+        "injected": 0,
+        "evidence_chars": 0,
+        "n_citations": 0,
+        "cited_in_gold": false,
+        "key_hit": false,
+        "keys": [
+          "0047",
+          "118",
+          "12",
+          "15分钟",
+          "2007",
+          "24"
+        ]
+      },
+      {
+        "qid": "q-052",
+        "status": "refuse",
+        "conclusion": "",
+        "injected": 0,
+        "evidence_chars": 0,
+        "n_citations": 0,
+        "cited_in_gold": false,
+        "key_hit": false,
+        "keys": [
+          "10个",
+          "7次",
+          "9个"
+        ]
+      },
+      {
+        "qid": "q-053",
+        "status": "answer",
+        "conclusion": "验收以两地三中心架构下连续两次成功演练为必要条件",
+        "injected": 0,
+        "evidence_chars": 1432,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": false,
+        "keys": [
+          "1次",
+          "2024年",
+          "4次",
+          "6个月"
+        ]
+      },
+      {
+        "qid": "q-054",
+        "status": "answer",
+        "conclusion": "现状诊断；方案定型；试点验证；规模推广；成效固化",
+        "injected": 0,
+        "evidence_chars": 1625,
+        "n_citations": 5,
+        "cited_in_gold": true,
+        "key_hit": false,
+        "keys": [
+          "10周",
+          "17",
+          "1826条",
+          "19万",
+          "1条",
+          "23"
+        ]
+      },
+      {
+        "qid": "q-055",
+        "status": "answer",
+        "conclusion": "P1 为任一在用的 SIS 安全仪表系统回路失去保护功能或两条以上可燃气体探测回路同时失效；须在 30 分钟内启动应急响应并要求 2 小时内到场",
+        "injected": 0,
+        "evidence_chars": 1561,
+        "n_citations": 2,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "1个",
+          "2小时",
+          "30分钟",
+          "3个",
+          "8小时"
+        ]
+      },
+      {
+        "qid": "q-056",
+        "status": "answer",
+        "conclusion": "本项目登记了需求管理、项目计划、配置管理与决策分析四个过程域的度量项。；按 CMMI 3 级过程域映射要求登记度量项 9 类。；补充了需求变更管理与配置管理两个过程域的度量口径。；归档度量样本 2410 条，需求变更条目 388 条。",
+        "injected": 0,
+        "evidence_chars": 1665,
+        "n_citations": 4,
+        "cited_in_gold": true,
+        "key_hit": false,
+        "keys": [
+          "1187条",
+          "12个",
+          "1340条",
+          "1826条",
+          "214条",
+          "55%"
+        ]
+      },
+      {
+        "qid": "q-057",
+        "status": "answer",
+        "conclusion": "第一道为环境隔离，开发测试数据一律使用造数或脱敏数据；第二道为出口管控，任何跨域传输须经审批工单并留存审批链；第三道为内容识别，出口通道部署敏感字段自动识别与阻断；第四道为审计追溯，所有访问与出口行为日志集中留存 3 年",
+        "injected": 0,
+        "evidence_chars": 1521,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "17.3%",
+          "214次",
+          "37次",
+          "3年"
+        ]
+      },
+      {
+        "qid": "q-058",
+        "status": "answer",
+        "conclusion": "防爆区域划分为2区与1区两类主要区域，2区共47个单元、1区共9个单元",
+        "injected": 0,
+        "evidence_chars": 1302,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "47个",
+          "8小时",
+          "9个"
+        ]
+      },
+      {
+        "qid": "q-071",
+        "status": "answer",
+        "conclusion": "优化平台不能写入SIS安全仪表系统的输出回路",
+        "injected": 0,
+        "evidence_chars": 1773,
+        "n_citations": 2,
+        "cited_in_gold": true,
+        "key_hit": false,
+        "keys": [
+          "0007",
+          "2.0",
+          "500毫秒",
+          "61511",
+          "8000个"
+        ]
+      },
+      {
+        "qid": "q-072",
+        "status": "answer",
+        "conclusion": "进入1区作业须办理受限空间与动火两项作业票",
+        "injected": 0,
+        "evidence_chars": 1588,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": false,
+        "keys": [
+          "47个",
+          "8小时",
+          "9个"
+        ]
+      },
+      {
+        "qid": "q-073",
+        "status": "answer",
+        "conclusion": "客户灾备架构为两地三中心，同城两个中心以双活数据中心方式承载核心业务，异地中心以异步热备方式承载关键业务；控制面接口负责切换指令下发与状态查询，数据面接口仅用于同步链路健康度上报；控制面与数据面分属不同网络区域，跨区访问须经过正反向隔离策略允许的两条专用通道，其余端口一律关闭。",
+        "injected": 0,
+        "evidence_chars": 1662,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "客户灾备架构为两地三中心"
+        ]
+      },
+      {
+        "qid": "q-074",
+        "status": "answer",
+        "conclusion": "银企直联通道改造；清算规则引擎替换；两地三中心灾备链路验证",
+        "injected": 0,
+        "evidence_chars": 1730,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": false,
+        "keys": [
+          "11",
+          "12家",
+          "176家",
+          "2024年",
+          "231个",
+          "240个"
+        ]
+      },
+      {
+        "qid": "q-075",
+        "status": "answer",
+        "conclusion": "实测全量恢复时长为 42 分钟、含校核的端到端恢复时长为 71 分钟",
+        "injected": 0,
+        "evidence_chars": 1648,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "15分钟",
+          "1年",
+          "20个",
+          "30天",
+          "42分钟",
+          "71分钟"
+        ]
+      },
+      {
+        "qid": "q-076",
+        "status": "answer",
+        "conclusion": "现状诊断阶段完成8.4万个台区的线损分布画像；成效固化阶段交付指标维持机制与责任矩阵",
+        "injected": 0,
+        "evidence_chars": 1748,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "2个",
+          "3个月",
+          "4210条",
+          "8.4万"
+        ]
+      },
+      {
+        "qid": "q-077",
+        "status": "answer",
+        "conclusion": "P1 为清算链路整体中断或资金差错外溢；须在 15 分钟内启动应急响应，并同时按 ITIL P1 流程成立事件指挥组",
+        "injected": 0,
+        "evidence_chars": 1561,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "15分钟",
+          "1个",
+          "4小时"
+        ]
+      },
+      {
+        "qid": "q-078",
+        "status": "answer",
+        "conclusion": "P1 为 SCADA 主站功能失效或 30 座以上厂站失联；须在 15 分钟内启动应急响应并同步报告客户调度部门",
+        "injected": 0,
+        "evidence_chars": 1561,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "10",
+          "15分钟",
+          "1个",
+          "2小时",
+          "30",
+          "30分钟"
+        ]
+      },
+      {
+        "qid": "q-079",
+        "status": "answer",
+        "conclusion": "防爆区域划分依据GB 50058-2014标准，以释放源位置与通风条件为依据。；边界密封核查通过现场检查完成，共核查386处，发现21处不合规并全部整改。",
+        "injected": 0,
+        "evidence_chars": 1302,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "2014",
+          "21",
+          "22个",
+          "386",
+          "47个",
+          "50058"
+        ]
+      },
+      {
+        "qid": "q-080",
+        "status": "answer",
+        "conclusion": "优化平台不得改变 SIS 安全仪表系统的整定值",
+        "injected": 0,
+        "evidence_chars": 1642,
+        "n_citations": 1,
+        "cited_in_gold": false,
+        "key_hit": false,
+        "keys": [
+          "1.4",
+          "12",
+          "176个",
+          "2024年",
+          "28"
+        ]
+      }
+    ],
+    "P_parent": [
+      {
+        "qid": "q-001",
+        "status": "escalate",
+        "conclusion": "",
+        "injected": 5,
+        "evidence_chars": 5450,
+        "n_citations": 0,
+        "cited_in_gold": false,
+        "key_hit": false,
+        "keys": [
+          "15分钟",
+          "3.2",
+          "30",
+          "53分钟",
+          "99.99%"
+        ]
+      },
+      {
+        "qid": "q-002",
+        "status": "answer",
+        "conclusion": "头寸管理模块上线后，法人账户日间头寸预测偏差绝对值由改造前的 3.7% 收敛至 1.2%。",
+        "injected": 5,
+        "evidence_chars": 4582,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "05分",
+          "1.2%",
+          "15",
+          "16",
+          "2.4亿元",
+          "2100万元"
+        ]
+      },
+      {
+        "qid": "q-003",
+        "status": "escalate",
+        "conclusion": "",
+        "injected": 5,
+        "evidence_chars": 4698,
+        "n_citations": 0,
+        "cited_in_gold": false,
+        "key_hit": false,
+        "keys": [
+          "1.8%",
+          "150%",
+          "182%",
+          "196%",
+          "214万",
+          "21个"
+        ]
+      },
+      {
+        "qid": "q-004",
+        "status": "answer",
+        "conclusion": "信贷资产风险分类结果按五级类别落库，即正常、关注、次级、可疑与损失。",
+        "injected": 5,
+        "evidence_chars": 4974,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": false,
+        "keys": [
+          "方案采用规则引擎加模型评"
+        ]
+      },
+      {
+        "qid": "q-005",
+        "status": "answer",
+        "conclusion": "人行支付报文字段映射共214项，其中金额类字段38项、账号与户名类字段57项、业务标识类字段119项。",
+        "injected": 5,
+        "evidence_chars": 4855,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "119项",
+          "214项",
+          "38项",
+          "57项",
+          "58200条",
+          "6周"
+        ]
+      },
+      {
+        "qid": "q-006",
+        "status": "answer",
+        "conclusion": "双活数据中心同城链路正常水位不超过 800 毫秒。",
+        "injected": 5,
+        "evidence_chars": 4728,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "0028",
+          "10秒",
+          "2000毫秒",
+          "3个",
+          "5000毫秒",
+          "800毫秒"
+        ]
+      },
+      {
+        "qid": "q-007",
+        "status": "answer",
+        "conclusion": "客户现有一阶段引擎在反洗钱可疑交易监测上的误报率长期高于 92%",
+        "injected": 5,
+        "evidence_chars": 4559,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": false,
+        "keys": [
+          "1860万",
+          "24小时",
+          "2680万",
+          "5个",
+          "70%",
+          "74人"
+        ]
+      },
+      {
+        "qid": "q-008",
+        "status": "answer",
+        "conclusion": "P1 级故障须在 15 分钟内启动应急响应",
+        "injected": 5,
+        "evidence_chars": 5000,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "15分钟",
+          "1个",
+          "4小时"
+        ]
+      },
+      {
+        "qid": "q-009",
+        "status": "answer",
+        "conclusion": "2秒",
+        "injected": 5,
+        "evidence_chars": 4572,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "10分钟",
+          "24小时",
+          "2秒",
+          "30秒",
+          "3秒",
+          "95%"
+        ]
+      },
+      {
+        "qid": "q-010",
+        "status": "answer",
+        "conclusion": "配电自动化终端上送14个测点",
+        "injected": 5,
+        "evidence_chars": 4902,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "0021",
+          "14个",
+          "16385",
+          "18000",
+          "2%",
+          "3个"
+        ]
+      },
+      {
+        "qid": "q-011",
+        "status": "answer",
+        "conclusion": "用电信息采集成功率由治理前的 91.6% 提升至 99.3%。",
+        "injected": 5,
+        "evidence_chars": 4663,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "5个",
+          "63.8%",
+          "74条",
+          "91.6%",
+          "98.5%",
+          "99.3%"
+        ]
+      },
+      {
+        "qid": "q-012",
+        "status": "escalate",
+        "conclusion": "",
+        "injected": 5,
+        "evidence_chars": 4811,
+        "n_citations": 0,
+        "cited_in_gold": false,
+        "key_hit": false,
+        "keys": [
+          "104",
+          "17",
+          "386项",
+          "4.6万",
+          "60870"
+        ]
+      },
+      {
+        "qid": "q-013",
+        "status": "answer",
+        "conclusion": "SIS 安全仪表系统采用的表决逻辑由 1oo1 升级为 1oo2 加冗余通道。",
+        "injected": 5,
+        "evidence_chars": 5206,
+        "n_citations": 2,
+        "cited_in_gold": true,
+        "key_hit": false,
+        "keys": [
+          "12个",
+          "17项",
+          "3项",
+          "41项",
+          "5%"
+        ]
+      },
+      {
+        "qid": "q-014",
+        "status": "answer",
+        "conclusion": "优化引擎与DCS之间采用单向建议加有限写入的模式，可写回路仅12个且全部为调节回路设定值，任何涉及DCS联锁逻辑的点位一律设为只读。",
+        "injected": 5,
+        "evidence_chars": 5658,
+        "n_citations": 1,
+        "cited_in_gold": false,
+        "key_hit": true,
+        "keys": [
+          "0007",
+          "12个",
+          "17项",
+          "2.0",
+          "3项",
+          "41项"
+        ]
+      },
+      {
+        "qid": "q-015",
+        "status": "answer",
+        "conclusion": "结项文档连同验收原始记录须完整归档并保留 3 年。",
+        "injected": 5,
+        "evidence_chars": 4494,
+        "n_citations": 2,
+        "cited_in_gold": true,
+        "key_hit": false,
+        "keys": [
+          "032",
+          "1.7万",
+          "11次",
+          "12",
+          "20",
+          "2项"
+        ]
+      },
+      {
+        "qid": "q-016",
+        "status": "answer",
+        "conclusion": "第三级安全计算环境的身份鉴别与会话锁定要求出自GB/T 22239-2019第8.1.4条；落地参数为登录失败5次锁定30分钟、会话空闲15分钟强制注销",
+        "injected": 5,
+        "evidence_chars": 4667,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "15分钟",
+          "1年",
+          "2019",
+          "22239",
+          "30分钟",
+          "3个"
+        ]
+      },
+      {
+        "qid": "q-017",
+        "status": "answer",
+        "conclusion": "SLA-A1 对应的是银企直联实时清算平台的服务级别协议；质保期为 12 个月",
+        "injected": 5,
+        "evidence_chars": 4297,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "00",
+          "017",
+          "12个月",
+          "1402条",
+          "1468条",
+          "20"
+        ]
+      },
+      {
+        "qid": "q-018",
+        "status": "answer",
+        "conclusion": "单笔汇款金额上限为 500 万元",
+        "injected": 5,
+        "evidence_chars": 4912,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "0012",
+          "2秒",
+          "31项",
+          "500万元",
+          "7个"
+        ]
+      },
+      {
+        "qid": "q-019",
+        "status": "answer",
+        "conclusion": "接口编号 IF-FIN-0013 提供账户实时余额与电子回单查询能力，电子回单以 base64 编码随报文返回，单次响应报文体积不得超过 2 MB。",
+        "injected": 5,
+        "evidence_chars": 4854,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "0013",
+          "1.4个",
+          "2024年",
+          "2个",
+          "312",
+          "5分钟"
+        ]
+      },
+      {
+        "qid": "q-020",
+        "status": "answer",
+        "conclusion": "信息体地址段规划为16385至18000",
+        "injected": 5,
+        "evidence_chars": 4810,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "0021",
+          "14个",
+          "16385",
+          "18000",
+          "2%",
+          "3个"
+        ]
+      },
+      {
+        "qid": "q-021",
+        "status": "answer",
+        "conclusion": "IEC 60870-5-104 规约下的心跳试验帧叫 TESTFH 试验帧；链路中断等效判定超时为 60 秒",
+        "injected": 5,
+        "evidence_chars": 4627,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "104",
+          "10分钟",
+          "20秒",
+          "2次",
+          "300秒",
+          "4096"
+        ]
+      },
+      {
+        "qid": "q-022",
+        "status": "answer",
+        "conclusion": "表计通信规约遵循 DL/T 645-2007 多功能电能表通信协议，地址采用 12 位表号。",
+        "injected": 5,
+        "evidence_chars": 4721,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "0047",
+          "118",
+          "12",
+          "15分钟",
+          "2007",
+          "24"
+        ]
+      },
+      {
+        "qid": "q-023",
+        "status": "answer",
+        "conclusion": "接口编号 IF-CHM-0007 定义优化平台向控制层读取实时点位的方式，采用 OPC UA 订阅模式，订阅点位规模上限 8000 个。",
+        "injected": 5,
+        "evidence_chars": 4873,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "0007",
+          "2.0",
+          "500毫秒",
+          "8000个"
+        ]
+      },
+      {
+        "qid": "q-024",
+        "status": "answer",
+        "conclusion": "IF-CHM-0011 的查询响应时延目标为 P95 不高于 4 秒，单次返回时间序列点数上限 86400 点，超限须分片；",
+        "injected": 5,
+        "evidence_chars": 4929,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "0011",
+          "10分钟",
+          "180天",
+          "1分钟",
+          "2年",
+          "4秒"
+        ]
+      },
+      {
+        "qid": "q-025",
+        "status": "refuse",
+        "conclusion": "",
+        "injected": 5,
+        "evidence_chars": 4993,
+        "n_citations": 0,
+        "cited_in_gold": false,
+        "key_hit": false,
+        "keys": [
+          "2014",
+          "21",
+          "22个",
+          "386",
+          "47个",
+          "50058"
+        ]
+      },
+      {
+        "qid": "q-026",
+        "status": "answer",
+        "conclusion": "变更单号 CR-CHM-2024-118 涉及气化单元一路模拟量量程调整，可能间接影响 DCS 联锁逻辑的判定输入，因此被要求补做联锁功能验证。",
+        "injected": 5,
+        "evidence_chars": 4620,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "118",
+          "2024",
+          "2024年",
+          "24小时",
+          "27次",
+          "4小时"
+        ]
+      },
+      {
+        "qid": "q-027",
+        "status": "answer",
+        "conclusion": "日间清算高峰处理能力要求为3200笔每秒持续60分钟无积压",
+        "injected": 5,
+        "evidence_chars": 5594,
+        "n_citations": 1,
+        "cited_in_gold": false,
+        "key_hit": true,
+        "keys": [
+          "142毫秒",
+          "180毫秒",
+          "3.2",
+          "3200",
+          "3760",
+          "60分钟"
+        ]
+      },
+      {
+        "qid": "q-028",
+        "status": "answer",
+        "conclusion": "银企直联实时清算方案 V3.2 的核心通道年度可用性目标不低于 99.99%",
+        "injected": 5,
+        "evidence_chars": 5762,
+        "n_citations": 1,
+        "cited_in_gold": false,
+        "key_hit": true,
+        "keys": [
+          "15分钟",
+          "3.2",
+          "30",
+          "53分钟",
+          "99.99%"
+        ]
+      },
+      {
+        "qid": "q-029",
+        "status": "answer",
+        "conclusion": "验收核心口径包含同期线损率指标、采集数据完整率与台区档案一致率三项",
+        "injected": 5,
+        "evidence_chars": 5307,
+        "n_citations": 1,
+        "cited_in_gold": false,
+        "key_hit": false,
+        "keys": [
+          "006",
+          "2.1",
+          "2024"
+        ]
+      },
+      {
+        "qid": "q-030",
+        "status": "answer",
+        "conclusion": "收率类目标包括装置收率和轻质油总收率的提升。",
+        "injected": 5,
+        "evidence_chars": 5317,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": false,
+        "keys": [
+          "1.4",
+          "12",
+          "176个",
+          "2024年",
+          "28"
+        ]
+      },
+      {
+        "qid": "q-031",
+        "status": "answer",
+        "conclusion": "优化措施为将重算拆分为增量分类与全量校准两类作业，增量作业每15分钟一次、全量校准作业每周一次，改造后增量作业P95时长稳定在8分20秒，达成5个工作日以内作业周期的验收目标。",
+        "injected": 5,
+        "evidence_chars": 5039,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "1.0",
+          "12台",
+          "15分钟",
+          "20秒",
+          "214万",
+          "3.8"
+        ]
+      },
+      {
+        "qid": "q-032",
+        "status": "answer",
+        "conclusion": "主站年度可用率目标不低于99.99%",
+        "injected": 5,
+        "evidence_chars": 4801,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": false,
+        "keys": [
+          "214",
+          "28台",
+          "2人",
+          "30分钟",
+          "4.0",
+          "6个"
+        ]
+      },
+      {
+        "qid": "q-033",
+        "status": "answer",
+        "conclusion": "归档调阅响应时限为 4 小时以内",
+        "injected": 5,
+        "evidence_chars": 4654,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": false,
+        "keys": [
+          "00",
+          "11分钟",
+          "12个月",
+          "15分钟",
+          "1条",
+          "2.3"
+        ]
+      },
+      {
+        "qid": "q-034",
+        "status": "answer",
+        "conclusion": "312 项",
+        "injected": 5,
+        "evidence_chars": 4506,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "1.2",
+          "14天",
+          "168项",
+          "312项",
+          "48项",
+          "5年"
+        ]
+      },
+      {
+        "qid": "q-035",
+        "status": "answer",
+        "conclusion": "单批停车切换窗口不超过36小时。",
+        "injected": 5,
+        "evidence_chars": 5116,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": false,
+        "keys": [
+          "021",
+          "1.1",
+          "12",
+          "2023",
+          "2023年",
+          "2024年"
+        ]
+      },
+      {
+        "qid": "q-036",
+        "status": "answer",
+        "conclusion": "批生产记录电子化覆盖率不低于 95%",
+        "injected": 5,
+        "evidence_chars": 4867,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "1.0",
+          "2天",
+          "95%",
+          "99%"
+        ]
+      },
+      {
+        "qid": "q-037",
+        "status": "escalate",
+        "conclusion": "",
+        "injected": 5,
+        "evidence_chars": 4965,
+        "n_citations": 0,
+        "cited_in_gold": false,
+        "key_hit": false,
+        "keys": [
+          "0031",
+          "2.0",
+          "30秒",
+          "3年",
+          "48"
+        ]
+      },
+      {
+        "qid": "q-038",
+        "status": "answer",
+        "conclusion": "接口编号 IF-CHM-0007 采用 OPC UA 订阅模式；最小发布间隔为 500 毫秒",
+        "injected": 5,
+        "evidence_chars": 4873,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "0007",
+          "2.0",
+          "500毫秒",
+          "8000个"
+        ]
+      },
+      {
+        "qid": "q-039",
+        "status": "tentative",
+        "conclusion": "根据银企直联实时清算方案 V3.2 的灾备切换目标，RTO 小于 15 分钟，因此应在 15 分钟内完成应急恢复。",
+        "injected": 5,
+        "evidence_chars": 5761,
+        "n_citations": 1,
+        "cited_in_gold": false,
+        "key_hit": true,
+        "keys": [
+          "15分钟",
+          "1个",
+          "4小时"
+        ]
+      },
+      {
+        "qid": "q-040",
+        "status": "tentative",
+        "conclusion": "P1 事件在处置完成后 24 小时内须提交初步报告、5 个工作日内提交根因报告，报告中必须包含联锁是否曾被摘除、旁路是否超期未恢复两项强制结论，缺一即视为报告不合格不予归档。",
+        "injected": 5,
+        "evidence_chars": 4683,
+        "n_citations": 1,
+        "cited_in_gold": false,
+        "key_hit": false,
+        "keys": [
+          "1个",
+          "2小时",
+          "30分钟",
+          "3个",
+          "8小时"
+        ]
+      },
+      {
+        "qid": "q-041",
+        "status": "tentative",
+        "conclusion": "心跳超时的判定口径为：探活报文发送间隔 5 秒，连续 3 次未收到应答即判定链路中断，等效超时阈值为 15 秒。",
+        "injected": 5,
+        "evidence_chars": 4627,
+        "n_citations": 3,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "15秒",
+          "180天",
+          "1年",
+          "30分钟",
+          "3个",
+          "3分钟"
+        ]
+      },
+      {
+        "qid": "q-042",
+        "status": "tentative",
+        "conclusion": "抄表同期性约束为全台区采集时间窗不超过15分钟，同期率低于95%的台区其线损结果标记为不可信。",
+        "injected": 5,
+        "evidence_chars": 4661,
+        "n_citations": 2,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "15分钟",
+          "2300",
+          "95%",
+          "97.2%"
+        ]
+      },
+      {
+        "qid": "q-043",
+        "status": "tentative",
+        "conclusion": "改造后联锁误动作次数减少；通过注错方式验证故障",
+        "injected": 5,
+        "evidence_chars": 5192,
+        "n_citations": 3,
+        "cited_in_gold": true,
+        "key_hit": false,
+        "keys": [
+          "1284项",
+          "214项",
+          "2项",
+          "30次",
+          "92.3%",
+          "96项"
+        ]
+      },
+      {
+        "qid": "q-044",
+        "status": "refuse",
+        "conclusion": "",
+        "injected": 0,
+        "evidence_chars": 0,
+        "n_citations": 0,
+        "cited_in_gold": false,
+        "key_hit": false,
+        "keys": [
+          "方案以记录模板引擎加电子"
+        ]
+      },
+      {
+        "qid": "q-045",
+        "status": "tentative",
+        "conclusion": "联锁摘除仅限三种情形：经批准的检修作业、仪表故障导致的保护误动作风险与工艺开停车阶段的工艺性需求，其余情形一律不予授权；摘除须由工艺、仪表与安全三方共同签字，任何一方缺席即视为授权无效，事后补签不予认可。单次摘除有效期不超过 24 小时，同一回路 30 日内累计摘除时长不得超过 72 小时，超出即触发装置运行条件复审。",
+        "injected": 5,
+        "evidence_chars": 4632,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "118",
+          "2024",
+          "2024年",
+          "24小时",
+          "27次",
+          "30"
+        ]
+      },
+      {
+        "qid": "q-046",
+        "status": "tentative",
+        "conclusion": "采集网关须在断电后 5 分钟内以本地缓存方式续录，缓存容量支持 4 小时连续记录；供电恢复后自动补传并按发生时间重排。",
+        "injected": 5,
+        "evidence_chars": 4378,
+        "n_citations": 2,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "10分钟",
+          "2025年",
+          "20秒",
+          "2次",
+          "44次",
+          "4小时"
+        ]
+      },
+      {
+        "qid": "q-047",
+        "status": "refuse",
+        "conclusion": "",
+        "injected": 0,
+        "evidence_chars": 0,
+        "n_citations": 0,
+        "cited_in_gold": false,
+        "key_hit": false,
+        "keys": [
+          "0028",
+          "10秒",
+          "2000毫秒",
+          "3个",
+          "5000毫秒",
+          "800毫秒"
+        ]
+      },
+      {
+        "qid": "q-048",
+        "status": "tentative",
+        "conclusion": "客户当前拨备覆盖率稳定在 182% 至 196% 区间",
+        "injected": 5,
+        "evidence_chars": 4563,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "1.8%",
+          "150%",
+          "182%",
+          "196%",
+          "214万",
+          "21个"
+        ]
+      },
+      {
+        "qid": "q-049",
+        "status": "refuse",
+        "conclusion": "",
+        "injected": 5,
+        "evidence_chars": 4702,
+        "n_citations": 0,
+        "cited_in_gold": false,
+        "key_hit": false,
+        "keys": [
+          "0012",
+          "2秒",
+          "31项",
+          "500万元",
+          "7个"
+        ]
+      },
+      {
+        "qid": "q-050",
+        "status": "tentative",
+        "conclusion": "平台须暂停该回路建议 30 分钟并回传拒绝原因供模型侧分析。",
+        "injected": 5,
+        "evidence_chars": 4897,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "0009",
+          "120秒",
+          "30分钟",
+          "3条",
+          "4001",
+          "60秒"
+        ]
+      },
+      {
+        "qid": "q-051",
+        "status": "refuse",
+        "conclusion": "",
+        "injected": 0,
+        "evidence_chars": 0,
+        "n_citations": 0,
+        "cited_in_gold": false,
+        "key_hit": false,
+        "keys": [
+          "0047",
+          "118",
+          "12",
+          "15分钟",
+          "2007",
+          "24"
+        ]
+      },
+      {
+        "qid": "q-052",
+        "status": "refuse",
+        "conclusion": "",
+        "injected": 0,
+        "evidence_chars": 0,
+        "n_citations": 0,
+        "cited_in_gold": false,
+        "key_hit": false,
+        "keys": [
+          "10个",
+          "7次",
+          "9个"
+        ]
+      },
+      {
+        "qid": "q-053",
+        "status": "answer",
+        "conclusion": "验收以两地三中心架构下连续两次成功演练为必要条件",
+        "injected": 5,
+        "evidence_chars": 4498,
+        "n_citations": 2,
+        "cited_in_gold": true,
+        "key_hit": false,
+        "keys": [
+          "1次",
+          "2024年",
+          "4次",
+          "6个月"
+        ]
+      },
+      {
+        "qid": "q-054",
+        "status": "answer",
+        "conclusion": "现状诊断；方案定型；试点验证；规模推广；成效固化",
+        "injected": 5,
+        "evidence_chars": 4482,
+        "n_citations": 5,
+        "cited_in_gold": true,
+        "key_hit": false,
+        "keys": [
+          "10周",
+          "17",
+          "1826条",
+          "19万",
+          "1条",
+          "23"
+        ]
+      },
+      {
+        "qid": "q-055",
+        "status": "answer",
+        "conclusion": "化工线 P1 判定含联锁动作与人员暴露风险；P1 级故障须在 30 分钟内启动应急响应并要求 2 小时内到场",
+        "injected": 5,
+        "evidence_chars": 4861,
+        "n_citations": 2,
+        "cited_in_gold": false,
+        "key_hit": true,
+        "keys": [
+          "1个",
+          "2小时",
+          "30分钟",
+          "3个",
+          "8小时"
+        ]
+      },
+      {
+        "qid": "q-056",
+        "status": "answer",
+        "conclusion": "按 CMMI 3 级过程域映射要求，本项目登记了需求管理、项目计划、配置管理与决策分析四个过程域的度量项。；按 CMMI 3 级过程域映射要求，项目登记了度量项 9 类，累计采集样本 4210 条。；按 CMMI 3 级过程域映射要求，项目登记了需求变更管理与配置管理两个过程域的度量口径。；按 CMMI 3 级过程域映射要求，项目归档度量样本 2410 条，需求变更条目 388 条。",
+        "injected": 5,
+        "evidence_chars": 4393,
+        "n_citations": 4,
+        "cited_in_gold": true,
+        "key_hit": false,
+        "keys": [
+          "1187条",
+          "12个",
+          "1340条",
+          "1826条",
+          "214条",
+          "55%"
+        ]
+      },
+      {
+        "qid": "q-057",
+        "status": "answer",
+        "conclusion": "第一道为环境隔离，开发测试数据一律使用造数或脱敏数据；第二道为出口管控，任何跨域传输须经审批工单并留存审批链；第三道为内容识别，出口通道部署敏感字段自动识别与阻断；第四道为审计追溯，所有访问与出口行为日志集中留存 3 年",
+        "injected": 5,
+        "evidence_chars": 4382,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "17.3%",
+          "214次",
+          "37次",
+          "3年"
+        ]
+      },
+      {
+        "qid": "q-058",
+        "status": "answer",
+        "conclusion": "防爆区域划分为1区和2区，1区共9个单元，2区共47个单元。",
+        "injected": 5,
+        "evidence_chars": 4802,
+        "n_citations": 2,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "47个",
+          "8小时",
+          "9个"
+        ]
+      },
+      {
+        "qid": "q-071",
+        "status": "answer",
+        "conclusion": "装置优化平台不能写入SIS安全仪表系统的输出回路。",
+        "injected": 5,
+        "evidence_chars": 5454,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": false,
+        "keys": [
+          "0007",
+          "2.0",
+          "500毫秒",
+          "61511",
+          "8000个"
+        ]
+      },
+      {
+        "qid": "q-072",
+        "status": "escalate",
+        "conclusion": "",
+        "injected": 5,
+        "evidence_chars": 4981,
+        "n_citations": 0,
+        "cited_in_gold": false,
+        "key_hit": false,
+        "keys": [
+          "47个",
+          "8小时",
+          "9个"
+        ]
+      },
+      {
+        "qid": "q-073",
+        "status": "answer",
+        "conclusion": "客户灾备架构为两地三中心，同城两个中心以双活数据中心方式承载核心业务，异地中心以异步热备方式承载关键业务；接口按控制面与数据面分离设计，控制面接口负责切换指令下发与状态查询，数据面接口仅用于同步链路健康度上报；控制面与数据面分属不同网络区域，跨区访问须经过正反向隔离策略允许的两条专用通道，其余端口一律关闭。",
+        "injected": 5,
+        "evidence_chars": 5009,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "客户灾备架构为两地三中心"
+        ]
+      },
+      {
+        "qid": "q-074",
+        "status": "answer",
+        "conclusion": "银企直联通道改造；清算规则引擎替换；两地三中心灾备链路验证",
+        "injected": 5,
+        "evidence_chars": 5600,
+        "n_citations": 1,
+        "cited_in_gold": false,
+        "key_hit": false,
+        "keys": [
+          "11",
+          "12家",
+          "176家",
+          "2024年",
+          "231个",
+          "240个"
+        ]
+      },
+      {
+        "qid": "q-075",
+        "status": "answer",
+        "conclusion": "实测全量恢复时长为 42 分钟、含校核的端到端恢复时长为 71 分钟",
+        "injected": 5,
+        "evidence_chars": 4144,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "15分钟",
+          "1年",
+          "20个",
+          "30天",
+          "42分钟",
+          "71分钟"
+        ]
+      },
+      {
+        "qid": "q-076",
+        "status": "answer",
+        "conclusion": "现状诊断阶段完成 8.4 万个台区的线损分布画像；成效固化阶段交付指标维持机制与责任矩阵",
+        "injected": 5,
+        "evidence_chars": 4862,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "2个",
+          "3个月",
+          "4210条",
+          "8.4万"
+        ]
+      },
+      {
+        "qid": "q-077",
+        "status": "answer",
+        "conclusion": "金融线 P1 判定含资金差错外溢；P1 级故障须在 15 分钟内启动应急响应，并同时按 ITIL P1 流程成立事件指挥组",
+        "injected": 5,
+        "evidence_chars": 4861,
+        "n_citations": 2,
+        "cited_in_gold": false,
+        "key_hit": true,
+        "keys": [
+          "15分钟",
+          "1个",
+          "4小时"
+        ]
+      },
+      {
+        "qid": "q-078",
+        "status": "answer",
+        "conclusion": "P1 为 SCADA 主站功能失效或 30 座以上厂站失联；须在 15 分钟内启动应急响应并同步报告客户调度部门",
+        "injected": 5,
+        "evidence_chars": 4861,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "10",
+          "15分钟",
+          "1个",
+          "2小时",
+          "30",
+          "30分钟"
+        ]
+      },
+      {
+        "qid": "q-079",
+        "status": "answer",
+        "conclusion": "防爆区域划分依据GB 50058-2014的分区原则，以释放源位置与通风条件为依据。；边界密封核查共完成386处，发现21处不合规并全部整改。",
+        "injected": 5,
+        "evidence_chars": 4802,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "2014",
+          "21",
+          "22个",
+          "386",
+          "47个",
+          "50058"
+        ]
+      },
+      {
+        "qid": "q-080",
+        "status": "answer",
+        "conclusion": "优化平台不能改变SIS安全仪表系统的整定值",
+        "injected": 5,
+        "evidence_chars": 5473,
+        "n_citations": 2,
+        "cited_in_gold": false,
+        "key_hit": false,
+        "keys": [
+          "1.4",
+          "12",
+          "176个",
+          "2024年",
+          "28"
+        ]
+      }
+    ],
+    "P_parent_trim": [
+      {
+        "qid": "q-001",
+        "status": "answer",
+        "conclusion": "银企直联实时清算方案 V3.2 的灾备切换目标按 RTO 小于 15 分钟、RPO 等于 0 设定。",
+        "injected": 1,
+        "evidence_chars": 1205,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "15分钟",
+          "3.2",
+          "30",
+          "53分钟",
+          "99.99%"
+        ]
+      },
+      {
+        "qid": "q-002",
+        "status": "answer",
+        "conclusion": "头寸管理模块上线后，法人账户日间头寸预测偏差绝对值收敛至1.2%",
+        "injected": 2,
+        "evidence_chars": 1749,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "05分",
+          "1.2%",
+          "15",
+          "16",
+          "2.4亿元",
+          "2100万元"
+        ]
+      },
+      {
+        "qid": "q-003",
+        "status": "escalate",
+        "conclusion": "",
+        "injected": 4,
+        "evidence_chars": 2689,
+        "n_citations": 0,
+        "cited_in_gold": false,
+        "key_hit": false,
+        "keys": [
+          "1.8%",
+          "150%",
+          "182%",
+          "196%",
+          "214万",
+          "21个"
+        ]
+      },
+      {
+        "qid": "q-004",
+        "status": "answer",
+        "conclusion": "信贷资产风险分类结果按五级类别落库，即正常、关注、次级、可疑与损失。",
+        "injected": 4,
+        "evidence_chars": 2461,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": false,
+        "keys": [
+          "方案采用规则引擎加模型评"
+        ]
+      },
+      {
+        "qid": "q-005",
+        "status": "answer",
+        "conclusion": "人行支付报文共改造报文字段映射 214 项",
+        "injected": 2,
+        "evidence_chars": 1794,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "119项",
+          "214项",
+          "38项",
+          "57项",
+          "58200条",
+          "6周"
+        ]
+      },
+      {
+        "qid": "q-006",
+        "status": "answer",
+        "conclusion": "双活数据中心同城链路正常水位不超过800毫秒",
+        "injected": 2,
+        "evidence_chars": 1815,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "0028",
+          "10秒",
+          "2000毫秒",
+          "3个",
+          "5000毫秒",
+          "800毫秒"
+        ]
+      },
+      {
+        "qid": "q-007",
+        "status": "answer",
+        "conclusion": "客户现有一阶段引擎在反洗钱可疑交易监测上的误报率长期高于 92%",
+        "injected": 4,
+        "evidence_chars": 2497,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": false,
+        "keys": [
+          "1860万",
+          "24小时",
+          "2680万",
+          "5个",
+          "70%",
+          "74人"
+        ]
+      },
+      {
+        "qid": "q-008",
+        "status": "answer",
+        "conclusion": "15分钟内启动应急响应",
+        "injected": 4,
+        "evidence_chars": 2756,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "15分钟",
+          "1个",
+          "4小时"
+        ]
+      },
+      {
+        "qid": "q-009",
+        "status": "answer",
+        "conclusion": "2秒",
+        "injected": 2,
+        "evidence_chars": 1704,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "10分钟",
+          "24小时",
+          "2秒",
+          "30秒",
+          "3秒",
+          "95%"
+        ]
+      },
+      {
+        "qid": "q-010",
+        "status": "answer",
+        "conclusion": "配电自动化终端的遥测数据上送覆盖三相电流、三相电压、有功与无功功率及功率因数共14个测点",
+        "injected": 2,
+        "evidence_chars": 1877,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "0021",
+          "14个",
+          "16385",
+          "18000",
+          "2%",
+          "3个"
+        ]
+      },
+      {
+        "qid": "q-011",
+        "status": "answer",
+        "conclusion": "用电信息采集成功率由治理前的 91.6% 提升至 99.3%。",
+        "injected": 4,
+        "evidence_chars": 2779,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "5个",
+          "63.8%",
+          "74条",
+          "91.6%",
+          "98.5%",
+          "99.3%"
+        ]
+      },
+      {
+        "qid": "q-012",
+        "status": "escalate",
+        "conclusion": "",
+        "injected": 4,
+        "evidence_chars": 2514,
+        "n_citations": 0,
+        "cited_in_gold": false,
+        "key_hit": false,
+        "keys": [
+          "104",
+          "17",
+          "386项",
+          "4.6万",
+          "60870"
+        ]
+      },
+      {
+        "qid": "q-013",
+        "status": "answer",
+        "conclusion": "SIS 安全仪表系统采用 1oo2 加冗余通道的表决逻辑",
+        "injected": 4,
+        "evidence_chars": 2514,
+        "n_citations": 1,
+        "cited_in_gold": false,
+        "key_hit": false,
+        "keys": [
+          "12个",
+          "17项",
+          "3项",
+          "41项",
+          "5%"
+        ]
+      },
+      {
+        "qid": "q-014",
+        "status": "answer",
+        "conclusion": "涉及 DCS 联锁逻辑的点位一律设为只读",
+        "injected": 3,
+        "evidence_chars": 2036,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": false,
+        "keys": [
+          "0007",
+          "12个",
+          "17项",
+          "2.0",
+          "3项",
+          "41项"
+        ]
+      },
+      {
+        "qid": "q-015",
+        "status": "answer",
+        "conclusion": "结项文档连同验收原始记录须完整归档并保留3年",
+        "injected": 5,
+        "evidence_chars": 3221,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": false,
+        "keys": [
+          "032",
+          "1.7万",
+          "11次",
+          "12",
+          "20",
+          "2项"
+        ]
+      },
+      {
+        "qid": "q-016",
+        "status": "answer",
+        "conclusion": "出自GB/T 22239-2019第8.1.4条",
+        "injected": 2,
+        "evidence_chars": 1852,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "15分钟",
+          "1年",
+          "2019",
+          "22239",
+          "30分钟",
+          "3个"
+        ]
+      },
+      {
+        "qid": "q-017",
+        "status": "answer",
+        "conclusion": "SLA-A1对应的服务级别协议覆盖工作日8:00至20:00的一阶段支持与7×24小时的P1级响应。",
+        "injected": 2,
+        "evidence_chars": 2319,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "00",
+          "017",
+          "12个月",
+          "1402条",
+          "1468条",
+          "20"
+        ]
+      },
+      {
+        "qid": "q-018",
+        "status": "answer",
+        "conclusion": "单笔汇款金额上限为 500 万元",
+        "injected": 1,
+        "evidence_chars": 1016,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "0012",
+          "2秒",
+          "31项",
+          "500万元",
+          "7个"
+        ]
+      },
+      {
+        "qid": "q-019",
+        "status": "answer",
+        "conclusion": "单次响应报文体积不得超过 2 MB",
+        "injected": 1,
+        "evidence_chars": 977,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": false,
+        "keys": [
+          "0013",
+          "1.4个",
+          "2024年",
+          "2个",
+          "312",
+          "5分钟"
+        ]
+      },
+      {
+        "qid": "q-020",
+        "status": "answer",
+        "conclusion": "信息体地址段从16385开始",
+        "injected": 2,
+        "evidence_chars": 1774,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "0021",
+          "14个",
+          "16385",
+          "18000",
+          "2%",
+          "3个"
+        ]
+      },
+      {
+        "qid": "q-021",
+        "status": "answer",
+        "conclusion": "心跳试验帧机制叫 TESTFH；链路中断等效判定超时为 60 秒",
+        "injected": 3,
+        "evidence_chars": 1938,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": false,
+        "keys": [
+          "104",
+          "10分钟",
+          "20秒",
+          "2次",
+          "300秒",
+          "4096"
+        ]
+      },
+      {
+        "qid": "q-022",
+        "status": "answer",
+        "conclusion": "表计通信规约遵循 DL/T 645-2007 多功能电能表通信协议，地址采用 12 位表号。",
+        "injected": 2,
+        "evidence_chars": 1690,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "0047",
+          "118",
+          "12",
+          "15分钟",
+          "2007",
+          "24"
+        ]
+      },
+      {
+        "qid": "q-023",
+        "status": "answer",
+        "conclusion": "订阅点位规模上限为8000个",
+        "injected": 2,
+        "evidence_chars": 1734,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "0007",
+          "2.0",
+          "500毫秒",
+          "8000个"
+        ]
+      },
+      {
+        "qid": "q-024",
+        "status": "answer",
+        "conclusion": "IF-CHM-0011 提供历史点位与操作事件的回溯查询，单次返回时间序列点数上限 86400 点。",
+        "injected": 2,
+        "evidence_chars": 1696,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "0011",
+          "10分钟",
+          "180天",
+          "1分钟",
+          "2年",
+          "4秒"
+        ]
+      },
+      {
+        "qid": "q-025",
+        "status": "answer",
+        "conclusion": "GB 50058-2014",
+        "injected": 1,
+        "evidence_chars": 1040,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "2014",
+          "21",
+          "22个",
+          "386",
+          "47个",
+          "50058"
+        ]
+      },
+      {
+        "qid": "q-026",
+        "status": "answer",
+        "conclusion": "变更单 CR-CHM-2024-118 涉及气化单元一路模拟量量程调整，可能间接影响 DCS 联锁逻辑的判定输入，因此需要补做联锁功能验证。",
+        "injected": 4,
+        "evidence_chars": 2663,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "118",
+          "2024",
+          "2024年",
+          "24小时",
+          "27次",
+          "4小时"
+        ]
+      },
+      {
+        "qid": "q-027",
+        "status": "answer",
+        "conclusion": "日间清算高峰3200笔每秒持续60分钟无积压",
+        "injected": 3,
+        "evidence_chars": 1858,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "142毫秒",
+          "180毫秒",
+          "3.2",
+          "3200",
+          "3760",
+          "60分钟"
+        ]
+      },
+      {
+        "qid": "q-028",
+        "status": "escalate",
+        "conclusion": "",
+        "injected": 1,
+        "evidence_chars": 920,
+        "n_citations": 0,
+        "cited_in_gold": false,
+        "key_hit": false,
+        "keys": [
+          "15分钟",
+          "3.2",
+          "30",
+          "53分钟",
+          "99.99%"
+        ]
+      },
+      {
+        "qid": "q-029",
+        "status": "answer",
+        "conclusion": "同期线损率指标；采集数据完整率；台区档案一致率",
+        "injected": 1,
+        "evidence_chars": 1031,
+        "n_citations": 1,
+        "cited_in_gold": false,
+        "key_hit": false,
+        "keys": [
+          "006",
+          "2.1",
+          "2024"
+        ]
+      },
+      {
+        "qid": "q-030",
+        "status": "escalate",
+        "conclusion": "",
+        "injected": 1,
+        "evidence_chars": 1037,
+        "n_citations": 0,
+        "cited_in_gold": false,
+        "key_hit": false,
+        "keys": [
+          "1.4",
+          "12",
+          "176个",
+          "2024年",
+          "28"
+        ]
+      },
+      {
+        "qid": "q-031",
+        "status": "answer",
+        "conclusion": "优化措施为将重算拆分为增量分类与全量校准两类作业，增量作业每 15 分钟一次、全量校准作业每周一次，改造后增量作业 P95 时长稳定在 8 分 20 秒，达成 5 个工作日以内作业周期的验收目标。",
+        "injected": 3,
+        "evidence_chars": 1792,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "1.0",
+          "12台",
+          "15分钟",
+          "20秒",
+          "214万",
+          "3.8"
+        ]
+      },
+      {
+        "qid": "q-032",
+        "status": "answer",
+        "conclusion": "99.99%",
+        "injected": 4,
+        "evidence_chars": 3309,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": false,
+        "keys": [
+          "214",
+          "28台",
+          "2人",
+          "30分钟",
+          "4.0",
+          "6个"
+        ]
+      },
+      {
+        "qid": "q-033",
+        "status": "answer",
+        "conclusion": "配置与指标口径版本每日备份一次，备份保留 90 天在线、12 个月近线；口径版本变更须保留前后对照表，可支持任意历史时点按当期口径重算，归档调阅响应时限为 4 小时以内。",
+        "injected": 3,
+        "evidence_chars": 2211,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "00",
+          "11分钟",
+          "12个月",
+          "15分钟",
+          "1条",
+          "2.3"
+        ]
+      },
+      {
+        "qid": "q-034",
+        "status": "answer",
+        "conclusion": "312 项",
+        "injected": 2,
+        "evidence_chars": 1545,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "1.2",
+          "14天",
+          "168项",
+          "312项",
+          "48项",
+          "5年"
+        ]
+      },
+      {
+        "qid": "q-035",
+        "status": "answer",
+        "conclusion": "单批停车切换窗口不超过36小时",
+        "injected": 4,
+        "evidence_chars": 2683,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": false,
+        "keys": [
+          "021",
+          "1.1",
+          "12",
+          "2023",
+          "2023年",
+          "2024年"
+        ]
+      },
+      {
+        "qid": "q-036",
+        "status": "answer",
+        "conclusion": "批生产记录电子化覆盖率不低于 95%",
+        "injected": 4,
+        "evidence_chars": 2631,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "1.0",
+          "2天",
+          "95%",
+          "99%"
+        ]
+      },
+      {
+        "qid": "q-037",
+        "status": "answer",
+        "conclusion": "非计划应急切换须双人确认，两名确认人员须分属运维岗与业务岗。",
+        "injected": 4,
+        "evidence_chars": 2678,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": false,
+        "keys": [
+          "0031",
+          "2.0",
+          "30秒",
+          "3年",
+          "48"
+        ]
+      },
+      {
+        "qid": "q-038",
+        "status": "answer",
+        "conclusion": "采用 OPC UA 订阅模式，最小发布间隔 500 毫秒",
+        "injected": 2,
+        "evidence_chars": 1734,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "0007",
+          "2.0",
+          "500毫秒",
+          "8000个"
+        ]
+      },
+      {
+        "qid": "q-039",
+        "status": "tentative",
+        "conclusion": "P1级故障须在15分钟内启动应急响应，并同时按ITIL P1流程成立事件指挥组",
+        "injected": 1,
+        "evidence_chars": 984,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "15分钟",
+          "1个",
+          "4小时"
+        ]
+      },
+      {
+        "qid": "q-040",
+        "status": "tentative",
+        "conclusion": "P1事件在处置完成后24小时内须提交初步报告、5个工作日内提交根因报告",
+        "injected": 5,
+        "evidence_chars": 3555,
+        "n_citations": 1,
+        "cited_in_gold": false,
+        "key_hit": false,
+        "keys": [
+          "1个",
+          "2小时",
+          "30分钟",
+          "3个",
+          "8小时"
+        ]
+      },
+      {
+        "qid": "q-041",
+        "status": "tentative",
+        "conclusion": "链路心跳超时判定参数为发送间隔5秒、连续丢失3次判定为链路中断，即15秒判定超时",
+        "injected": 3,
+        "evidence_chars": 1699,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "15秒",
+          "180天",
+          "1年",
+          "30分钟",
+          "3个",
+          "3分钟"
+        ]
+      },
+      {
+        "qid": "q-042",
+        "status": "tentative",
+        "conclusion": "抄表同期性约束为全台区采集时间窗不超过 15 分钟",
+        "injected": 4,
+        "evidence_chars": 2660,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "15分钟",
+          "2300",
+          "95%",
+          "97.2%"
+        ]
+      },
+      {
+        "qid": "q-043",
+        "status": "tentative",
+        "conclusion": "验收过程中确实进行了联锁功能验证",
+        "injected": 3,
+        "evidence_chars": 1861,
+        "n_citations": 1,
+        "cited_in_gold": false,
+        "key_hit": false,
+        "keys": [
+          "1284项",
+          "214项",
+          "2项",
+          "30次",
+          "92.3%",
+          "96项"
+        ]
+      },
+      {
+        "qid": "q-044",
+        "status": "refuse",
+        "conclusion": "",
+        "injected": 0,
+        "evidence_chars": 0,
+        "n_citations": 0,
+        "cited_in_gold": false,
+        "key_hit": false,
+        "keys": [
+          "方案以记录模板引擎加电子"
+        ]
+      },
+      {
+        "qid": "q-045",
+        "status": "tentative",
+        "conclusion": "单次摘除有效期不超过24小时，同一回路30日内累计摘除时长不得超过72小时，超出即触发装置运行条件复审。",
+        "injected": 3,
+        "evidence_chars": 1833,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "118",
+          "2024",
+          "2024年",
+          "24小时",
+          "27次",
+          "30"
+        ]
+      },
+      {
+        "qid": "q-046",
+        "status": "tentative",
+        "conclusion": "采集网关须在断电后5分钟内以本地缓存方式续录，缓存容量支持4小时连续记录；供电恢复后自动补传并按发生时间重排。",
+        "injected": 5,
+        "evidence_chars": 3242,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "10分钟",
+          "2025年",
+          "20秒",
+          "2次",
+          "44次",
+          "4小时"
+        ]
+      },
+      {
+        "qid": "q-047",
+        "status": "refuse",
+        "conclusion": "",
+        "injected": 0,
+        "evidence_chars": 0,
+        "n_citations": 0,
+        "cited_in_gold": false,
+        "key_hit": false,
+        "keys": [
+          "0028",
+          "10秒",
+          "2000毫秒",
+          "3个",
+          "5000毫秒",
+          "800毫秒"
+        ]
+      },
+      {
+        "qid": "q-048",
+        "status": "tentative",
+        "conclusion": "客户当前拨备覆盖率稳定在 182% 至 196% 区间",
+        "injected": 4,
+        "evidence_chars": 2528,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "1.8%",
+          "150%",
+          "182%",
+          "196%",
+          "214万",
+          "21个"
+        ]
+      },
+      {
+        "qid": "q-049",
+        "status": "tentative",
+        "conclusion": "接口IF-FIN-0012使用业务日期加企业流水号双字段联合判重。",
+        "injected": 4,
+        "evidence_chars": 2557,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "0012",
+          "2秒",
+          "31项",
+          "500万元",
+          "7个"
+        ]
+      },
+      {
+        "qid": "q-050",
+        "status": "tentative",
+        "conclusion": "同一回路连续3条建议被操作员拒绝后，平台须暂停该回路建议30分钟并回传拒绝原因供模型侧分析。",
+        "injected": 5,
+        "evidence_chars": 3644,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "0009",
+          "120秒",
+          "30分钟",
+          "3条",
+          "4001",
+          "60秒"
+        ]
+      },
+      {
+        "qid": "q-051",
+        "status": "refuse",
+        "conclusion": "",
+        "injected": 0,
+        "evidence_chars": 0,
+        "n_citations": 0,
+        "cited_in_gold": false,
+        "key_hit": false,
+        "keys": [
+          "0047",
+          "118",
+          "12",
+          "15分钟",
+          "2007",
+          "24"
+        ]
+      },
+      {
+        "qid": "q-052",
+        "status": "refuse",
+        "conclusion": "",
+        "injected": 0,
+        "evidence_chars": 0,
+        "n_citations": 0,
+        "cited_in_gold": false,
+        "key_hit": false,
+        "keys": [
+          "10个",
+          "7次",
+          "9个"
+        ]
+      },
+      {
+        "qid": "q-053",
+        "status": "answer",
+        "conclusion": "切换演练年度计划为 4 次，其中至少 1 次为非计划场景的盲演、至少 1 次覆盖异地中心启动；每次演练须输出时长明细表、异常清单与改进项，改进项在下次演练前完成验证，未验证项不得关闭。验收以两地三中心架构下连续两次成功演练为必要条件，且两次演练之间不得存在未闭环的高级缺陷。",
+        "injected": 3,
+        "evidence_chars": 2430,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "1次",
+          "2024年",
+          "4次",
+          "6个月"
+        ]
+      },
+      {
+        "qid": "q-054",
+        "status": "answer",
+        "conclusion": "现状诊断；方案定型；试点验证；规模推广；成效固化",
+        "injected": 5,
+        "evidence_chars": 3044,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": false,
+        "keys": [
+          "10周",
+          "17",
+          "1826条",
+          "19万",
+          "1条",
+          "23"
+        ]
+      },
+      {
+        "qid": "q-055",
+        "status": "answer",
+        "conclusion": "化工线 P1 判定含联锁动作与人员暴露风险",
+        "injected": 3,
+        "evidence_chars": 1606,
+        "n_citations": 1,
+        "cited_in_gold": false,
+        "key_hit": false,
+        "keys": [
+          "1个",
+          "2小时",
+          "30分钟",
+          "3个",
+          "8小时"
+        ]
+      },
+      {
+        "qid": "q-056",
+        "status": "answer",
+        "conclusion": "本项目登记了需求管理、项目计划、配置管理与决策分析四个过程域的度量项。",
+        "injected": 5,
+        "evidence_chars": 2938,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": false,
+        "keys": [
+          "1187条",
+          "12个",
+          "1340条",
+          "1826条",
+          "214条",
+          "55%"
+        ]
+      },
+      {
+        "qid": "q-057",
+        "status": "answer",
+        "conclusion": "环境隔离；出口管控；内容识别；审计追溯",
+        "injected": 5,
+        "evidence_chars": 3061,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": false,
+        "keys": [
+          "17.3%",
+          "214次",
+          "37次",
+          "3年"
+        ]
+      },
+      {
+        "qid": "q-058",
+        "status": "answer",
+        "conclusion": "防爆区域划分为2区与1区两类主要区域，2区共47个单元、1区共9个单元。",
+        "injected": 2,
+        "evidence_chars": 1236,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "47个",
+          "8小时",
+          "9个"
+        ]
+      },
+      {
+        "qid": "q-071",
+        "status": "answer",
+        "conclusion": "SIS安全仪表系统的输出回路不得由优化类应用写入",
+        "injected": 5,
+        "evidence_chars": 3815,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": false,
+        "keys": [
+          "0007",
+          "2.0",
+          "500毫秒",
+          "61511",
+          "8000个"
+        ]
+      },
+      {
+        "qid": "q-072",
+        "status": "answer",
+        "conclusion": "进入1区作业须办理受限空间与动火两项作业票",
+        "injected": 3,
+        "evidence_chars": 1820,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": false,
+        "keys": [
+          "47个",
+          "8小时",
+          "9个"
+        ]
+      },
+      {
+        "qid": "q-073",
+        "status": "answer",
+        "conclusion": "客户灾备架构为两地三中心，同城两个中心以双活数据中心方式承载核心业务，异地中心以异步热备方式承载关键业务；控制面接口负责切换指令下发与状态查询，数据面接口仅用于同步链路健康度上报；控制面与数据面分属不同网络区域，跨区访问须经过正反向隔离策略允许的两条专用通道，其余端口一律关闭。",
+        "injected": 1,
+        "evidence_chars": 813,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "客户灾备架构为两地三中心"
+        ]
+      },
+      {
+        "qid": "q-074",
+        "status": "answer",
+        "conclusion": "银企直联通道改造；清算规则引擎替换；两地三中心灾备链路验证",
+        "injected": 3,
+        "evidence_chars": 1889,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": false,
+        "keys": [
+          "11",
+          "12家",
+          "176家",
+          "2024年",
+          "231个",
+          "240个"
+        ]
+      },
+      {
+        "qid": "q-075",
+        "status": "answer",
+        "conclusion": "全量恢复时长为42分钟、含校核的端到端恢复时长为71分钟",
+        "injected": 2,
+        "evidence_chars": 1965,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "15分钟",
+          "1年",
+          "20个",
+          "30天",
+          "42分钟",
+          "71分钟"
+        ]
+      },
+      {
+        "qid": "q-076",
+        "status": "answer",
+        "conclusion": "现状诊断阶段完成8.4万个台区的线损分布画像；成效固化阶段交付指标维持机制与责任矩阵",
+        "injected": 4,
+        "evidence_chars": 2240,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "2个",
+          "3个月",
+          "4210条",
+          "8.4万"
+        ]
+      },
+      {
+        "qid": "q-077",
+        "status": "answer",
+        "conclusion": "金融线 P1 判定含资金差错外溢；P1 事件须在 15 分钟内启动应急响应",
+        "injected": 3,
+        "evidence_chars": 1606,
+        "n_citations": 1,
+        "cited_in_gold": false,
+        "key_hit": true,
+        "keys": [
+          "15分钟",
+          "1个",
+          "4小时"
+        ]
+      },
+      {
+        "qid": "q-078",
+        "status": "answer",
+        "conclusion": "P1 为 SCADA 主站功能失效或 30 座以上厂站失联",
+        "injected": 3,
+        "evidence_chars": 1770,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "10",
+          "15分钟",
+          "1个",
+          "2小时",
+          "30",
+          "30分钟"
+        ]
+      },
+      {
+        "qid": "q-079",
+        "status": "answer",
+        "conclusion": "防爆区域划分依据GB 50058-2014标准；边界密封核查方法为检查边界密封核查点，发现不合规项并整改",
+        "injected": 2,
+        "evidence_chars": 1030,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": true,
+        "keys": [
+          "2014",
+          "21",
+          "22个",
+          "386",
+          "47个",
+          "50058"
+        ]
+      },
+      {
+        "qid": "q-080",
+        "status": "answer",
+        "conclusion": "优化平台不得改变 SIS 安全仪表系统的整定值",
+        "injected": 4,
+        "evidence_chars": 3000,
+        "n_citations": 1,
+        "cited_in_gold": true,
+        "key_hit": false,
+        "keys": [
+          "1.4",
+          "12",
+          "176个",
+          "2024年",
+          "28"
+        ]
+      }
+    ]
+  },
+  "elapsed_sec": 1213.7,
+  "production_untouched": {
+    "before": {
+      "milvus_chunks": 193,
+      "pg_documents": 24,
+      "pg_child_chunks": 193
+    },
+    "after": {
+      "milvus_chunks": 193,
+      "pg_documents": 24,
+      "pg_child_chunks": 193
+    },
+    "same": true
+  }
+}

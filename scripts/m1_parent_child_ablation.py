@@ -143,11 +143,11 @@ class CountingLlm:
         if not self.calls:
             return {"calls": 0}
         p = [c["prompt_tokens"] for c in self.calls]
-        return {"calls": len(self.calls), "prompt_tokens_p50": percentile(p, 0.5),
+        return {"calls": len(self.calls), "prompt_tokens_p50": percentile(p, 50),
                 "prompt_tokens_max": max(p), "prompt_tokens_sum": sum(p),
                 "completion_tokens_sum": sum(c["completion_tokens"] for c in self.calls),
                 "truncated": sum(1 for c in self.calls if c["done_reason"] == "length"),
-                "ms_p50": round(percentile([c["total_ms"] for c in self.calls], 0.5), 1)}
+                "ms_p50": round(percentile([c["total_ms"] for c in self.calls], 50), 1)}
 
 
 class ReplayRetriever:
@@ -172,12 +172,12 @@ def row_metrics(results: list[dict[str, Any]], gold: dict[str, set]) -> dict[str
         "status_dist": {k: sum(1 for r in results if r["status"] == k)
                         for k in ("answer", "tentative", "refuse", "escalate")},
         "completion_rate": round(len(with_conc) / len(results), 4),
-        "conclusion_chars_p50": percentile([len(r["conclusion"] or "") for r in results], 0.5),
-        "n_citations_p50": percentile([len(r["citations"]) for r in results], 0.5),
+        "conclusion_chars_p50": percentile([len(r["conclusion"] or "") for r in results], 50),
+        "n_citations_p50": percentile([len(r["citations"]) for r in results], 50),
         "row_gold_rate": round(hit_gold / len(graded), 4) if graded else None,
         "row_gold": f"{hit_gold}/{len(graded)}" if graded else "不适用",
-        "composite_p50": percentile([r["confidence"].get("composite", 0.0) for r in answered], 0.5) if answered else None,
-        "top_score_p50": percentile([r["confidence"].get("retrieval", 0.0) for r in results], 0.5),
+        "composite_p50": percentile([r["confidence"].get("composite", 0.0) for r in answered], 50) if answered else None,
+        "top_score_p50": percentile([r["confidence"].get("retrieval", 0.0) for r in results], 50),
     }
 
 
@@ -259,6 +259,7 @@ def main() -> int:
               build_eval_set(AuthoritativeStore(), write_files=False)["questions"]}
         rep["paired_gold"] = paired_gold_view(rep["rows"], st)
         rep["caveats"] = CAVEATS  # 口径说明随当前代码刷新，读数一律沿用产物里的原值
+        recompute_medians(rep)
         rep["re_rendered_at"] = datetime.now().isoformat(timespec="seconds")
         Path(args.render_only).write_text(json.dumps(rep, ensure_ascii=False, indent=2), encoding="utf-8")
         src = Path(args.render_only).resolve()
@@ -520,6 +521,44 @@ def main() -> int:
     return 0 if all_pass else 3
 
 
+def recompute_medians(rep: dict[str, Any]) -> None:
+    """把被 `percentile(v, 0.5)` 误标成 p50 的四列按 0–100 口径**就地重算**——逐行数据都在产物里，
+    不需要重跑 GPU。prompt 那列例外：产物只存了聚合值，真中位数**不可恢复**，
+    所以如实改用均值（sum/calls，这是精确值）并把列名一起改，**不**把均值冒充中位数。
+    """
+    for arm, rows in rep["rows"].items():
+        m = rep["metrics_by_arm"][arm]
+        ans = [r for r in rows if r["status"] in ("answer", "tentative")]
+        m["conclusion_chars_p50"] = percentile([len(r["conclusion"] or "") for r in rows], 50)
+        m["n_citations_p50"] = percentile([len(r["citations"]) for r in rows], 50)
+        m["composite_p50"] = (percentile([r["confidence"].get("composite", 0.0) for r in ans], 50)
+                              if ans else None)
+        m["top_score_p50"] = percentile([r["confidence"].get("retrieval", 0.0) for r in rows], 50)
+    for arm, c in rep["cost_by_arm"].items():
+        c["prompt_tokens_mean"] = (round(c["prompt_tokens_sum"] / c["calls"], 1)
+                                   if c.get("calls") and c.get("prompt_tokens_sum") is not None else None)
+        c["prompt_tokens_p50"] = None
+    base_m = rep["metrics_by_arm"]["A0_child"]
+    base_mean = rep["cost_by_arm"]["A0_child"].get("prompt_tokens_mean")
+    for arm, x in rep.get("deltas_vs_A0", {}).items():
+        m = rep["metrics_by_arm"][arm]
+        for k in ("conclusion_chars_p50", "composite_p50"):
+            if isinstance(m.get(k), (int, float)) and isinstance(base_m.get(k), (int, float)):
+                x[k] = round(m[k] - base_m[k], 4)
+        cm = rep["cost_by_arm"][arm].get("prompt_tokens_mean")
+        x["prompt_tokens_p50_vs_A0"] = (round(cm - base_mean, 1)
+                                        if cm is not None and base_mean is not None else None)
+        x["prompt_tokens_mean_vs_A0"] = x["prompt_tokens_p50_vs_A0"]
+        v = rep.get("verdict_vs_floor", {}).get(arm)
+        if v is not None:
+            v["prompt_tokens_p50_vs_A0"] = x["prompt_tokens_p50_vs_A0"]
+    rep["percentile_recompute"] = {
+        "at": datetime.now().isoformat(timespec="seconds"),
+        "why": ("原产物把 `percentile(v, 0.5)` 的结果标成 p50 印出来——那是 0.5 分位≈近最小值。"
+                "四列中位数已按逐行数据重算；prompt 的中位数不可从聚合产物恢复，改用均值并改名。"),
+    }
+
+
 def conclusion_lines(rep: dict[str, Any]) -> list[str]:
     """结论由读数派生，不手写——手写段落在下一次重跑会被 render 冲掉。"""
     if rep.get("void"):
@@ -552,14 +591,14 @@ def conclusion_lines(rep: dict[str, Any]) -> list[str]:
     out.append(f"- **把没接的那一半接上（A1 = 子块 + 其父块整章节）**：可完成率 Δ {d1['completion_rate']:+.4f}"
                f"（地板 {nf['completion_rate']}）、同分母落 gold 净 {a1.get('net_rows', 0):+d} 行"
                f"（涨 {len(a1.get('gained_qids', []))} / 跌 {len(a1.get('lost_qids', []))}）、"
-               f"代价是 prompt p50 {d1['prompt_tokens_p50_vs_A0']:+.0f} tok 且 escalate "
+               f"代价是 prompt 均值 {d1['prompt_tokens_p50_vs_A0']:+.0f} tok 且 escalate "
                f"{m['A0_child']['status_dist']['escalate']} → {m['A1_parent']['status_dist']['escalate']} 行"
                " ⇒ **读数支持不接**。要不要据此改需求原文（《需求文档》US-1.2 验收写的就是「父块补上下文」），"
                "列在待定清单 **C6** 待裁；本轮只把「已实现」口径的表述改成实情。")
     d2 = rep["deltas_vs_A0"]["A2_noheading"]
     out.append(f"- **现状唯一生效的那一半（A2 = 删掉子块开头的 `章节标题｜` 前缀）**：可完成率 Δ {d2['completion_rate']:+.4f}"
                f"（在地板内）、同分母落 gold 净 {a2.get('net_rows', 0):+d} 行、"
-               f"prompt p50 {d2['prompt_tokens_p50_vs_A0']:+.0f} tok"
+               f"prompt 均值 {d2['prompt_tokens_p50_vs_A0']:+.0f} tok"
                " ⇒ 删掉它没有任何可测后果。这点头补全在本语料上**无可测贡献**；它是零成本的所以保留，"
                "但文档不能再把它描述成「父块补全上下文已生效」。")
     d1b = rep["deltas_vs_A0"]["A1b_wrongparent"]
@@ -598,13 +637,13 @@ def render(rep: dict[str, Any]) -> str:
     L.append("")
     L.append("## 二、四档读数")
     L.append("")
-    L.append("| 档 | 含义 | 可完成率 | 行级引用落 gold | 结论字数 p50 | 复合分 p50 | 裁判成立率 | prompt p50/max tok |")
+    L.append("| 档 | 含义 | 可完成率 | 行级引用落 gold | 结论字数 p50 | 复合分 p50 | 裁判成立率 | prompt 均值/max tok |")
     L.append("|---|---|---|---|---|---|---|---|")
     for arm in ("A0_child", "A1_parent", "A2_noheading", "A1b_wrongparent"):
         L.append(f"| {arm} | {rep['arms'][arm]} | {m[arm]['completion_rate']} | {m[arm]['row_gold']}"
                  f"（{m[arm]['row_gold_rate']}） | {m[arm]['conclusion_chars_p50']} | {m[arm]['composite_p50']} | "
                  f"**{j[arm]['supported_rate']}**（{j[arm]['reading']}，判不出 {j[arm]['n_unjudgeable']}） | "
-                 f"{c[arm]['prompt_tokens_p50']} / {c[arm]['prompt_tokens_max']} |")
+                 f"{c[arm].get('prompt_tokens_mean') or c[arm].get('prompt_tokens_p50')} / {c[arm]['prompt_tokens_max']} |")
     L.append("")
     L.append("## 三、相对 A0 的差值（必须先和噪声地板比）")
     L.append("")
@@ -614,12 +653,12 @@ def render(rep: dict[str, Any]) -> str:
              f"引用落 gold 翻转 {f['gold_hit_flip']}、裁判 label 翻转 {f['judge_label_flip']}。"
              "**小于这个地板的跨档差一律写「测不出差别」。**")
     L.append("")
-    L.append("| 档 | 可完成率 Δ | 引用落 gold Δ | 复合分 Δ | 结论字数 Δ | 裁判成立率 Δ | prompt Δ |")
+    L.append("| 档 | 可完成率 Δ | 引用落 gold Δ | 复合分 Δ | 结论字数 Δ | 裁判成立率 Δ | prompt 均值 Δ |")
     L.append("|---|---|---|---|---|---|---|")
     for arm in ("A1_parent", "A2_noheading", "A1b_wrongparent"):
         x = d[arm]
         L.append(f"| {arm} | {x['completion_rate']} | {x['row_gold_rate']} | {x['composite_p50']} | "
-                 f"{x['conclusion_chars_p50']} | {x['supported_rate_vs_A0']} | {x['prompt_tokens_p50_vs_A0']:+} tok |")
+                 f"{x['conclusion_chars_p50']} | {x['supported_rate_vs_A0']} | {x['prompt_tokens_p50_vs_A0']:+} tok(均值) |")
     L.append("")
     L.append("### 判读（Δ 对各自地板，机械判定，不靠手写措辞）")
     L.append("")
@@ -629,7 +668,7 @@ def render(rep: dict[str, Any]) -> str:
     for arm in ("A1_parent", "A2_noheading", "A1b_wrongparent"):
         v = rep["verdict_vs_floor"][arm]
         L.append(f"- **{arm}**：可完成率 {v['completion_rate']}；引用落 gold {v['row_gold_rate']}；"
-                 f"裁判成立率 {v['supported_rate_vs_A0']}；提示成本 {v['prompt_tokens_p50_vs_A0']:+} tok p50")
+                 f"裁判成立率 {v['supported_rate_vs_A0']}；提示成本 {v['prompt_tokens_p50_vs_A0']:+} tok（均值）")
         pg = rep.get("paired_gold", {}).get("arms", {}).get(arm)
         if pg and pg["n_common"]:
             L.append(f"  - 同分母 {pg['n_common']} 行：A0 落 gold {pg['hits_base']} → 本档 {pg['hits_arm']}"
@@ -639,6 +678,9 @@ def render(rep: dict[str, Any]) -> str:
                      f"掉出判定 {pg['dropped_qids'] or '无'}、新进入 {pg['added_qids'] or '无'}；"
                      f"escalate 行数 A0 {m['A0_child']['status_dist']['escalate']} → 本档 "
                      f"{m[arm]['status_dist']['escalate']}")
+    if rep.get("percentile_recompute"):
+        L.append("")
+        L.append(f"> **口径更正**：{rep['percentile_recompute']['why']}")
     L.append("")
     L.append("## 四、护栏")
     L.append("")

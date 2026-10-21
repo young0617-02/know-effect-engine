@@ -120,12 +120,12 @@
         "escalate": 1
       },
       "completion_rate": 0.9254,
-      "conclusion_chars_p50": 0.0,
-      "n_citations_p50": 0.0,
+      "conclusion_chars_p50": 34.0,
+      "n_citations_p50": 1.0,
       "row_gold_rate": 0.9677,
       "row_gold": "60/62",
-      "composite_p50": 0.46279549999999997,
-      "top_score_p50": 0.042154000000000004
+      "composite_p50": 0.7923,
+      "top_score_p50": 0.98
     },
     "A1_parent": {
       "n": 67,
@@ -136,12 +136,12 @@
         "escalate": 3
       },
       "completion_rate": 0.8955,
-      "conclusion_chars_p50": 0.0,
-      "n_citations_p50": 0.0,
+      "conclusion_chars_p50": 31.0,
+      "n_citations_p50": 1.0,
       "row_gold_rate": 0.95,
       "row_gold": "57/60",
-      "composite_p50": 0.4626645,
-      "top_score_p50": 0.042154000000000004
+      "composite_p50": 0.7925,
+      "top_score_p50": 0.98
     },
     "A2_noheading": {
       "n": 67,
@@ -152,12 +152,12 @@
         "escalate": 2
       },
       "completion_rate": 0.9104,
-      "conclusion_chars_p50": 0.0,
-      "n_citations_p50": 0.0,
+      "conclusion_chars_p50": 28.0,
+      "n_citations_p50": 1.0,
       "row_gold_rate": 0.9836,
       "row_gold": "60/61",
-      "composite_p50": 0.46273,
-      "top_score_p50": 0.042154000000000004
+      "composite_p50": 0.7923,
+      "top_score_p50": 0.98
     },
     "A1b_wrongparent": {
       "n": 67,
@@ -168,12 +168,12 @@
         "escalate": 5
       },
       "completion_rate": 0.8657,
-      "conclusion_chars_p50": 0.0,
-      "n_citations_p50": 0.0,
+      "conclusion_chars_p50": 27.0,
+      "n_citations_p50": 1.0,
       "row_gold_rate": 0.9655,
       "row_gold": "56/58",
-      "composite_p50": 0.4625335,
-      "top_score_p50": 0.042154000000000004
+      "composite_p50": 0.7925,
+      "top_score_p50": 0.98
     }
   },
   "judge_by_arm": {
@@ -214,26 +214,29 @@
     "A1_parent": {
       "completion_rate": -0.0299,
       "row_gold_rate": -0.0177,
-      "composite_p50": -0.0001,
-      "conclusion_chars_p50": 0.0,
+      "composite_p50": 0.0002,
+      "conclusion_chars_p50": -3.0,
       "supported_rate_vs_A0": -0.0469,
-      "prompt_tokens_p50_vs_A0": 1055.7
+      "prompt_tokens_p50_vs_A0": 1219.6,
+      "prompt_tokens_mean_vs_A0": 1219.6
     },
     "A2_noheading": {
       "completion_rate": -0.015,
       "row_gold_rate": 0.0159,
-      "composite_p50": -0.0001,
-      "conclusion_chars_p50": 0.0,
+      "composite_p50": 0.0,
+      "conclusion_chars_p50": -6.0,
       "supported_rate_vs_A0": 0.0,
-      "prompt_tokens_p50_vs_A0": -39.6
+      "prompt_tokens_p50_vs_A0": -40.8,
+      "prompt_tokens_mean_vs_A0": -40.8
     },
     "A1b_wrongparent": {
       "completion_rate": -0.0597,
       "row_gold_rate": -0.0022,
-      "composite_p50": -0.0003,
-      "conclusion_chars_p50": 0.0,
+      "composite_p50": 0.0002,
+      "conclusion_chars_p50": -7.0,
       "supported_rate_vs_A0": 0.0156,
-      "prompt_tokens_p50_vs_A0": 1027.4
+      "prompt_tokens_p50_vs_A0": 1107.1,
+      "prompt_tokens_mean_vs_A0": 1107.1
     }
   },
   "noise_comparison": {
@@ -246,57 +249,61 @@
       "completion_rate": "Δ -0.0299 vs 地板 0.0299 ⇒ 落在同档抖动内，**测不出差别**",
       "row_gold_rate": "Δ -0.0177 vs 地板 0.0000 ⇒ **有效差**",
       "supported_rate_vs_A0": "Δ -0.0469 vs 地板 0.0000 ⇒ **有效差**",
-      "prompt_tokens_p50_vs_A0": 1055.7
+      "prompt_tokens_p50_vs_A0": 1219.6
     },
     "A2_noheading": {
       "completion_rate": "Δ -0.0150 vs 地板 0.0299 ⇒ 落在同档抖动内，**测不出差别**",
       "row_gold_rate": "Δ +0.0159 vs 地板 0.0000 ⇒ **有效差**",
       "supported_rate_vs_A0": "Δ +0.0000 vs 地板 0.0000 ⇒ 落在同档抖动内，**测不出差别**",
-      "prompt_tokens_p50_vs_A0": -39.6
+      "prompt_tokens_p50_vs_A0": -40.8
     },
     "A1b_wrongparent": {
       "completion_rate": "Δ -0.0597 vs 地板 0.0299 ⇒ **有效差**",
       "row_gold_rate": "Δ -0.0022 vs 地板 0.0000 ⇒ **有效差**",
       "supported_rate_vs_A0": "Δ +0.0156 vs 地板 0.0000 ⇒ **有效差**",
-      "prompt_tokens_p50_vs_A0": 1027.4
+      "prompt_tokens_p50_vs_A0": 1107.1
     }
   },
   "cost_by_arm": {
     "A0_child": {
       "calls": 63,
-      "prompt_tokens_p50": 1129.2,
+      "prompt_tokens_p50": null,
       "prompt_tokens_max": 1485,
       "prompt_tokens_sum": 81116,
       "completion_tokens_sum": 9477,
       "truncated": 0,
-      "ms_p50": 2583.5
+      "ms_p50": 2583.5,
+      "prompt_tokens_mean": 1287.6
     },
     "A1_parent": {
       "calls": 63,
-      "prompt_tokens_p50": 2184.86,
+      "prompt_tokens_p50": null,
       "prompt_tokens_max": 2889,
       "prompt_tokens_sum": 157955,
       "completion_tokens_sum": 9748,
       "truncated": 0,
-      "ms_p50": 2297.2
+      "ms_p50": 2297.2,
+      "prompt_tokens_mean": 2507.2
     },
     "A2_noheading": {
       "calls": 63,
-      "prompt_tokens_p50": 1089.61,
+      "prompt_tokens_p50": null,
       "prompt_tokens_max": 1445,
       "prompt_tokens_sum": 78547,
       "completion_tokens_sum": 9145,
       "truncated": 0,
-      "ms_p50": 2638.1
+      "ms_p50": 2638.1,
+      "prompt_tokens_mean": 1246.8
     },
     "A1b_wrongparent": {
       "calls": 63,
-      "prompt_tokens_p50": 2156.58,
+      "prompt_tokens_p50": null,
       "prompt_tokens_max": 2765,
       "prompt_tokens_sum": 150865,
       "completion_tokens_sum": 9455,
       "truncated": 0,
-      "ms_p50": 3179.0
+      "ms_p50": 3179.0,
+      "prompt_tokens_mean": 2394.7
     }
   },
   "gates": {
@@ -10743,5 +10750,9 @@
       }
     }
   },
-  "re_rendered_at": "2026-10-21T12:41:51"
+  "re_rendered_at": "2026-10-21T15:52:54",
+  "percentile_recompute": {
+    "at": "2026-10-21T15:52:54",
+    "why": "原产物把 `percentile(v, 0.5)` 的结果标成 p50 印出来——那是 0.5 分位≈近最小值。四列中位数已按逐行数据重算；prompt 的中位数不可从聚合产物恢复，改用均值并改名。"
+  }
 }
