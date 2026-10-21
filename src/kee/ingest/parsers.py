@@ -185,7 +185,8 @@ def split_table_block_rows(text: str) -> list[str]:
 
     为什么也不是「表头 + 一行」的 Markdown 残块：那样每行都带同一段表头和同一个章节前缀，
     共享部分占块内 60%+ 文本，行与行几乎无法区分，实测 Top-5 在同表各行之间随机排列。
-    渲染成 key=value 后共享文本只剩列名，区分度回到行本身。整张表仍保留在父块里供答案组装。
+    渲染成 key=value 后共享文本只剩列名，区分度回到行本身。整张表仍完整保留在父块里，
+    但父块正文当前**不参与答案组装**（回捞未实现，见 `chunking` 模块开头）。
     """
     lines = [ln for ln in text.split("\n") if ln.strip()]
     if len(lines) < 3:

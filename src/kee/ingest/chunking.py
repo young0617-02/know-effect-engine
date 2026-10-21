@@ -1,6 +1,9 @@
-"""Parent-Child 分块：父块=章节（上下文补全），子块=检索单元（精准命中）。
+"""Parent-Child 分块：父块=章节，子块=检索单元（精准命中）。
 
-子块只入向量库；父块留在权威源，答案组装时按 parent_id 回捞上下文。
+子块入向量库；父块只写进权威源，`parent_id` 存在 chunk 行与向量库标量字段上。
+**答案组装目前没有按 parent_id 回捞父块正文**（`format_evidence` 只喂子块文本），
+真正进入生成上下文的只有子块开头的 `章节标题｜` 前缀（见 `chunk_document` 里的 `f"{heading}｜{piece}"`）。
+本 docstring 曾写「答案组装时回捞」，那是名实不符，2026-10-21 消融实验时照出来并改直。
 """
 
 from __future__ import annotations

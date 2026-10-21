@@ -50,3 +50,6 @@ node_modules/
 .vscode/
 Thumbs.db
 Desktop.ini
+
+# 真机验证通路（playwright-cli）的控制台日志与临时产物，纯本机 scratch
+.playwright-cli/
