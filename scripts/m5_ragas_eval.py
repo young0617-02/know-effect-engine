@@ -71,6 +71,11 @@ LABELS = ART / "answer_correct_fill.csv"
 REPORT = ROOT / "reports" / "m5" / "M5_RAGAS与LLM裁判实测.md"
 
 ANSWER_STATUSES = ("answer", "tentative")
+# C5 裁决（用户 2026-10-22 选①）：Answer Relevancy 不再对「照 OpenAI embedding 写的 0.90」判达标，
+# 改用**本尺度的相对判据**。两个条件**同时**成立才算过——取 AND 不取 OR：换判据天生朝变松的方向走，
+# 两条一起卡才不会把「过线」做成修辞。
+AR_MIN_OVER_MISMATCH = 0.15   # 必须显著高于错位面（同题配别题答案）
+AR_MAX_UNDER_ANCHOR = 0.05    # 且不明显低于「完全切题」标尺（题面 vs 它自己的参考答案）
 CONTROL_ROWS = 10          # 证据错配抽样行数
 AR_CONTROL_ROWS = 10       # 答案错配对照行数（零额外 LLM 调用，只用已生成的反向问题）
 FLOOR_FAITH_ROWS = 20      # Faithfulness 第二轮抽样行数（全量再跑一轮要 ~300 次 7B 调用）
@@ -89,8 +94,10 @@ TARGETS = [
      "key": "context_recall", "alt": "", "pop": "全 67 行（检索面，含拒答行）",
      "note": "参考答案拆声明 → 逐条判能否归因到检索块"},
     {"name": "Answer Relevancy（答案相关性）", "defn": "回答是否切题", "target": 0.90,
+     "criterion": "relative",
      "key": "answer_relevance_answered", "alt": "answer_relevance_all_rows", "pop": "作答行 n=62",
-     "note": "alt 档把「正确拒答」按官方口径记 0，单独引它等于说反话"},
+     "note": "0.90 **保留作原口径记录**（C5 裁决选①）：判定改用本尺度相对判据，见 "
+             "`summary.answer_relevance_verdict`；alt 档把「正确拒答」按官方口径记 0，单独引它等于说反话"},
 ]
 
 
@@ -410,6 +417,34 @@ def control_gate(controls: dict[str, Any], ar_ctl: list[dict[str, Any]],
     return {"checks": checks, "all_pass": all(c["pass"] for c in checks.values())}
 
 
+def ar_relative_verdict(summary: dict[str, Any], ar_ctl: list[dict[str, Any]]) -> dict[str, Any]:
+    """AR 的「过 / 不过」由装置算，不手写（C5 裁决：本尺度相对判据）。
+
+    读数一个都不动，动的只有那句判定。输出必须带**三件套**——原口径 0.90 / 修订后的判据 / 实测依据；
+    少任何一件，这条修订读起来就像「为了让它变绿」。
+    """
+    ar = (summary.get("answer_relevance_answered") or {}).get("mean")
+    anc = (summary.get("answer_relevance_scale_anchor") or {}).get("mean")
+    mis = round(st.mean([c["mismatched"] for c in ar_ctl]), 4) if ar_ctl else None
+    if ar is None or anc is None or mis is None:
+        return {"pass": None,
+                "why": "缺完全切题标尺或错位对照 ⇒ **不判**（缺数不许长成「通过」，也不许长成「不通过」）"}
+    gap_mis, gap_anc = round(ar - mis, 4), round(anc - ar, 4)
+    return {
+        "original_target": 0.90,
+        "criterion": (f"AR − 错位面 ≥ {AR_MIN_OVER_MISMATCH} **且** 标尺 − AR ≤ {AR_MAX_UNDER_ANCHOR}"
+                      "（两条同时成立）"),
+        "ar": ar, "mismatch_floor": mis, "anchor": anc,
+        "min_over_mismatch": AR_MIN_OVER_MISMATCH, "max_under_anchor": AR_MAX_UNDER_ANCHOR,
+        "gap_over_mismatch": gap_mis, "gap_under_anchor": gap_anc,
+        "pass": bool(gap_mis >= AR_MIN_OVER_MISMATCH and gap_anc <= AR_MAX_UNDER_ANCHOR),
+        "margin": (f"过线余量：高出错位面门槛 {round(gap_mis - AR_MIN_OVER_MISMATCH, 4)}、"
+                   f"距标尺容差上限还剩 {round(AR_MAX_UNDER_ANCHOR - gap_anc, 4)} —— **余量不足 0.05，不是宽裕**"),
+        "basis": ("0.90 是照 RAGAS 默认的 OpenAI embedding 写的；本装置用本地 BGE-M3，"
+                  "「完全切题」标尺均值 0.6662 / 最高 0.8075 / 0 行 ≥ 0.90 ⇒ 原线在本尺度上不可达"),
+    }
+
+
 # ---------------- 汇总 ----------------
 
 def summarize(pass_rows: list[dict[str, Any]], labels: dict[str, int]) -> dict[str, Any]:
@@ -518,16 +553,25 @@ def render(rep: dict[str, Any]) -> str:
     L.append("- 判定用的是**主口径那一个数**，另一口径只并列展示；拿高的那个去对目标就是择优取样本。")
     anc = s.get("answer_relevance_scale_anchor", {})
     ar_a = s.get("answer_relevance_answered", {})
+    av = s.get("answer_relevance_verdict", {})
     if anc.get("mean") is not None and ar_a.get("mean") is not None:
         L.append(f"- **Answer Relevancy 的量纲标尺**：同一批题，「题面 vs 它自己的参考答案」的余弦均值 "
                  f"**{anc['mean']}**（中位 {anc.get('median')}，最高 {anc.get('max')}，"
                  f"≥0.90 的占比 {anc.get('share_over_0_90')}）。也就是说在这套 BGE-M3 尺度上，"
                  f"**连「完全切题」这个上限本身都到不了 0.90**；而实测 AR {ar_a['mean']} 与它只差 "
-                 f"{round(abs(ar_a['mean'] - anc['mean']), 4)}。所以那条 **未达标是量纲不匹配，不是答案跑题**——"
-                 f"0.90 这条线照 RAGAS 默认（OpenAI embedding）写的，换到本地 embedding 上不能原样搬。"
-                 f"要么改用本尺度的相对判据（错位面均值 "
-                 f"{round(st.mean([c['mismatched'] for c in rep['ar_control']]), 4)} 是它的下界对照），"
-                 f"要么显式声明用的是哪一种 embedding。")
+                 f"{round(abs(ar_a['mean'] - anc['mean']), 4)}——0.90 照 RAGAS 默认（OpenAI embedding）写，"
+                 f"换到本地 embedding 上不能原样搬。")
+        if av:
+            L.append(f"- **C5 已裁（用户 2026-10-22 选①：换相对判据）——三件套一并留档**："
+                     f"① 原口径 `> 0.90`（**保留不删，读数 {ar_a['mean']} 对它不过线**）；"
+                     f"② 修订判据 {av.get('criterion')}；"
+                     f"③ 实测依据：错位面（同题配别题答案）均值 **{av.get('mismatch_floor')}**、"
+                     f"完全切题标尺 **{av.get('anchor')}**、AR 高出错位面 **{av.get('gap_over_mismatch')}**、"
+                     f"低于标尺 **{av.get('gap_under_anchor')}**。")
+            L.append(f"  ⇒ 判定 **{'过' if av.get('pass') else ('不过' if av.get('pass') is not None else '不判')}**"
+                     f"｜{av.get('margin')}"
+                     f"｜修订只动那句「过/不过」，**AR 读数与其余三条一个都没动**；"
+                     f"这一条仍是报告值，不进任何门禁。")
         L.append("")
     L.append("## 二、明细读数")
     L.append("")
@@ -709,9 +753,12 @@ def main() -> int:
         src = ART / (f"ragas_eval{('.' + args.tag) if args.tag else ''}.json")
         rep = json.loads(src.read_text(encoding="utf-8"))
         rep["summary"] = summarize(rep["rows"], read_labels())
+        rep["summary"]["answer_relevance_verdict"] = ar_relative_verdict(
+            rep["summary"], rep.get("ar_control") or [])
+        src.write_text(json.dumps(rep, ensure_ascii=False, indent=2), encoding="utf-8")
         md = REPORT if not args.tag else REPORT.with_name(REPORT.stem + f"_{args.tag}.md")
         md.write_text(render(rep), encoding="utf-8")
-        print(f"[只重排版] 读数未动（源 {src.name}）\n报告： {md}")
+        print(f"[只重排版] 读数未动（判定是派生值，随产物回写）（源 {src.name}）\n报告： {md}")
         return 0
 
     s = get_settings()
@@ -815,6 +862,7 @@ def main() -> int:
         return 3
 
     summary = summarize(pass1, labels)
+    summary["answer_relevance_verdict"] = ar_relative_verdict(summary, ar_ctl)
     cost_detail = [runner.cost_summary(), judge.cost_summary(), cr.cost_summary(), cj.cost_summary(),
                    ccr.cost_summary(), jf.cost_summary(), rf.cost_summary()]
     cost = {

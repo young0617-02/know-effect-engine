@@ -152,6 +152,16 @@ def build() -> dict:
             if v is None or key not in tg:
                 return "—"
             name, target = tg[key]
+            # C5 裁决（用户 2026-10-22 选①）：Answer Relevancy 走装置算出的**相对判据**，
+            # 不再对「照 OpenAI embedding 写的 0.90」判线。判定仍随产物走，这里不手写结论。
+            if key == "answer_relevance_answered":
+                av = rg_s.get("answer_relevance_verdict") or {}
+                if av.get("pass") is None:
+                    return f"不判（{av.get('why') or '产物缺 answer_relevance_verdict，请跑 --render-only 补派生判定'}）"
+                return (f"{'**过**' if av['pass'] else '**不过**'}（相对判据：AR − 错位面 "
+                        f"{av.get('gap_over_mismatch')} ≥ {av.get('min_over_mismatch')} 且 标尺 − AR "
+                        f"{av.get('gap_under_anchor')} ≤ {av.get('max_under_anchor')}；"
+                        f"原口径 > 0.90 对它 {av.get('ar')} **不过线**，保留作记录）")
             return f"{'**过**' if v > target else '**不过**'}（目标 > {target}）"
         return (f"Faithfulness(Top-5 原口径) **{ft.get('mean')}**｜{hit('faithfulness_top5')} "
                 f"（cited 口径 {fc.get('mean')}，n={fc.get('n')}，95% CI {fc.get('ci95')}）｜ "

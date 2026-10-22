@@ -687,7 +687,21 @@
         "human": 1,
         "judge": 1
       }
-    ]
+    ],
+    "answer_relevance_verdict": {
+      "original_target": 0.9,
+      "criterion": "AR − 错位面 ≥ 0.15 **且** 标尺 − AR ≤ 0.05（两条同时成立）",
+      "ar": 0.6582,
+      "mismatch_floor": 0.4588,
+      "anchor": 0.6662,
+      "min_over_mismatch": 0.15,
+      "max_under_anchor": 0.05,
+      "gap_over_mismatch": 0.1994,
+      "gap_under_anchor": 0.008,
+      "pass": true,
+      "margin": "过线余量：高出错位面门槛 0.0494、距标尺容差上限还剩 0.042 —— **余量不足 0.05，不是宽裕**",
+      "basis": "0.90 是照 RAGAS 默认的 OpenAI embedding 写的；本装置用本地 BGE-M3，「完全切题」标尺均值 0.6662 / 最高 0.8075 / 0 行 ≥ 0.90 ⇒ 原线在本尺度上不可达"
+    }
   },
   "baseline": {
     "number_groundedness": "均值 1.0（n=51 可判）",

@@ -623,3 +623,31 @@ def test_summarize_splits_answered_from_all_rows():
     assert out["answer_relevance_answered"]["n"] == 2 and out["answer_relevance_all_rows"]["n"] == 3
     assert out["answer_relevance_all_rows"]["zeros"] == 1
     assert out["judge_vs_human_all"]["n_paired"] == 3
+
+
+def test_ar_relative_verdict_needs_both_gaps():
+    """C5 裁决（换相对判据）的闸门：两条 gap **必须同时**成立才算过。
+
+    取 AND 不取 OR 是因为"换判据"天然朝变松方向走——只卡错位面，那么一个
+    比参考答案低得多的 AR 也能过；只卡标尺，那么"跟别题答案一样切题"也能过。
+    """
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("m5re", ROOT / "scripts" / "m5_ragas_eval.py")
+    m5 = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(m5)
+
+    def sum_with(ar):
+        return {"answer_relevance_answered": {"mean": ar},
+                "answer_relevance_scale_anchor": {"mean": 0.6662}}
+
+    ctl = [{"mismatched": 0.4588}]
+    ok = m5.ar_relative_verdict(sum_with(0.6582), ctl)
+    assert ok["pass"] is True and ok["gap_over_mismatch"] == 0.1994 and ok["gap_under_anchor"] == 0.008
+    low = m5.ar_relative_verdict(sum_with(0.5), ctl)          # 贴近错位面 ⇒ 不过
+    assert low["pass"] is False and low["gap_over_mismatch"] < m5.AR_MIN_OVER_MISMATCH
+    # 两条门槛之间只有 0.0074 的缝（0.6088 ≤ AR < 0.6162 才只超一条）——
+    # 反例必须挑进这条缝里，随便取个低值会让两个条件一起失败、测不出 AND 有没有生效。
+    off = m5.ar_relative_verdict(sum_with(0.612), ctl)
+    assert off["gap_over_mismatch"] >= m5.AR_MIN_OVER_MISMATCH, off["gap_over_mismatch"]
+    assert off["gap_under_anchor"] > m5.AR_MAX_UNDER_ANCHOR and off["pass"] is False
+    assert m5.ar_relative_verdict({}, [])["pass"] is None      # 缺对照 ⇒ 不判，不许默认通过
