@@ -18,7 +18,7 @@ from kee.db.outbox import OutboxDispatcher
 from kee.db.pg import AuthoritativeStore
 from kee.db.vector_store import VectorStore
 from kee.ingest.admission import admit, checksum_of
-from kee.ingest.chunking import chunk_document
+from kee.ingest.chunking import chunk_document, granularity_from_settings
 from kee.ingest.metadata import resolve_meta
 from kee.ingest.parsers import ParsedDocument, parse_file
 from kee.retrieval.milvus_store import KbStore
@@ -158,13 +158,15 @@ class IngestionService:
         # 必须在 upsert 之前判断是否新文档：bump_version 之后版本列表必然非空
         new_document = not self.pg.versions_of(card["doc_id"])
         self.pg.upsert_document(doc_row)
-        version_id = self.pg.bump_version(card["doc_id"], "parent-child:v1", checksum)
+        granularity = granularity_from_settings()
+        scheme = f"parent-child:v1{granularity.scheme_tag()}" if granularity else "parent-child:v1"
+        version_id = self.pg.bump_version(card["doc_id"], scheme, checksum)
         # bump_version 已把旧版本置 superseded；这里必须把旧版本的索引行撤掉，
         # 否则同一文档 v1/v2 会同时被检索命中，去重要靠检索层兜底是错的。
         for stale in self.pg.versions_of(card["doc_id"]):
             if stale["status"] == "superseded" and stale["id"] != version_id:
                 self.kb.delete_version(stale["id"])
-        rows = chunk_document(card, version_id)
+        rows = chunk_document(card, version_id, granularity=granularity)
         self.pg.insert_chunks(rows)
         children = [r for r in rows if not r["is_parent"]]
         parents = [r for r in rows if r["is_parent"]]

@@ -56,6 +56,31 @@ class Settings(BaseSettings):
     llm_timeout_sec: float = 120.0
     cloud_fallback_enabled: bool = False
 
+    # ---- 分块粒度 ----
+    # chars=字符口径（legacy）。**默认不换成 tokens**（用户 2026-10-22 裁「不重切，保持 chars」）：
+    # 现网 24 篇的索引、547 行绑子块 id 的人工标注、以及全部历史门禁读数都绑在字符口径上，
+    # 改默认等于让下一次重索引悄悄作废它们。
+    # tokens 口径（同批下发）已实现但只显式开启：`KEE_CHUNK_GRANULARITY=tokens` + 重索引 + 读数作废声明。
+    # 另一条实测事实限制了它的意义：在本语料形状上 Parent 预算**不 binding**（0/73 章节会分窗，
+    # 章节正文最长 293 token 对 1000 预算），子块 200 tok ≈ 279 字 ≈ 现状 280 字 ⇒ 单开粒度几乎不改块。
+    chunk_granularity: str = "chars"
+    child_tokens: int = 200
+    child_overlap_tokens: int = 30
+    parent_tokens: int = 1000
+    parent_overlap_tokens: int = 150
+
+    # ---- 父块回捞（需求 US-1.2「父块补上下文」） ----
+    # 默认**关**（用户 2026-10-22 裁「默认关（按实测）」）。需求原文那句仍按字面实现了，
+    # 但两轮实测都不支持启用：字符口径短章节上无可测收益（`reports/m1/M1_父块上下文消融.md`），
+    # 换成用户下发的 token 粒度 + 长章节（父块预算真 binding：21/25 章节分窗）再测 68 题判**净负**——
+    # 可完成率 −2.0 题当量、引用落 gold −4.0 题当量、转人工 +2 道、prompt 均值 +1072.7 token；
+    # 唯一超地板的变好项（串落地 +3.0 题当量）不能归因于回捞：确实带进新答案句的 6/68 题两档逐题同判。
+    # 机制与依据见 `reports/m1/M1_父块回捞与token粒度.md`；需求表述已随该裁决修订（《需求文档》US-1.2）。
+    parent_context_in_answer: bool = False
+    # 注入预算（token）。超预算**整块不贴**并记 `parent_context_skipped:N`，不做静默截断——
+    # 本机 Ollama `num_ctx=4096`，超长提示是从**头部**静默截掉的，那时补的不是上下文而是截断。
+    parent_context_max_tokens: int = 1500
+
     # ---- 检索参数基线（Gate 0 ③ 结论回填） ----
     rrf_k: int = 60
     dense_top_k: int = 20

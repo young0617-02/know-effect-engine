@@ -10,7 +10,7 @@ from kee.db.outbox import OutboxDispatcher
 from kee.db.pg import AuthoritativeStore
 from kee.db.vector_store import VectorStore
 from kee.ingest.admission import admit, checksum_of
-from kee.ingest.chunking import chunk_document
+from kee.ingest.chunking import chunk_document, granularity_from_settings
 from kee.retrieval.milvus_store import KbStore
 
 
@@ -101,10 +101,12 @@ def build_index(
     parent_count = 0
     per_version: dict[str, list[str]] = {}
     now = datetime.now(timezone.utc)
+    granularity = granularity_from_settings()
+    scheme = f"parent-child:v1{granularity.scheme_tag()}" if granularity else "parent-child:v1"
 
     for card in report.accepted:
         vid = version_id_of(card["doc_id"], version_tag)
-        rows = chunk_document(card, vid)
+        rows = chunk_document(card, vid, granularity=granularity)
         doc_row = {
             "id": card["doc_id"],
             "title": card["title"],
@@ -123,7 +125,7 @@ def build_index(
                 "id": vid,
                 "doc_id": card["doc_id"],
                 "version": 1,
-                "chunk_scheme": "parent-child:v1",
+                "chunk_scheme": scheme,
                 "checksum": checksum_of(card),
                 "status": "effective",
                 "effective_at": now,

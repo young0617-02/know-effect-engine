@@ -183,6 +183,65 @@ def format_evidence(res: RetrievalResult) -> tuple[str, dict[str, dict]]:
     return "\n".join(lines), index
 
 
+def apply_parent_context(engine: "AnswerEngine", ev_text: str, ev_index: dict[str, dict],
+                         chunks: list[Any]) -> tuple[str, list[str]]:
+    """把被引子块所属**父块正文**接进答案证据面（需求 US-1.2「父块补上下文」的字面实现）。
+
+    三条约束都来自实测，不是审美：
+    - **同一父块只贴一次**：上一版逐条贴，五块常同属一章 ⇒ 在场文字被重贴五遍，
+      提示均值 +1219.6 token、escalate 1→3、可完成率落在噪声地板内。
+    - **贴之前扣掉子块已含的段落**：实测父块相对其子块的净增中位只有 28 字，
+      重复内容对模型没有信息量，只有挤占窗口的代价。
+    - **有注入预算，超了就整块不贴并记数**：Ollama 本机默认 `num_ctx=4096`，
+      超长提示**从头部静默截掉**——那时量的不是"补上下文"而是截断。宁可少贴一块。
+    """
+    from kee.models.tokens import count_tokens
+
+    if engine.parent_provider is None or not engine.parent_context_in_answer or not chunks:
+        return ev_text, []
+    order: list[str] = []
+    by_parent: dict[str, list[str]] = {}
+    for eid, meta in ev_index.items():
+        pid = meta.get("parent_id") or ""
+        if not pid:
+            continue
+        if pid not in by_parent:
+            by_parent[pid] = []
+            order.append(pid)
+        child = next((c for c in chunks if c.chunk_id == meta.get("chunk_id")), None)
+        if child is not None:
+            by_parent[pid].append(child.text or "")
+    bodies = engine.parent_provider(order) if order else {}
+    notes: list[str] = []
+    blocks: list[str] = []
+    used = 0
+    skipped = 0
+    for pid in order:
+        raw = bodies.get(pid)
+        if not raw:
+            skipped += 1
+            continue
+        lines = [ln for ln in raw.split("\n") if ln.strip()]
+        cited = [re.sub(r"\s+", "", t) for t in by_parent.get(pid, []) if t.strip()]
+        rest = [ln for ln in lines[1:] if re.sub(r"\s+", "", ln) and
+                not any(re.sub(r"\s+", "", ln) in c for c in cited)]
+        if not rest:
+            continue
+        block = f"\n【父块补上下文 {pid}】" + " ".join(rest)
+        cost = count_tokens(block)
+        if used + cost > engine.parent_context_max_tokens:
+            skipped += 1
+            continue
+        used += cost
+        blocks.append(block)
+    if skipped:
+        notes.append(f"parent_context_skipped:{skipped}")
+    if blocks:
+        notes.append(f"parent_context_tokens:{used}")
+        return ev_text + "".join(blocks), notes
+    return ev_text, notes
+
+
 class AnswerEngine:
     def __init__(
         self,
@@ -193,6 +252,9 @@ class AnswerEngine:
         temperature: float = 0.0,
         max_tokens: int = 700,
         unreviewed_provider=None,
+        parent_provider=None,
+        parent_context_max_tokens: int | None = None,
+        parent_context_in_answer: bool | None = None,
     ) -> None:
         self.settings = get_settings()
         self.retriever = retriever
@@ -207,6 +269,16 @@ class AnswerEngine:
         self.calibration_temperature: float = 1.0
         # 复核闸（处置 C）：可调用者返回「未复核版本 id 集合」。None = 不设闸（离线复跑与老测试保持原行为）。
         self.unreviewed_provider = unreviewed_provider
+        # 父块回捞（需求 US-1.2「父块补上下文」）：provider 收一组 parent_id，返回 {id: 正文}。
+        # None = 不接（离线复跑与既有测试保持原行为）。阈值一律从 Settings 取，不在这里写死：
+        # 写死一份默认值就会出现「探针跑的配置和对外服务跑的配置不一样」那笔旧账（见 load_calibration_temperature）。
+        self.parent_provider = parent_provider
+        self.parent_context_in_answer = (
+            self.settings.parent_context_in_answer if parent_context_in_answer is None else parent_context_in_answer
+        )
+        self.parent_context_max_tokens = (
+            self.settings.parent_context_max_tokens if parent_context_max_tokens is None else parent_context_max_tokens
+        )
 
     # ---- 复核闸 ----
     def gate_unreviewed(self, res) -> int:

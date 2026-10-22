@@ -511,6 +511,22 @@ class AuthoritativeStore:
             return {r["id"] for r in conn.execute(
                 "SELECT id FROM document_version WHERE reviewed_by IS NULL").fetchall()}
 
+    def parents_content(self, parent_ids: list[str]) -> dict[str, str]:
+        """按 parent_id 批量取父块正文，供答案层补上下文（需求 US-1.2「父块补上下文」）。
+
+        权限不用在这里再判一次：`parent_ids` 全部来自**已通过检索 RBAC 与复核闸的子块**的
+        `parent_id` 字段，父块与子块同属一个 `version_id`，所以两道闸的结论天然继承到这里。
+        传空列表直接返回空字典，不打库。
+        """
+        if not parent_ids:
+            return {}
+        with self.connect() as conn:
+            rows = conn.execute(
+                "SELECT id, content FROM chunk WHERE id = ANY(%s) AND is_parent = true",
+                (list(parent_ids),),
+            ).fetchall()
+        return {r["id"]: r["content"] for r in rows}
+
     def pending_reviews(
         self,
         *,

@@ -35,6 +35,7 @@ from kee.qa.answer import (
     AnswerResult,
     _clamp,
     _logit,
+    apply_parent_context,
     composite_score,
     format_evidence,
     is_sensitive,
@@ -225,6 +226,10 @@ def build_qa_graph(engine):
     # ---------- 生成与出口 ----------
     def generate(state: QAState) -> dict[str, Any]:
         ev_text, ev_index = format_evidence(state["retrieval_res"])
+        # 父块回捞（需求 US-1.2）刻意做在**这里、提示词组装之前**：
+        # 引用强制与 citations 都是按 ev_index 算的，父块只补上下文、不占证据编号，
+        # 所以注入晚一步会让模型看见一批无法被引用的文字，注入进 ev_text 而不进 ev_index 正是这个原因。
+        ev_text, pc_notes = apply_parent_context(engine, ev_text, ev_index, state["retrieval_res"].chunks)
         # 用补全后的查询喂生成：多轮里原文是「那个月结的呢？」，模型只看这句无法定指。
         # 补全后的查询已在检索之前生效，原文仍留在 state["question"] 里对外返回与审计。
         # 单轮时 effective_question 不设置，这里回落到原文——所以与重构前等价。
@@ -277,6 +282,10 @@ def build_qa_graph(engine):
             "evidence_text": ev_text,
             "evidence_index": ev_index,
             "timings_ms": timings,
+            # 回捞的实际代价必须落在审计里：`parent_context_tokens` 是贴进去的 token 数，
+            # `parent_context_skipped:N` 是被注入预算挡掉的块数。没有这两条，
+            # 「补了上下文」与「预算不够所以没补」在日志上长得一样。
+            "notes": _n(state, *pc_notes),
             "llm_meta": {
                 "ok": llm_res.ok,
                 "first_attempt_json_valid": llm_res.json_valid,

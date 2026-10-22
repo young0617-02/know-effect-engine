@@ -700,7 +700,14 @@ def create_app(*, skip_embedding: bool = False, scheduler: Any | None = None, co
         )
         # unreviewed_provider：答案层的复核闸（处置 C）。检索接口不带这个 provider，
         # 所以未复核内容仍然「看得见、查得到」，但不会被组织进答案的证据面。
-        eng = AnswerEngine(retriever=retriever, llm=OllamaClient(), unreviewed_provider=pg.unreviewed_versions)
+        # parent_provider：需求 US-1.2「父块补上下文」的回捞通路。取的是**已过两道闸的子块**的
+        # parent_id，所以父块正文天然继承同一个版本的可答性，不需要在这里再判一次权限。
+        eng = AnswerEngine(
+            retriever=retriever,
+            llm=OllamaClient(),
+            unreviewed_provider=pg.unreviewed_versions,
+            parent_provider=pg.parents_content,
+        )
         eng.calibration_temperature = float(cal.get("temperature", 1.0)) or 1.0
         setattr(app.state, key, eng)
         return eng
