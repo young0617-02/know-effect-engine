@@ -126,3 +126,91 @@ def test_versions_of_exposes_the_stamp(store):
     doc = store.list_documents(status="active", limit=1)["items"][0]["id"]
     vs = store.versions_of(doc)
     assert vs and all("reviewed_by" in v and "reviewed_at" in v for v in vs)
+
+
+# ---- 拒答得说清是「库里没资料」还是「有资料但没复核」 ----
+# 这两件事过去共用 `refuse + no_sufficient_evidence` 一个出口，业务读到的是「没找到相关资料」，
+# 而真相是「资料在，只是没人复核」——后者是可推进的，前者是真无解。下面三条钉的就是这个区分。
+
+from test_answer_enforcement import FakeLlm, FakeRetriever, chunk, ctx, good_payload  # noqa: E402
+
+UNREV_VERSION = "fin-doc@v1"
+C_UNREV = f"{UNREV_VERSION}#2.1#c1"
+C_REVIEWED = "fin-doc@v2#2.1#c1"
+
+
+def test_all_evidence_unreviewed_says_so_instead_of_no_evidence():
+    """摘光 ⇒ 新出口标签 + 对外字段 + needs_human，且**不再**冒充 `no_sufficient_evidence`。"""
+    eng = AnswerEngine(retriever=FakeRetriever([chunk(C_UNREV, score=0.95)]), llm=FakeLlm(good_payload()),
+                       unreviewed_provider=lambda: {UNREV_VERSION})
+    res = eng.answer("RTO 是多少", ctx())
+    assert res.status == "refuse"
+    assert res.refusal_reason == "all_evidence_unreviewed"
+    assert res.unreviewed_evidence_count == 1
+    assert res.needs_human is True
+    assert "all_evidence_unreviewed" in res.notes and "no_sufficient_evidence" not in res.notes
+    # SSE 与前端读的是 as_dict()，字段掉在这里就等于对外不存在
+    as_dict = res.as_dict()
+    assert as_dict["refusal_reason"] == "all_evidence_unreviewed"
+    assert as_dict["unreviewed_evidence_count"] == 1
+
+
+def test_genuine_missing_evidence_still_reports_no_evidence():
+    """反面对照：没摘除任何东西、检索本来就空 ⇒ 必须还是 `no_evidence`。
+    少了这条，把 refusal_reason 硬编码成 review 也能过上一条测试。"""
+    eng = AnswerEngine(retriever=FakeRetriever([]), llm=FakeLlm(good_payload()),
+                       unreviewed_provider=lambda: {UNREV_VERSION})
+    res = eng.answer("无关问题", ctx())
+    assert res.status == "refuse" and res.refusal_reason == "no_evidence"
+    assert res.unreviewed_evidence_count == 0 and "no_sufficient_evidence" in res.notes
+
+
+def test_partial_drop_keeps_answering_but_still_counts():
+    """摘掉一部分、剩一条够答 ⇒ 正常出答案，但计数照样带出去：
+    「本题还有 N 条相关资料没复核」这句话在答对的时候同样值钱。"""
+    eng = AnswerEngine(retriever=FakeRetriever([chunk(C_UNREV), chunk(C_REVIEWED)]),
+                       llm=FakeLlm(good_payload()), unreviewed_provider=lambda: {UNREV_VERSION})
+    res = eng.answer("RTO 是多少", ctx())
+    assert res.status in ("answer", "tentative"), res.status
+    assert res.refusal_reason == "" and res.unreviewed_evidence_count == 1
+
+
+def test_pending_reviews_queue_is_scope_filtered(store):
+    """待复核队列必须按调用者可见范围过滤：拿最高密级那篇当样本，
+    低密级上限的角色不能看见它——队列开给所有读权角色，但范围判定不许另开一套。"""
+    with store.connect() as conn:
+        row = conn.execute(
+            "SELECT v.id AS vid, d.security_level AS lvl FROM document_version v "
+            "JOIN document d ON d.id = v.doc_id ORDER BY d.security_level DESC LIMIT 1").fetchone()
+    vid, lvl = row["vid"], int(row["lvl"])
+    original = None
+    with store.connect() as conn:
+        original = conn.execute("SELECT reviewed_by FROM document_version WHERE id=%s",
+                                (vid,)).fetchone()["reviewed_by"]
+        conn.execute("UPDATE document_version SET reviewed_by=NULL WHERE id=%s", (vid,))
+    try:
+        full = store.pending_reviews(max_security_level=3)
+        assert full["total"] >= 1 and any(i["version_id"] == vid for i in full["items"])
+        if lvl > 1:
+            narrow = store.pending_reviews(max_security_level=lvl - 1)
+            assert all(i["version_id"] != vid for i in narrow["items"]), "密级过滤没生效：越权看得见待复核清单"
+    finally:  # 生产库里不许留下我摘掉的章
+        with store.connect() as conn:
+            conn.execute("UPDATE document_version SET reviewed_by=%s WHERE id=%s", (original, vid))
+        assert vid not in store.unreviewed_versions()
+
+
+def test_reviews_pending_endpoint_echoes_scope(store):
+    """路由存在且回显范围——运维要靠这个字段判断「N 到底是哪个范围内的 N」。"""
+    from fastapi.testclient import TestClient
+
+    from kee.api.app import create_app
+
+    owner = {"X-Kee-Role": "knowledge_owner", "X-Kee-Actor": "owner-01"}
+    with TestClient(create_app(skip_embedding=True)) as client:
+        r = client.get("/api/v1/reviews/pending", headers=owner)
+        assert r.status_code == 200, r.text
+        body = r.json()
+        assert {"total", "items", "scope"} <= set(body)
+        assert body["scope"]["role"] == "knowledge_owner"
+        assert client.get("/api/v1/reviews/pending?limit=0", headers=owner).status_code == 400

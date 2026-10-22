@@ -562,6 +562,39 @@ def create_app(*, skip_embedding: bool = False, scheduler: Any | None = None, co
             raise ApiError("E403", 403, "职责分离：上传者不能复核自己的文档", request.state.trace_id)
         return service.review(doc_id, body.decision, actor=actor, note=body.note, trace_id=request.state.trace_id)
 
+    @app.get("/api/v1/reviews/pending")
+    def reviews_pending(
+        request: Request,
+        limit: int = 50,
+        offset: int = 0,
+        x_kee_role: str | None = Header(None),
+        x_kee_actor: str | None = Header(None),
+        x_kee_industries: str | None = Header(None),
+        x_kee_projects: str | None = Header(None),
+    ) -> dict[str, Any]:
+        """待复核队列（只读）。
+
+        存在的理由：答案层的复核闸把未复核证据摘掉后，业务侧原读到的是与「库里没资料」
+        **同一个出口**（`refuse + no_sufficient_evidence`），于是"资料在、只是没人复核"这件
+        完全可推进的事被当成无解。这个端点给那句提示提供**全库口径的 N**，并给催复核一个落点。
+
+        范围按调用者可见性过滤（密级 / 行业 / 项目），与知识管理查询**同一套参数**——不另开判定。
+        复核闸拦的是「被当成答案对外作答」而不是「被看见」，所以队列不对治理角色独占：
+        看不到内容的人本来也不该从这里看到内容，这里返回的是清单与计数。
+        """
+        ctx, _ = context_of(x_kee_role, x_kee_actor, x_kee_industries, x_kee_projects)
+        if not 1 <= limit <= 100:
+            raise ApiError("E400", 400, "limit 取值范围 1~100", request.state.trace_id)
+        out = pg.pending_reviews(
+            max_security_level=ctx.effective_max_level,
+            industries=ctx.industries or None,
+            projects=ctx.projects or None,
+            limit=limit,
+            offset=offset,
+        )
+        out["scope"] = {"role": ctx.role, "max_security_level": ctx.effective_max_level}
+        return out
+
     @app.post("/api/v1/documents/{doc_id}/rollback")
     def rollback(doc_id: str, body: RollbackRequest, request: Request, x_kee_role: str | None = Header(None), x_kee_actor: str | None = Header(None)) -> dict[str, Any]:
         ctx, actor = context_of(x_kee_role, x_kee_actor, None, None)

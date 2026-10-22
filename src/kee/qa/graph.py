@@ -58,6 +58,10 @@ class QAState(TypedDict, total=False):
     retrieval_res: Any
     retrieval: dict[str, Any]
     top_score: float
+    # 复核闸摘掉的条数。放进状态而不是只写进 notes：出口判定要能用机械字段，
+    # 「有资料但没复核」与「真没资料」这两件事今后靠它区分，不靠读 notes 字符串。
+    dropped_unreviewed: int
+    refusal_reason: str
     evidence_text: str
     evidence_index: dict[str, dict]
     timings_ms: dict[str, float]
@@ -181,6 +185,7 @@ def build_qa_graph(engine):
         return {
             "notes": _n(state, *extra_notes),
             "retrieval_res": res,
+            "dropped_unreviewed": dropped_unreviewed,
             "timings_ms": timings,
             "retrieval": {
                 "mode": res.mode,
@@ -199,11 +204,20 @@ def build_qa_graph(engine):
         top_score = float(state["top_score"])
         if res.chunks and top_score >= engine.min_retrieval_score:
             return {}
+        dropped = int(state.get("dropped_unreviewed") or 0)
+        # **「库里没资料」与「资料在、只是还没复核」是两件事**：前者真无解，后者是流程没走完。
+        # 复核闸摘在检索闸之前，所以摘光时 `res.chunks` 为空、top_score 归 0——
+        # 不分开就两种情形共用同一个拒答出口，业务读到的是「没找到相关资料」。
+        # 判据是机械的（摘除条数 > 0 且摘完一条不剩），因此这里同时落对外字段与新出口标签。
+        review_gated = bool(dropped) and not res.chunks
         return {
-            "gated": "weak_retrieval",
+            "gated": "evidence_all_unreviewed" if review_gated else "weak_retrieval",
             "status": "refuse",
-            "needs_human": top_score >= engine.min_retrieval_score,
-            "notes": _n(state, "no_sufficient_evidence"),
+            # 复核是人力动作 ⇒ 这一类必须让下游看得见「有人可以推进」，而不是一句干巴巴的拒答。
+            "needs_human": True if review_gated else top_score >= engine.min_retrieval_score,
+            "refusal_reason": "all_evidence_unreviewed" if review_gated else "no_evidence",
+            "unreviewed_evidence_count": dropped,
+            "notes": _n(state, "all_evidence_unreviewed" if review_gated else "no_sufficient_evidence"),
             "confidence": _gate({"retrieval": round(top_score, 4)},
                                 "retrieval_gate", engine.calibration_temperature),
         }
@@ -478,6 +492,10 @@ def result_from_state(state: QAState) -> AnswerResult:
         citations=state.get("citations", []),
         dropped_points=state.get("dropped_points", []),
         needs_human=bool(state.get("needs_human")),
+        refusal_reason=str(state.get("refusal_reason") or ""),
+        # 计数在**部分摘除**时也不为零：答出来了但「本题还有 N 条相关资料没复核」这句话
+        # 对业务同样有用，所以它不只属于拒答路径。
+        unreviewed_evidence_count=int(state.get("dropped_unreviewed") or 0),
         confidence=state.get("confidence", {}),
         retrieval=state.get("retrieval", {}),
         llm=state.get("llm_meta", {}),

@@ -144,6 +144,11 @@ class AnswerResult:
     citations: list[dict[str, Any]] = field(default_factory=list)
     dropped_points: list[str] = field(default_factory=list)
     needs_human: bool = False
+    # 拒答时分两种情形对外可判：`no_evidence`（库里就没有相关资料，真无解）与
+    # `all_evidence_unreviewed`（资料检到了、但所属版本还没复核，被答案层的复核闸摘光——流程没走完）。
+    # 没有这两个字段，两者共用 `refuse + no_sufficient_evidence` 出口，业务读到的是「没找到相关资料」。
+    refusal_reason: str = ""
+    unreviewed_evidence_count: int = 0
     confidence: dict[str, float] = field(default_factory=dict)
     retrieval: dict[str, Any] = field(default_factory=dict)
     llm: dict[str, Any] = field(default_factory=dict)

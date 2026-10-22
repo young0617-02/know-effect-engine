@@ -213,6 +213,68 @@ describe("问答页的三态渲染", () => {
     expect(await screen.findByTestId("no-conclusion")).toHaveTextContent("本轮没有可给出的结论");
   });
 
+  it("拒答得分开「没资料」与「有资料但没复核」——后者必须给可推进的提示", async () => {
+    // 这两件事过去共用一句「语料内无依据 → 拒答」，业务读到的是"没找到资料"，
+    // 而真相是"资料在、只是没人复核"。断言必须两头都验：写死成任一句都能过一半。
+    const frames = [
+      { event: "retrieval", data: { n_chunks: 2 } },
+      {
+        event: "answer",
+        data: {
+          ...ANSWER_BASE,
+          status: "refuse",
+          conclusion: "",
+          needs_human: true,
+          refusal_reason: "all_evidence_unreviewed",
+          unreviewed_evidence_count: 2,
+          notes: ["unreviewed_evidence_dropped:2", "all_evidence_unreviewed"],
+        },
+      },
+    ];
+    stubFetch(frames);
+    renderPage();
+    ask();
+
+    const reason = await screen.findByTestId("refusal-reason");
+    expect(reason).toHaveTextContent("2 份相关资料");
+    expect(reason).toHaveTextContent("尚未复核");
+    expect(reason).not.toHaveTextContent("语料内无依据");
+  });
+
+  it("真没资料时不许说成待复核（反面对照）", async () => {
+    const frames = [
+      { event: "retrieval", data: { n_chunks: 0 } },
+      {
+        event: "answer",
+        data: { ...ANSWER_BASE, status: "refuse", conclusion: "", refusal_reason: "no_evidence", notes: ["no_sufficient_evidence"] },
+      },
+    ];
+    stubFetch(frames);
+    renderPage();
+    ask();
+    expect(await screen.findByTestId("refusal-reason")).toHaveTextContent("语料内无依据");
+  });
+
+  it("答出来了但摘掉了未复核资料 ⇒ 也要留一句可行动的提示", async () => {
+    const frames = [
+      { event: "retrieval", data: { n_chunks: 2 } },
+      {
+        event: "answer",
+        data: {
+          ...ANSWER_BASE,
+          status: "answer",
+          conclusion: "RTO 小于 15 分钟。",
+          unreviewed_evidence_count: 1,
+          notes: ["unreviewed_evidence_dropped:1"],
+        },
+      },
+    ];
+    stubFetch(frames);
+    renderPage();
+    ask();
+    expect(await screen.findByTestId("partial-review-note")).toHaveTextContent("另有 1 条相关资料");
+  });
+
   it("引用片段正文走 /api/v1/chunks/batch——前端不自己拼正文，且带的是引用里的 chunk id", async () => {
     const frames = [
       { event: "retrieval", data: { n_chunks: 5 } },

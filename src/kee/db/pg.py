@@ -511,6 +511,53 @@ class AuthoritativeStore:
             return {r["id"] for r in conn.execute(
                 "SELECT id FROM document_version WHERE reviewed_by IS NULL").fetchall()}
 
+    def pending_reviews(
+        self,
+        *,
+        max_security_level: int = 3,
+        industries: list[str] | None = None,
+        projects: list[str] | None = None,
+        limit: int = 50,
+        offset: int = 0,
+    ) -> dict[str, Any]:
+        """待复核队列：已生效但 `reviewed_by IS NULL` 的版本，**按调用者可见范围过滤**。
+
+        为什么任何读权角色都能看这个队列：复核闸拦的是「被当成答案对外作答」，不是「被看见」
+        （处置 C 的原始裁决），所以「资料在、只是还没人复核」这件事本来就该让业务侧看得见、催得动。
+        范围过滤沿用知识管理查询同一套参数（密级 / 行业 / 项目），**不另开一套判定**——
+        两套判定迟早分叉，分叉的那天就是越权的那天。
+        """
+        where = ["v.reviewed_by IS NULL", "v.status = 'effective'", "d.status = 'active'",
+                 "d.security_level <= %(max_level)s"]
+        params: dict[str, Any] = {"max_level": max_security_level, "limit": limit, "offset": offset}
+        if industries:
+            where.append("d.industry = ANY(%(industries)s)")
+            params["industries"] = industries
+        if projects:
+            where.append("d.project = ANY(%(projects)s)")
+            params["projects"] = projects
+        clause = " AND ".join(where)
+        cnt_params = {k: v for k, v in params.items() if k not in ("limit", "offset")}
+        with self.connect() as conn:
+            total = conn.execute(
+                f"SELECT count(*) AS c FROM document_version v JOIN document d ON d.id = v.doc_id "
+                f"WHERE {clause}", cnt_params,
+            ).fetchone()["c"]
+            rows = conn.execute(
+                f"""
+                SELECT v.id AS version_id, v.version AS version_no, v.effective_at,
+                       d.id AS doc_id, d.title, d.industry, d.customer, d.project, d.doc_type,
+                       d.security_level,
+                       (SELECT count(*) FROM chunk c
+                         WHERE c.version_id = v.id AND c.is_parent = false) AS child_chunks
+                FROM document_version v JOIN document d ON d.id = v.doc_id
+                WHERE {clause}
+                ORDER BY v.effective_at ASC LIMIT %(limit)s OFFSET %(offset)s
+                """,
+                params,
+            ).fetchall()
+        return {"total": int(total), "limit": limit, "offset": offset, "items": rows}
+
     def set_document_status(self, doc_id: str, status: str) -> None:
         if status not in ("active", "offline", "rejected"):
             raise ValueError(f"非法文档状态：{status}")

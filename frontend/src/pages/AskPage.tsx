@@ -250,7 +250,14 @@ function AnswerView({
           <p className={`${s.conclusion} ${s.confirmed}`} data-slot="conclusion" data-testid="no-conclusion">
             <span className={`${s.badge} ${s.badgeRefuse}`}>{STATUS_LABEL[answer.status] ?? answer.status}</span>{" "}
             本轮没有可给出的结论
-            {answer.status === "refuse" ? "（语料内无依据 → 拒答）" : ""}
+            {answer.refusal_reason === "all_evidence_unreviewed" ? (
+              <span data-testid="refusal-reason">
+                （检到 {answer.unreviewed_evidence_count ?? 0} 份相关资料，但所属版本尚未复核 →
+                未作为答案依据；可在「知识库」页催办复核）
+              </span>
+            ) : answer.status === "refuse" ? (
+              <span data-testid="refusal-reason">（语料内无依据 → 拒答）</span>
+            ) : ""}
             {answer.status === "escalate" ? "（已转人工）" : ""}
           </p>
         ) : null}
@@ -368,6 +375,11 @@ function AnswerMeta({
       ) : null}
 
       {answer.timings_ms?.e2e_ms ? <p>端到端 {Math.round(answer.timings_ms.e2e_ms)}ms · 轮次 {answer.turn_no}</p> : null}
+      {answer.conclusion && answer.unreviewed_evidence_count ? (
+        <p data-testid="partial-review-note">
+          另有 {answer.unreviewed_evidence_count} 条相关资料因所属版本未复核被摘除，未纳入本轮答案
+        </p>
+      ) : null}
       {answer.notes.length ? <p>判定记录：{answer.notes.join("；")}</p> : null}
 
       <div className={s.cites}>

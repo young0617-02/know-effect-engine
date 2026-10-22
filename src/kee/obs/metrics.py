@@ -56,6 +56,9 @@ GATED_LABELS = {
     "": "answered",
     "sensitive": "sensitive",
     "weak_retrieval": "retrieval_gate",
+    # 资料检到了、但所属版本未复核 ⇒ 被答案层复核闸摘光。与「库里真没资料」必须分得开：
+    # 前者是流程没走完，后者才是真无解。
+    "evidence_all_unreviewed": "review_gate",
     "generation_failed": "generation_failed",
     "unparseable": "unparseable",
     "declared_no_evidence": "declared_no_evidence",

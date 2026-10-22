@@ -53,6 +53,10 @@ export interface AnswerPayload {
   timings_ms: Record<string, number>;
   trace_id: string;
   notes: string[];
+  /** 拒答原因：`no_evidence`（库里真没有）与 `all_evidence_unreviewed`（资料在、还没复核）必须分得开 */
+  refusal_reason?: string;
+  /** 本轮被复核闸摘掉的未复核证据条数；答出来了也照样带，界面上是「还有 N 条没复核」 */
+  unreviewed_evidence_count?: number;
   session_id?: string;
   turn_no?: number;
   new_session?: boolean;

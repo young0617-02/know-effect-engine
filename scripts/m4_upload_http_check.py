@@ -32,7 +32,10 @@ COLL = "kb_chunks_uploadhttp"
 # 端口可换：Windows 会把 38xxx–41xxx 整段保留掉（bind 报 WSAEACCES 而 netstat 查不到占用者），
 # 本机这套跑在 28000 上，写死端口就等于"脚本没问题但在这台机器上跑不了"。
 PORT = int(os.environ.get("KEE_CHECK_API_PORT", "38001"))
-PROD_PORT = int(os.environ.get("KEE_PROD_API_PORT", "38000"))
+# 生产 API 端口三级取值：显式 KEE_PROD_API_PORT > KEE_API_PORT（本机与 ci_local.sh 都用 28000）> 38000。
+# 只读 38000 的后果是：API 明明在 28000 上跑得好好的，这张脚本报「生产 API 不可达」——
+# 失败原因写得像依赖挂了，其实是脚本里的默认值与部署不同步（同一个坑本仓已踩过三次）。
+PROD_PORT = int(os.environ.get("KEE_PROD_API_PORT") or os.environ.get("KEE_API_PORT") or "38000")
 OUT = ROOT / "var" / "gate0" / "m4_upload_http.json"
 
 DOC = """# 上传链路验证说明 v1
@@ -77,7 +80,9 @@ def main() -> int:
     pre = prod_health()
     pre_counts = (pre.get("deps", {}).get("milvus", {}).get("chunks"), pre.get("deps", {}).get("postgres", {}).get("documents"))
     if pre_counts[0] is None:
-        print("[拒绝开始] 生产 API 不可达，拿不到「跑前对照」的计数。")
+        print(f"[拒绝开始] 生产 API 不可达（探的是 http://127.0.0.1:{PROD_PORT}/healthz），"
+              "拿不到「跑前对照」的计数。端口不对就传 KEE_PROD_API_PORT=<端口>；"
+              "没起 API 就先起——这道对照是防「scratch 跑完把生产计数改了没人知道」。")
         return 2
     print(f"生产侧跑前：chunks={pre_counts[0]} docs={pre_counts[1]}（本脚本不该改动它）")
 
@@ -173,6 +178,22 @@ def main() -> int:
             ck("复核**之前**不得被引用作答（未复核内容不进答案）", not answered_unreviewed,
                {"status": a.get("status"), "结论": (a.get("conclusion") or "")[:90], "引用": cited})
 
+            # 上一句只证明「不作答」，没证明「说的是哪一句」。业务真正会被误导的地方是：
+            # 闸把证据摘光之后走的仍是「语料内无依据」那个出口 ⇒ 读起来跟"库里没这份资料"一模一样。
+            # 这两条断言钉的就是区分本身——**而且两头都验**：写死任一句都能过一半。
+            ck("拒答必须说明是「有资料未复核」而不是「没资料」",
+               a.get("refusal_reason") == "all_evidence_unreviewed",
+               {"refusal_reason": a.get("refusal_reason"), "needs_human": a.get("needs_human"),
+                "notes": a.get("notes")})
+            ck("未复核证据条数随拒答带出（界面那句 N 的来源）",
+               int(a.get("unreviewed_evidence_count") or 0) >= 1,
+               {"unreviewed_evidence_count": a.get("unreviewed_evidence_count")})
+            code, body = curl([f"{base}/api/v1/reviews/pending", *owner])
+            pend = json.loads(body) if code == 200 else {}
+            ck("待复核队列看得见这一版（催办有落点）",
+               any(i.get("version_id") == f"{doc_id}@v1" for i in pend.get("items", [])),
+               {"total": pend.get("total"), "scope": pend.get("scope")})
+
 
             code, body = curl(["-X", "POST", f"{base}/api/v1/documents/{doc_id}/review", *owner,
                                "-H", "Content-Type: application/json", "-d", json.dumps({"decision": "pass", "note": "UI 等价操作"})])
@@ -182,8 +203,7 @@ def main() -> int:
                                "-H", "Content-Type: application/json",
                                "-d", json.dumps({"query": "采集网关 心跳 工单 响应", "top_k": 5}, ensure_ascii=False)])
             hits = [h.get("chunk_id") for h in (json.loads(body).get("hits", []) if code == 200 else [])]
-            ck("复核**之后**可被检索命中（索引真的写进去了）", any(h and h.startswith(f"{doc_id}@v1") for h in hits),
-               {"http": code, "hits": hits[:5]})
+            ck("复核**之后**可被检索命中（索引真的写进去了）", any(h and h.startswith(f"{doc_id}@v1") for h in hits),               {"http": code, "hits": hits[:5]})
 
             # C 的另一半：复核**之后**同一条内容必须立刻可被引用作答，否则闸是死的。
             code, body = curl(["-X", "POST", f"{base}/api/v1/answers", *owner,
@@ -195,6 +215,15 @@ def main() -> int:
             ck("复核**之后**可被引用作答（闸不是永久封死）",
                a2.get("status") in ("answer", "tentative") and any(x and x.startswith(f"{doc_id}@v1") for x in cited2),
                {"status": a2.get("status"), "结论": (a2.get("conclusion") or "")[:90], "引用": cited2})
+            code, body = curl([f"{base}/api/v1/reviews/pending", *owner])
+            pend2 = json.loads(body) if code == 200 else {}
+            ck("复核**之后**从待复核队列消失（队列读的是章这个事实，不是猜状态）",
+               not any(i.get("version_id") == f"{doc_id}@v1" for i in pend2.get("items", [])),
+               {"队列总数": pend2.get("total")})
+            ck("复核之后答案不再挂「未复核」拒答原因",
+               a2.get("status") in ("answer", "tentative") and not a2.get("refusal_reason"),
+               {"status": a2.get("status"), "refusal_reason": a2.get("refusal_reason"),
+                "unreviewed_evidence_count": a2.get("unreviewed_evidence_count")})
 
             code, body = curl(["-X", "POST", f"{base}/api/v1/documents/upload", *eng,
                                "-F", f"file=@{f};type=text/markdown",

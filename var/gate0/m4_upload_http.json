@@ -1,7 +1,7 @@
 {
   "env": {
-    "ts": "2026-10-15T14:36:53",
-    "commit": "b74019d",
+    "ts": "2026-10-22T11:30:32",
+    "commit": "cd2890d",
     "scratch_db": "kee_uploadhttp",
     "scratch_collection": "kb_chunks_uploadhttp",
     "port": 38001
@@ -37,6 +37,21 @@
       "detail": "{\"status\": \"refuse\", \"结论\": \"\", \"引用\": []}"
     },
     {
+      "name": "拒答必须说明是「有资料未复核」而不是「没资料」",
+      "ok": true,
+      "detail": "{\"refusal_reason\": \"all_evidence_unreviewed\", \"needs_human\": true, \"notes\": [\"unreviewed_evidence_dropped:1\", \"all_evidence_unreviewed\"]}"
+    },
+    {
+      "name": "未复核证据条数随拒答带出（界面那句 N 的来源）",
+      "ok": true,
+      "detail": "{\"unreviewed_evidence_count\": 1}"
+    },
+    {
+      "name": "待复核队列看得见这一版（催办有落点）",
+      "ok": true,
+      "detail": "{\"total\": 1, \"scope\": {\"role\": \"knowledge_owner\", \"max_security_level\": 3}}"
+    },
+    {
       "name": "复核 pass 生效（角色合法、actor 与 uploader 不同）",
       "ok": true,
       "detail": "{\"http\": 200, \"body\": \"{\\\"doc_id\\\":\\\"upload-http-probe\\\",\\\"status\\\":\\\"active\\\",\\\"decision\\\":\\\"pass\\\"}\"}"
@@ -52,6 +67,16 @@
       "detail": "{\"status\": \"answer\", \"结论\": \"采集网关心跳连续缺失3次即开工单；工单在30分钟内响应\", \"引用\": [\"upload-http-probe@v1#1.1#c1\"]}"
     },
     {
+      "name": "复核**之后**从待复核队列消失（队列读的是章这个事实，不是猜状态）",
+      "ok": true,
+      "detail": "{\"队列总数\": 0}"
+    },
+    {
+      "name": "复核之后答案不再挂「未复核」拒答原因",
+      "ok": true,
+      "detail": "{\"status\": \"answer\", \"refusal_reason\": \"\", \"unreviewed_evidence_count\": 0}"
+    },
+    {
       "name": "重复上传同一 doc_id 走的是新版本（不是新建文档）",
       "ok": true,
       "detail": "{\"http\": 201, \"resp\": \"{\\\"status\\\":\\\"accepted\\\",\\\"doc_id\\\":\\\"upload-http-probe\\\",\\\"version_id\\\":\\\"upload-http-probe@v2\\\",\\\"title\\\":\\\"上传链路验证说明 v1\\\",\\\"new_document\\\":false,\\\"chunks\\\":{\\\"parent\\\":1,\\\"child\\\":1},\\\"indexed\\\":1,\\\"parse_notes\\\":[\\\"Markdown 无固\"}"
@@ -59,7 +84,7 @@
     {
       "name": "回滚到 v1 生效",
       "ok": true,
-      "detail": "{\"http\": 200, \"body\": \"{\\\"doc_id\\\":\\\"upload-http-probe\\\",\\\"effective_version\\\":\\\"upload-http-probe@v1\\\",\\\"reindexed\\\":1,\\\"seconds\\\":11.54}\"}"
+      "detail": "{\"http\": 200, \"body\": \"{\\\"doc_id\\\":\\\"upload-http-probe\\\",\\\"effective_version\\\":\\\"upload-http-probe@v1\\\",\\\"reindexed\\\":1,\\\"seconds\\\":11.55}\"}"
     },
     {
       "name": "索引里只剩 v1 的子块",

@@ -10,7 +10,17 @@
 > **执行主体**：个人独立设计与开发。
 > **日期**：2026-10-09。
 > **与 V1.1 的关系**：本文以《企业级知识库 RAG Agent · 项目定义（数字技术服务企业版 V1.1）》为**唯一基准**，是其第十节「技术方案概览」与第十一节「关键能力设计」的**工程化展开与 MVP 定型**；凡本文与 V1.1 冲突，以 V1.1 口径为准。约束继承 V1.1 第八节（数据不出域、行业/项目/密级隔离、单机部署、GPU 显存 8GB 硬瓶颈、本地优先云端兜底、Windows 11 + WSL2 + Docker Desktop、合规对标 CMMI/ISO/CCRC/ITSS）。
-> **版本**：V1.0.44（**分块策略对照跑通 + percentile 口径更正**：`scripts/m1_chunking_ab.py` 把同批内容重塑成
+> **版本**：V1.0.45（**拒答的两种成因在契约上分开了**：答案层复核闸摘光证据后，原本与真无依据共用
+> `refuse + no_sufficient_evidence` 一个出口 ⇒ 「资料在、只是没人复核」被说成「这事无解」。
+> 现在 `AnswerResult` 多两栏（`refusal_reason` = `no_evidence` / `all_evidence_unreviewed`，
+> 以及 `unreviewed_evidence_count`），图上多一个出口 `evidence_all_unreviewed`（已登记 `GATED_LABELS`，
+> 扫源码的单测会盯），前端按 reason 写两句不同的人话；新增只读端点 `GET /api/v1/reviews/pending`
+> （范围过滤与知识管理查询同一套参数）。实测：`m4_upload_http_check.py` 14 → **19 项全过**、
+> `tests/test_review_gate.py` 13 条、前端 16 条。生产 24 个版本已全部复核 ⇒ **新出口现网暂无对象**，
+> 证据全在 scratch 真机。另修一处端口默认值隐式耦合（`KEE_PROD_API_PORT` 只认 38000，
+> 本机/CI 用 28000 ⇒ 护栏报「生产 API 不可达」误导），改三级取值并印出所探 URL。
+> 与《项目定义》V1.43 同批；阈值与既有读数一字未动。）
+> **上一版**：V1.0.44（**分块策略对照跑通 + percentile 口径更正**：`scripts/m1_chunking_ab.py` 把同批内容重塑成
 > 长章节（父块中位 603 字 vs 子块 251 字、94.5% 父块含 ≥2 子块、F 臂 32.0% 块跨章），两臂同题同参数、
 > gold 用**答案句包含判定**（不用整条 span、不用关键词——两者都偏心）。**检索层跑 3 轮，轮间极差 0.0、Top-5 成员翻转 0 行**：
 > 答案句覆盖 Recall@5 **P 0.9279 vs F 0.7991（+0.1288 = 8.76 题当量）⇒ 实质收益**；Hit@5（1 题当量）/ MRR（1.4 题当量）
@@ -686,9 +696,10 @@ START → sensitive_gate → rewrite → retrieve → retrieval_gate → generat
 
 | 方法 | 实际路径 | 与草图的差异 |
 |---|---|---|
-| POST | `/api/v1/answers` | 对应 `/qa/ask`，`question` + `session_id` + `Idempotency-Key` + `rewrite` 开关。响应即草图所列 `answer / citations / confidence / trace_id`，另加 `session_id / turn_no / new_session` |
+| POST | `/api/v1/answers` | 对应 `/qa/ask`，`question` + `session_id` + `Idempotency-Key` + `rewrite` 开关。响应即草图所列 `answer / citations / confidence / trace_id`，另加 `session_id / turn_no / new_session`；V1.0.45 起再加两栏拒答诊断：**`refusal_reason`**（`no_evidence`=库里真没有 / `all_evidence_unreviewed`=检到了但所属版本没复核）与 **`unreviewed_evidence_count`**（本轮被复核闸摘掉的条数，**答出来了也照样带**）。没有这两栏，两种情形共用同一个出口，业务读到的「语料内无依据」会把"流程没走完"说成"这件事无解" |
 | POST | `/api/v1/answers/stream` | 对应 `/qa/ask/stream`，**V1.0.7 起为 token 级 SSE**：`retrieval` → `delta`* → `answer`（异常以 `error` 收尾；`answer` 恰好一次且为最后事件）。`delta` 带 `provisional: true`，**前端必须用未完成态渲染**；`answer` 带 `provisional_retracted` / `provisional_lost` 可观测撤回。未闭合 JSON 由 `kee.qa.stream_json` 按路径读已成形字段，**不需要改成两趟**，故与 ⑤「只输出 JSON」的结构化门禁不冲突（草图与 V1.0.5 曾判为互斥，实测证否）。`token_stream=false` 退回阶段级，是对照开关 |
 | POST | `/api/v1/chunks/batch` | **M4 新增**。按 id 批量取引用片段正文（前端展示「文档/章节/页码/片段」用）。`ids` 上限 50；**过滤口径与检索层一致**（密级/部门/项目），且只返回**生效版本**的内容；越权与不存在的 id 合并进 `hidden`，不区分——区分本身就是信息泄露。每次读取落一条 `chunks_read` 审计 |
+| GET | `/api/v1/reviews/pending` | **V1.0.45 新增**。待复核队列（只读）：已生效但 `reviewed_by IS NULL` 的版本清单与总数，给拒答那句「有 N 份相关资料待复核」提供**全库口径**，并给催复核一个落点。**范围按调用者可见性过滤**（密级/部门/项目），参数与 `GET /api/v1/documents` 同一套（不另开判定——两套判定迟早分叉，分叉那天就是越权那天）。不对治理角色独占：复核闸拦的是「被当成答案」而不是「被看见」，这与处置 C 的原始裁决一致 |
 | GET | `/api/v1/audit` | **M4 新增**。审计读接口，限 `knowledge_owner` / `system_admin`（其余角色拿到 E403 原文）。按 `id` 倒序分页（`ts` 有并列，按它排会翻页重漏）。只有读路径：`audit_log` 的 UPDATE/DELETE 由触发器一律拒绝 |
 | — | （未开端点） | 草图的 `/qa/followup` **不单独开**：`POST /api/v1/answers` 带 `session_id` 即追问，上文从 `session_turn` 读。单开端点会让同一条链路有两个入口、两套审计，而多轮与单轮走的图是同一张 |
 | GET | `/api/v1/sessions` | **V1.0.34 新增**。当前身份的会话列表（左侧「会话历史」栏）：`id / n_turns / title(首轮问题) / last_status / last_at`，按最近活动排序，**只返回自己的**（`user_id == actor`）且**过滤掉零轮次**的空会话。治理角色也看不到别人的——能读全库密级不等于能读别人的提问历史，这条判的是**归属**不是角色。列表不落审计（逐条列表各落一行只会把表灌成噪声），点开某一条才落 `session_read` |
@@ -1047,6 +1058,30 @@ generation 另带 `model`、`usage={input,output,TOKENS}`、`done_reason`、`pro
 ---
 
 ## 十二、修订记录
+
+### V1.0.45（2026-10-22，拒答要说清是「没料」还是「没复核」：判据必须机械、断言必须两头）
+
+**代码事实**：`gate_unreviewed` 在 `kee/qa/graph.py` 的检索节点里、**早于** `retrieval_gate` 执行，
+摘光 ⇒ `res.chunks=[]` ⇒ `top_score` 走 `max(..., default=0.0)` ⇒ `retrieval_gate` 判成 `weak_retrieval`。
+所以「有资料没复核」与「库里没资料」在**状态码 / 出口标签 / 指标**三层完全同形，差别只剩 notes 里一串内部标记。
+
+**改法**：① 摘除条数从"只写进 notes"升为**状态字段** `dropped_unreviewed`；
+② `retrieval_gate` 用机械判据（摘除数 > 0 且摘完不剩）分流出新出口 `evidence_all_unreviewed`，
+并登记进 `GATED_LABELS`（`tests/test_observability_metrics.py` 反向扫 `graph.py` 的字面量，漏登记当场红——
+**"图上一共几个出口"从来不许靠读代码确认**）；③ 对外字段 `refusal_reason` + `unreviewed_evidence_count`，
+后者**在正常作答时也带**（"这道题的证据面比看起来的窄"这句话值钱）；④ 只读队列端点，
+范围参数与 `GET /api/v1/documents` 同一套——**两套范围判定迟早分叉，分叉那天就是越权那天**。
+
+**断言两头都做**：真没资料不许显示成待复核、复核之后必须从队列消失且原因清空。
+只验一侧的话，把文案写死成任一句都能过——这是本仓那条反面对照纪律的第 N 次套用。
+
+**真机读数**：scratch 库/集合 + 真 HTTP + 真嵌入/重排/7B，`m4_upload_http_check.py` 14 → **19 项、0 失败**，
+跑完自检生产计数不变（193 块 / 24 篇）并自删 scratch。
+后端 `pytest -q` 全绿、前端 `AskPage.test.tsx` 16 条。
+
+**边界（必须随读数一起说）**：生产 24 个版本全部已复核（23 个建闸时回填 `migration:pre-review-gate`、
+1 个 `operator`），这条新出口**在现网暂时没有对象**；`m5_test_user_run.py` 还有一条断言在钉这个状态。
+所以本次是**防线补强**，不是现网行为变化的验证。
 
 ### V1.0.44（2026-10-21，分块对照的实现细节：判据偏心怎么长进自己手里的，以及 percentile 口径事故）
 
