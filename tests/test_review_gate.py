@@ -175,6 +175,24 @@ def test_partial_drop_keeps_answering_but_still_counts():
     assert res.refusal_reason == "" and res.unreviewed_evidence_count == 1
 
 
+def test_refusal_discloses_count_only_never_titles():
+    """用户 2026-10-22 裁决：**拒答只披露数量，不披露是哪份资料**。
+    数量是"这事可推进"的信号；标题/文档号是额外的元信息泄漏面（跨部门场景尤其敏感）。
+    这条测试就是那条裁决的闸门——日后谁把标题拼进 hint，这里当场红。
+    """
+    import json
+
+    secret_version = "prd-handover@v9"          # 刻意不与保留块共用文档前缀，否则断言会假失败
+    eng = AnswerEngine(retriever=FakeRetriever([chunk(f"{secret_version}#3.1#c1", score=0.93, doc="prd-handover")]),
+                       llm=FakeLlm(good_payload()), unreviewed_provider=lambda: {secret_version})
+    res = eng.answer("交维前的遗留风险清单是什么", ctx())
+    assert res.status == "refuse" and res.refusal_reason == "all_evidence_unreviewed"
+    assert res.unreviewed_evidence_count == 1
+    blob = json.dumps(res.as_dict(), ensure_ascii=False)
+    for forbidden in ("prd-handover", secret_version, f"{secret_version}#3.1#c1"):
+        assert forbidden not in blob, f"拒答载荷里出现了被摘资料的标识（{forbidden}）——违反「只给数量」裁决"
+
+
 def test_pending_reviews_queue_is_scope_filtered(store):
     """待复核队列必须按调用者可见范围过滤：拿最高密级那篇当样本，
     低密级上限的角色不能看见它——队列开给所有读权角色，但范围判定不许另开一套。"""
