@@ -19,6 +19,7 @@ from kee.db.pg import AuthoritativeStore
 from kee.db.vector_store import VectorStore
 from kee.ingest.admission import admit, checksum_of
 from kee.ingest.chunking import chunk_document, granularity_from_settings
+from kee.ingest.media import MediaPipeline
 from kee.ingest.metadata import resolve_meta
 from kee.ingest.parsers import ParsedDocument, parse_file
 from kee.retrieval.milvus_store import KbStore
@@ -79,11 +80,12 @@ class IngestionService:
         self.kb = kb or KbStore()
         self.vectors = vectors or VectorStore()
         self.scheduler = scheduler
+        self.media = MediaPipeline.from_settings()
 
     # ---- 解析与校验 ----
     def parse(self, *, data: bytes | None, path: str | Path | None, filename: str) -> ParsedDocument:
         target = Path(path) if path else Path(filename)
-        return parse_file(target, raw=data, filename=filename)
+        return parse_file(target, raw=data, filename=filename, media=self.media)
 
     def _card_from(self, parsed: ParsedDocument, form: dict[str, Any], filename: str) -> tuple[dict, list[str]]:
         sample = "\n".join(p for s in parsed.sections[:3] for p in s.paragraphs[:3])
@@ -127,6 +129,9 @@ class IngestionService:
         parsed = self.parse(data=data, path=path, filename=filename)
         t_parse = time.perf_counter()
         card, meta_warnings = self._card_from(parsed, form or {}, filename)
+        source_bytes = data if data is not None else (Path(path).read_bytes() if path else b"")
+        if source_bytes:
+            card["_source_checksum"] = hashlib.sha256(source_bytes).hexdigest()
 
         rep = admit([card])
         if rep.rejected:

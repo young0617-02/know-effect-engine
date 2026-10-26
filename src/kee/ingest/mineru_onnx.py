@@ -9,12 +9,15 @@
   - 推理放在 CPU：GPU 已被 7B + 嵌入 + 重排按 Gate 0 ① 的实测占满（峰值 8098/8188 MiB），
     版面/OCR 再挤进去就是把临界通过变成 OOM。
 
-公式（PP-FormulaNet-M 564MB）本地已有但未接：交付文档里公式罕见，
-行列结构还原（SLANet-plus）已接，见 TableStructureModel。
+公式（PP-FormulaNet_plus-M 564MB）本地已有，按需加载：只有版面模型真的判出公式区域才把
+564MB 的 ONNX 会话装进来，普通文档不付这笔内存/时间；模型失败时退回 OCR 文本行。
+图片/图表区域不再整块丢弃：区域文字照常 OCR，图片裁剪交给入库期 VLM 生成描述
+（VLM 不参与在线问答；默认关闭，见 `kee.ingest.vlm`）。
 """
 
 from __future__ import annotations
 
+import json
 import re
 from dataclasses import dataclass, field
 from functools import lru_cache
@@ -24,9 +27,15 @@ from typing import Any
 import numpy as np
 
 from kee.config import get_settings
-from kee.ingest.parsers import ParsedDocument, ParsedSection, ParseFailure, _SectionNumbering
+from kee.ingest.parsers import (
+    ParsedDocument,
+    ParsedFigure,
+    ParsedSection,
+    ParseFailure,
+    _SectionNumbering,
+)
 
-# 版面标签里会形成阅读结构的这几类，其余（页眉页脚图片印章等）丢弃
+# 会形成阅读结构的文字类标签
 TEXT_LABELS = {
     "paragraph_title",
     "text",
@@ -36,6 +45,21 @@ TEXT_LABELS = {
     "reference_content",
     "content",
     "abstract",
+}
+# 不能再在 `LayoutDetector._decode` 里被过滤掉：图片/图表/公式也要拿到框，
+# 否则 parser 根本看不见它们，只能整块丢弃。
+MEDIA_LABELS = {
+    "image",
+    "figure",
+    "chart",
+    "display_formula",
+    "inline_formula",
+    "formula_number",
+    "seal",
+    "header",
+    "footer",
+    "footer_image",
+    "header_image",
 }
 HEADING_LABELS = {"paragraph_title", "doc_title", "figure_title"}
 
@@ -115,7 +139,7 @@ class LayoutDetector:
             if score < self.score_thr or cls_id < 0 or cls_id >= len(self.labels):
                 continue
             label = self.labels[cls_id]
-            if label not in TEXT_LABELS:
+            if label not in TEXT_LABELS and label not in MEDIA_LABELS:
                 continue
             if max(x1, y1, x2, y2) <= 1.5:  # 归一化输出
                 x1, x2, y1, y2 = x1 * w, x2 * w, y1 * h, y2 * h
@@ -517,6 +541,92 @@ def table_to_markdown(rows: list[list[Box]], spans: list[Box], lines: list[Box])
     return "\n".join(out)
 
 
+class FormulaModel:
+    """PP-FormulaNet_plus-M ONNX：公式位图 → LaTeX。
+
+    输入是 **单通道 384×384**，输出是 token id 序列。tokenizer 直接从模型目录的
+    `*_inference.yml` 里取（`PostProcess.character_dict.fast_tokenizer_file`），
+    不额外下载 50k 词表；`tokenizers` 由 CUDA/transformers 底座提供，缺失时抛错交给
+    上层回退 OCR 文本行。
+    """
+
+    INPUT = 384
+
+    def __init__(self, path: str | None = None, session: Any | None = None,
+                 tokenizer: Any | None = None) -> None:
+        self.path = Path(path) if path else _formula_model_path()
+        if session is None:
+            import onnxruntime as ort
+
+            so = ort.SessionOptions()
+            so.log_severity_level = 3
+            so.log_verbosity_level = 0
+            session = ort.InferenceSession(
+                str(self.path), sess_options=so, providers=["CPUExecutionProvider"]
+            )
+        self.sess = session
+        self.tok = tokenizer or self._load_tokenizer()
+
+    @classmethod
+    def available(cls) -> bool:
+        return _formula_model_path().exists()
+
+    def _load_tokenizer(self) -> Any:
+        from tokenizers import Tokenizer
+
+        cfg = _yml(str(self.path.parent / f"{self.path.stem}_inference.yml"))
+        torch_cfg = (cfg.get("PostProcess") or {}).get("character_dict") or {}
+        fast = torch_cfg.get("fast_tokenizer_file")
+        if not fast:
+            raise ParseFailure("公式模型 inference.yml 缺少 fast_tokenizer_file")
+        return Tokenizer.from_str(json.dumps(fast, ensure_ascii=False))
+
+    def recognize(self, bgr: np.ndarray) -> str:
+        x = self._preprocess(bgr)
+        out = self.sess.run(None, {self.sess.get_inputs()[0].name: x})[0]
+        ids = [int(v) for v in np.asarray(out)[0].tolist()]
+        ids = [i for i in ids if i >= 0]
+        if not ids:
+            return ""
+        text = self.tok.decode(ids, skip_special_tokens=True)
+        text = text.replace("[object Object]", "").strip()
+        return text[:2000]
+
+    @classmethod
+    def _preprocess(cls, bgr: np.ndarray) -> np.ndarray:
+        from PIL import Image
+
+        if bgr.ndim != 3 or bgr.shape[0] < 8 or bgr.shape[1] < 8:
+            raise ValueError(f"公式裁剪区域过小或形状不对：{bgr.shape}")
+        # 先裁掉白边：版面框通常比公式宽，白边会被 resize 成有效像素。
+        rgb = bgr[:, :, ::-1]
+        mask = np.asarray(rgb).min(axis=2) < 245
+        if mask.any():
+            ys, xs = np.where(mask)
+            y1, y2 = max(0, int(ys.min()) - 6), min(rgb.shape[0], int(ys.max()) + 7)
+            x1, x2 = max(0, int(xs.min()) - 6), min(rgb.shape[1], int(xs.max()) + 7)
+            rgb = rgb[y1:y2, x1:x2]
+        im = Image.fromarray(rgb).convert("L")
+        w, h = im.size
+        # 小公式也要放大到 384，不能因为原图小于 384 就原样居中（那会让模型看到一张很小的图）
+        scale = cls.INPUT / max(w, h)
+        nw, nh = max(1, int(round(w * scale))), max(1, int(round(h * scale)))
+        if (nw, nh) != (w, h):
+            im = im.resize((nw, nh), Image.BILINEAR)
+        canvas = Image.new("L", (cls.INPUT, cls.INPUT), 255)
+        canvas.paste(im, ((cls.INPUT - nw) // 2, (cls.INPUT - nh) // 2))
+        arr = np.asarray(canvas).astype("float32") / 255.0
+        arr = (arr - 0.5) / 0.5
+        return arr[None, None]
+
+
+def _formula_model_path() -> Path:
+    custom = (get_settings().formula_model_path or "").strip()
+    if custom:
+        return Path(custom)
+    return model_root() / "MFR/pp_formulanet_plus_m/PP-FormulaNet_plus-M.onnx"
+
+
 class MinerUPdfParser:
     """PDF → 整页 det 出行框 → 逐行 rec → 按版面框归属 → 带真实页码的章节结构。
 
@@ -525,9 +635,20 @@ class MinerUPdfParser:
     逐行 rec，再用版面框决定这段文字是标题、正文还是表格。
     """
 
-    def __init__(self, dpi: int | None = None, use_layout: bool = True, use_table: bool = True) -> None:
+    def __init__(
+        self,
+        dpi: int | None = None,
+        use_layout: bool = True,
+        use_table: bool = True,
+        media: Any | None = None,
+        use_formula: bool | None = None,
+    ) -> None:
         s = get_settings()
         self.dpi = dpi or s.ocr_dpi
+        self.media = media
+        self.use_formula = s.parse_formula if use_formula is None else use_formula
+        self._formula: FormulaModel | None = None
+        self._formula_error = ""
         self.ocr = OcrEngine()
         # 版面模型 204MB，整份文档复用一次加载，不能逐页重建会话
         self.layout = (
@@ -551,28 +672,50 @@ class MinerUPdfParser:
 
     def parse(self, data: bytes, filename: str) -> ParsedDocument:
         from kee.ingest.docimg import render_pdf_pages
+        from kee.ingest.media import MediaPipeline
 
+        media = self.media or MediaPipeline.from_settings()
+        media.begin_document()
         notes = [
             "MinerU-ONNX 后端：PP-OCRv6(tiny det + small rec) 整页行级识别 + "
             f"PP-DocLayoutV2 版面归属（{'开' if self.layout else '关'}）；CPU 推理"
         ]
         pages: list[list[tuple[Box, str]]] = []
+        figures: list[ParsedFigure] = []
         n_table = n_table_fail = 0
-        for _pno, bgr in render_pdf_pages(data, dpi=self.dpi):
+        n_formula = n_formula_fail = 0
+        n_figure = 0
+        n_figure_skipped = 0
+        for pno, bgr in render_pdf_pages(data, dpi=self.dpi):
             lines = self.ocr.det_boxes(bgr)
             for ln in lines:
                 ln.text = self.ocr.rec_text(self.ocr.crop(bgr, ln))
             lines = [ln for ln in lines if len(ln.text.strip()) >= 1]
             regions = self.layout.detect(bgr) if self.layout else []
             tables = [r for r in regions if r.label == "table"] if self.table else []
+            formula_regions = self._dedupe_regions(
+                [r for r in regions if r.label in {"display_formula", "inline_formula"}]
+            )
+            page_area = max(1, bgr.shape[0] * bgr.shape[1])
+            figure_regions = self._dedupe_regions(
+                [r for r in regions if r.label in {"image", "figure", "chart"}]
+            )
+            s_media = media.s
+            vlm_figures_used = 0
             consumed: set[int] = set()
             assigned: list[tuple[Box, str]] = []
-            for reg in tables:
-                idxs = [
+
+            def inside(reg: Box) -> list[int]:
+                return [
                     i
                     for i, ln in enumerate(lines)
-                    if reg.x1 <= (ln.x1 + ln.x2) / 2 <= reg.x2 and reg.y1 <= (ln.y1 + ln.y2) / 2 <= reg.y2
+                    if reg.x1 <= (ln.x1 + ln.x2) / 2 <= reg.x2
+                    and reg.y1 <= (ln.y1 + ln.y2) / 2 <= reg.y2
                 ]
+
+            # 1) 表格优先：表格结构模型会消费框内行，避免行块与表格内容重复。
+            for reg in tables:
+                idxs = inside(reg)
                 md = self._table_markdown(bgr, reg, [lines[i] for i in idxs], notes)
                 if md is None:
                     n_table_fail += 1
@@ -580,20 +723,158 @@ class MinerUPdfParser:
                 consumed.update(idxs)
                 n_table += 1
                 assigned.append((Box(reg.x1, reg.y1, reg.x2, reg.y2, reg.score, "table", md), "table"))
+
+            # 2) 公式：PP-FormulaNet 优先，模型不可用/失败时交给 VLM，再不行保留 OCR 行。
+            for reg in formula_regions:
+                idxs = inside(reg)
+                crop = self._crop(bgr, reg)
+                latex = self._formula_latex(crop, media, notes, filename=filename, page=pno)
+                consumed.update(idxs)
+                if latex:
+                    n_formula += 1
+                    box = Box(reg.x1, reg.y1, reg.x2, reg.y2, reg.score, "formula", latex)
+                    assigned.append((box, "formula"))
+                    figures.append(ParsedFigure(
+                        kind="formula", page=pno, text=latex,
+                        bbox=(reg.x1, reg.y1, reg.x2, reg.y2),
+                    ))
+                else:
+                    n_formula_fail += 1
+                    for i in idxs:
+                        assigned.append((lines[i], "text"))
+
+            # 3) 图片/图表：区域文字照常 OCR，裁剪图交给 VLM 生成入库描述。
+            for reg in figure_regions:
+                idxs = inside(reg)
+                ocr_text = " ".join(lines[i].text.strip() for i in idxs if lines[i].text.strip())
+                kind = "chart" if reg.label == "chart" else "figure"
+                # 小图标/装饰图不做视觉描述；大区域也限每页最多 N 次，避免一页 14 个图标烧 14 次 VLM。
+                big_enough = reg.area >= page_area * max(0.0, s_media.vlm_min_figure_area_ratio)
+                desc = ""
+                if big_enough and vlm_figures_used < max(0, s_media.vlm_max_figures_per_page):
+                    vlm_figures_used += 1
+                    desc = media.describe_bgr(
+                        self._crop(bgr, reg),
+                        kind=kind,
+                        ocr_text=ocr_text,
+                        context=f"{filename} 第{pno}页",
+                    )
+                consumed.update(idxs)
+                if not ocr_text and not desc:
+                    if not big_enough:
+                        n_figure_skipped += 1
+                    continue
+                if big_enough and vlm_figures_used >= max(0, s_media.vlm_max_figures_per_page):
+                    n_figure_skipped += 1
+                label = "图表" if kind == "chart" else "插图"
+                text = f"【{label} 第{pno}页】"
+                if ocr_text:
+                    text += f"图内文字：{ocr_text} "
+                if desc:
+                    text += f"内容描述：{desc}"
+                n_figure += 1
+                assigned.append((Box(reg.x1, reg.y1, reg.x2, reg.y2, reg.score, "figure", text.strip()), "figure"))
+                figures.append(ParsedFigure(
+                    kind=kind, page=pno, text=ocr_text, description=desc,
+                    bbox=(reg.x1, reg.y1, reg.x2, reg.y2),
+                ))
+
+            # 4) 其余行按原来的阅读结构走；页眉页脚/印章/图形区不参与正文。
             for i, ln in enumerate(lines):
                 if i in consumed:
                     continue
                 reg = self._region_of(ln, regions) if regions else None
                 label = reg.label if reg is not None else "text"
-                if label in {"image", "seal", "header", "footer", "figure"}:
-                    continue  # 图形/页眉页脚类区域不参与正文
+                if label in {
+                    "image", "figure", "chart", "display_formula", "inline_formula",
+                    "formula_number", "seal", "header", "footer", "footer_image", "header_image",
+                }:
+                    continue
                 assigned.append((ln, label))
             assigned.sort(key=lambda x: (round(x[0].y1 / 10), x[0].x1))
             pages.append(assigned)
         if self.table is not None:
             notes.append(f"表格结构还原（SLANet-plus）：成功 {n_table} 张，失败回退文本行 {n_table_fail} 张")
-        doc = self._to_document(pages, filename, notes)
+        if n_formula or n_formula_fail:
+            notes.append(f"公式识别（PP-FormulaNet_plus-M）：成功 {n_formula}，回退文本 {n_formula_fail}")
+        if n_figure:
+            notes.append(
+                f"图片/图表区域 {n_figure} 个；VLM {'启用' if media.vlm.enabled else '未启用'}"
+            )
+        if n_figure_skipped:
+            notes.append(f"跳过 {n_figure_skipped} 个小图/超限图表（保留 OCR 文字，未做 VLM）")
+        if n_figure and not media.vlm.enabled:
+            notes.append(f"VLM 未启用：{media.vlm.disabled_reason}")
+        notes.extend(media.notes)
+        doc = self._to_document(pages, filename, notes, figures=figures)
         return doc
+
+    @staticmethod
+    def _dedupe_regions(regions: list[Box]) -> list[Box]:
+        """版面模型偶尔对同一公式/图表输出多个高度重叠的框；保留最大的那个。"""
+        kept: list[Box] = []
+        for r in sorted(regions, key=lambda b: b.area, reverse=True):
+            duplicate = False
+            for k in kept:
+                ix1, iy1 = max(r.x1, k.x1), max(r.y1, k.y1)
+                ix2, iy2 = min(r.x2, k.x2), min(r.y2, k.y2)
+                inter = max(0.0, ix2 - ix1) * max(0.0, iy2 - iy1)
+                if inter <= 0:
+                    continue
+                union = r.area + k.area - inter
+                if union > 0 and (inter / union >= 0.5 or inter / max(1.0, min(r.area, k.area)) >= 0.8):
+                    duplicate = True
+                    break
+            if not duplicate:
+                kept.append(r)
+        return kept
+
+    @staticmethod
+    def _crop(bgr: np.ndarray, reg: Box) -> np.ndarray:
+        H, W = bgr.shape[:2]
+        x1, y1 = max(0, int(reg.x1)), max(0, int(reg.y1))
+        x2, y2 = min(W, int(reg.x2)), min(H, int(reg.y2))
+        return bgr[y1:y2, x1:x2]
+
+    def _formula_latex(
+        self, crop: np.ndarray, media: Any, notes: list[str], *, filename: str, page: int
+    ) -> str:
+        if crop.size == 0:
+            return ""
+        model = self._formula_or_none(notes)
+        if model is not None:
+            try:
+                latex = model.recognize(crop)
+                if latex:
+                    return latex
+            except Exception as exc:  # noqa: BLE001 - 公式模型失败要回退，不拖垮整份 PDF
+                notes.append(f"公式模型推理失败（回退）：{type(exc).__name__}: {exc}"[:200])
+        if media.vlm.enabled:
+            latex = media.describe_bgr(
+                crop, kind="formula", context=f"{filename} 第{page}页"
+            )
+            if latex:
+                return latex
+        return ""
+
+    def _formula_or_none(self, notes: list[str]) -> FormulaModel | None:
+        if not self.use_formula:
+            return None
+        if self._formula is not None:
+            return self._formula
+        if self._formula_error:
+            return None
+        if not FormulaModel.available():
+            self._formula_error = "公式模型文件不存在"
+            notes.append(f"公式模型不可用：{self._formula_error}")
+            return None
+        try:
+            self._formula = FormulaModel()
+        except Exception as exc:  # noqa: BLE001
+            self._formula_error = f"{type(exc).__name__}: {exc}"[:200]
+            notes.append(f"公式模型加载失败（回退 OCR 文本）：{self._formula_error}")
+            return None
+        return self._formula
 
     def _table_markdown(self, bgr: np.ndarray, reg: Box, page_lines: list[Box], notes: list[str]) -> str | None:
         """版面框内的表格 → Markdown；结构不可用时返回 None，让调用方按文本行兜底。"""
@@ -614,7 +895,13 @@ class MinerUPdfParser:
             notes.append("表格结构还原为空网格（按文本行处理）")
         return md or None
 
-    def _to_document(self, pages: list[list[tuple[Box, str]]], filename: str, notes: list[str]) -> ParsedDocument:
+    def _to_document(
+        self,
+        pages: list[list[tuple[Box, str]]],
+        filename: str,
+        notes: list[str],
+        figures: list[ParsedFigure] | None = None,
+    ) -> ParsedDocument:
         stem = Path(filename).stem
         sections: list[ParsedSection] = []
         cur: ParsedSection | None = None
@@ -646,6 +933,16 @@ class MinerUPdfParser:
                         cur = ParsedSection(num.next(1), f"第 {pno} 页", pno, [])
                         sections.append(cur)
                     cur.paragraphs.append(text)  # Markdown 表格整块成段，不能被行序打散
+                    continue
+                if label in {"formula", "figure"}:
+                    flush()
+                    prev_y = None
+                    if cur is None:
+                        cur = ParsedSection(num.next(1), f"第 {pno} 页", pno, [])
+                        sections.append(cur)
+                    cur.paragraphs.append(
+                        f"【公式】${text}$" if label == "formula" else text
+                    )
                     continue
                 if label in HEADING_LABELS and len(text) <= 30:
                     flush()
@@ -684,4 +981,5 @@ class MinerUPdfParser:
             source_format="pdf",
             notes=notes,
             meta_hint={},
+            figures=figures or [],
         ).normalize()  # OCR 会产出「•」这类碎行，必须走同一套段落归一化，否则撞准入长度规则

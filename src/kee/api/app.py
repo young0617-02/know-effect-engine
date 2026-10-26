@@ -36,7 +36,7 @@ from kee.db.outbox import OutboxDispatcher
 from kee.db.pg import AuthoritativeStore
 from kee.db.reconcile import Reconciler
 from kee.db.vector_store import VectorStore
-from kee.ingest.parsers import UnsupportedFormat
+from kee.ingest.parsers import ParseFailure, UnsupportedFormat
 from kee.ingest.service import AdmissionRejected, DuplicateDocument, IngestionService
 from kee.obs import metrics
 from kee.obs.langfuse import get_exporter
@@ -503,6 +503,8 @@ def create_app(*, skip_embedding: bool = False, scheduler: Any | None = None, co
             return _fail("E409", 409, f"重复文档：{e}", trace_id)
         except UnsupportedFormat as e:
             return _fail("E415", 415, str(e), trace_id)
+        except ParseFailure as e:
+            return _fail("E422", 422, f"解析失败：{e}", trace_id)
         except ValueError as e:
             return _fail("E400", 400, str(e), trace_id)
         return JSONResponse(status_code=201, content={"status": "accepted", **result.as_dict()})

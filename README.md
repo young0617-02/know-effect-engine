@@ -72,7 +72,7 @@ docker compose -f infra/docker-compose.gate0.yml up -d      # 全部 healthy 即
 只能作为**独立的一键部署验证**跑，跑完必须重跑 `g02` 建库；默认的 `--rebuild` 只重建容器、保留数据卷。
 `g01` 已加前置校验：collection 不存在或为空时直接判失败退出，不会拿「全部提前拒答 → 延迟 0ms」冒充达标。
 
-单测：`.venv/Scripts/python.exe -m pytest -q`（42 → 59 → 现 121 项，纯逻辑，不需要 GPU/容器）。
+单测：`.venv/Scripts/python.exe -m pytest -q`（现 **390 项**，2026-10-26；纯逻辑部分不需要 GPU，DB/存储相关用例需先起存储栈）。
 
 ## M1 知识构建链路（Gate 0 放行后开工）
 
@@ -80,7 +80,7 @@ docker compose -f infra/docker-compose.gate0.yml up -d      # 全部 healthy 即
 
 | 入口 | 说明 |
 |---|---|
-| `POST /api/v1/documents/upload` | multipart 上传（md/txt/docx/pdf）+ 元表单 + `Idempotency-Key` |
+| `POST /api/v1/documents/upload` | multipart 上传（md/txt/csv/log/docx/pdf/png/jpg 等）+ 元表单 + `Idempotency-Key` |
 | `GET /api/v1/documents` | 分页 + **检索层权限过滤**（按角色密级上限、行业、项目） |
 | `POST /api/v1/documents/{id}/review` | pass/reject；**上传者不能自审**；reject 会撤下该版本索引 |
 | `POST /api/v1/documents/{id}/rollback` | 切生效版本，并用权威源 + 向量物料重建索引（不需 GPU） |
@@ -99,8 +99,19 @@ docker compose -f infra/docker-compose.gate0.yml up -d      # 全部 healthy 即
 （PP-DocLayoutV2 版面 + PP-OCRv6 det/rec，onnxruntime CPU 推理，模型用本机 `D:\modelscope` 已有权重；
 不装 `mineru` 包——它 3.5MB 但依赖树带 lmdeploy/gradio/mineru-llama-cpp，会和本 venv 经 `.pth` 挂载的
 CUDA torch 底座互顶版本；**也不用 mineru.net 云 API**，那属于数据出域）。
-未接：公式识别（模型在本地，交付文档公式罕见）；鉴权仍是请求头占位。
 表格行列结构**已接**：SLANet-plus 坐标头 → 行列网格 + 合并表头 → Markdown 表格入库（5 样本实测，见验证记录三附）。
+**公式识别已接**：PP-FormulaNet_plus-M ONNX（本机 564MB），版面判出 `display_formula/inline_formula` 才按需加载，
+输出 LaTeX；模型失败回退 VLM/OCR 文本行。鉴权仍是请求头占位。
+
+### 图片、图表与公式（入库期 VLM 描述索引）
+
+- **DOCX 内嵌图片 / 独立 png-jpg / 文本层 PDF 内嵌图片 / 扫描件 PDF / PDF 图表区域**：先 OCR，再按需调用 VLM 生成中文描述；
+  描述文本作为普通段落进入 Parent-Child 分块、BGE-M3 嵌入与 BM25，检索时用**文本 Query** 命中——服务阶段不跑 VLM。
+- **公式**：本地 PP-FormulaNet_plus-M ONNX → LaTeX；不联网、不进在线链路。
+- **VLM 默认关闭**。本地部署指向 vLLM 的 OpenAI 兼容端点；云端 API 仅开发/测试可用，必须显式设
+  `KEE_VLM_ALLOW_REMOTE=true`（等于确认图片出域），生产必须关掉或换回本地。
+- 数量闸门：单文档 20 张、单页图表最多 6 次 VLM、小于 20000 像素的图只 OCR 不送 VLM；连续失败熔断，不阻断入库。
+- 完整配置、部署命令与边界见 `docs/VLM图片描述索引.md`。
 
 后端选择：`KEE_PDF_PARSE_BACKEND=auto|pypdf|mineru_onnx` —— auto 下文本层够厚就走 pypdf（0.8s/文档），
 薄了才转版面+OCR（约 18s/页），不为能抽字的 PDF 白烧算力。
@@ -195,7 +206,7 @@ uv run python scripts/serve_api.py                 # 宿主 API
 cd frontend && npm install && npm run build        # 产出 frontend/dist
 docker compose -f infra/docker-compose.m4.yml up -d   # 一键：存储 + Nginx → http://127.0.0.1:38080/
 KEE_BASE=http://127.0.0.1:38080 uv run python scripts/verify_m4.py   # 13 项端到端（经 Nginx；直连 12 项）
-cd frontend && npm run test                        # 34 条组件/分帧/登录闸门/会话生命周期断言
+cd frontend && npm run test                        # 40 条组件/分帧/登录闸门/会话生命周期断言
 ```
 
 **登录与鉴权（V1.31 起的主身份通道）**：`src/kee/api/auth.py` + 两张表（`app_user` / `user_session`）

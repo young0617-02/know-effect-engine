@@ -27,6 +27,20 @@ def test_accepts_valid_card():
     assert rep.accepted[0]["_checksum"] == checksum_of(BASE)
 
 
+def test_source_checksum_keeps_vlm_description_out_of_dedupe():
+    a = card(_source_checksum="raw-file-sha", sections=[
+        {"section_no": "1", "page": 1, "heading": "正文", "paragraphs": ["这是一段足够长的正文，用于通过准入校验。"]},
+        {"section_no": "IMG-1", "page": 1, "heading": "图片", "paragraphs": ["【图片 1】内容描述：柱状图上升。"]},
+    ])
+    b = card(_source_checksum="raw-file-sha", sections=[
+        {"section_no": "1", "page": 1, "heading": "正文", "paragraphs": ["这是一段足够长的正文，用于通过准入校验。"]},
+        {"section_no": "IMG-1", "page": 1, "heading": "图片", "paragraphs": ["【图片 1】内容描述：柱状图下降。"]},
+    ])
+    assert checksum_of(a) == checksum_of(b) == "raw-file-sha"
+    rep = admit([a, b])
+    assert len(rep.accepted) == 1 and len(rep.duplicates) == 1
+
+
 def test_rejects_bad_industry_doc_type_and_level():
     rep = admit(
         [

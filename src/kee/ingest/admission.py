@@ -44,6 +44,11 @@ def normalize_body(card: dict[str, Any]) -> str:
 
 
 def checksum_of(card: dict[str, Any]) -> str:
+    # 上传路径优先用原始文件字节的指纹：VLM 描述是模型生成、可能每次略有不同，
+    # 若把描述算进正文指纹，同一份文件重传会被误判成一篇新文档。
+    source = card.get("_source_checksum")
+    if source:
+        return str(source)
     return hashlib.sha256(normalize_body(card).encode("utf-8")).hexdigest()
 
 

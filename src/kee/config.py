@@ -56,6 +56,33 @@ class Settings(BaseSettings):
     llm_timeout_sec: float = 120.0
     cloud_fallback_enabled: bool = False
 
+    # ---- 入库期 VLM（图片/图表描述索引） ----
+    # 只在建索引时调用：把图片转成可检索的中文描述，服务时仍用纯文本 7B + 文本嵌入。
+    # 默认关闭；本地部署指 vLLM/Ollama 的 OpenAI 兼容端点，云端 API 必须显式 allow_remote。
+    vlm_enabled: bool = False
+    vlm_base_url: str = "http://127.0.0.1:8000/v1"
+    vlm_model: str = "Qwen3-VL-8B-Instruct"
+    vlm_api_key: str = ""
+    vlm_timeout_sec: float = 60.0
+    vlm_max_tokens: int = 512
+    vlm_allow_remote: bool = False
+    vlm_max_images_per_doc: int = 20
+    # 小于这个像素数的图片仍可 OCR，但不送 VLM（图标/印章/装饰线不值得一次视觉推理）
+    vlm_min_image_pixels: int = 20000
+    # PDF 图表区域至少占页面面积的比例，低于它的区域只保留 OCR 文字，不做视觉描述
+    vlm_min_figure_area_ratio: float = 0.01
+    vlm_max_figures_per_page: int = 6
+    vlm_jpeg_quality: int = 85
+    vlm_fail_fast_after: int = 2
+    # 文本层够厚的 PDF 默认不走 MinerU（否则整份文档白烧 OCR）；但仍抽内嵌图片做 OCR/VLM，
+    # 否则「正文能抽字、里面还夹着图表」的 PDF 会整块漏掉图表内容。
+    media_scan_text_pdf: bool = True
+
+    # ---- 公式识别（PP-FormulaNet_plus-M，本地 ONNX） ----
+    parse_formula: bool = True
+    # 空串 = 使用 mineru_model_dir 下的标准相对路径；只有换模型时才显式覆盖。
+    formula_model_path: str = ""
+
     # ---- 分块粒度 ----
     # chars=字符口径（legacy）。**默认不换成 tokens**（用户 2026-10-22 裁「不重切，保持 chars」）：
     # 现网 24 篇的索引、547 行绑子块 id 的人工标注、以及全部历史门禁读数都绑在字符口径上，

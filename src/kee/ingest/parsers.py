@@ -47,12 +47,37 @@ class ParsedSection:
 
 
 @dataclass
+class ParsedFigure:
+    """图片/图表/公式的入库记录；正文仍以段落形式进入分块链路。"""
+
+    kind: str
+    page: int | None = None
+    text: str = ""
+    description: str = ""
+    section_no: str = ""
+    bbox: tuple[float, float, float, float] | None = None
+    source_name: str = ""
+
+    def as_dict(self) -> dict[str, Any]:
+        return {
+            "kind": self.kind,
+            "page": self.page,
+            "text": self.text,
+            "description": self.description,
+            "section_no": self.section_no,
+            "bbox": list(self.bbox) if self.bbox else None,
+            "source_name": self.source_name,
+        }
+
+
+@dataclass
 class ParsedDocument:
     title: str
     sections: list[ParsedSection]
     source_format: str
     notes: list[str] = field(default_factory=list)
     meta_hint: dict[str, Any] = field(default_factory=dict)
+    figures: list[ParsedFigure] = field(default_factory=list)
 
     def normalize(self) -> "ParsedDocument":
         """段落长度归一化：过长按句切，过短并入前一段，保证过准入格式校验。"""
@@ -119,6 +144,7 @@ class ParsedDocument:
             ],
             "_source_format": self.source_format,
             "_parse_notes": self.notes,
+            "figures": [f.as_dict() for f in self.figures],
         }
 
 
@@ -358,7 +384,7 @@ def parse_plain_text(raw: str, filename: str) -> ParsedDocument:
     return doc.normalize()
 
 
-def parse_docx(data: bytes, filename: str) -> ParsedDocument:
+def parse_docx(data: bytes, filename: str, media: Any | None = None) -> ParsedDocument:
     try:
         import docx
     except ImportError as e:  # pragma: no cover
@@ -414,11 +440,43 @@ def parse_docx(data: bytes, filename: str) -> ParsedDocument:
         cur.paragraphs.append(f"表格{t_i + 1}：" + " / ".join(rows))
         notes.append(f"DOCX 表格按行展平为文本（第 {t_i + 1} 张，{len(rows)} 行），版面级还原待 MinerU 后端")
 
+    # DOCX 的图片不在 python-docx 的段落文本里，直接从 zip 的 word/media/* 抽。
+    # 抽不到/OCR 不可用时只记 note，不让整篇文档失败。
+    figures: list[ParsedFigure] = []
+    from kee.ingest.media import MediaPipeline
+
+    pipeline = media or MediaPipeline.from_settings()
+    pipeline.begin_document()
+    image_texts = pipeline.docx_images(data, context=title or Path(filename).stem)
+    image_paras: list[str] = []
+    if image_texts:
+        sec(1, "图片与图表")
+        section_no = cur.section_no if cur is not None else ""
+        for mt in image_texts:
+            para = mt.paragraph()
+            if not para:
+                continue
+            image_paras.append(para)
+            figures.append(
+                ParsedFigure(
+                    kind=mt.kind,
+                    page=mt.page,
+                    text=mt.ocr_text,
+                    description=mt.description,
+                    section_no=section_no,
+                    source_name=mt.source_name,
+                )
+            )
+        if image_paras and cur is not None:
+            cur.paragraphs.extend(image_paras)
+    notes.extend(pipeline.notes)
+
     doc = ParsedDocument(
         title=title or Path(filename).stem,
         sections=sections,
         source_format="docx",
         notes=notes + ["DOCX 无固定分页（分页由渲染决定），页码置 0 并标注不可得"],
+        figures=figures,
     )
     return doc.normalize()
 
@@ -505,7 +563,40 @@ def _text_layer_is_thin(doc: ParsedDocument, pages: int) -> bool:
     return chars < max(1, pages) * get_settings().pdf_min_chars_per_page
 
 
-def parse_pdf(data: bytes, filename: str) -> ParsedDocument:
+def _append_pdf_images(doc: ParsedDocument, data: bytes, filename: str, media: Any | None) -> ParsedDocument:
+    """文本层 PDF 的内嵌图片：不走 MinerU，但图片仍要 OCR/VLM 后入库。"""
+    from kee.config import get_settings
+
+    if not get_settings().media_scan_text_pdf:
+        return doc
+    from kee.ingest.media import MediaPipeline
+
+    pipeline = media or MediaPipeline.from_settings()
+    pipeline.begin_document()
+    items = pipeline.pdf_images(data, context=Path(filename).stem)
+    if not items:
+        doc.notes.extend(pipeline.notes)
+        return doc
+    by_page: dict[int, list[Any]] = {}
+    for mt in items:
+        by_page.setdefault(int(mt.page or 0), []).append(mt)
+    for pno, group in sorted(by_page.items()):
+        section_no = f"IMG-{pno or 0}"
+        paras = [mt.paragraph() for mt in group if mt.paragraph()]
+        if not paras:
+            continue
+        doc.sections.append(ParsedSection(section_no, f"第 {pno} 页图片与图表", pno or 0, paras))
+        for mt in group:
+            doc.figures.append(ParsedFigure(
+                kind=mt.kind, page=mt.page, text=mt.ocr_text,
+                description=mt.description, section_no=section_no,
+                source_name=mt.source_name,
+            ))
+    doc.notes.extend(pipeline.notes)
+    return doc.normalize()
+
+
+def parse_pdf(data: bytes, filename: str, media: Any | None = None) -> ParsedDocument:
     """PDF 解析双后端：pypdf 文本层优先，文本层薄或显式要求时转 MinerU-ONNX（版面+OCR）。
 
     后端失败必须回退并留痕，不能因为版面模型出问题时整份文档解析不了。
@@ -525,31 +616,74 @@ def parse_pdf(data: bytes, filename: str) -> ParsedDocument:
         pages = max(1, len(doc.sections))
     need = backend == "mineru_onnx" or (backend == "auto" and _text_layer_is_thin(doc, pages))
     if not need:
-        return doc
+        return _append_pdf_images(doc, data, filename, media)
     try:
         from kee.ingest.mineru_onnx import MinerUPdfParser
 
-        ocr_doc = MinerUPdfParser().parse(data, filename)
+        ocr_doc = MinerUPdfParser(media=media).parse(data, filename)
     except Exception as e:  # noqa: BLE001
         doc.notes.append(
             f"MinerU-ONNX 后端不可用（{type(e).__name__}: {str(e)[:120]}），已回退 pypdf 文本层"
         )
-        return doc
+        return _append_pdf_images(doc, data, filename, media)
     if not ocr_doc.sections:
         doc.notes.append("MinerU-ONNX 未产出版面文本，保留 pypdf 结果")
-        return doc
+        return _append_pdf_images(doc, data, filename, media)
     ocr_doc.notes.append(f"触发原因：{'显式指定后端' if backend == 'mineru_onnx' else f'文本层过薄（{pages} 页）'}")
     return ocr_doc
 
 
-PARSERS: dict[str, Callable[[bytes, str], ParsedDocument]] = {
+def parse_image(data: bytes, filename: str, media: Any | None = None) -> ParsedDocument:
+    """独立图片：OCR + VLM 描述后作为单章节文档入库。"""
+    from kee.ingest.media import MediaPipeline
+
+    pipeline = media or MediaPipeline.from_settings()
+    pipeline.begin_document()
+    mt = pipeline.process_image_bytes(data, kind="image", index=1, context=Path(filename).stem,
+                                      source_name=filename)
+    para = mt.paragraph()
+    if not para:
+        why = pipeline.vlm.disabled_reason or pipeline._ocr_error or "图中未识别到可用文字"
+        raise ParseFailure(f"图片未产出可入库内容：{why}")
+    figure = ParsedFigure(
+        kind="image",
+        text=mt.ocr_text,
+        description=mt.description,
+        section_no="1",
+        source_name=filename,
+    )
+    doc = ParsedDocument(
+        title=Path(filename).stem,
+        sections=[ParsedSection("1", "图片内容", None, [para])],
+        source_format=(Path(filename).suffix.lower().lstrip(".") or "image"),
+        notes=pipeline.notes + ["独立图片：无固定分页，页码置 0；OCR 文字与 VLM 描述分开标注"],
+        figures=[figure],
+    )
+    return doc.normalize()
+
+
+PARSERS: dict[str, Callable[..., ParsedDocument]] = {
     ".docx": parse_docx,
     ".pdf": parse_pdf,
+    ".png": parse_image,
+    ".jpg": parse_image,
+    ".jpeg": parse_image,
+    ".webp": parse_image,
+    ".gif": parse_image,
+    ".bmp": parse_image,
+    ".tif": parse_image,
+    ".tiff": parse_image,
 }
 TEXT_FORMATS = {".md", ".markdown", ".txt", ".csv", ".log"}
 
 
-def parse_file(path: str | Path | None = None, *, raw: bytes | None = None, filename: str | None = None) -> ParsedDocument:
+def parse_file(
+    path: str | Path | None = None,
+    *,
+    raw: bytes | None = None,
+    filename: str | None = None,
+    media: Any | None = None,
+) -> ParsedDocument:
     """按扩展名分派解析；所有解析器统一吃字节流，不落临时文件。"""
     p = Path(path) if path else Path(filename or "untitled")
     name = filename or p.name
@@ -566,7 +700,7 @@ def parse_file(path: str | Path | None = None, *, raw: bytes | None = None, file
     fn = PARSERS.get(suffix)
     if fn is None:
         raise UnsupportedFormat(
-            f"未支持的文档格式 {suffix or '?'}；本轮启用 md/txt/docx/pdf，"
+            f"未支持的文档格式 {suffix or '?'}；本轮启用 md/txt/csv/log/docx/pdf/png/jpg/webp/bmp/tif，"
             "xlsx 与扫描件 PDF 需启用 MinerU 后端（接口已留位）"
         )
-    return fn(data, name)
+    return fn(data, name, media=media)
