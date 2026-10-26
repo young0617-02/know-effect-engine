@@ -1,8 +1,7 @@
-"""图片/图表入库辅助：抽取 → OCR → VLM 描述 → 转成可检索段落。
+"""图片/图表入库辅助：抽取 → 本地 OCR → 可检索段落。
 
-这里只做「把非文本内容变成文本」；它不改变分块、嵌入、检索与答案编排。
-所以描述文本会像普通段落一样进 Parent-Child 分块，被 BGE-M3 嵌入、被 BM25 命中，
-最终由纯文本 LLM 在问答时使用——VLM 不在在线链路里。
+这里只做「把图片里的文字变成文本」；不调用外部视觉模型，也不做图表语义理解。
+识别出的文字会像普通段落一样进 Parent-Child 分块，被 BGE-M3 嵌入、被 BM25 命中。
 """
 
 from __future__ import annotations
@@ -17,7 +16,6 @@ from typing import Any
 import numpy as np
 
 from kee.config import Settings, get_settings
-from kee.ingest.vlm import VlmClient
 
 log = logging.getLogger("kee.ingest.media")
 
@@ -30,34 +28,22 @@ class MediaText:
     kind: str
     index: int
     ocr_text: str = ""
-    description: str = ""
     page: int | None = None
     source_name: str = ""
 
     def paragraph(self) -> str:
         label = _KIND_LABEL.get(self.kind, "图片")
-        parts: list[str] = []
-        if self.ocr_text.strip():
-            parts.append(f"图内文字：{self.ocr_text.strip()}")
-        if self.description.strip():
-            parts.append(f"内容描述：{self.description.strip()}")
-        if not parts:
+        text = self.ocr_text.strip()
+        if not text:
             return ""
-        return f"【{label} {self.index}】" + " ".join(parts)
+        return f"【{label} {self.index}】图内文字：{text}"
 
 
 class MediaPipeline:
-    """OCR 与 VLM 都惰性加载；默认 VLM 关闭，OCR 仅在遇到图片时才装载模型。"""
+    """按需装载本地 PP-OCR；没有 OCR 模型时跳过图片并写 note，不伪造内容。"""
 
-    def __init__(
-        self,
-        settings: Settings | None = None,
-        *,
-        vlm: VlmClient | None = None,
-        ocr: Any | None = None,
-    ) -> None:
+    def __init__(self, settings: Settings | None = None, *, ocr: Any | None = None) -> None:
         self.s = settings or get_settings()
-        self.vlm = vlm or VlmClient.from_settings(self.s)
         self._ocr = ocr
         self._ocr_error = ""
         self.notes: list[str] = []
@@ -80,7 +66,7 @@ class MediaPipeline:
             from kee.ingest.mineru_onnx import OcrEngine
 
             self._ocr = OcrEngine()
-        except Exception as exc:  # noqa: BLE001 - 没有 OCR 模型时仍可走 VLM/纯文本
+        except Exception as exc:  # noqa: BLE001 - 没有 OCR 模型时跳过图片
             self._ocr_error = f"{type(exc).__name__}: {exc}"[:200]
             self.notes.append(f"OCR 模型不可用：{self._ocr_error}")
             log.warning("OCR 模型不可用：%s", type(exc).__name__)
@@ -104,22 +90,6 @@ class MediaPipeline:
             log.warning("图片 OCR 失败：%s", type(exc).__name__)
             return ""
 
-    def describe_bgr(
-        self,
-        bgr: np.ndarray,
-        *,
-        kind: str = "image",
-        ocr_text: str = "",
-        context: str = "",
-    ) -> str:
-        if not self.vlm.enabled:
-            return ""
-        try:
-            return self.vlm.describe_image(bgr, kind=kind, ocr_text=ocr_text, context=context)
-        except Exception as exc:  # noqa: BLE001 - VlmClient 已兜底，这里只防意外
-            self.notes.append(f"VLM 描述失败：{type(exc).__name__}: {exc}"[:200])
-            return ""
-
     def process_bgr(
         self,
         bgr: np.ndarray,
@@ -132,18 +102,12 @@ class MediaPipeline:
     ) -> MediaText:
         if bgr.size == 0:
             return MediaText(kind=kind, index=index, page=page, source_name=source_name)
-        area = bgr.shape[0] * bgr.shape[1]
-        if area < 1024:  # 1×1 装饰点没有 OCR 价值
+        if bgr.shape[0] * bgr.shape[1] < max(1, self.s.media_min_image_pixels):
             return MediaText(kind=kind, index=index, page=page, source_name=source_name)
-        ocr_text = self.ocr_bgr(bgr)
-        # 小图仍保留 OCR 文字，但不花一次 VLM 推理；VLM 面积阈值对 DOCX/独立图片生效。
-        desc = self.describe_bgr(bgr, kind=kind, ocr_text=ocr_text, context=context) \
-            if area >= max(1, self.s.vlm_min_image_pixels) else ""
         return MediaText(
             kind=kind,
             index=index,
-            ocr_text=ocr_text,
-            description=desc,
+            ocr_text=self.ocr_bgr(bgr),
             page=page,
             source_name=source_name,
         )
@@ -192,7 +156,7 @@ class MediaPipeline:
         except Exception as exc:  # noqa: BLE001
             self.notes.append(f"PDF 内嵌图片抽取失败：{type(exc).__name__}: {exc}"[:200])
             return []
-        limit = max(0, self.s.vlm_max_images_per_doc)
+        limit = max(0, self.s.media_max_images_per_doc)
         out: list[MediaText] = []
         total = 0
         for pno, page in enumerate(reader.pages, start=1):
@@ -219,7 +183,7 @@ class MediaPipeline:
         if total > len(out):
             self.notes.append(f"PDF 内嵌图片 {total} 张，按上限/可读性处理 {len(out)} 张")
         if total:
-            self.notes.append(f"PDF 内嵌图片：枚举 {total} 张，产出文本 {len(out)} 张")
+            self.notes.append(f"PDF 内嵌图片：枚举 {total} 张，产出文字 {len(out)} 张")
         return out
 
     def docx_images(self, data: bytes, *, context: str = "") -> list[MediaText]:
@@ -231,7 +195,7 @@ class MediaPipeline:
             return []
         if not images:
             return []
-        limit = max(0, self.s.vlm_max_images_per_doc)
+        limit = max(0, self.s.media_max_images_per_doc)
         kept = images[:limit]
         if len(images) > len(kept):
             self.notes.append(f"DOCX 内嵌图片 {len(images)} 张，按上限只处理前 {len(kept)} 张")
@@ -243,13 +207,12 @@ class MediaPipeline:
             if mt.paragraph():
                 results.append(mt)
         self.notes.append(
-            f"DOCX 内嵌图片：抽取 {len(images)} 张，处理 {len(kept)} 张，产出文本 {len(results)} 张"
+            f"DOCX 内嵌图片：抽取 {len(images)} 张，处理 {len(kept)} 张，产出文字 {len(results)} 张"
         )
         return results
 
     def summary(self) -> dict[str, Any]:
         return {
-            "vlm": self.vlm.summary(),
             "ocr_available": self.ocr is not None,
             "ocr_error": self._ocr_error,
             "notes": list(self.notes),

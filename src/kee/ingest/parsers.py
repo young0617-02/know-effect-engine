@@ -53,7 +53,6 @@ class ParsedFigure:
     kind: str
     page: int | None = None
     text: str = ""
-    description: str = ""
     section_no: str = ""
     bbox: tuple[float, float, float, float] | None = None
     source_name: str = ""
@@ -63,7 +62,6 @@ class ParsedFigure:
             "kind": self.kind,
             "page": self.page,
             "text": self.text,
-            "description": self.description,
             "section_no": self.section_no,
             "bbox": list(self.bbox) if self.bbox else None,
             "source_name": self.source_name,
@@ -462,7 +460,6 @@ def parse_docx(data: bytes, filename: str, media: Any | None = None) -> ParsedDo
                     kind=mt.kind,
                     page=mt.page,
                     text=mt.ocr_text,
-                    description=mt.description,
                     section_no=section_no,
                     source_name=mt.source_name,
                 )
@@ -564,7 +561,7 @@ def _text_layer_is_thin(doc: ParsedDocument, pages: int) -> bool:
 
 
 def _append_pdf_images(doc: ParsedDocument, data: bytes, filename: str, media: Any | None) -> ParsedDocument:
-    """文本层 PDF 的内嵌图片：不走 MinerU，但图片仍要 OCR/VLM 后入库。"""
+    """文本层 PDF 的内嵌图片：不走整页 MinerU，但图片仍要本地 OCR 后入库。"""
     from kee.config import get_settings
 
     if not get_settings().media_scan_text_pdf:
@@ -589,8 +586,7 @@ def _append_pdf_images(doc: ParsedDocument, data: bytes, filename: str, media: A
         for mt in group:
             doc.figures.append(ParsedFigure(
                 kind=mt.kind, page=mt.page, text=mt.ocr_text,
-                description=mt.description, section_no=section_no,
-                source_name=mt.source_name,
+                section_no=section_no, source_name=mt.source_name,
             ))
     doc.notes.extend(pipeline.notes)
     return doc.normalize()
@@ -620,7 +616,7 @@ def parse_pdf(data: bytes, filename: str, media: Any | None = None) -> ParsedDoc
     try:
         from kee.ingest.mineru_onnx import MinerUPdfParser
 
-        ocr_doc = MinerUPdfParser(media=media).parse(data, filename)
+        ocr_doc = MinerUPdfParser().parse(data, filename)
     except Exception as e:  # noqa: BLE001
         doc.notes.append(
             f"MinerU-ONNX 后端不可用（{type(e).__name__}: {str(e)[:120]}），已回退 pypdf 文本层"
@@ -634,7 +630,7 @@ def parse_pdf(data: bytes, filename: str, media: Any | None = None) -> ParsedDoc
 
 
 def parse_image(data: bytes, filename: str, media: Any | None = None) -> ParsedDocument:
-    """独立图片：OCR + VLM 描述后作为单章节文档入库。"""
+    """独立图片：本地 OCR 后作为单章节文档入库；不做图表语义理解。"""
     from kee.ingest.media import MediaPipeline
 
     pipeline = media or MediaPipeline.from_settings()
@@ -643,12 +639,11 @@ def parse_image(data: bytes, filename: str, media: Any | None = None) -> ParsedD
                                       source_name=filename)
     para = mt.paragraph()
     if not para:
-        why = pipeline.vlm.disabled_reason or pipeline._ocr_error or "图中未识别到可用文字"
-        raise ParseFailure(f"图片未产出可入库内容：{why}")
+        why = pipeline._ocr_error or "图中未识别到可用文字"
+        raise ParseFailure(f"图片未产出可入库内容（仅做 OCR，不做图表语义理解）：{why}")
     figure = ParsedFigure(
         kind="image",
         text=mt.ocr_text,
-        description=mt.description,
         section_no="1",
         source_name=filename,
     )
@@ -656,7 +651,7 @@ def parse_image(data: bytes, filename: str, media: Any | None = None) -> ParsedD
         title=Path(filename).stem,
         sections=[ParsedSection("1", "图片内容", None, [para])],
         source_format=(Path(filename).suffix.lower().lstrip(".") or "image"),
-        notes=pipeline.notes + ["独立图片：无固定分页，页码置 0；OCR 文字与 VLM 描述分开标注"],
+        notes=pipeline.notes + ["独立图片：无固定分页，页码置 0；仅保留图内 OCR 文字"],
         figures=[figure],
     )
     return doc.normalize()

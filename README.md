@@ -72,7 +72,7 @@ docker compose -f infra/docker-compose.gate0.yml up -d      # 全部 healthy 即
 只能作为**独立的一键部署验证**跑，跑完必须重跑 `g02` 建库；默认的 `--rebuild` 只重建容器、保留数据卷。
 `g01` 已加前置校验：collection 不存在或为空时直接判失败退出，不会拿「全部提前拒答 → 延迟 0ms」冒充达标。
 
-单测：`.venv/Scripts/python.exe -m pytest -q`（现 **390 项**，2026-10-26；纯逻辑部分不需要 GPU，DB/存储相关用例需先起存储栈）。
+单测：`.venv/Scripts/python.exe -m pytest -q`（现 **386 项**，2026-10-26；纯逻辑部分不需要 GPU，DB/存储相关用例需先起存储栈）。
 
 ## M1 知识构建链路（Gate 0 放行后开工）
 
@@ -101,17 +101,15 @@ docker compose -f infra/docker-compose.gate0.yml up -d      # 全部 healthy 即
 CUDA torch 底座互顶版本；**也不用 mineru.net 云 API**，那属于数据出域）。
 表格行列结构**已接**：SLANet-plus 坐标头 → 行列网格 + 合并表头 → Markdown 表格入库（5 样本实测，见验证记录三附）。
 **公式识别已接**：PP-FormulaNet_plus-M ONNX（本机 564MB），版面判出 `display_formula/inline_formula` 才按需加载，
-输出 LaTeX；模型失败回退 VLM/OCR 文本行。鉴权仍是请求头占位。
+输出 LaTeX；模型失败回退 OCR 文本行。鉴权仍是请求头占位。
 
-### 图片、图表与公式（入库期 VLM 描述索引）
+### 图片、图表与公式（本地 MinerU，不引入额外视觉模型）
 
-- **DOCX 内嵌图片 / 独立 png-jpg / 文本层 PDF 内嵌图片 / 扫描件 PDF / PDF 图表区域**：先 OCR，再按需调用 VLM 生成中文描述；
-  描述文本作为普通段落进入 Parent-Child 分块、BGE-M3 嵌入与 BM25，检索时用**文本 Query** 命中——服务阶段不跑 VLM。
+- **DOCX 内嵌图片 / 独立 png-jpg / 文本层 PDF 内嵌图片 / 扫描件 PDF / PDF 图表区域**：全部走本地 MinerU/PP-OCR，
+  图内文字作为普通段落进入 Parent-Child 分块、BGE-M3 嵌入与 BM25；**不做图表语义理解**，图中没有文字就不会产生内容。
 - **公式**：本地 PP-FormulaNet_plus-M ONNX → LaTeX；不联网、不进在线链路。
-- **VLM 默认关闭**。本地部署指向 vLLM 的 OpenAI 兼容端点；云端 API 仅开发/测试可用，必须显式设
-  `KEE_VLM_ALLOW_REMOTE=true`（等于确认图片出域），生产必须关掉或换回本地。
-- 数量闸门：单文档 20 张、单页图表最多 6 次 VLM、小于 20000 像素的图只 OCR 不送 VLM；连续失败熔断，不阻断入库。
-- 完整配置、部署命令与边界见 `docs/VLM图片描述索引.md`。
+- 数量闸门：单文档最多 20 张图片、小于 1024 像素的图不做单独 OCR；失败跳过并写 `parse_notes`。
+- 完整配置、边界与实测见 `docs/图片图表公式解析.md`。
 
 后端选择：`KEE_PDF_PARSE_BACKEND=auto|pypdf|mineru_onnx` —— auto 下文本层够厚就走 pypdf（0.8s/文档），
 薄了才转版面+OCR（约 18s/页），不为能抽字的 PDF 白烧算力。

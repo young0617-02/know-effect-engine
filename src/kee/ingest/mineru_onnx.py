@@ -11,8 +11,8 @@
 
 公式（PP-FormulaNet_plus-M 564MB）本地已有，按需加载：只有版面模型真的判出公式区域才把
 564MB 的 ONNX 会话装进来，普通文档不付这笔内存/时间；模型失败时退回 OCR 文本行。
-图片/图表区域不再整块丢弃：区域文字照常 OCR，图片裁剪交给入库期 VLM 生成描述
-（VLM 不参与在线问答；默认关闭，见 `kee.ingest.vlm`）。
+图片/图表区域不再整块丢弃：区域文字照常 OCR；只保留图内文字，不做图表语义理解，
+也不引入额外视觉模型。
 """
 
 from __future__ import annotations
@@ -640,12 +640,10 @@ class MinerUPdfParser:
         dpi: int | None = None,
         use_layout: bool = True,
         use_table: bool = True,
-        media: Any | None = None,
         use_formula: bool | None = None,
     ) -> None:
         s = get_settings()
         self.dpi = dpi or s.ocr_dpi
-        self.media = media
         self.use_formula = s.parse_formula if use_formula is None else use_formula
         self._formula: FormulaModel | None = None
         self._formula_error = ""
@@ -672,10 +670,7 @@ class MinerUPdfParser:
 
     def parse(self, data: bytes, filename: str) -> ParsedDocument:
         from kee.ingest.docimg import render_pdf_pages
-        from kee.ingest.media import MediaPipeline
 
-        media = self.media or MediaPipeline.from_settings()
-        media.begin_document()
         notes = [
             "MinerU-ONNX 后端：PP-OCRv6(tiny det + small rec) 整页行级识别 + "
             f"PP-DocLayoutV2 版面归属（{'开' if self.layout else '关'}）；CPU 推理"
@@ -685,7 +680,6 @@ class MinerUPdfParser:
         n_table = n_table_fail = 0
         n_formula = n_formula_fail = 0
         n_figure = 0
-        n_figure_skipped = 0
         for pno, bgr in render_pdf_pages(data, dpi=self.dpi):
             lines = self.ocr.det_boxes(bgr)
             for ln in lines:
@@ -696,12 +690,9 @@ class MinerUPdfParser:
             formula_regions = self._dedupe_regions(
                 [r for r in regions if r.label in {"display_formula", "inline_formula"}]
             )
-            page_area = max(1, bgr.shape[0] * bgr.shape[1])
             figure_regions = self._dedupe_regions(
                 [r for r in regions if r.label in {"image", "figure", "chart"}]
             )
-            s_media = media.s
-            vlm_figures_used = 0
             consumed: set[int] = set()
             assigned: list[tuple[Box, str]] = []
 
@@ -724,11 +715,11 @@ class MinerUPdfParser:
                 n_table += 1
                 assigned.append((Box(reg.x1, reg.y1, reg.x2, reg.y2, reg.score, "table", md), "table"))
 
-            # 2) 公式：PP-FormulaNet 优先，模型不可用/失败时交给 VLM，再不行保留 OCR 行。
+            # 2) 公式：PP-FormulaNet 优先；模型不可用/失败时保留 OCR 文本行。
             for reg in formula_regions:
                 idxs = inside(reg)
                 crop = self._crop(bgr, reg)
-                latex = self._formula_latex(crop, media, notes, filename=filename, page=pno)
+                latex = self._formula_latex(crop, notes)
                 consumed.update(idxs)
                 if latex:
                     n_formula += 1
@@ -743,39 +734,20 @@ class MinerUPdfParser:
                     for i in idxs:
                         assigned.append((lines[i], "text"))
 
-            # 3) 图片/图表：区域文字照常 OCR，裁剪图交给 VLM 生成入库描述。
+            # 3) 图片/图表：区域文字已由 PP-OCR 识别，直接作为可检索文本；不做图表语义理解。
             for reg in figure_regions:
                 idxs = inside(reg)
                 ocr_text = " ".join(lines[i].text.strip() for i in idxs if lines[i].text.strip())
-                kind = "chart" if reg.label == "chart" else "figure"
-                # 小图标/装饰图不做视觉描述；大区域也限每页最多 N 次，避免一页 14 个图标烧 14 次 VLM。
-                big_enough = reg.area >= page_area * max(0.0, s_media.vlm_min_figure_area_ratio)
-                desc = ""
-                if big_enough and vlm_figures_used < max(0, s_media.vlm_max_figures_per_page):
-                    vlm_figures_used += 1
-                    desc = media.describe_bgr(
-                        self._crop(bgr, reg),
-                        kind=kind,
-                        ocr_text=ocr_text,
-                        context=f"{filename} 第{pno}页",
-                    )
                 consumed.update(idxs)
-                if not ocr_text and not desc:
-                    if not big_enough:
-                        n_figure_skipped += 1
+                if not ocr_text:
                     continue
-                if big_enough and vlm_figures_used >= max(0, s_media.vlm_max_figures_per_page):
-                    n_figure_skipped += 1
+                kind = "chart" if reg.label == "chart" else "figure"
                 label = "图表" if kind == "chart" else "插图"
-                text = f"【{label} 第{pno}页】"
-                if ocr_text:
-                    text += f"图内文字：{ocr_text} "
-                if desc:
-                    text += f"内容描述：{desc}"
+                text = f"【{label} 第{pno}页】图内文字：{ocr_text}"
                 n_figure += 1
-                assigned.append((Box(reg.x1, reg.y1, reg.x2, reg.y2, reg.score, "figure", text.strip()), "figure"))
+                assigned.append((Box(reg.x1, reg.y1, reg.x2, reg.y2, reg.score, "figure", text), "figure"))
                 figures.append(ParsedFigure(
-                    kind=kind, page=pno, text=ocr_text, description=desc,
+                    kind=kind, page=pno, text=ocr_text,
                     bbox=(reg.x1, reg.y1, reg.x2, reg.y2),
                 ))
 
@@ -798,14 +770,7 @@ class MinerUPdfParser:
         if n_formula or n_formula_fail:
             notes.append(f"公式识别（PP-FormulaNet_plus-M）：成功 {n_formula}，回退文本 {n_formula_fail}")
         if n_figure:
-            notes.append(
-                f"图片/图表区域 {n_figure} 个；VLM {'启用' if media.vlm.enabled else '未启用'}"
-            )
-        if n_figure_skipped:
-            notes.append(f"跳过 {n_figure_skipped} 个小图/超限图表（保留 OCR 文字，未做 VLM）")
-        if n_figure and not media.vlm.enabled:
-            notes.append(f"VLM 未启用：{media.vlm.disabled_reason}")
-        notes.extend(media.notes)
+            notes.append(f"图片/图表区域 {n_figure} 个：仅保留图内 OCR 文字，不做语义描述")
         doc = self._to_document(pages, filename, notes, figures=figures)
         return doc
 
@@ -836,26 +801,17 @@ class MinerUPdfParser:
         x2, y2 = min(W, int(reg.x2)), min(H, int(reg.y2))
         return bgr[y1:y2, x1:x2]
 
-    def _formula_latex(
-        self, crop: np.ndarray, media: Any, notes: list[str], *, filename: str, page: int
-    ) -> str:
+    def _formula_latex(self, crop: np.ndarray, notes: list[str]) -> str:
         if crop.size == 0:
             return ""
         model = self._formula_or_none(notes)
-        if model is not None:
-            try:
-                latex = model.recognize(crop)
-                if latex:
-                    return latex
-            except Exception as exc:  # noqa: BLE001 - 公式模型失败要回退，不拖垮整份 PDF
-                notes.append(f"公式模型推理失败（回退）：{type(exc).__name__}: {exc}"[:200])
-        if media.vlm.enabled:
-            latex = media.describe_bgr(
-                crop, kind="formula", context=f"{filename} 第{page}页"
-            )
-            if latex:
-                return latex
-        return ""
+        if model is None:
+            return ""
+        try:
+            return model.recognize(crop)
+        except Exception as exc:  # noqa: BLE001 - 公式模型失败保留 OCR 文本行，不拖垮整份 PDF
+            notes.append(f"公式模型推理失败（回退 OCR 文本）：{type(exc).__name__}: {exc}"[:200])
+            return ""
 
     def _formula_or_none(self, notes: list[str]) -> FormulaModel | None:
         if not self.use_formula:
