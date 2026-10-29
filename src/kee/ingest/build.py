@@ -10,7 +10,15 @@ from kee.db.outbox import OutboxDispatcher
 from kee.db.pg import AuthoritativeStore
 from kee.db.vector_store import VectorStore
 from kee.ingest.admission import admit, checksum_of
-from kee.ingest.chunking import chunk_document, granularity_from_settings
+from kee.ingest.chunking import (
+    attach_block_metadata,
+    chunk_blocks,
+    chunk_document,
+    chunk_strategy_from_settings,
+    granularity_from_settings,
+)
+from kee.ingest.content import blocks_from_sections
+from kee.ingest.parsers import ParsedSection
 from kee.retrieval.milvus_store import KbStore
 
 
@@ -102,11 +110,29 @@ def build_index(
     per_version: dict[str, list[str]] = {}
     now = datetime.now(timezone.utc)
     granularity = granularity_from_settings()
-    scheme = f"parent-child:v1{granularity.scheme_tag()}" if granularity else "parent-child:v1"
+    strategy = chunk_strategy_from_settings()
+    block_mode = strategy == "block-v1"
+    scheme = "block-v1" if block_mode else (
+        f"parent-child:v1{granularity.scheme_tag()}" if granularity else "parent-child:v1"
+    )
 
     for card in report.accepted:
         vid = version_id_of(card["doc_id"], version_tag)
-        rows = chunk_document(card, vid, granularity=granularity)
+        sections = [
+            ParsedSection(
+                str(sec["section_no"]),
+                str(sec.get("heading", "") or ""),
+                int(sec.get("page", 0) or 0),
+                [str(p) for p in sec.get("paragraphs", []) or []],
+            )
+            for sec in card["sections"]
+        ]
+        blocks = blocks_from_sections(sections)
+        rows = (
+            chunk_blocks(blocks, vid, card["doc_id"], card["title"])
+            if block_mode
+            else attach_block_metadata(chunk_document(card, vid, granularity=granularity), blocks, vid)
+        )
         doc_row = {
             "id": card["doc_id"],
             "title": card["title"],
@@ -132,6 +158,8 @@ def build_index(
             }
         )
         pg.insert_chunks(rows)
+        # 离线语料同样落结构块：来源统一标 native_text，分块读数不受影响。
+        pg.insert_blocks(vid, card["doc_id"], blocks)
         children = [r for r in rows if not r["is_parent"]]
         parents = [r for r in rows if r["is_parent"]]
         parent_count += len(parents)

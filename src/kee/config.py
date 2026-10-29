@@ -81,6 +81,9 @@ class Settings(BaseSettings):
     # 另一条实测事实限制了它的意义：在本语料形状上 Parent 预算**不 binding**（0/73 章节会分窗，
     # 章节正文最长 293 token 对 1000 预算），子块 200 tok ≈ 279 字 ≈ 现状 280 字 ⇒ 单开粒度几乎不改块。
     chunk_granularity: str = "chars"
+    # legacy=按 sections 的字符口径；block-v1=从 ContentBlock 直接分块（表格优先用 TableData）。
+    # 默认 legacy：现网索引/chunk id/人工标注都绑在它上面；block-v1 只在 scratch A/B 显式开启。
+    chunk_strategy: str = "legacy"
     child_tokens: int = 200
     child_overlap_tokens: int = 30
     parent_tokens: int = 1000

@@ -13,6 +13,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
+from kee.ingest.content import ContentBlock
 from kee.ingest.parsers import is_table_block, split_table_block_rows
 
 DEFAULT_CHILD_MAX = 280
@@ -265,4 +266,201 @@ def chunk_document(
                     "is_parent": False,
                 }
             )
+    return rows
+
+
+def _table_rows_from_block(block: ContentBlock) -> list[str]:
+    """从表格块的权威 TableData 出行块；没有 JSON 时才退回 Markdown 解析。"""
+    table = getattr(block, "table", None)
+    if table is not None and table.n_rows >= 1 and table.n_cols >= 1:
+        by_pos = {(c.row, c.col): c for c in table.cells}
+        headers = [
+            (by_pos.get((0, c)).text.strip() if by_pos.get((0, c)) else "")
+            for c in range(table.n_cols)
+        ]
+        rows: list[str] = []
+        for r in range(1, table.n_rows):
+            pairs: list[str] = []
+            for c in range(table.n_cols):
+                cell = by_pos.get((r, c))
+                value = cell.text.strip() if cell else ""
+                if not value:
+                    continue
+                name = headers[c] or f"列{c + 1}"
+                pairs.append(f"{name}={value}")
+            if pairs:
+                rows.append("；".join(pairs))
+        if rows:
+            return rows
+    if is_table_block(block.text):
+        return split_table_block_rows(block.text)
+    return []
+
+
+def chunk_blocks(
+    blocks: list[ContentBlock],
+    version_id: str,
+    doc_id: str,
+    title: str,
+    child_max: int = DEFAULT_CHILD_MAX,
+    parent_max: int = DEFAULT_PARENT_MAX,
+    overlap: int = DEFAULT_OVERLAP,
+) -> list[dict[str, Any]]:
+    """block-v1：直接从 ContentBlock 生成 chunk，不再从 Markdown 反推类型。
+
+    表格块优先走 `block.table` 的单元格 JSON；没有 JSON 的旧块才退回 Markdown 行解析。
+    这是 A/B 方案，默认不启用；chunk id 带 `#bXXXX`，与 legacy 的 `#section#c` 分开。
+    """
+    groups: list[dict[str, Any]] = []
+    by_section: dict[str, dict[str, Any]] = {}
+    for block in blocks:
+        key = block.section_no or f"p{block.page or 0}"
+        group = by_section.get(key)
+        if group is None:
+            group = {"section_no": key, "heading": "", "page": block.page, "blocks": []}
+            by_section[key] = group
+            groups.append(group)
+        if block.type == "heading":
+            group["heading"] = block.text
+            if group["page"] is None:
+                group["page"] = block.page
+        elif block.text:
+            group["blocks"].append(block)
+
+    rows: list[dict[str, Any]] = []
+    order = 0
+    for group in groups:
+        if not group["blocks"]:
+            continue
+        section_no = str(group["section_no"])
+        heading = str(group["heading"] or "")
+        page = int(group["page"] or 0)
+        parent_text = f"【{title} / {section_no} {heading}】\n" + "\n".join(
+            b.text for b in group["blocks"]
+        )
+        parent_id = f"{version_id}#sec-{section_no}#parent"
+        order += 1
+        rows.append({
+            "id": parent_id, "version_id": version_id, "doc_id": doc_id,
+            "parent_id": None, "section_no": section_no, "page": page,
+            "order_no": order, "content": parent_text[:parent_max],
+            "char_count": min(len(parent_text), parent_max), "is_parent": True,
+        })
+        text_buf = ""
+        text_seed: ContentBlock | None = None
+
+        def flush_text() -> None:
+            """把相邻正文块按 legacy 的贪心方式合并后再切，避免一页几十个碎块。"""
+            nonlocal text_buf, text_seed, order
+            if not text_buf.strip() or text_seed is None:
+                text_buf = ""
+                text_seed = None
+                return
+            for ci, piece in enumerate(_split_paragraph(text_buf, child_max, overlap), start=1):
+                if not piece.strip():
+                    continue
+                order += 1
+                text = f"{heading}｜{piece}" if heading else piece
+                rows.append({
+                    "id": f"{version_id}#b{text_seed.order:04d}#c{ci}",
+                    "version_id": version_id, "doc_id": doc_id,
+                    "parent_id": parent_id, "section_no": section_no,
+                    "page": int(text_seed.page or page), "order_no": order,
+                    "content": text[: child_max * 3], "char_count": len(text),
+                    "is_parent": False,
+                    "block_id": f"{version_id}#{text_seed.block_id}",
+                    "block_type": "text", "source": text_seed.source,
+                })
+            text_buf = ""
+            text_seed = None
+
+        for block in group["blocks"]:
+            if block.type == "table":
+                flush_text()
+                pieces = _table_rows_from_block(block)
+                for ri, piece in enumerate(pieces, start=1):
+                    order += 1
+                    text = f"{heading}{TABLE_ROW_MARK}｜{piece}" if heading else f"{TABLE_ROW_MARK}｜{piece}"
+                    rows.append({
+                        "id": f"{version_id}#b{block.order:04d}#r{ri}",
+                        "version_id": version_id, "doc_id": doc_id,
+                        "parent_id": parent_id, "section_no": section_no,
+                        "page": int(block.page or page), "order_no": order,
+                        "content": text[: child_max * 3], "char_count": len(text),
+                        "is_parent": False, "block_id": f"{version_id}#{block.block_id}",
+                        "block_type": block.type, "source": block.source,
+                    })
+                continue
+            if block.type in ("formula", "figure", "image"):
+                flush_text()
+                order += 1
+                text = f"{heading}｜{block.text}" if heading else block.text
+                rows.append({
+                    "id": f"{version_id}#b{block.order:04d}#c1",
+                    "version_id": version_id, "doc_id": doc_id,
+                    "parent_id": parent_id, "section_no": section_no,
+                    "page": int(block.page or page), "order_no": order,
+                    "content": text[: child_max * 3], "char_count": len(text),
+                    "is_parent": False, "block_id": f"{version_id}#{block.block_id}",
+                    "block_type": block.type, "source": block.source,
+                })
+                continue
+            # 正文块：相邻块先攒成一个 buffer，再按 legacy 的 child_max/overlap 切。
+            if text_buf and len(text_buf) + 1 + len(block.text) > child_max:
+                flush_text()
+            if text_seed is None:
+                text_seed = block
+            text_buf = f"{text_buf} {block.text}".strip() if text_buf else block.text
+        flush_text()
+    return rows
+
+
+def chunk_strategy_from_settings(settings_obj: Any | None = None) -> str:
+    """返回 legacy / block-v1；默认 legacy，block-v1 只用于显式 A/B。"""
+    from kee.config import get_settings
+
+    s = settings_obj or get_settings()
+    value = (getattr(s, "chunk_strategy", "legacy") or "legacy").strip().lower()
+    return "block-v1" if value in ("block_v1", "block-v1", "blocks") else "legacy"
+
+
+def attach_block_metadata(
+    rows: list[dict[str, Any]], blocks: list[ContentBlock], version_id: str
+) -> list[dict[str, Any]]:
+    """给 legacy chunk 补 block_id/type/source（只加元数据，不改 content/id）。
+
+    legacy 的行块是正文切片，跟块文本不是一一对应；按同 section/page 的文本包含/字符重合
+    选最匹配的块。表格行块优先挂同页的 table 块，以便 Phase 3 回查 TableData。
+    """
+    by_section: dict[tuple[str, int], list[ContentBlock]] = {}
+    for block in blocks:
+        if block.type == "heading":
+            continue
+        key = (str(block.section_no), int(block.page or 0))
+        by_section.setdefault(key, []).append(block)
+
+    for row in rows:
+        if row.get("is_parent") or row.get("block_id"):
+            continue
+        key = (str(row.get("section_no", "")), int(row.get("page", 0) or 0))
+        candidates = by_section.get(key) or []
+        if not candidates:
+            continue
+        content = str(row.get("content", ""))
+        body = content.split("｜", 1)[1] if "｜" in content else content
+        if TABLE_ROW_MARK in content:
+            table_blocks = [b for b in candidates if b.type == "table"]
+            chosen = table_blocks[0] if table_blocks else None
+        else:
+            def score(block: ContentBlock) -> int:
+                if block.text and (block.text in body or body in block.text):
+                    return len(block.text)
+                return len(set(body) & set(block.text))
+            chosen = max(candidates, key=score) if candidates else None
+            if chosen is not None and score(chosen) <= 0:
+                chosen = None
+        if chosen is not None:
+            row["block_id"] = f"{version_id}#{chosen.block_id}"
+            row["block_type"] = chosen.type
+            row["source"] = chosen.source
     return rows

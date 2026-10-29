@@ -47,7 +47,7 @@ const ANSWER_BASE = {
 };
 
 /** 装一个按 URL 分派的 fetch。返回每次调用的 URL 列表，供断言「有没有走带权限过滤的读通道」。 */
-function stubFetch(frames: Frame[], answerOverrides: Record<string, unknown> = {}) {
+function stubFetch(frames: Frame[], answerOverrides: Record<string, unknown> = {}, chunkExtra: Record<string, Record<string, unknown>> = {}) {
   const called: string[] = [];
   let chunkBatchIds: string[] | null = null;
   globalThis.fetch = (async (url: unknown, init?: RequestInit) => {
@@ -61,7 +61,9 @@ function stubFetch(frames: Frame[], answerOverrides: Record<string, unknown> = {
         status: 200,
         headers: new Headers(),
         json: async () => ({
-          items: body.ids.map((id: string) => ({ chunk_id: id, content: `片段正文 for ${id}` })),
+          items: body.ids.map((id: string) => ({
+            chunk_id: id, content: `片段正文 for ${id}`, ...(chunkExtra[id] ?? {}),
+          })),
           hidden: [],
           requested: body.ids.length,
         }),
@@ -298,6 +300,27 @@ describe("问答页的三态渲染", () => {
     // 片段正文是第二次异步请求的结果，必须等它——直接断言会在竞态上偶尔变绿、偶尔变红
     await waitFor(() => expect(cite.textContent).toContain("片段正文 for doc-a@v1#1.1#c1"));
     expect(stub.ids()).toEqual(["doc-a@v1#1.1#c1"]);
+  });
+
+  it("引用片段带来源/块类型时在引用行展示", async () => {
+    const cid = "doc-a@v1#1.1#c1";
+    const stub = stubFetch([
+      { event: "retrieval", data: { n_chunks: 1 } },
+      {
+        event: "answer",
+        data: {
+          ...ANSWER_BASE,
+          conclusion: "结论",
+          key_points: [{ point: "要点一", evidence_ids: ["E1"] }],
+          citations: [{ evidence_id: "E1", chunk_id: cid, doc_id: "doc-a", section_no: "1.1", page: 3, security_level: 2 }],
+        },
+      },
+    ], {}, { [cid]: { block_type: "table", source: "mineru_table" } });
+    renderPage();
+    ask();
+    const cite = await screen.findByTestId("cite-E1");
+    await waitFor(() => expect(cite.textContent).toContain("表格 mineru_table"));
+    expect(stub.ids()).toEqual([cid]);
   });
 
   it("越权取不到的片段：说「取不到」而不是编一段正文顶上", async () => {

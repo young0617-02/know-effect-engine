@@ -1,0 +1,1512 @@
+{
+  "baseline_cfg": {
+    "mode": "hybrid",
+    "use_rerank": true,
+    "rerank_candidates": 20,
+    "rewrite_mode": "off"
+  },
+  "top_k": 5,
+  "runs": {
+    "legacy": {
+      "db": "kee_ab_legacy",
+      "collection": "kb_ab_legacy",
+      "build": {
+        "version_tag": "ab",
+        "collection": "kb_ab_legacy",
+        "analyzer": "jieba",
+        "admission": {
+          "total": 24,
+          "accepted": 24,
+          "rejected": 0,
+          "duplicates": 0
+        },
+        "rejected_detail": [],
+        "duplicates": [],
+        "docs_indexed": 24,
+        "parent_chunks": 140,
+        "child_chunks": 193,
+        "pg_stats": {
+          "document": 24,
+          "document_version": 24,
+          "chunk": 333,
+          "outbox_event": 24,
+          "audit_log": 24,
+          "reconciliation_diff": 0
+        },
+        "milvus_count": 193,
+        "timings_sec": {
+          "authoritative_write": 3.93,
+          "embed": 1.77,
+          "total": 273.94
+        },
+        "dispatch": {
+          "rounds": [
+            {
+              "round": 1,
+              "dispatched": 24,
+              "failed": 0
+            }
+          ],
+          "remaining_pending": 0
+        },
+        "seconds": 273.9
+      },
+      "eval_stats": {
+        "n_questions": 80,
+        "n_children": 193,
+        "n_parents": 140,
+        "answerable": 68,
+        "refuse": 7,
+        "escalate": 5,
+        "gradeable": 73,
+        "gold_empty_but_answerable": 0,
+        "unmatched_qids": [],
+        "gold_defects": [
+          {
+            "qid": "q-054",
+            "n_strict": 6,
+            "limit": 3,
+            "waived": true,
+            "waiver_reason": "五步交付法：收窄后 strict 仍有 6 块 >3，这 6 块都逐条列了五个阶段，再收窄就要删第二人确认「能独立答全」的块——「>3」在这道题上是下界受标注约束，不是关键词写宽了。",
+            "question": "公司的五步交付法是哪五个阶段？"
+          },
+          {
+            "qid": "q-056",
+            "n_strict": 7,
+            "limit": 3,
+            "waived": false,
+            "waiver_reason": "",
+            "question": "CMMI 3 级过程域映射在项目上具体登记哪些过程域和度量项？"
+          }
+        ],
+        "gold_defect_count": 2,
+        "gold_defect_unwaived": [
+          "q-056"
+        ],
+        "doc_scope_defects": [],
+        "doc_scope_defect_unwaived": [],
+        "manual_override_qids": [
+          "q-012",
+          "q-014",
+          "q-025",
+          "q-044",
+          "q-056",
+          "q-058",
+          "q-071",
+          "q-076",
+          "q-077",
+          "q-078",
+          "q-080"
+        ],
+        "mean_gold_per_question": 2.16,
+        "by_category": {
+          "术语": 16,
+          "编号": 13,
+          "方案名": 12,
+          "口语化": 14,
+          "跨文档": 13,
+          "无答案": 7,
+          "敏感": 5
+        }
+      },
+      "n_chunks": 193,
+      "metrics": {
+        "n_graded": 68,
+        "n": 68,
+        "recall@5": 0.8217,
+        "hit@5": 0.9853,
+        "mrr": 0.9706,
+        "strict": {
+          "n_graded": 68,
+          "n_total": 68,
+          "recall@5": 0.9468,
+          "hit@5": 0.9853,
+          "precision@5": 0.2412,
+          "mrr": 0.9596,
+          "zero_recall_rate": 0.0147
+        },
+        "latency_ms": {
+          "n": 68,
+          "p50": 287.9,
+          "p95": 322.1,
+          "p99": 2144.6,
+          "max": 5820.9,
+          "mean": 371.1
+        },
+        "degraded_count": 0,
+        "recall@5_ci95": [
+          0.7567,
+          0.8768
+        ]
+      },
+      "per_question": [
+        {
+          "qid": "q-001",
+          "recall": 1.0,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 2,
+          "category": "术语",
+          "split": "test"
+        },
+        {
+          "qid": "q-002",
+          "recall": 1.0,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 1,
+          "category": "术语",
+          "split": "dev"
+        },
+        {
+          "qid": "q-003",
+          "recall": 0.5,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 2,
+          "category": "术语",
+          "split": "test"
+        },
+        {
+          "qid": "q-004",
+          "recall": 0.5,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 2,
+          "category": "术语",
+          "split": "dev"
+        },
+        {
+          "qid": "q-005",
+          "recall": 1.0,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 2,
+          "category": "术语",
+          "split": "dev"
+        },
+        {
+          "qid": "q-006",
+          "recall": 1.0,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 2,
+          "category": "术语",
+          "split": "dev"
+        },
+        {
+          "qid": "q-007",
+          "recall": 0.75,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 4,
+          "category": "术语",
+          "split": "test"
+        },
+        {
+          "qid": "q-008",
+          "recall": 0.5,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 2,
+          "category": "术语",
+          "split": "dev"
+        },
+        {
+          "qid": "q-009",
+          "recall": 1.0,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 1,
+          "category": "术语",
+          "split": "dev"
+        },
+        {
+          "qid": "q-010",
+          "recall": 1.0,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 2,
+          "category": "术语",
+          "split": "test"
+        },
+        {
+          "qid": "q-011",
+          "recall": 1.0,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 2,
+          "category": "术语",
+          "split": "dev"
+        },
+        {
+          "qid": "q-012",
+          "recall": 0.5,
+          "recall_strict": 0.6666666666666666,
+          "hit": 1.0,
+          "n_gold": 8,
+          "category": "术语",
+          "split": "dev"
+        },
+        {
+          "qid": "q-013",
+          "recall": 0.5,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 2,
+          "category": "术语",
+          "split": "test"
+        },
+        {
+          "qid": "q-014",
+          "recall": 0.6666666666666666,
+          "recall_strict": 0.5,
+          "hit": 1.0,
+          "n_gold": 3,
+          "category": "术语",
+          "split": "test"
+        },
+        {
+          "qid": "q-015",
+          "recall": 0.6666666666666666,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 3,
+          "category": "编号",
+          "split": "test"
+        },
+        {
+          "qid": "q-016",
+          "recall": 1.0,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 2,
+          "category": "编号",
+          "split": "test"
+        },
+        {
+          "qid": "q-017",
+          "recall": 0.5,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 2,
+          "category": "编号",
+          "split": "test"
+        },
+        {
+          "qid": "q-018",
+          "recall": 1.0,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 2,
+          "category": "编号",
+          "split": "dev"
+        },
+        {
+          "qid": "q-019",
+          "recall": 1.0,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 1,
+          "category": "编号",
+          "split": "test"
+        },
+        {
+          "qid": "q-020",
+          "recall": 1.0,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 2,
+          "category": "编号",
+          "split": "dev"
+        },
+        {
+          "qid": "q-021",
+          "recall": 1.0,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 1,
+          "category": "编号",
+          "split": "test"
+        },
+        {
+          "qid": "q-022",
+          "recall": 1.0,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 2,
+          "category": "编号",
+          "split": "test"
+        },
+        {
+          "qid": "q-023",
+          "recall": 1.0,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 2,
+          "category": "编号",
+          "split": "dev"
+        },
+        {
+          "qid": "q-024",
+          "recall": 1.0,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 1,
+          "category": "编号",
+          "split": "test"
+        },
+        {
+          "qid": "q-025",
+          "recall": 0.6666666666666666,
+          "recall_strict": 0.5,
+          "hit": 1.0,
+          "n_gold": 3,
+          "category": "编号",
+          "split": "test"
+        },
+        {
+          "qid": "q-026",
+          "recall": 1.0,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 1,
+          "category": "编号",
+          "split": "test"
+        },
+        {
+          "qid": "q-027",
+          "recall": 1.0,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 2,
+          "category": "方案名",
+          "split": "test"
+        },
+        {
+          "qid": "q-028",
+          "recall": 1.0,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 2,
+          "category": "方案名",
+          "split": "test"
+        },
+        {
+          "qid": "q-029",
+          "recall": 1.0,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 2,
+          "category": "方案名",
+          "split": "test"
+        },
+        {
+          "qid": "q-030",
+          "recall": 0.5,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 2,
+          "category": "方案名",
+          "split": "dev"
+        },
+        {
+          "qid": "q-031",
+          "recall": 0.5,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 2,
+          "category": "方案名",
+          "split": "test"
+        },
+        {
+          "qid": "q-032",
+          "recall": 1.0,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 1,
+          "category": "方案名",
+          "split": "dev"
+        },
+        {
+          "qid": "q-033",
+          "recall": 1.0,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 1,
+          "category": "方案名",
+          "split": "test"
+        },
+        {
+          "qid": "q-034",
+          "recall": 1.0,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 2,
+          "category": "方案名",
+          "split": "test"
+        },
+        {
+          "qid": "q-035",
+          "recall": 1.0,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 1,
+          "category": "方案名",
+          "split": "dev"
+        },
+        {
+          "qid": "q-036",
+          "recall": 1.0,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 2,
+          "category": "方案名",
+          "split": "test"
+        },
+        {
+          "qid": "q-037",
+          "recall": 1.0,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 1,
+          "category": "方案名",
+          "split": "dev"
+        },
+        {
+          "qid": "q-038",
+          "recall": 1.0,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 2,
+          "category": "方案名",
+          "split": "test"
+        },
+        {
+          "qid": "q-039",
+          "recall": 0.5,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 2,
+          "category": "口语化",
+          "split": "test"
+        },
+        {
+          "qid": "q-040",
+          "recall": 1.0,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 2,
+          "category": "口语化",
+          "split": "test"
+        },
+        {
+          "qid": "q-041",
+          "recall": 0.6666666666666666,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 3,
+          "category": "口语化",
+          "split": "dev"
+        },
+        {
+          "qid": "q-042",
+          "recall": 1.0,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 2,
+          "category": "口语化",
+          "split": "dev"
+        },
+        {
+          "qid": "q-043",
+          "recall": 1.0,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 1,
+          "category": "口语化",
+          "split": "test"
+        },
+        {
+          "qid": "q-044",
+          "recall": 0.0,
+          "recall_strict": 0.0,
+          "hit": 0.0,
+          "n_gold": 3,
+          "category": "口语化",
+          "split": "dev"
+        },
+        {
+          "qid": "q-045",
+          "recall": 1.0,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 3,
+          "category": "口语化",
+          "split": "dev"
+        },
+        {
+          "qid": "q-046",
+          "recall": 1.0,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 1,
+          "category": "口语化",
+          "split": "test"
+        },
+        {
+          "qid": "q-047",
+          "recall": 0.5,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 2,
+          "category": "口语化",
+          "split": "test"
+        },
+        {
+          "qid": "q-048",
+          "recall": 0.5,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 2,
+          "category": "口语化",
+          "split": "test"
+        },
+        {
+          "qid": "q-049",
+          "recall": 0.5,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 2,
+          "category": "口语化",
+          "split": "dev"
+        },
+        {
+          "qid": "q-050",
+          "recall": 1.0,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 1,
+          "category": "口语化",
+          "split": "test"
+        },
+        {
+          "qid": "q-051",
+          "recall": 0.5,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 2,
+          "category": "口语化",
+          "split": "dev"
+        },
+        {
+          "qid": "q-052",
+          "recall": 1.0,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 1,
+          "category": "口语化",
+          "split": "dev"
+        },
+        {
+          "qid": "q-053",
+          "recall": 1.0,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 1,
+          "category": "跨文档",
+          "split": "dev"
+        },
+        {
+          "qid": "q-054",
+          "recall": 0.5,
+          "recall_strict": 0.5,
+          "hit": 1.0,
+          "n_gold": 6,
+          "category": "跨文档",
+          "split": "dev"
+        },
+        {
+          "qid": "q-055",
+          "recall": 1.0,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 2,
+          "category": "跨文档",
+          "split": "test"
+        },
+        {
+          "qid": "q-056",
+          "recall": 0.625,
+          "recall_strict": 0.7142857142857143,
+          "hit": 1.0,
+          "n_gold": 8,
+          "category": "跨文档",
+          "split": "test"
+        },
+        {
+          "qid": "q-057",
+          "recall": 1.0,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 2,
+          "category": "跨文档",
+          "split": "test"
+        },
+        {
+          "qid": "q-058",
+          "recall": 1.0,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 1,
+          "category": "跨文档",
+          "split": "test"
+        },
+        {
+          "qid": "q-071",
+          "recall": 0.3333333333333333,
+          "recall_strict": 0.5,
+          "hit": 1.0,
+          "n_gold": 3,
+          "category": "术语",
+          "split": "dev"
+        },
+        {
+          "qid": "q-072",
+          "recall": 1.0,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 1,
+          "category": "编号",
+          "split": "test"
+        },
+        {
+          "qid": "q-073",
+          "recall": 1.0,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 1,
+          "category": "跨文档",
+          "split": "test"
+        },
+        {
+          "qid": "q-074",
+          "recall": 0.5,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 2,
+          "category": "跨文档",
+          "split": "dev"
+        },
+        {
+          "qid": "q-075",
+          "recall": 1.0,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 1,
+          "category": "跨文档",
+          "split": "dev"
+        },
+        {
+          "qid": "q-076",
+          "recall": 1.0,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 2,
+          "category": "跨文档",
+          "split": "test"
+        },
+        {
+          "qid": "q-077",
+          "recall": 0.5,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 4,
+          "category": "跨文档",
+          "split": "test"
+        },
+        {
+          "qid": "q-078",
+          "recall": 1.0,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 2,
+          "category": "跨文档",
+          "split": "test"
+        },
+        {
+          "qid": "q-079",
+          "recall": 1.0,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 2,
+          "category": "跨文档",
+          "split": "test"
+        },
+        {
+          "qid": "q-080",
+          "recall": 0.5,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 4,
+          "category": "术语",
+          "split": "dev"
+        }
+      ]
+    },
+    "block-v1": {
+      "db": "kee_ab_block",
+      "collection": "kb_ab_block",
+      "build": {
+        "version_tag": "ab",
+        "collection": "kb_ab_block",
+        "analyzer": "jieba",
+        "admission": {
+          "total": 24,
+          "accepted": 24,
+          "rejected": 0,
+          "duplicates": 0
+        },
+        "rejected_detail": [],
+        "duplicates": [],
+        "docs_indexed": 24,
+        "parent_chunks": 140,
+        "child_chunks": 334,
+        "pg_stats": {
+          "document": 24,
+          "document_version": 24,
+          "chunk": 474,
+          "outbox_event": 24,
+          "audit_log": 24,
+          "reconciliation_diff": 0
+        },
+        "milvus_count": 334,
+        "timings_sec": {
+          "authoritative_write": 4.28,
+          "embed": 1.32,
+          "total": 274.54
+        },
+        "dispatch": {
+          "rounds": [
+            {
+              "round": 1,
+              "dispatched": 24,
+              "failed": 0
+            }
+          ],
+          "remaining_pending": 0
+        },
+        "seconds": 274.5
+      },
+      "eval_stats": {
+        "n_questions": 80,
+        "n_children": 334,
+        "n_parents": 140,
+        "answerable": 68,
+        "refuse": 7,
+        "escalate": 5,
+        "gradeable": 73,
+        "gold_empty_but_answerable": 0,
+        "unmatched_qids": [],
+        "gold_defects": [
+          {
+            "qid": "q-054",
+            "n_strict": 5,
+            "limit": 3,
+            "waived": true,
+            "waiver_reason": "五步交付法：收窄后 strict 仍有 6 块 >3，这 6 块都逐条列了五个阶段，再收窄就要删第二人确认「能独立答全」的块——「>3」在这道题上是下界受标注约束，不是关键词写宽了。",
+            "question": "公司的五步交付法是哪五个阶段？"
+          },
+          {
+            "qid": "q-056",
+            "n_strict": 7,
+            "limit": 3,
+            "waived": false,
+            "waiver_reason": "",
+            "question": "CMMI 3 级过程域映射在项目上具体登记哪些过程域和度量项？"
+          }
+        ],
+        "gold_defect_count": 2,
+        "gold_defect_unwaived": [
+          "q-056"
+        ],
+        "doc_scope_defects": [],
+        "doc_scope_defect_unwaived": [],
+        "manual_override_qids": [
+          "q-012",
+          "q-014",
+          "q-025",
+          "q-044",
+          "q-056",
+          "q-058",
+          "q-071",
+          "q-076",
+          "q-077",
+          "q-078",
+          "q-080"
+        ],
+        "mean_gold_per_question": 3.51,
+        "by_category": {
+          "术语": 16,
+          "编号": 13,
+          "方案名": 12,
+          "口语化": 14,
+          "跨文档": 13,
+          "无答案": 7,
+          "敏感": 5
+        }
+      },
+      "n_chunks": 334,
+      "metrics": {
+        "n_graded": 68,
+        "n": 68,
+        "recall@5": 0.6605,
+        "hit@5": 0.9706,
+        "mrr": 0.9277,
+        "strict": {
+          "n_graded": 66,
+          "n_total": 66,
+          "recall@5": 0.9007,
+          "hit@5": 0.9394,
+          "precision@5": 0.2333,
+          "mrr": 0.8919,
+          "zero_recall_rate": 0.0606
+        },
+        "latency_ms": {
+          "n": 68,
+          "p50": 179.3,
+          "p95": 210.4,
+          "p99": 335.5,
+          "max": 577.7,
+          "mean": 186.5
+        },
+        "degraded_count": 0,
+        "recall@5_ci95": [
+          0.5825,
+          0.7318
+        ]
+      },
+      "per_question": [
+        {
+          "qid": "q-001",
+          "recall": 1.0,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 3,
+          "category": "术语",
+          "split": "test"
+        },
+        {
+          "qid": "q-002",
+          "recall": 1.0,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 2,
+          "category": "术语",
+          "split": "dev"
+        },
+        {
+          "qid": "q-003",
+          "recall": 0.3333333333333333,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 3,
+          "category": "术语",
+          "split": "test"
+        },
+        {
+          "qid": "q-004",
+          "recall": 0.6666666666666666,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 3,
+          "category": "术语",
+          "split": "dev"
+        },
+        {
+          "qid": "q-005",
+          "recall": 1.0,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 3,
+          "category": "术语",
+          "split": "dev"
+        },
+        {
+          "qid": "q-006",
+          "recall": 1.0,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 3,
+          "category": "术语",
+          "split": "dev"
+        },
+        {
+          "qid": "q-007",
+          "recall": 0.42857142857142855,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 7,
+          "category": "术语",
+          "split": "test"
+        },
+        {
+          "qid": "q-008",
+          "recall": 0.3333333333333333,
+          "recall_strict": null,
+          "hit": 1.0,
+          "n_gold": 3,
+          "category": "术语",
+          "split": "dev"
+        },
+        {
+          "qid": "q-009",
+          "recall": 0.5,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 2,
+          "category": "术语",
+          "split": "dev"
+        },
+        {
+          "qid": "q-010",
+          "recall": 1.0,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 3,
+          "category": "术语",
+          "split": "test"
+        },
+        {
+          "qid": "q-011",
+          "recall": 0.6666666666666666,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 3,
+          "category": "术语",
+          "split": "dev"
+        },
+        {
+          "qid": "q-012",
+          "recall": 0.3333333333333333,
+          "recall_strict": 0.6666666666666666,
+          "hit": 1.0,
+          "n_gold": 12,
+          "category": "术语",
+          "split": "dev"
+        },
+        {
+          "qid": "q-013",
+          "recall": 0.3333333333333333,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 3,
+          "category": "术语",
+          "split": "test"
+        },
+        {
+          "qid": "q-014",
+          "recall": 0.75,
+          "recall_strict": 0.5,
+          "hit": 1.0,
+          "n_gold": 4,
+          "category": "术语",
+          "split": "test"
+        },
+        {
+          "qid": "q-015",
+          "recall": 0.4,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 5,
+          "category": "编号",
+          "split": "test"
+        },
+        {
+          "qid": "q-016",
+          "recall": 1.0,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 3,
+          "category": "编号",
+          "split": "test"
+        },
+        {
+          "qid": "q-017",
+          "recall": 0.3333333333333333,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 3,
+          "category": "编号",
+          "split": "test"
+        },
+        {
+          "qid": "q-018",
+          "recall": 1.0,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 3,
+          "category": "编号",
+          "split": "dev"
+        },
+        {
+          "qid": "q-019",
+          "recall": 1.0,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 2,
+          "category": "编号",
+          "split": "test"
+        },
+        {
+          "qid": "q-020",
+          "recall": 1.0,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 3,
+          "category": "编号",
+          "split": "dev"
+        },
+        {
+          "qid": "q-021",
+          "recall": 0.5,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 2,
+          "category": "编号",
+          "split": "test"
+        },
+        {
+          "qid": "q-022",
+          "recall": 1.0,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 3,
+          "category": "编号",
+          "split": "test"
+        },
+        {
+          "qid": "q-023",
+          "recall": 1.0,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 3,
+          "category": "编号",
+          "split": "dev"
+        },
+        {
+          "qid": "q-024",
+          "recall": 1.0,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 2,
+          "category": "编号",
+          "split": "test"
+        },
+        {
+          "qid": "q-025",
+          "recall": 0.75,
+          "recall_strict": 0.6666666666666666,
+          "hit": 1.0,
+          "n_gold": 4,
+          "category": "编号",
+          "split": "test"
+        },
+        {
+          "qid": "q-026",
+          "recall": 1.0,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 2,
+          "category": "编号",
+          "split": "test"
+        },
+        {
+          "qid": "q-027",
+          "recall": 1.0,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 3,
+          "category": "方案名",
+          "split": "test"
+        },
+        {
+          "qid": "q-028",
+          "recall": 1.0,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 3,
+          "category": "方案名",
+          "split": "test"
+        },
+        {
+          "qid": "q-029",
+          "recall": 0.6666666666666666,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 3,
+          "category": "方案名",
+          "split": "test"
+        },
+        {
+          "qid": "q-030",
+          "recall": 0.6666666666666666,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 3,
+          "category": "方案名",
+          "split": "dev"
+        },
+        {
+          "qid": "q-031",
+          "recall": 0.3333333333333333,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 3,
+          "category": "方案名",
+          "split": "test"
+        },
+        {
+          "qid": "q-032",
+          "recall": 0.5,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 2,
+          "category": "方案名",
+          "split": "dev"
+        },
+        {
+          "qid": "q-033",
+          "recall": 0.5,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 2,
+          "category": "方案名",
+          "split": "test"
+        },
+        {
+          "qid": "q-034",
+          "recall": 1.0,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 3,
+          "category": "方案名",
+          "split": "test"
+        },
+        {
+          "qid": "q-035",
+          "recall": 0.5,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 2,
+          "category": "方案名",
+          "split": "dev"
+        },
+        {
+          "qid": "q-036",
+          "recall": 0.3333333333333333,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 3,
+          "category": "方案名",
+          "split": "test"
+        },
+        {
+          "qid": "q-037",
+          "recall": 1.0,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 2,
+          "category": "方案名",
+          "split": "dev"
+        },
+        {
+          "qid": "q-038",
+          "recall": 1.0,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 3,
+          "category": "方案名",
+          "split": "test"
+        },
+        {
+          "qid": "q-039",
+          "recall": 0.6666666666666666,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 3,
+          "category": "口语化",
+          "split": "test"
+        },
+        {
+          "qid": "q-040",
+          "recall": 0.3333333333333333,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 3,
+          "category": "口语化",
+          "split": "test"
+        },
+        {
+          "qid": "q-041",
+          "recall": 0.6666666666666666,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 6,
+          "category": "口语化",
+          "split": "dev"
+        },
+        {
+          "qid": "q-042",
+          "recall": 0.6666666666666666,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 3,
+          "category": "口语化",
+          "split": "dev"
+        },
+        {
+          "qid": "q-043",
+          "recall": 0.5,
+          "recall_strict": 0.0,
+          "hit": 1.0,
+          "n_gold": 2,
+          "category": "口语化",
+          "split": "test"
+        },
+        {
+          "qid": "q-044",
+          "recall": 0.0,
+          "recall_strict": 0.0,
+          "hit": 0.0,
+          "n_gold": 4,
+          "category": "口语化",
+          "split": "dev"
+        },
+        {
+          "qid": "q-045",
+          "recall": 1.0,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 5,
+          "category": "口语化",
+          "split": "dev"
+        },
+        {
+          "qid": "q-046",
+          "recall": 0.5,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 2,
+          "category": "口语化",
+          "split": "test"
+        },
+        {
+          "qid": "q-047",
+          "recall": 0.3333333333333333,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 3,
+          "category": "口语化",
+          "split": "test"
+        },
+        {
+          "qid": "q-048",
+          "recall": 0.3333333333333333,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 3,
+          "category": "口语化",
+          "split": "test"
+        },
+        {
+          "qid": "q-049",
+          "recall": 0.6666666666666666,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 3,
+          "category": "口语化",
+          "split": "dev"
+        },
+        {
+          "qid": "q-050",
+          "recall": 0.5,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 2,
+          "category": "口语化",
+          "split": "test"
+        },
+        {
+          "qid": "q-051",
+          "recall": 0.0,
+          "recall_strict": 0.0,
+          "hit": 0.0,
+          "n_gold": 3,
+          "category": "口语化",
+          "split": "dev"
+        },
+        {
+          "qid": "q-052",
+          "recall": 0.5,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 2,
+          "category": "口语化",
+          "split": "dev"
+        },
+        {
+          "qid": "q-053",
+          "recall": 1.0,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 2,
+          "category": "跨文档",
+          "split": "dev"
+        },
+        {
+          "qid": "q-054",
+          "recall": 0.25,
+          "recall_strict": 0.4,
+          "hit": 1.0,
+          "n_gold": 12,
+          "category": "跨文档",
+          "split": "dev"
+        },
+        {
+          "qid": "q-055",
+          "recall": 0.3333333333333333,
+          "recall_strict": 0.0,
+          "hit": 1.0,
+          "n_gold": 3,
+          "category": "跨文档",
+          "split": "test"
+        },
+        {
+          "qid": "q-056",
+          "recall": 0.3333333333333333,
+          "recall_strict": 0.7142857142857143,
+          "hit": 1.0,
+          "n_gold": 15,
+          "category": "跨文档",
+          "split": "test"
+        },
+        {
+          "qid": "q-057",
+          "recall": 0.75,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 4,
+          "category": "跨文档",
+          "split": "test"
+        },
+        {
+          "qid": "q-058",
+          "recall": 1.0,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 2,
+          "category": "跨文档",
+          "split": "test"
+        },
+        {
+          "qid": "q-071",
+          "recall": 0.25,
+          "recall_strict": 0.5,
+          "hit": 1.0,
+          "n_gold": 4,
+          "category": "术语",
+          "split": "dev"
+        },
+        {
+          "qid": "q-072",
+          "recall": 1.0,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 2,
+          "category": "编号",
+          "split": "test"
+        },
+        {
+          "qid": "q-073",
+          "recall": 1.0,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 2,
+          "category": "跨文档",
+          "split": "test"
+        },
+        {
+          "qid": "q-074",
+          "recall": 0.3333333333333333,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 3,
+          "category": "跨文档",
+          "split": "dev"
+        },
+        {
+          "qid": "q-075",
+          "recall": 1.0,
+          "recall_strict": null,
+          "hit": 1.0,
+          "n_gold": 2,
+          "category": "跨文档",
+          "split": "dev"
+        },
+        {
+          "qid": "q-076",
+          "recall": 0.5,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 4,
+          "category": "跨文档",
+          "split": "test"
+        },
+        {
+          "qid": "q-077",
+          "recall": 0.6666666666666666,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 6,
+          "category": "跨文档",
+          "split": "test"
+        },
+        {
+          "qid": "q-078",
+          "recall": 0.6666666666666666,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 3,
+          "category": "跨文档",
+          "split": "test"
+        },
+        {
+          "qid": "q-079",
+          "recall": 1.0,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 3,
+          "category": "跨文档",
+          "split": "test"
+        },
+        {
+          "qid": "q-080",
+          "recall": 0.3333333333333333,
+          "recall_strict": 1.0,
+          "hit": 1.0,
+          "n_gold": 6,
+          "category": "术语",
+          "split": "dev"
+        }
+      ]
+    }
+  },
+  "delta_block_minus_legacy": {
+    "recall@5": -0.1612,
+    "hit@5": -0.0147,
+    "mrr": -0.0429,
+    "strict_recall@5": -0.0461
+  },
+  "note": "gold 按各集合 chunk 内容重新装配，不是同一批人工标注 id；本对照只回答两种分块方案各自的可检索性，不替代 Phase 2 的答案/重切裁决。"
+}

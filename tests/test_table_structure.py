@@ -11,6 +11,7 @@ from kee.ingest.mineru_onnx import (
     TableStructureModel,
     _quad_to_box,
     table_span_boxes,
+    table_to_data,
     table_to_markdown,
 )
 from kee.ingest.parsers import _clean, is_table_block, split_table_block, split_table_block_rows
@@ -60,6 +61,30 @@ def test_merged_cell_anchors_at_leftmost_covered_column():
     body = md.split("\n")
     assert body[0] == "| 型号 | 有害物质 |  |"  # 合并格落在最左覆盖列，其余列留空而不是丢掉
     assert body[2] == "| 主板 | 铅 | 汞 |"
+
+
+def test_table_to_data_preserves_merged_cell_geometry():
+    rows = [
+        [cell(0, 0, 60, 30)],
+        [cell(0, 30, 60, 60), cell(60, 30, 120, 60), cell(120, 30, 180, 60)],
+    ]
+    spans = [cell(60, 0, 180, 30, label="span")]
+    lines = [
+        line(2, 8, 40, 22, "型号"),
+        line(90, 8, 150, 22, "有害物质"),
+        line(2, 38, 40, 52, "主板"),
+        line(70, 38, 110, 52, "铅"),
+        line(130, 38, 170, 52, "汞"),
+    ]
+    data = table_to_data(rows, spans, lines)
+    assert data is not None
+    assert (data.n_rows, data.n_cols) == (2, 3)
+    by_pos = {(c.row, c.col): c for c in data.cells}
+    assert by_pos[(0, 0)].text == "型号"
+    assert by_pos[(0, 1)].text == "有害物质"
+    assert by_pos[(0, 1)].colspan == 2
+    assert by_pos[(0, 1)].is_span
+    assert by_pos[(1, 2)].text == "汞"
 
 
 def test_multiline_cjk_cell_joins_without_space_but_latin_keeps_it():

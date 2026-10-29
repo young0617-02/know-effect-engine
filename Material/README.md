@@ -41,9 +41,11 @@
 | 依赖栈 | **PASS** | Milvus 3.0.0 / PostgreSQL 18.6 / Redis 8.10.1 / Ollama qwen2.5:7b / RTX 4060 8GB |
 | 生产入口 | **PASS** | `scripts/serve_api.py` 在 `127.0.0.1:28000`；Nginx 同源 `127.0.0.1:38080` |
 | 健康与规模 | **PASS** | `/healthz`：Milvus 193 块 / PostgreSQL 24 篇 |
-| 后端单测 | **394 passed** | `.venv/Scripts/python.exe -m pytest -q`，25.44s；含按页路由新增 8 项 |
+| 后端单测 | **403 passed** | `.venv/Scripts/python.exe -m pytest -q`，43.06s；含按页路由 8 + 结构块/表格/API 9 |
+| 结构块 Phase 1 | **PASS** | `tests/test_content_blocks.py` 3 项；scratch DB `content_block` 入库 2 行 |
+| block-v1 A/B | **无收益，保持 legacy** | 193 vs 193 子块；Hit/MRR 持平；Recall@5 −1.57pp、strict −3.11pp |
 | 按页路由 | **PASS** | `tests/test_page_routing.py` 8 项；真实 1 文本页 + 1 扫描页 8.1s、页码 `[1,2]` |
-| 前端单测 + 构建 | **40 passed / build clean** | 5 个测试文件；`tsc -b && vite build` |
+| 前端单测 + 构建 | **41 passed / build clean** | 5 个测试文件；`tsc -b && vite build` |
 | 写路径真 HTTP | **19/19** | 上传、复核闸、拒答分因、回滚、对账、审计；scratch 库/集合，生产计数未变 |
 | M4 端到端（经 Nginx） | **13/13** | SSE 顺序、answer 一次、权限面、审计、片段读取 |
 | 完整问答（热态） | **PASS** | 新增未缓存问题 5.31s；hybrid 无降级；引用 1 条 |

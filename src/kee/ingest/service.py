@@ -18,7 +18,14 @@ from kee.db.outbox import OutboxDispatcher
 from kee.db.pg import AuthoritativeStore
 from kee.db.vector_store import VectorStore
 from kee.ingest.admission import admit, checksum_of
-from kee.ingest.chunking import chunk_document, granularity_from_settings
+from kee.ingest.chunking import (
+    attach_block_metadata,
+    chunk_blocks,
+    chunk_document,
+    chunk_strategy_from_settings,
+    granularity_from_settings,
+)
+from kee.ingest.content import count_blocks
 from kee.ingest.media import MediaPipeline
 from kee.ingest.metadata import resolve_meta
 from kee.ingest.parsers import ParsedDocument, parse_file
@@ -164,15 +171,29 @@ class IngestionService:
         new_document = not self.pg.versions_of(card["doc_id"])
         self.pg.upsert_document(doc_row)
         granularity = granularity_from_settings()
-        scheme = f"parent-child:v1{granularity.scheme_tag()}" if granularity else "parent-child:v1"
+        strategy = chunk_strategy_from_settings()
+        block_mode = strategy == "block-v1" and bool(parsed.blocks)
+        scheme = "block-v1" if block_mode else (
+            f"parent-child:v1{granularity.scheme_tag()}" if granularity else "parent-child:v1"
+        )
         version_id = self.pg.bump_version(card["doc_id"], scheme, checksum)
         # bump_version 已把旧版本置 superseded；这里必须把旧版本的索引行撤掉，
         # 否则同一文档 v1/v2 会同时被检索命中，去重要靠检索层兜底是错的。
         for stale in self.pg.versions_of(card["doc_id"]):
             if stale["status"] == "superseded" and stale["id"] != version_id:
                 self.kb.delete_version(stale["id"])
-        rows = chunk_document(card, version_id, granularity=granularity)
+        rows = (
+            chunk_blocks(parsed.blocks, version_id, card["doc_id"], card["title"])
+            if block_mode
+            else attach_block_metadata(
+                chunk_document(card, version_id, granularity=granularity),
+                parsed.blocks,
+                version_id,
+            )
+        )
         self.pg.insert_chunks(rows)
+        # Phase 1：结构块与 chunk 解耦写入；不参与本次分块/索引读数。
+        block_count = self.pg.insert_blocks(version_id, card["doc_id"], parsed.blocks)
         children = [r for r in rows if not r["is_parent"]]
         parents = [r for r in rows if r["is_parent"]]
         self.pg.enqueue_outbox(
@@ -214,6 +235,10 @@ class IngestionService:
                 "version_id": version_id,
                 "source_format": parsed.source_format,
                 "child_chunks": len(children),
+                "content_blocks": block_count,
+                "block_summary": count_blocks(parsed.blocks),
+                "chunk_scheme": scheme,
+                "chunk_strategy": strategy,
                 "meta_warnings": meta_warnings,
                 "parse_notes": parsed.notes,
             },

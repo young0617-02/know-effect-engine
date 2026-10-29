@@ -140,6 +140,14 @@ def test_plain_ascii_scope_value_still_works(client, store):
     assert r.json()["items"] == [] and r.json()["hidden"] == [open_id]
 
 
+def test_chunk_table_requires_identity_and_complete_coordinates(client):
+    denied = client.get("/api/v1/chunks/" + quote("doc-a@v1#1.1#c1", safe="") + "/table")
+    assert denied.status_code == 401
+    partial = client.get("/api/v1/chunks/" + quote("doc-a@v1#1.1#c1", safe="") + "/table?row=0", headers=ADMIN)
+    assert partial.status_code == 400
+    assert partial.json()["code"] == "E400"
+
+
 def test_chunks_batch_leaves_an_audit_trail(client, store):
     """引用片段的读取必须留痕：文档 DoD 要「引用」这一环也可追溯。"""
     open_id = _first_id(store, _SQL_OPEN)

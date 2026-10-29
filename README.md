@@ -72,7 +72,7 @@ docker compose -f infra/docker-compose.gate0.yml up -d      # 全部 healthy 即
 只能作为**独立的一键部署验证**跑，跑完必须重跑 `g02` 建库；默认的 `--rebuild` 只重建容器、保留数据卷。
 `g01` 已加前置校验：collection 不存在或为空时直接判失败退出，不会拿「全部提前拒答 → 延迟 0ms」冒充达标。
 
-单测：`.venv/Scripts/python.exe -m pytest -q`（现 **394 项**，2026-10-27；含按页路由新增 8 项；纯逻辑部分不需要 GPU，DB/存储相关用例需先起存储栈）。
+单测：`.venv/Scripts/python.exe -m pytest -q`（现 **403 项**，2026-10-27；含按页路由 8 + 结构块/表格/API 9；纯逻辑部分不需要 GPU，DB/存储相关用例需先起存储栈）。
 
 ## M1 知识构建链路（Gate 0 放行后开工）
 

@@ -656,20 +656,80 @@ def create_app(*, skip_embedding: bool = False, scheduler: Any | None = None, co
         越权与不存在的 id 合并进 `hidden`，不告诉调用者属于哪一类——那本身就是信息泄露。
         """
         ctx, actor = context_of(x_kee_role, x_kee_actor, x_kee_industries, x_kee_projects)
+        _ensure_schema_once()
         out = pg.chunks_visible(
             body.ids,
             max_security_level=ctx.effective_max_level,
             industries=ctx.industries or None,
             projects=ctx.projects or None,
         )
+        by_source: dict[str, int] = {}
+        by_type: dict[str, int] = {}
+        for item in out["items"]:
+            src = item.get("source") or "legacy"
+            typ = item.get("block_type") or "legacy"
+            by_source[src] = by_source.get(src, 0) + 1
+            by_type[typ] = by_type.get(typ, 0) + 1
         pg.append_audit(
             actor,
             "chunks_read",
             "kb_chunks",
             request.state.trace_id,
-            {"requested": out["requested"], "returned": len(out["items"]), "hidden": len(out["hidden"])},
+            {
+                "requested": out["requested"], "returned": len(out["items"]),
+                "hidden": len(out["hidden"]), "by_source": by_source, "by_type": by_type,
+            },
         )
         return out
+
+    @app.get("/api/v1/chunks/{chunk_id}/table")
+    def chunk_table(
+        chunk_id: str,
+        request: Request,
+        row: int | None = None,
+        col: int | None = None,
+        x_kee_role: str | None = Header(None),
+        x_kee_actor: str | None = Header(None),
+        x_kee_industries: str | None = Header(None),
+        x_kee_projects: str | None = Header(None),
+    ) -> dict[str, Any]:
+        """表格块的精确单元格回查。
+
+        读取仍走 `chunks_visible`，所以密级/部门/项目与引用正文同口径；
+        越权、不存在、非表格统一给 E404，不区分——区分本身就是信息泄露。
+        """
+        if (row is None) != (col is None):
+            raise ApiError("E400", 400, "row 与 col 必须同时提供或同时省略", request.state.trace_id)
+        ctx, actor = context_of(x_kee_role, x_kee_actor, x_kee_industries, x_kee_projects)
+        _ensure_schema_once()
+        out = pg.chunks_visible(
+            [chunk_id],
+            max_security_level=ctx.effective_max_level,
+            industries=ctx.industries or None,
+            projects=ctx.projects or None,
+        )
+        if not out["items"]:
+            raise ApiError("E404", 404, "片段不存在、无权限或没有结构化表格", request.state.trace_id)
+        item = out["items"][0]
+        table = item.get("table")
+        if not table:
+            raise ApiError("E404", 404, "片段不存在、无权限或没有结构化表格", request.state.trace_id)
+        payload: dict[str, Any] = {
+            "chunk_id": chunk_id,
+            "block_id": item.get("block_id"),
+            "source": item.get("source"),
+            "table": table,
+        }
+        if row is not None and col is not None:
+            payload["cell"] = next(
+                (c for c in table.get("cells", []) if c.get("row") == row and c.get("col") == col),
+                None,
+            )
+        pg.append_audit(
+            actor, "chunks_read", "kb_chunks", request.state.trace_id,
+            {"table": True, "chunk_id": chunk_id, "row": row, "col": col},
+        )
+        return payload
 
     def _answer_engine(rewrite: bool):
         """按 rewrite 开关复用两个引擎实例：改写器带 Redis 缓存，重建一次要重连。"""

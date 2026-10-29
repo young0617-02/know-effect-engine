@@ -76,6 +76,7 @@ def fake_mineru(monkeypatch: pytest.MonkeyPatch) -> list[set[int] | None]:
                     heading=f"OCR页{p}",
                     page=p,
                     paragraphs=[f"第{p}页扫描文字足够长，可以被分块" * 2],
+                    source="mineru_ocr",
                 )
                 for i, p in enumerate(nums, start=1)
             ]
@@ -117,6 +118,8 @@ def test_page_routing_routes_only_the_thin_page(
     assert media.calls == [{1, 3}], "内嵌位图 OCR 只应处理文本页，不能重复处理 OCR 页"
     assert {s.page for s in doc.sections} == {1, 2, 3}
     assert any("第2页扫描文字" in p for s in doc.sections for p in s.paragraphs)
+    assert any(b.page == 2 and b.source == "mineru_ocr" for b in doc.blocks)
+    assert any(b.page == 1 and b.source == "native_text" for b in doc.blocks)
     assert any("按页路由：文本层 2 页，MinerU-ONNX 1 页" in n for n in doc.notes)
     assert "OCR 页 [2]" in "\n".join(doc.notes)
     assert doc.title == "1 总则"
@@ -219,7 +222,7 @@ def test_page_routing_falls_back_per_page_when_one_ocr_page_has_no_sections(
             # 第 1 页有 OCR 结果，第 2 页没产出章节（模拟空白/单页失败）
             return ParsedDocument(
                 title="OCR标题",
-                sections=[ParsedSection("1", "OCR页1", 1, ["第1页扫描文字足够长，可以被分块"] )],
+                sections=[ParsedSection("1", "OCR页1", 1, ["第1页扫描文字足够长，可以被分块"], source="mineru_ocr")],
                 source_format="pdf",
                 notes=["fake partial MinerU"],
             )

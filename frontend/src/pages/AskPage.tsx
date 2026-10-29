@@ -175,6 +175,7 @@ function AnswerView({
   const answer = turn.answer;
   const cites = answer?.citations ?? [];
   const [texts, setTexts] = useState<Record<string, string>>({});
+  const [provenance, setProvenance] = useState<Record<string, { block_type?: string; source?: string }>>({});
   const [hidden, setHidden] = useState<string[]>([]);
   /** 片段读取是否已落定。没有这个标志时，「还没读回来」会被显示成「正文未返回」——
    *  那是一句假话，而且正是这条界面把越权和慢区分不开的原因。 */
@@ -183,17 +184,25 @@ function AnswerView({
   useEffect(() => {
     const ids = Array.from(new Set(cites.map((c) => String(c.chunk_id)).filter(Boolean)));
     setTexts({});
+    setProvenance({});
     setHidden([]);
     setSettled(false);
     if (!ids.length) return;
     let alive = true;
-    apiFetch<{ items: { chunk_id: string; content: string }[]; hidden: string[] }>("/api/v1/chunks/batch", {
+    apiFetch<{
+      items: { chunk_id: string; content: string; block_type?: string | null; source?: string | null }[];
+      hidden: string[];
+    }>("/api/v1/chunks/batch", {
       identity,
       body: { ids },
     })
       .then((r) => {
         if (!alive) return;
         setTexts(Object.fromEntries(r.items.map((i) => [i.chunk_id, i.content])));
+        setProvenance(Object.fromEntries(r.items.map((i) => [
+          i.chunk_id,
+          { block_type: i.block_type ?? undefined, source: i.source ?? undefined },
+        ])));
         setHidden(r.hidden ?? []);
         setSettled(true);
       })
@@ -295,7 +304,7 @@ function AnswerView({
         ) : null}
 
         {answer ? (
-          <AnswerMeta answer={answer} cites={cites} texts={texts} hidden={hidden} settled={settled} onEvidence={onEvidence} />
+          <AnswerMeta answer={answer} cites={cites} texts={texts} provenance={provenance} hidden={hidden} settled={settled} onEvidence={onEvidence} />
         ) : null}
 
         {answer?.status === "answer" ? (
@@ -334,6 +343,7 @@ function AnswerMeta({
   answer,
   cites,
   texts,
+  provenance,
   hidden,
   settled,
   onEvidence,
@@ -341,6 +351,7 @@ function AnswerMeta({
   answer: AnswerPayload;
   cites: Citation[];
   texts: Record<string, string>;
+  provenance: Record<string, { block_type?: string; source?: string }>;
   hidden: string[];
   settled: boolean;
   onEvidence: (id: string | null) => void;
@@ -396,6 +407,13 @@ function AnswerMeta({
             <div>
               [{String(ct.evidence_id)}] {String(ct.doc_id)} · 章节 {String(ct.section_no ?? "-")} · 第{" "}
               {String(ct.page ?? "-")} 页 · 密级 {String(ct.security_level ?? "-")}
+              {provenance[String(ct.chunk_id)]?.source ? (
+                <>
+                  {" · "}
+                  {provenance[String(ct.chunk_id)]?.block_type === "table" ? "表格" : "来源"}{" "}
+                  {provenance[String(ct.chunk_id)]?.source}
+                </>
+              ) : null}
             </div>
             <div className={s.meta}>
               {texts[String(ct.chunk_id)] ??

@@ -17,6 +17,14 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Callable
 
+from kee.ingest.content import (
+    ContentBlock,
+    ParagraphMeta,
+    TableCell,
+    TableData,
+    blocks_from_sections,
+)
+
 PARA_MIN = 10
 PARA_MAX = 800
 
@@ -44,6 +52,8 @@ class ParsedSection:
     heading: str
     page: int | None
     paragraphs: list[str]
+    source: str = "native_text"
+    paragraph_meta: list[ParagraphMeta] = field(default_factory=list)
 
 
 @dataclass
@@ -76,12 +86,22 @@ class ParsedDocument:
     notes: list[str] = field(default_factory=list)
     meta_hint: dict[str, Any] = field(default_factory=dict)
     figures: list[ParsedFigure] = field(default_factory=list)
+    blocks: list[ContentBlock] = field(default_factory=list)
 
     def normalize(self) -> "ParsedDocument":
-        """段落长度归一化：过长按句切，过短并入前一段，保证过准入格式校验。"""
+        """段落长度归一化，并同步结构元数据；最后重建 content blocks。
+
+        元数据与段落必须一起拆分/合并，否则 blocks 会指向归一化前的文本。
+        标题块由 sections 生成；段落块类型/来源取 `paragraph_meta`，缺失时
+        退化为 text + section.source。
+        """
         for sec in self.sections:
+            metas = list(sec.paragraph_meta or [])
+            if len(metas) != len(sec.paragraphs):
+                metas = [ParagraphMeta(type="text", source=sec.source) for _ in sec.paragraphs]
             out: list[str] = []
-            for p in sec.paragraphs:
+            out_meta: list[ParagraphMeta] = []
+            for p, meta in zip(sec.paragraphs, metas):
                 p = _clean(p)
                 if not p:
                     continue
@@ -89,20 +109,36 @@ class ParsedDocument:
                     pieces = _split_long(p)
                     self.notes.append(f"段落超长拆分：{sec.section_no} → {len(pieces)} 段")
                     out.extend(pieces)
+                    if meta.type == "table" and len(pieces) > 1:
+                        # 超长表格被拆成多段时，TableData 不能复制到每个片段（会重复出行块）；
+                        # 让这些片段退回 Markdown 行解析，结构化 JSON 仅保证未拆分的表。
+                        piece_meta = ParagraphMeta(
+                            type=meta.type, source=meta.source, bbox=meta.bbox,
+                            coord_space=meta.coord_space, table=None,
+                        )
+                    else:
+                        piece_meta = meta
+                    out_meta.extend([piece_meta] * len(pieces))
                 elif len(p) < PARA_MIN:
                     if out:
                         out[-1] = f"{out[-1]}{p}"
                         self.notes.append(f"短段并入前段：{sec.section_no}｜{p[:20]}")
                     else:
                         out.append(p if len(p) >= 4 else "")
+                        out_meta.append(meta)
                 else:
                     out.append(p)
-            kept = [p for p in out if len(p) >= PARA_MIN]
-            if not kept and out:
-                kept = [max(out, key=len)]
+                    out_meta.append(meta)
+            pairs = list(zip(out, out_meta))
+            kept = [(p, m) for p, m in pairs if len(p) >= PARA_MIN]
+            if not kept and pairs:
+                p, m = max(pairs, key=lambda x: len(x[0]))
+                kept = [(p, m)]
                 self.notes.append(f"章节 {sec.section_no} 无达标长度段落，保留最长一段")
-            sec.paragraphs = kept
+            sec.paragraphs = [p for p, _ in kept]
+            sec.paragraph_meta = [m for _, m in kept]
         self.sections = [s for s in self.sections if s.paragraphs]
+        self.blocks = blocks_from_sections(self.sections)
         return self
 
     def to_card(
@@ -143,6 +179,7 @@ class ParsedDocument:
             "_source_format": self.source_format,
             "_parse_notes": self.notes,
             "figures": [f.as_dict() for f in self.figures],
+            "blocks": [b.as_dict() for b in self.blocks],
         }
 
 
@@ -427,16 +464,41 @@ def parse_docx(data: bytes, filename: str, media: Any | None = None) -> ParsedDo
             title = title or text[:40]
             sec(1, "正文")
         cur.paragraphs.append(text)
+        cur.paragraph_meta.append(ParagraphMeta(type="text", source="native_text"))
 
     for t_i, table in enumerate(d.tables or []):
-        rows = ["、".join(_clean(c.text) for c in r.cells if _clean(c.text)) for r in table.rows]
-        rows = [r for r in rows if r]
-        if not rows:
+        raw_rows = [
+            [_clean(c.text) for c in r.cells]
+            for r in table.rows
+        ]
+        raw_rows = [r for r in raw_rows if any(v for v in r)]
+        if not raw_rows:
             continue
+        ncols = max(len(r) for r in raw_rows)
+        for r in raw_rows:
+            r.extend([""] * (ncols - len(r)))
+        header = [v.replace("|", "｜") for v in raw_rows[0]]
+        md_lines = ["| " + " | ".join(header) + " |", "|" + "---|" * ncols]
+        for r in raw_rows[1:]:
+            md_lines.append("| " + " | ".join(v.replace("|", "｜") for v in r) + " |")
+        md = "\n".join(md_lines)
+        data = TableData(
+            n_rows=len(raw_rows),
+            n_cols=ncols,
+            cells=[
+                TableCell(row=ri, col=ci, text=value)
+                for ri, row in enumerate(raw_rows)
+                for ci, value in enumerate(row)
+            ],
+            markdown=md,
+        )
         if cur is None:
             sec(1, "表格")
-        cur.paragraphs.append(f"表格{t_i + 1}：" + " / ".join(rows))
-        notes.append(f"DOCX 表格按行展平为文本（第 {t_i + 1} 张，{len(rows)} 行），版面级还原待 MinerU 后端")
+        cur.paragraphs.append(md)
+        cur.paragraph_meta.append(
+            ParagraphMeta(type="table", source="native_table", table=data)
+        )
+        notes.append(f"DOCX 表格保留原生结构（第 {t_i + 1} 张，{len(raw_rows)} 行 × {ncols} 列）")
 
     # DOCX 的图片不在 python-docx 的段落文本里，直接从 zip 的 word/media/* 抽。
     # 抽不到/OCR 不可用时只记 note，不让整篇文档失败。
@@ -450,6 +512,8 @@ def parse_docx(data: bytes, filename: str, media: Any | None = None) -> ParsedDo
     if image_texts:
         sec(1, "图片与图表")
         section_no = cur.section_no if cur is not None else ""
+        if cur is not None:
+            cur.source = "mineru_ocr"
         for mt in image_texts:
             para = mt.paragraph()
             if not para:
@@ -466,6 +530,9 @@ def parse_docx(data: bytes, filename: str, media: Any | None = None) -> ParsedDo
             )
         if image_paras and cur is not None:
             cur.paragraphs.extend(image_paras)
+            cur.paragraph_meta.extend(
+                ParagraphMeta(type="figure", source="mineru_ocr") for _ in image_paras
+            )
     notes.extend(pipeline.notes)
 
     doc = ParsedDocument(
@@ -622,10 +689,26 @@ def _append_pdf_images(
         by_page.setdefault(int(mt.page or 0), []).append(mt)
     for pno, group in sorted(by_page.items()):
         section_no = f"IMG-{pno or 0}"
-        paras = [mt.paragraph() for mt in group if mt.paragraph()]
+        paras: list[str] = []
+        metas: list[ParagraphMeta] = []
+        for mt in group:
+            para = mt.paragraph()
+            if not para:
+                continue
+            paras.append(para)
+            metas.append(ParagraphMeta(type="figure", source="mineru_ocr"))
         if not paras:
             continue
-        doc.sections.append(ParsedSection(section_no, f"第 {pno} 页图片与图表", pno or 0, paras))
+        doc.sections.append(
+            ParsedSection(
+                section_no,
+                f"第 {pno} 页图片与图表",
+                pno or 0,
+                paras,
+                source="mineru_ocr",
+                paragraph_meta=metas,
+            )
+        )
         for mt in group:
             doc.figures.append(ParsedFigure(
                 kind=mt.kind, page=mt.page, text=mt.ocr_text,
@@ -796,7 +879,16 @@ def parse_image(data: bytes, filename: str, media: Any | None = None) -> ParsedD
     )
     doc = ParsedDocument(
         title=Path(filename).stem,
-        sections=[ParsedSection("1", "图片内容", None, [para])],
+        sections=[
+            ParsedSection(
+                "1",
+                "图片内容",
+                None,
+                [para],
+                source="mineru_ocr",
+                paragraph_meta=[ParagraphMeta(type="image", source="mineru_ocr")],
+            )
+        ],
         source_format=(Path(filename).suffix.lower().lstrip(".") or "image"),
         notes=pipeline.notes + ["独立图片：无固定分页，页码置 0；仅保留图内 OCR 文字"],
         figures=[figure],

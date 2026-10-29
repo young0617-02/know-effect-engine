@@ -27,6 +27,7 @@ from typing import Any
 import numpy as np
 
 from kee.config import get_settings
+from kee.ingest.content import ParagraphMeta, TableCell, TableData
 from kee.ingest.parsers import (
     ParsedDocument,
     ParsedFigure,
@@ -73,6 +74,7 @@ class Box:
     score: float
     label: str = ""
     text: str = ""
+    table: TableData | None = None
 
     @property
     def area(self) -> float:
@@ -494,16 +496,10 @@ def _dist(ln: Box, cx: float, cy: float) -> float:
     return abs((ln.x1 + ln.x2) / 2 - cx) + abs((ln.y1 + ln.y2) / 2 - cy)
 
 
-def table_to_markdown(rows: list[list[Box]], spans: list[Box], lines: list[Box]) -> str:
-    """cell 框 + 已识别文本行 → Markdown 表格。
-
-    列轴取自「cell 最多的那一行」的横向分区，再用区间重叠把每格落到列上：
-    这样不需要行列聚类阈值这类魔数，也天然容得下合并格。
-    """
-    if not rows:
-        return ""
-    if max(len(r) for r in rows) < 2:
-        return ""
+def _table_grid(rows: list[list[Box]], spans: list[Box]) -> tuple[list[list[Box]], list[Box], int]:
+    """把 cell/合并格整理成按阅读顺序的网格；Markdown 与 JSON 共用同一份网格。"""
+    if not rows or max(len(r) for r in rows) < 2:
+        return [], [], 0
     rows, _axes = snap_rows_to_grid(rows)
     ref = max(rows, key=len)
     ncols = len(ref)
@@ -515,9 +511,62 @@ def table_to_markdown(rows: list[list[Box]], spans: list[Box], lines: list[Box])
         )
         band = grid[ri][0]
         grid[ri].append(Box(s.x1, band.y1, s.x2, band.y2, s.score, "span", s.text))
-    out: list[str] = []
     for r in grid:
         r.sort(key=lambda b: b.x1)
+    return grid, ref, ncols
+
+
+def table_to_data(rows: list[list[Box]], spans: list[Box], lines: list[Box]) -> TableData | None:
+    """cell 框 → 权威 TableData（含合并格 colspan/bbox）；Markdown 是它的可读视图。"""
+    grid, ref, ncols = _table_grid(rows, spans)
+    if not grid or ncols < 2:
+        return None
+    flat = [b for r in grid for b in r]
+    text_of = {
+        id(b): lines_text(g)
+        for b, g in zip(flat, assign_lines_to_cells(flat, lines))
+    }
+    by_pos: dict[tuple[int, int], TableCell] = {}
+    for ri, r in enumerate(grid):
+        for b in r:
+            ov = [max(0.0, min(b.x2, ref[k].x2) - max(b.x1, ref[k].x1)) for k in range(ncols)]
+            ci = next((k for k, v in enumerate(ov) if v > 0), 0) if b.label == "span" else max(
+                range(ncols), key=lambda k: ov[k]
+            )
+            text = text_of[id(b)].replace("|", "｜").strip()
+            colspan = 1
+            if b.label == "span":
+                colspan = max(1, sum(1 for v in ov if v > 0))
+            key = (ri, ci)
+            if key in by_pos:
+                prev = by_pos[key]
+                if text:
+                    prev.text = _join_lines([prev.text, text]) if prev.text else text
+                prev.colspan = max(prev.colspan, colspan)
+                prev.is_span = prev.is_span or b.label == "span"
+            else:
+                by_pos[key] = TableCell(
+                    row=ri, col=ci, text=text, colspan=colspan,
+                    bbox=(b.x1, b.y1, b.x2, b.y2), is_span=b.label == "span",
+                )
+    # 空单元格也保留：结构回查需要知道“这里确实没有值”，而不是列号错位。
+    for ri in range(len(grid)):
+        for ci in range(ncols):
+            by_pos.setdefault((ri, ci), TableCell(row=ri, col=ci))
+    cells = [by_pos[k] for k in sorted(by_pos)]
+    return TableData(n_rows=len(grid), n_cols=ncols, cells=cells)
+
+
+def table_to_markdown(rows: list[list[Box]], spans: list[Box], lines: list[Box]) -> str:
+    """cell 框 + 已识别文本行 → Markdown 表格。
+
+    列轴取自「cell 最多的那一行」的横向分区，再用区间重叠把每格落到列上：
+    这样不需要行列聚类阈值这类魔数，也天然容得下合并格。
+    """
+    grid, ref, ncols = _table_grid(rows, spans)
+    if not grid or ncols < 2:
+        return ""
+    out: list[str] = []
     flat = [b for r in grid for b in r]
     text_of = {
         id(b): lines_text(g)
@@ -748,13 +797,16 @@ class MinerUPdfParser:
         # 1) 表格优先：表格结构模型会消费框内行，避免行块与表格内容重复。
         for reg in tables:
             idxs = inside(reg)
-            md = self._table_markdown(bgr, reg, [lines[i] for i in idxs], notes)
+            md, table_data = self._table_markdown(bgr, reg, [lines[i] for i in idxs], notes)
             if md is None:
                 counts["table_fail"] += 1
                 continue  # 结构没出来就退回文本行，不能把已经 det 到的行丢掉
             consumed.update(idxs)
             counts["table_ok"] += 1
-            assigned.append((Box(reg.x1, reg.y1, reg.x2, reg.y2, reg.score, "table", md), "table"))
+            assigned.append((
+                Box(reg.x1, reg.y1, reg.x2, reg.y2, reg.score, "table", md, table=table_data),
+                "table",
+            ))
 
         # 2) 公式：PP-FormulaNet 优先；模型不可用/失败时保留 OCR 文本行。
         for reg in formula_regions:
@@ -865,8 +917,10 @@ class MinerUPdfParser:
             return None
         return self._formula
 
-    def _table_markdown(self, bgr: np.ndarray, reg: Box, page_lines: list[Box], notes: list[str]) -> str | None:
-        """版面框内的表格 → Markdown；结构不可用时返回 None，让调用方按文本行兜底。"""
+    def _table_markdown(
+        self, bgr: np.ndarray, reg: Box, page_lines: list[Box], notes: list[str]
+    ) -> tuple[str | None, TableData | None]:
+        """版面框内的表格 → (Markdown, TableData)；结构不可用时返回 (None, None)。"""
         assert self.table is not None
         ox, oy = int(reg.x1), int(reg.y1)
         crop = bgr[oy : min(bgr.shape[0], int(reg.y2)), ox : min(bgr.shape[1], int(reg.x2))]
@@ -878,11 +932,15 @@ class MinerUPdfParser:
             rows, spans = self.table.structure(crop)
         except Exception as exc:  # 结构失败不能把整篇文档拖回 pypdf
             notes.append(f"表格结构还原失败（按文本行处理）：{type(exc).__name__}: {exc}")
-            return None
+            return None, None
         md = table_to_markdown(rows, spans, inside)
         if not md:
             notes.append("表格结构还原为空网格（按文本行处理）")
-        return md or None
+            return None, None
+        data = table_to_data(rows, spans, inside)
+        if data is not None:
+            data.markdown = md
+        return md, data
 
     def _to_document(
         self,
@@ -899,16 +957,28 @@ class MinerUPdfParser:
         chars = 0
         for pno, items in pages:
             buf: list[str] = []
+            buf_boxes: list[Box] = []
             prev_y: float | None = None
 
             def flush() -> None:
                 if not buf:
                     return
                 text = " ".join(buf).strip()
+                boxes = list(buf_boxes)
                 buf.clear()
+                buf_boxes.clear()
                 if len(text) < 2 or cur is None:
                     return
                 cur.paragraphs.append(text)
+                bbox = None
+                if boxes:
+                    bbox = (
+                        min(b.x1 for b in boxes), min(b.y1 for b in boxes),
+                        max(b.x2 for b in boxes), max(b.y2 for b in boxes),
+                    )
+                cur.paragraph_meta.append(
+                    ParagraphMeta(type="text", source="mineru_ocr", bbox=bbox, coord_space="rendered_px")
+                )
 
             for b, label in items:
                 text = b.text.strip()
@@ -919,18 +989,32 @@ class MinerUPdfParser:
                     flush()
                     prev_y = None
                     if cur is None:
-                        cur = ParsedSection(num.next(1), f"第 {pno} 页", pno, [])
+                        cur = ParsedSection(num.next(1), f"第 {pno} 页", pno, [], source="mineru_ocr")
                         sections.append(cur)
                     cur.paragraphs.append(text)  # Markdown 表格整块成段，不能被行序打散
+                    cur.paragraph_meta.append(
+                        ParagraphMeta(
+                            type="table", source="mineru_table",
+                            bbox=(b.x1, b.y1, b.x2, b.y2), coord_space="rendered_px",
+                            table=getattr(b, "table", None),
+                        )
+                    )
                     continue
                 if label in {"formula", "figure"}:
                     flush()
                     prev_y = None
                     if cur is None:
-                        cur = ParsedSection(num.next(1), f"第 {pno} 页", pno, [])
+                        cur = ParsedSection(num.next(1), f"第 {pno} 页", pno, [], source="mineru_ocr")
                         sections.append(cur)
                     cur.paragraphs.append(
                         f"【公式】${text}$" if label == "formula" else text
+                    )
+                    cur.paragraph_meta.append(
+                        ParagraphMeta(
+                            type=label,
+                            source="mineru_formula" if label == "formula" else "mineru_figure",
+                            bbox=(b.x1, b.y1, b.x2, b.y2), coord_space="rendered_px",
+                        )
                     )
                     continue
                 if label in HEADING_LABELS and len(text) <= 30:
@@ -939,25 +1023,31 @@ class MinerUPdfParser:
                     if label == "doc_title" and not title:
                         title = text
                         continue
-                    cur = ParsedSection(num.next(1), text, pno, [])
+                    cur = ParsedSection(num.next(1), text, pno, [], source="mineru_ocr")
                     sections.append(cur)
                     continue
                 if cur is None:
-                    cur = ParsedSection(num.next(1), f"第 {pno} 页", pno, [])
+                    cur = ParsedSection(num.next(1), f"第 {pno} 页", pno, [], source="mineru_ocr")
                     sections.append(cur)
                 # 行间距明显变大就断段，避免整页糊成一段
                 if prev_y is not None and b.y1 - prev_y > 18:
                     flush()
                 prev_y = b.y1
                 buf.append(text)
+                buf_boxes.append(b)
             flush()
         dropped = [s for s in sections if not s.paragraphs]
         sections = [s for s in sections if s.paragraphs]
         if dropped:
             notes.append(f"丢弃 {len(dropped)} 个无正文的标题块（多栏页面上版面归属会串行，M2 待修）")
         if not sections and dropped:
+            headings = [d.heading for d in dropped if d.heading]
             sections = [
-                ParsedSection("1", dropped[0].heading, dropped[0].page, [d.heading for d in dropped if d.heading])
+                ParsedSection(
+                    "1", dropped[0].heading, dropped[0].page, headings,
+                    source="mineru_ocr",
+                    paragraph_meta=[ParagraphMeta(type="text", source="mineru_ocr") for _ in headings],
+                )
             ]
         if not sections:
             notes.append("OCR 未产出可用文本：可能是超低分辨率扫描或空白页，应回退 pypdf 文本层")

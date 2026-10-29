@@ -54,10 +54,34 @@ CREATE TABLE IF NOT EXISTS chunk (
     content     text NOT NULL,
     char_count  integer NOT NULL,
     is_parent   boolean NOT NULL DEFAULT false,
+    block_id    text,
+    block_type  text,
+    source      text,
     UNIQUE (version_id, order_no)
 );
 CREATE INDEX IF NOT EXISTS chunk_doc_idx ON chunk(doc_id);
 CREATE INDEX IF NOT EXISTS chunk_version_idx ON chunk(version_id);
+
+-- 解析层结构真相：与 chunk 解耦，Phase 1 只入库、不参与分块。
+-- bbox 坐标由 MinerU 的渲染页给出（coord_space=rendered_px）；pypdf 没有坐标时留空。
+CREATE TABLE IF NOT EXISTS content_block (
+    id          text PRIMARY KEY,
+    version_id  text NOT NULL REFERENCES document_version(id) ON DELETE CASCADE,
+    doc_id      text NOT NULL,
+    block_order integer NOT NULL,
+    page        integer,
+    block_type  text NOT NULL,
+    source      text NOT NULL,
+    text        text NOT NULL,
+    markdown    text NOT NULL DEFAULT '',
+    bbox        jsonb,
+    coord_space text,
+    table_json  jsonb,
+    created_at  timestamptz NOT NULL DEFAULT now(),
+    UNIQUE (version_id, block_order)
+);
+CREATE INDEX IF NOT EXISTS content_block_doc_idx ON content_block(doc_id);
+CREATE INDEX IF NOT EXISTS content_block_version_idx ON content_block(version_id);
 
 CREATE TABLE IF NOT EXISTS session (
     id         text PRIMARY KEY,
@@ -145,6 +169,14 @@ END
 $mig$;
 """
 
+# Phase 2：chunk 可选挂到 ContentBlock；legacy 行这三列为 NULL，不改变既有读数。
+CHUNK_BLOCK_SQL = """
+ALTER TABLE chunk ADD COLUMN IF NOT EXISTS block_id text;
+ALTER TABLE chunk ADD COLUMN IF NOT EXISTS block_type text;
+ALTER TABLE chunk ADD COLUMN IF NOT EXISTS source text;
+CREATE INDEX IF NOT EXISTS chunk_block_idx ON chunk(block_id);
+"""
+
 # 账号与会话表。DDL 放在 DB 层而不是 api 层：`kee.api` 的包初始化会拉 app.py，
 # 从这儿 import 常量会绕成循环导入（真踩过一次）。
 AUTH_SCHEMA_SQL = """
@@ -196,6 +228,7 @@ class AuthoritativeStore:
             conn.execute(SCHEMA_SQL)
             conn.execute(AUTH_SCHEMA_SQL)
             conn.execute(REVIEW_GATE_SQL)   # 一次性迁移：列已存在时整块 DO 什么都不做
+            conn.execute(CHUNK_BLOCK_SQL)
             self._ensure_audit_guard(conn)
 
     def _ensure_audit_guard(self, conn) -> None:
@@ -224,6 +257,7 @@ class AuthoritativeStore:
         tables = [
             "reconciliation_diff",
             "outbox_event",
+            "content_block",
             "chunk",
             "document_version",
             "document",
@@ -266,14 +300,58 @@ class AuthoritativeStore:
         rows = list(chunks)
         if not rows:
             return 0
+        for row in rows:
+            row.setdefault("block_id", None)
+            row.setdefault("block_type", None)
+            row.setdefault("source", None)
         with self.connect() as conn:
             with conn.cursor() as cur:
                 cur.executemany(
                     """
                     INSERT INTO chunk (id, version_id, doc_id, parent_id, section_no, page,
-                                       order_no, content, char_count, is_parent)
+                                       order_no, content, char_count, is_parent,
+                                       block_id, block_type, source)
                     VALUES (%(id)s, %(version_id)s, %(doc_id)s, %(parent_id)s, %(section_no)s,
-                            %(page)s, %(order_no)s, %(content)s, %(char_count)s, %(is_parent)s)
+                            %(page)s, %(order_no)s, %(content)s, %(char_count)s, %(is_parent)s,
+                            %(block_id)s, %(block_type)s, %(source)s)
+                    ON CONFLICT (id) DO NOTHING
+                    """,
+                    rows,
+                )
+        return len(rows)
+
+    def insert_blocks(self, version_id: str, doc_id: str, blocks: Iterable[Any]) -> int:
+        """把解析层 ContentBlock 写入权威源；Phase 1 只入库，不改变 chunk 生成。"""
+        rows: list[dict[str, Any]] = []
+        for b in blocks:
+            table = getattr(b, "table", None)
+            bbox = getattr(b, "bbox", None)
+            rows.append({
+                "id": f"{version_id}#{b.block_id}",
+                "version_id": version_id,
+                "doc_id": doc_id,
+                "block_order": int(b.order),
+                "page": b.page,
+                "block_type": b.type,
+                "source": b.source,
+                "text": b.text,
+                "markdown": getattr(b, "markdown", "") or "",
+                "bbox": json.dumps(list(bbox), ensure_ascii=False) if bbox else None,
+                "coord_space": getattr(b, "coord_space", None),
+                "table_json": json.dumps(table.as_dict(), ensure_ascii=False) if table else None,
+            })
+        if not rows:
+            return 0
+        with self.connect() as conn:
+            with conn.cursor() as cur:
+                cur.executemany(
+                    """
+                    INSERT INTO content_block (id, version_id, doc_id, block_order, page,
+                                               block_type, source, text, markdown, bbox,
+                                               coord_space, table_json)
+                    VALUES (%(id)s, %(version_id)s, %(doc_id)s, %(block_order)s, %(page)s,
+                            %(block_type)s, %(source)s, %(text)s, %(markdown)s,
+                            %(bbox)s::jsonb, %(coord_space)s, %(table_json)s::jsonb)
                     ON CONFLICT (id) DO NOTHING
                     """,
                     rows,
@@ -667,10 +745,14 @@ class AuthoritativeStore:
             params["projects"] = projects
         sql = (
             "SELECT c.id AS chunk_id, c.content, c.doc_id, c.section_no, c.page, c.parent_id, "
-            "       c.is_parent, d.industry, d.project, d.security_level, v.id AS version_id "
+            "       c.is_parent, c.block_id, COALESCE(c.block_type, 'legacy') AS block_type, "
+            "       COALESCE(c.source, 'legacy') AS source, "
+            "       d.industry, d.project, d.security_level, v.id AS version_id, "
+            "       cb.table_json AS table "
             "FROM chunk c "
             "JOIN document d ON d.id = c.doc_id "
             "JOIN document_version v ON v.id = c.version_id AND v.status = 'effective' "
+            "LEFT JOIN content_block cb ON cb.id = c.block_id "
             f"WHERE {' AND '.join(where)}"
         )
         with self.connect() as conn:
