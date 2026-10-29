@@ -478,7 +478,32 @@ def parse_docx(data: bytes, filename: str, media: Any | None = None) -> ParsedDo
     return doc.normalize()
 
 
-def _parse_pdf_pypdf(data: bytes, filename: str) -> ParsedDocument:
+def _pdf_page_texts(data: bytes) -> tuple[list[str], list[str]]:
+    """逐页抽文本层，供按页路由判定与文本页复用；失败页返回空串并留 note。"""
+    try:
+        from pypdf import PdfReader
+    except ImportError as e:  # pragma: no cover
+        raise ParseFailure(f"缺少 pypdf：{e}") from e
+
+    reader = PdfReader(io.BytesIO(data))
+    texts: list[str] = []
+    notes: list[str] = []
+    for pno, page in enumerate(reader.pages, start=1):
+        try:
+            texts.append(page.extract_text() or "")
+        except Exception as e:  # noqa: BLE001
+            texts.append("")
+            notes.append(f"第 {pno} 页抽取失败：{type(e).__name__}")
+    return texts, notes
+
+
+def _parse_pdf_pypdf(
+    data: bytes,
+    filename: str,
+    *,
+    page_texts: list[str] | None = None,
+    skip_pages: set[int] | None = None,
+) -> ParsedDocument:
     try:
         from pypdf import PdfReader
     except ImportError as e:  # pragma: no cover
@@ -501,11 +526,18 @@ def _parse_pdf_pypdf(data: bytes, filename: str) -> ParsedDocument:
     empty_pages = 0
     fragments = 0
     for pno, page in enumerate(reader.pages, start=1):
-        try:
-            text = page.extract_text() or ""
-        except Exception as e:  # noqa: BLE001
-            notes.append(f"第 {pno} 页抽取失败：{type(e).__name__}")
+        if skip_pages and pno in skip_pages:
+            # 被路由到 MinerU 的页不许把前后的文本层章节粘在一起。
+            cur = None
             continue
+        if page_texts is not None:
+            text = page_texts[pno - 1] if pno - 1 < len(page_texts) else ""
+        else:
+            try:
+                text = page.extract_text() or ""
+            except Exception as e:  # noqa: BLE001
+                notes.append(f"第 {pno} 页抽取失败：{type(e).__name__}")
+                continue
         if not text.strip():
             empty_pages += 1
             continue
@@ -553,14 +585,25 @@ def _parse_pdf_pypdf(data: bytes, filename: str) -> ParsedDocument:
 
 
 def _text_layer_is_thin(doc: ParsedDocument, pages: int) -> bool:
-    """文本层薄到不值得信任：多半是扫描件或以图片排版的规范文件。"""
+    """历史口径：整份文档平均字符数低于阈值时认为文本层不可信。
+
+    按页路由默认开启时不再用它做整份判定；保留它是为了 `KEE_PDF_PAGE_ROUTING=false`
+    的回归对照与显式 `mineru_onnx` 之外的旧行为。
+    """
     from kee.config import get_settings
 
     chars = sum(len(x) for s in doc.sections for x in s.paragraphs)
     return chars < max(1, pages) * get_settings().pdf_min_chars_per_page
 
 
-def _append_pdf_images(doc: ParsedDocument, data: bytes, filename: str, media: Any | None) -> ParsedDocument:
+def _append_pdf_images(
+    doc: ParsedDocument,
+    data: bytes,
+    filename: str,
+    media: Any | None,
+    *,
+    pages: set[int] | None = None,
+) -> ParsedDocument:
     """文本层 PDF 的内嵌图片：不走整页 MinerU，但图片仍要本地 OCR 后入库。"""
     from kee.config import get_settings
 
@@ -570,7 +613,7 @@ def _append_pdf_images(doc: ParsedDocument, data: bytes, filename: str, media: A
 
     pipeline = media or MediaPipeline.from_settings()
     pipeline.begin_document()
-    items = pipeline.pdf_images(data, context=Path(filename).stem)
+    items = pipeline.pdf_images(data, context=Path(filename).stem, pages=pages)
     if not items:
         doc.notes.extend(pipeline.notes)
         return doc
@@ -592,24 +635,128 @@ def _append_pdf_images(doc: ParsedDocument, data: bytes, filename: str, media: A
     return doc.normalize()
 
 
+def _merge_page_docs(
+    text_doc: ParsedDocument,
+    ocr_doc: ParsedDocument,
+    filename: str,
+    *,
+    prefix_notes: list[str],
+    route_note: str,
+) -> ParsedDocument:
+    """把文本页文档与 OCR 页文档按页合并，并重新编号章节。
+
+    两个子文档各自从 1 开始编号，不能直接拼；按页序重排后用 `_SectionNumbering`
+    统一编号。文本页在抽页时已把跨越 OCR 页的章节断开，所以按页排序不会把
+    第 3 页的正文排到第 2 页 OCR 结果之前。
+    """
+    ordered = [
+        (int(s.page or 0), order, s)
+        for order, s in enumerate(list(text_doc.sections) + list(ocr_doc.sections))
+    ]
+    ordered.sort(key=lambda item: (item[0], item[1]))
+    num = _SectionNumbering()
+    sections: list[ParsedSection] = []
+    for _, _, section in ordered:
+        level = str(section.section_no or "").count(".") + 1
+        section.section_no = num.next(level)
+        sections.append(section)
+    return ParsedDocument(
+        title=text_doc.title or ocr_doc.title or Path(filename).stem,
+        sections=sections,
+        source_format="pdf",
+        notes=prefix_notes + [route_note] + list(text_doc.notes) + list(ocr_doc.notes),
+        figures=list(text_doc.figures) + list(ocr_doc.figures),
+    ).normalize()
+
+
+def _parse_pdf_pages_routed(
+    data: bytes,
+    filename: str,
+    page_texts: list[str],
+    extract_notes: list[str],
+    media: Any | None,
+    settings: Any,
+) -> ParsedDocument:
+    """按页路由：文本页 pypdf，文本不足的页只在该页跑 MinerU。"""
+    total = len(page_texts)
+    threshold = max(1, int(settings.pdf_min_chars_per_page))
+    ocr_pages = {
+        pno for pno, text in enumerate(page_texts, start=1) if len(text.strip()) < threshold
+    }
+    text_pages = set(range(1, total + 1)) - ocr_pages
+    route_note = (
+        f"按页路由：文本层 {len(text_pages)} 页，MinerU-ONNX {len(ocr_pages)} 页"
+        f"（单页阈值 {threshold} 字"
+        + (f"；OCR 页 {sorted(ocr_pages)[:20]}{'…' if len(ocr_pages) > 20 else ''}" if ocr_pages else "")
+        + "）"
+    )
+
+    if not ocr_pages:
+        doc = _parse_pdf_pypdf(data, filename, page_texts=page_texts)
+        doc.notes = list(extract_notes) + [route_note] + doc.notes
+        return _append_pdf_images(doc, data, filename, media, pages=text_pages)
+
+    try:
+        from kee.ingest.mineru_onnx import MinerUPdfParser
+
+        ocr_doc = MinerUPdfParser().parse_pages(data, filename, page_numbers=ocr_pages)
+    except Exception as e:  # noqa: BLE001 - 单页后端失败必须回退，不能丢整篇
+        ocr_doc = None
+        failure = f"页级 MinerU-ONNX 不可用（{type(e).__name__}: {str(e)[:120]}），回退文本层 + 内嵌位图 OCR"
+    else:
+        failure = ""
+    if ocr_doc is None or not ocr_doc.sections:
+        doc = _parse_pdf_pypdf(data, filename, page_texts=page_texts)
+        doc.notes = (
+            list(extract_notes)
+            + [route_note, failure or "页级 MinerU-ONNX 未产出可用文本，回退文本层 + 内嵌位图 OCR"]
+            + doc.notes
+        )
+        return _append_pdf_images(doc, data, filename, media)
+
+    covered = {int(s.page or 0) for s in ocr_doc.sections}
+    missing = ocr_pages - covered
+    if missing:
+        # 某一页 OCR 没产出章节（空白页/单页失败）时，不能把它连同文本层一起跳过。
+        ocr_doc.notes.append(f"页级 MinerU 未覆盖页 {sorted(missing)}，回退文本层/内嵌位图")
+        text_pages |= missing
+    skip_pages = ocr_pages - missing
+
+    if not text_pages:
+        ocr_doc.notes = list(extract_notes) + [route_note] + ocr_doc.notes
+        return ocr_doc
+
+    text_doc = _parse_pdf_pypdf(data, filename, page_texts=page_texts, skip_pages=skip_pages)
+    text_doc = _append_pdf_images(text_doc, data, filename, media, pages=text_pages)
+    return _merge_page_docs(
+        text_doc, ocr_doc, filename, prefix_notes=list(extract_notes), route_note=route_note
+    )
+
+
 def parse_pdf(data: bytes, filename: str, media: Any | None = None) -> ParsedDocument:
-    """PDF 解析双后端：pypdf 文本层优先，文本层薄或显式要求时转 MinerU-ONNX（版面+OCR）。
+    """PDF 解析：`auto` 默认按页路由，`pypdf`/`mineru_onnx` 保留显式整份模式。
+
+    - `auto` + `pdf_page_routing=True`：逐页判定，文本足够的页走 pypdf，文本不足的页只在该页跑 MinerU；
+    - `auto` + `pdf_page_routing=False`：历史口径，整份文档平均字符数低于阈值才整份转 MinerU；
+    - `pypdf`：只用文本层（不补内嵌图片 OCR，保持显式模式的字面语义）；
+    - `mineru_onnx`：整份强制 MinerU。
 
     后端失败必须回退并留痕，不能因为版面模型出问题时整份文档解析不了。
     """
     from kee.config import get_settings
 
     s = get_settings()
-    doc = _parse_pdf_pypdf(data, filename)
     backend = (s.pdf_parse_backend or "auto").lower()
     if backend == "pypdf":
-        return doc
-    try:
-        import pypdf
+        return _parse_pdf_pypdf(data, filename)
 
-        pages = len(pypdf.PdfReader(io.BytesIO(data)).pages)
-    except Exception:  # noqa: BLE001
-        pages = max(1, len(doc.sections))
+    page_texts, extract_notes = _pdf_page_texts(data)
+    if backend == "auto" and getattr(s, "pdf_page_routing", True):
+        return _parse_pdf_pages_routed(data, filename, page_texts, extract_notes, media, s)
+
+    doc = _parse_pdf_pypdf(data, filename, page_texts=page_texts)
+    doc.notes = list(extract_notes) + doc.notes
+    pages = len(page_texts)
     need = backend == "mineru_onnx" or (backend == "auto" and _text_layer_is_thin(doc, pages))
     if not need:
         return _append_pdf_images(doc, data, filename, media)

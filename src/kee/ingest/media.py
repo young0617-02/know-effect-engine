@@ -147,8 +147,14 @@ class MediaPipeline:
                     continue
         return out
 
-    def pdf_images(self, data: bytes, *, context: str = "") -> list[MediaText]:
-        """抽取 PDF 内嵌图片（文本层路径用）；扫描页整页图在 MinerU 路径里处理。"""
+    def pdf_images(
+        self, data: bytes, *, context: str = "", pages: set[int] | None = None
+    ) -> list[MediaText]:
+        """抽取 PDF 内嵌图片（文本层路径用）；扫描页整页图在 MinerU 路径里处理。
+
+        `pages` 给定时只处理这些页（1-based），按页路由用它把 OCR 限制在文本页，
+        避免对已经交给 MinerU 的页重复识别同一张图。
+        """
         try:
             from pypdf import PdfReader
 
@@ -160,6 +166,8 @@ class MediaPipeline:
         out: list[MediaText] = []
         total = 0
         for pno, page in enumerate(reader.pages, start=1):
+            if pages is not None and pno not in pages:
+                continue
             try:
                 images = list(page.images)
             except Exception as exc:  # noqa: BLE001 - 某些 PDF 的图片对象损坏

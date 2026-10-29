@@ -1,0 +1,297 @@
+{
+ "base": "http://127.0.0.1:38080",
+ "question": "SIS 安全仪表系统采用的表决逻辑是什么？",
+ "first_delta_ms": 2056,
+ "first_visible_cold_ms": 2056,
+ "first_visible_hot_ms": 322,
+ "events": [
+  [
+   "retrieval",
+   1020
+  ],
+  [
+   "delta",
+   2056
+  ],
+  [
+   "delta",
+   2077
+  ],
+  [
+   "delta",
+   2098
+  ],
+  [
+   "delta",
+   2118
+  ],
+  [
+   "delta",
+   2139
+  ],
+  [
+   "delta",
+   2160
+  ],
+  [
+   "delta",
+   2181
+  ],
+  [
+   "delta",
+   2202
+  ],
+  [
+   "delta",
+   2223
+  ],
+  [
+   "delta",
+   2244
+  ],
+  [
+   "delta",
+   2265
+  ],
+  [
+   "delta",
+   2286
+  ],
+  [
+   "delta",
+   2307
+  ],
+  [
+   "delta",
+   2327
+  ],
+  [
+   "delta",
+   2349
+  ],
+  [
+   "delta",
+   2370
+  ],
+  [
+   "delta",
+   2391
+  ],
+  [
+   "delta",
+   2412
+  ],
+  [
+   "delta",
+   2432
+  ],
+  [
+   "delta",
+   2453
+  ],
+  [
+   "delta",
+   2474
+  ],
+  [
+   "delta",
+   2495
+  ],
+  [
+   "delta",
+   2537
+  ],
+  [
+   "delta",
+   2558
+  ],
+  [
+   "delta",
+   2580
+  ],
+  [
+   "delta",
+   2601
+  ],
+  [
+   "delta",
+   2622
+  ],
+  [
+   "delta",
+   2643
+  ],
+  [
+   "delta",
+   2664
+  ],
+  [
+   "delta",
+   2685
+  ],
+  [
+   "delta",
+   2706
+  ],
+  [
+   "delta",
+   2727
+  ],
+  [
+   "delta",
+   2748
+  ],
+  [
+   "delta",
+   2769
+  ],
+  [
+   "delta",
+   2790
+  ],
+  [
+   "delta",
+   2811
+  ],
+  [
+   "delta",
+   2832
+  ],
+  [
+   "delta",
+   2853
+  ],
+  [
+   "delta",
+   2876
+  ],
+  [
+   "delta",
+   2897
+  ],
+  [
+   "delta",
+   2918
+  ],
+  [
+   "delta",
+   2939
+  ],
+  [
+   "delta",
+   2961
+  ],
+  [
+   "delta",
+   2982
+  ],
+  [
+   "delta",
+   3004
+  ],
+  [
+   "delta",
+   3024
+  ],
+  [
+   "delta",
+   3045
+  ],
+  [
+   "delta",
+   3067
+  ],
+  [
+   "delta",
+   3088
+  ],
+  [
+   "delta",
+   3108
+  ],
+  [
+   "answer",
+   4862
+  ]
+ ],
+ "checks": [
+  {
+   "clause": "C-面",
+   "name": "Nginx 托管前端 index.html",
+   "ok": true,
+   "detail": "HTTP 200"
+  },
+  {
+   "clause": "C-3",
+   "name": "依赖全部就绪（否则首 token 读数没有意义）",
+   "ok": true,
+   "detail": "{\"milvus\": true, \"postgres\": true}"
+  },
+  {
+   "clause": "C-1",
+   "name": "流式端点以 text/event-stream 应答",
+   "ok": true,
+   "detail": "HTTP 200"
+  },
+  {
+   "clause": "C-1",
+   "name": "顺序为 retrieval → delta* → answer",
+   "ok": true,
+   "detail": "retrieval→delta→answer"
+  },
+  {
+   "clause": "C-1",
+   "name": "answer 恰好一次",
+   "ok": true,
+   "detail": "出现 1 次"
+  },
+  {
+   "clause": "面",
+   "name": "流式确有增量（delta 数 > 1，代理没把整段攒成一次）",
+   "ok": true,
+   "detail": "delta 50 条"
+  },
+  {
+   "clause": "①",
+   "name": "热态首个可读字 < 1.2s（V1.0.23 定案口径 first_visible_ms）",
+   "ok": true,
+   "detail": "热态 first_visible=322ms（冷态第一呼 2056ms 单列）"
+  },
+  {
+   "clause": "第五节",
+   "name": "密级 3 的片段：新人读不到、管理员读得到",
+   "ok": true,
+   "detail": "newcomer hidden=['chm-compliance-prj-chm-2023-021@v1#1.1#c1'] admin items=1"
+  },
+  {
+   "clause": "第五节",
+   "name": "账号自带的部门范围确实进了过滤表达式",
+   "ok": true,
+   "detail": "security_level <= 1 and industry in [\"金融\"]"
+  },
+  {
+   "clause": "C-8",
+   "name": "审计读接口对非管理角色返回 E403",
+   "ok": true,
+   "detail": "审计读取需 knowledge_owner 或 system_admin 角色"
+  },
+  {
+   "clause": "第五节",
+   "name": "审计按 id 倒序返回（翻页不重不漏）",
+   "ok": true,
+   "detail": "50 行"
+  },
+  {
+   "clause": "第五节",
+   "name": "引用片段读取留了审计（chunks_read）",
+   "ok": true,
+   "detail": "['answer_generated', 'chunks_read', 'login', 'login_failed', 'logout', 'session_read', 'user_force_logout', 'user_regist"
+  },
+  {
+   "clause": "C-1",
+   "name": "问答留了审计（answer_generated，stream 标记为真）",
+   "ok": true,
+   "detail": ""
+  }
+ ]
+}

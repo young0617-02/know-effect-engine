@@ -669,110 +669,143 @@ class MinerUPdfParser:
         return min(hits, key=lambda r: r.area) if hits else None
 
     def parse(self, data: bytes, filename: str) -> ParsedDocument:
+        return self.parse_pages(data, filename)
+
+    def parse_pages(
+        self, data: bytes, filename: str, page_numbers: set[int] | None = None
+    ) -> ParsedDocument:
+        """整份或指定页解析。
+
+        `page_numbers` 是 1-based 页号集合；给定时只渲染这些页并保留真实页码，
+        供 `parse_pdf` 的按页路由调用。整份调用仍受 `render_pdf_pages` 的页数上限约束。
+        """
         from kee.ingest.docimg import render_pdf_pages
 
         notes = [
             "MinerU-ONNX 后端：PP-OCRv6(tiny det + small rec) 整页行级识别 + "
             f"PP-DocLayoutV2 版面归属（{'开' if self.layout else '关'}）；CPU 推理"
         ]
-        pages: list[list[tuple[Box, str]]] = []
+        pages: list[tuple[int, list[tuple[Box, str]]]] = []
         figures: list[ParsedFigure] = []
-        n_table = n_table_fail = 0
-        n_formula = n_formula_fail = 0
-        n_figure = 0
-        for pno, bgr in render_pdf_pages(data, dpi=self.dpi):
-            lines = self.ocr.det_boxes(bgr)
-            for ln in lines:
-                ln.text = self.ocr.rec_text(self.ocr.crop(bgr, ln))
-            lines = [ln for ln in lines if len(ln.text.strip()) >= 1]
-            regions = self.layout.detect(bgr) if self.layout else []
-            tables = [r for r in regions if r.label == "table"] if self.table else []
-            formula_regions = self._dedupe_regions(
-                [r for r in regions if r.label in {"display_formula", "inline_formula"}]
+        counts = {"table_ok": 0, "table_fail": 0, "formula_ok": 0, "formula_fail": 0, "figure": 0}
+        rendered: set[int] = set()
+        for pno, bgr in render_pdf_pages(data, dpi=self.dpi, pages=page_numbers):
+            rendered.add(pno)
+            assigned, page_figures, page_counts = self._parse_page(bgr, pno, notes)
+            pages.append((pno, assigned))
+            figures.extend(page_figures)
+            for key, value in page_counts.items():
+                counts[key] += value
+        if page_numbers is not None:
+            missing = sorted(set(page_numbers) - rendered)
+            note = f"页级 MinerU：请求 {len(page_numbers)} 页，处理 {len(pages)} 页"
+            if missing:
+                note += f"；未渲染 {missing[:10]}{'…' if len(missing) > 10 else ''}（不存在或超过单次上限）"
+            notes.append(note)
+        if self.table is not None:
+            notes.append(
+                f"表格结构还原（SLANet-plus）：成功 {counts['table_ok']} 张，"
+                f"失败回退文本行 {counts['table_fail']} 张"
             )
-            figure_regions = self._dedupe_regions(
-                [r for r in regions if r.label in {"image", "figure", "chart"}]
+        if counts["formula_ok"] or counts["formula_fail"]:
+            notes.append(
+                f"公式识别（PP-FormulaNet_plus-M）：成功 {counts['formula_ok']}，"
+                f"回退文本 {counts['formula_fail']}"
             )
-            consumed: set[int] = set()
-            assigned: list[tuple[Box, str]] = []
+        if counts["figure"]:
+            notes.append(f"图片/图表区域 {counts['figure']} 个：仅保留图内 OCR 文字，不做语义描述")
+        return self._to_document(pages, filename, notes, figures=figures)
 
-            def inside(reg: Box) -> list[int]:
-                return [
-                    i
-                    for i, ln in enumerate(lines)
-                    if reg.x1 <= (ln.x1 + ln.x2) / 2 <= reg.x2
-                    and reg.y1 <= (ln.y1 + ln.y2) / 2 <= reg.y2
-                ]
+    def _parse_page(
+        self, bgr: np.ndarray, pno: int, notes: list[str]
+    ) -> tuple[list[tuple[Box, str]], list[ParsedFigure], dict[str, int]]:
+        """单页：整页 det/rec → 版面归属 → 表格/公式/图表 → 其余文本行。"""
+        lines = self.ocr.det_boxes(bgr)
+        for ln in lines:
+            ln.text = self.ocr.rec_text(self.ocr.crop(bgr, ln))
+        lines = [ln for ln in lines if len(ln.text.strip()) >= 1]
+        regions = self.layout.detect(bgr) if self.layout else []
+        tables = [r for r in regions if r.label == "table"] if self.table else []
+        formula_regions = self._dedupe_regions(
+            [r for r in regions if r.label in {"display_formula", "inline_formula"}]
+        )
+        figure_regions = self._dedupe_regions(
+            [r for r in regions if r.label in {"image", "figure", "chart"}]
+        )
+        consumed: set[int] = set()
+        assigned: list[tuple[Box, str]] = []
+        figures: list[ParsedFigure] = []
+        counts = {"table_ok": 0, "table_fail": 0, "formula_ok": 0, "formula_fail": 0, "figure": 0}
 
-            # 1) 表格优先：表格结构模型会消费框内行，避免行块与表格内容重复。
-            for reg in tables:
-                idxs = inside(reg)
-                md = self._table_markdown(bgr, reg, [lines[i] for i in idxs], notes)
-                if md is None:
-                    n_table_fail += 1
-                    continue  # 结构没出来就退回文本行，不能把已经 det 到的行丢掉
-                consumed.update(idxs)
-                n_table += 1
-                assigned.append((Box(reg.x1, reg.y1, reg.x2, reg.y2, reg.score, "table", md), "table"))
+        def inside(reg: Box) -> list[int]:
+            return [
+                i
+                for i, ln in enumerate(lines)
+                if reg.x1 <= (ln.x1 + ln.x2) / 2 <= reg.x2
+                and reg.y1 <= (ln.y1 + ln.y2) / 2 <= reg.y2
+            ]
 
-            # 2) 公式：PP-FormulaNet 优先；模型不可用/失败时保留 OCR 文本行。
-            for reg in formula_regions:
-                idxs = inside(reg)
-                crop = self._crop(bgr, reg)
-                latex = self._formula_latex(crop, notes)
-                consumed.update(idxs)
-                if latex:
-                    n_formula += 1
-                    box = Box(reg.x1, reg.y1, reg.x2, reg.y2, reg.score, "formula", latex)
-                    assigned.append((box, "formula"))
-                    figures.append(ParsedFigure(
-                        kind="formula", page=pno, text=latex,
-                        bbox=(reg.x1, reg.y1, reg.x2, reg.y2),
-                    ))
-                else:
-                    n_formula_fail += 1
-                    for i in idxs:
-                        assigned.append((lines[i], "text"))
+        # 1) 表格优先：表格结构模型会消费框内行，避免行块与表格内容重复。
+        for reg in tables:
+            idxs = inside(reg)
+            md = self._table_markdown(bgr, reg, [lines[i] for i in idxs], notes)
+            if md is None:
+                counts["table_fail"] += 1
+                continue  # 结构没出来就退回文本行，不能把已经 det 到的行丢掉
+            consumed.update(idxs)
+            counts["table_ok"] += 1
+            assigned.append((Box(reg.x1, reg.y1, reg.x2, reg.y2, reg.score, "table", md), "table"))
 
-            # 3) 图片/图表：区域文字已由 PP-OCR 识别，直接作为可检索文本；不做图表语义理解。
-            for reg in figure_regions:
-                idxs = inside(reg)
-                ocr_text = " ".join(lines[i].text.strip() for i in idxs if lines[i].text.strip())
-                consumed.update(idxs)
-                if not ocr_text:
-                    continue
-                kind = "chart" if reg.label == "chart" else "figure"
-                label = "图表" if kind == "chart" else "插图"
-                text = f"【{label} 第{pno}页】图内文字：{ocr_text}"
-                n_figure += 1
-                assigned.append((Box(reg.x1, reg.y1, reg.x2, reg.y2, reg.score, "figure", text), "figure"))
+        # 2) 公式：PP-FormulaNet 优先；模型不可用/失败时保留 OCR 文本行。
+        for reg in formula_regions:
+            idxs = inside(reg)
+            crop = self._crop(bgr, reg)
+            latex = self._formula_latex(crop, notes)
+            consumed.update(idxs)
+            if latex:
+                counts["formula_ok"] += 1
+                box = Box(reg.x1, reg.y1, reg.x2, reg.y2, reg.score, "formula", latex)
+                assigned.append((box, "formula"))
                 figures.append(ParsedFigure(
-                    kind=kind, page=pno, text=ocr_text,
+                    kind="formula", page=pno, text=latex,
                     bbox=(reg.x1, reg.y1, reg.x2, reg.y2),
                 ))
+            else:
+                counts["formula_fail"] += 1
+                for i in idxs:
+                    assigned.append((lines[i], "text"))
 
-            # 4) 其余行按原来的阅读结构走；页眉页脚/印章/图形区不参与正文。
-            for i, ln in enumerate(lines):
-                if i in consumed:
-                    continue
-                reg = self._region_of(ln, regions) if regions else None
-                label = reg.label if reg is not None else "text"
-                if label in {
-                    "image", "figure", "chart", "display_formula", "inline_formula",
-                    "formula_number", "seal", "header", "footer", "footer_image", "header_image",
-                }:
-                    continue
-                assigned.append((ln, label))
-            assigned.sort(key=lambda x: (round(x[0].y1 / 10), x[0].x1))
-            pages.append(assigned)
-        if self.table is not None:
-            notes.append(f"表格结构还原（SLANet-plus）：成功 {n_table} 张，失败回退文本行 {n_table_fail} 张")
-        if n_formula or n_formula_fail:
-            notes.append(f"公式识别（PP-FormulaNet_plus-M）：成功 {n_formula}，回退文本 {n_formula_fail}")
-        if n_figure:
-            notes.append(f"图片/图表区域 {n_figure} 个：仅保留图内 OCR 文字，不做语义描述")
-        doc = self._to_document(pages, filename, notes, figures=figures)
-        return doc
+        # 3) 图片/图表：区域文字已由 PP-OCR 识别，直接作为可检索文本；不做图表语义理解。
+        for reg in figure_regions:
+            idxs = inside(reg)
+            ocr_text = " ".join(lines[i].text.strip() for i in idxs if lines[i].text.strip())
+            consumed.update(idxs)
+            if not ocr_text:
+                continue
+            kind = "chart" if reg.label == "chart" else "figure"
+            label = "图表" if kind == "chart" else "插图"
+            text = f"【{label} 第{pno}页】图内文字：{ocr_text}"
+            counts["figure"] += 1
+            assigned.append((Box(reg.x1, reg.y1, reg.x2, reg.y2, reg.score, "figure", text), "figure"))
+            figures.append(ParsedFigure(
+                kind=kind, page=pno, text=ocr_text,
+                bbox=(reg.x1, reg.y1, reg.x2, reg.y2),
+            ))
+
+        # 4) 其余行按原来的阅读结构走；页眉页脚/印章/图形区不参与正文。
+        for i, ln in enumerate(lines):
+            if i in consumed:
+                continue
+            reg = self._region_of(ln, regions) if regions else None
+            label = reg.label if reg is not None else "text"
+            if label in {
+                "image", "figure", "chart", "display_formula", "inline_formula",
+                "formula_number", "seal", "header", "footer", "footer_image", "header_image",
+            }:
+                continue
+            assigned.append((ln, label))
+        assigned.sort(key=lambda x: (round(x[0].y1 / 10), x[0].x1))
+        return assigned, figures, counts
 
     @staticmethod
     def _dedupe_regions(regions: list[Box]) -> list[Box]:
@@ -853,7 +886,7 @@ class MinerUPdfParser:
 
     def _to_document(
         self,
-        pages: list[list[tuple[Box, str]]],
+        pages: list[tuple[int, list[tuple[Box, str]]]],
         filename: str,
         notes: list[str],
         figures: list[ParsedFigure] | None = None,
@@ -864,7 +897,7 @@ class MinerUPdfParser:
         num = _SectionNumbering()
         title = ""
         chars = 0
-        for pno, items in enumerate(pages, start=1):
+        for pno, items in pages:
             buf: list[str] = []
             prev_y: float | None = None
 
@@ -926,8 +959,6 @@ class MinerUPdfParser:
             sections = [
                 ParsedSection("1", dropped[0].heading, dropped[0].page, [d.heading for d in dropped if d.heading])
             ]
-        if not sections:
-            notes.append("OCR 未产出可用文本：可能是超低分辨率扫描或空白页，应回退 pypdf 文本层")
         if not sections:
             notes.append("OCR 未产出可用文本：可能是超低分辨率扫描或空白页，应回退 pypdf 文本层")
         notes.append(f"OCR 产出 {chars} 字符，覆盖 {len(pages)} 页")

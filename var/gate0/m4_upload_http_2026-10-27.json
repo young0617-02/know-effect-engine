@@ -1,0 +1,111 @@
+{
+  "env": {
+    "ts": "2026-10-27T14:37:09",
+    "commit": "1d5828e",
+    "scratch_db": "kee_uploadhttp",
+    "scratch_collection": "kb_chunks_uploadhttp",
+    "port": 38001
+  },
+  "prod_before": [
+    193,
+    24
+  ],
+  "checks": [
+    {
+      "name": "scratch 后端起来了，且 healthz 报的就是 scratch 集合",
+      "ok": true,
+      "detail": "{\"healthz\": \"{\\\"status\\\":\\\"ok\\\",\\\"deps\\\":{\\\"milvus\\\":{\\\"ok\\\":true,\\\"collection\\\":\\\"kb_chunks_uploadhttp\\\",\\\"chunks\\\":0},\\\"postgres\\\":{\\\"ok\\\":true,\\\"documents\\\":0}}}\"}"
+    },
+    {
+      "name": "真 HTTP 服务上上传成功（缺陷修复的验收点）",
+      "ok": true,
+      "detail": "{\"http\": 201, \"body\": \"{\\\"status\\\":\\\"accepted\\\",\\\"doc_id\\\":\\\"upload-http-probe\\\",\\\"version_id\\\":\\\"upload-http-probe@v1\\\",\\\"title\\\":\\\"上传链路验证说明 v1\\\",\\\"new_document\\\":true,\\\"chunks\\\":{\\\"parent\\\":1,\\\"child\\\":1},\\\"indexed\\\":1,\\\"parse_notes\\\":[\\\"Markdown 无固定分页，页码字段置 0 并标注不可得\\\"],\\\"meta_warnings\\\":[],\\\"\"}"
+    },
+    {
+      "name": "文档列表读得到刚上传的那篇",
+      "ok": true,
+      "detail": "{\"http\": 200, \"total\": 1, \"doc_status\": \"active\"}"
+    },
+    {
+      "name": "复核**之前**仍可被检索命中（C 的边界：闸不在检索层）",
+      "ok": true,
+      "detail": "{\"版本状态\": [[\"upload-http-probe@v1\", \"effective\"]], \"复核前命中\": [\"upload-http-probe@v1#1.1#c1\"]}"
+    },
+    {
+      "name": "复核**之前**不得被引用作答（未复核内容不进答案）",
+      "ok": true,
+      "detail": "{\"status\": \"refuse\", \"结论\": \"\", \"引用\": []}"
+    },
+    {
+      "name": "拒答必须说明是「有资料未复核」而不是「没资料」",
+      "ok": true,
+      "detail": "{\"refusal_reason\": \"all_evidence_unreviewed\", \"needs_human\": true, \"notes\": [\"unreviewed_evidence_dropped:1\", \"all_evidence_unreviewed\"]}"
+    },
+    {
+      "name": "未复核证据条数随拒答带出（界面那句 N 的来源）",
+      "ok": true,
+      "detail": "{\"unreviewed_evidence_count\": 1}"
+    },
+    {
+      "name": "待复核队列看得见这一版（催办有落点）",
+      "ok": true,
+      "detail": "{\"total\": 1, \"scope\": {\"role\": \"knowledge_owner\", \"max_security_level\": 3}}"
+    },
+    {
+      "name": "复核 pass 生效（角色合法、actor 与 uploader 不同）",
+      "ok": true,
+      "detail": "{\"http\": 200, \"body\": \"{\\\"doc_id\\\":\\\"upload-http-probe\\\",\\\"status\\\":\\\"active\\\",\\\"decision\\\":\\\"pass\\\"}\"}"
+    },
+    {
+      "name": "复核**之后**可被检索命中（索引真的写进去了）",
+      "ok": true,
+      "detail": "{\"http\": 200, \"hits\": [\"upload-http-probe@v1#1.1#c1\"]}"
+    },
+    {
+      "name": "复核**之后**可被引用作答（闸不是永久封死）",
+      "ok": true,
+      "detail": "{\"status\": \"answer\", \"结论\": \"采集网关心跳连续缺失3次即开工单；工单在30分钟内响应\", \"引用\": [\"upload-http-probe@v1#1.1#c1\"]}"
+    },
+    {
+      "name": "复核**之后**从待复核队列消失（队列读的是章这个事实，不是猜状态）",
+      "ok": true,
+      "detail": "{\"队列总数\": 0}"
+    },
+    {
+      "name": "复核之后答案不再挂「未复核」拒答原因",
+      "ok": true,
+      "detail": "{\"status\": \"answer\", \"refusal_reason\": \"\", \"unreviewed_evidence_count\": 0}"
+    },
+    {
+      "name": "重复上传同一 doc_id 走的是新版本（不是新建文档）",
+      "ok": true,
+      "detail": "{\"http\": 201, \"resp\": \"{\\\"status\\\":\\\"accepted\\\",\\\"doc_id\\\":\\\"upload-http-probe\\\",\\\"version_id\\\":\\\"upload-http-probe@v2\\\",\\\"title\\\":\\\"上传链路验证说明 v1\\\",\\\"new_document\\\":false,\\\"chunks\\\":{\\\"parent\\\":1,\\\"child\\\":1},\\\"indexed\\\":1,\\\"parse_notes\\\":[\\\"Markdown 无固\"}"
+    },
+    {
+      "name": "回滚到 v1 生效",
+      "ok": true,
+      "detail": "{\"http\": 200, \"body\": \"{\\\"doc_id\\\":\\\"upload-http-probe\\\",\\\"effective_version\\\":\\\"upload-http-probe@v1\\\",\\\"reindexed\\\":1,\\\"seconds\\\":11.59}\"}"
+    },
+    {
+      "name": "索引里只剩 v1 的子块",
+      "ok": true,
+      "detail": "[\"upload-http-probe@v1#1.1#c1\"]"
+    },
+    {
+      "name": "对账接口在真服务上可读（dry-run）",
+      "ok": true,
+      "detail": "{\"http\": 200, \"diff\": {\"authoritative_children\": 1, \"indexed\": 1, \"missing_in_vector\": 0, \"extra_in_vector\": 0}}"
+    },
+    {
+      "name": "上传/复核/回滚/对账都进了审计",
+      "ok": true,
+      "detail": "[\"answer_generated\", \"document_ingested\", \"document_review_pass\", \"document_rollback\", \"login\", \"reconciliation_run\"]"
+    },
+    {
+      "name": "生产侧未被改动（chunks/docs 与跑前一致）",
+      "ok": true,
+      "detail": "{\"pre\": [193, 24], \"post\": [193, 24]}"
+    }
+  ],
+  "passed": true
+}

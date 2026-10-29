@@ -72,7 +72,7 @@ docker compose -f infra/docker-compose.gate0.yml up -d      # 全部 healthy 即
 只能作为**独立的一键部署验证**跑，跑完必须重跑 `g02` 建库；默认的 `--rebuild` 只重建容器、保留数据卷。
 `g01` 已加前置校验：collection 不存在或为空时直接判失败退出，不会拿「全部提前拒答 → 延迟 0ms」冒充达标。
 
-单测：`.venv/Scripts/python.exe -m pytest -q`（现 **386 项**，2026-10-26；纯逻辑部分不需要 GPU，DB/存储相关用例需先起存储栈）。
+单测：`.venv/Scripts/python.exe -m pytest -q`（现 **394 项**，2026-10-27；含按页路由新增 8 项；纯逻辑部分不需要 GPU，DB/存储相关用例需先起存储栈）。
 
 ## M1 知识构建链路（Gate 0 放行后开工）
 
@@ -111,8 +111,9 @@ CUDA torch 底座互顶版本；**也不用 mineru.net 云 API**，那属于数�
 - 数量闸门：单文档最多 20 张图片、小于 1024 像素的图不做单独 OCR；失败跳过并写 `parse_notes`。
 - 完整配置、边界与实测见 `docs/图片图表公式解析.md`。
 
-后端选择：`KEE_PDF_PARSE_BACKEND=auto|pypdf|mineru_onnx` —— auto 下文本层够厚就走 pypdf（0.8s/文档），
-薄了才转版面+OCR（约 18s/页），不为能抽字的 PDF 白烧算力。
+后端选择：`KEE_PDF_PARSE_BACKEND=auto|pypdf|mineru_onnx` —— auto 默认**按页路由**：文本足够的页走 pypdf
+（精确字符，约 0.8s/文档），单页文本不足才把该页渲染给 MinerU（约 18s/页）；`KEE_PDF_PAGE_ROUTING=false`
+回到历史口径（整份平均字符数低于阈值才整份转 MinerU）。整份扫描件/显式 `mineru_onnx` 仍走整份版面+OCR。
 
 ## M2 检索评测基线
 

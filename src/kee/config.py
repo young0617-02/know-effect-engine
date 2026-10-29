@@ -34,7 +34,11 @@ class Settings(BaseSettings):
     mineru_model_dir: str = "D:/modelscope/hub/models/MinerU-4_models_onnx"
     # auto=pypdf 文本层优先、薄则转 OCR；pypdf=只用文本层；mineru_onnx=强制版面+OCR
     pdf_parse_backend: str = "auto"
+    # auto 下默认**按页路由**：文本不足的页才渲染并跑 MinerU，其余页保留 pypdf 精确文本。
+    # 关掉它回到旧口径：整份文档平均字符数 < threshold 才整份转 MinerU。
+    pdf_page_routing: bool = True
     ocr_dpi: int = 150
+    # 按页路由时是**单页**阈值；关闭按页路由时是**整份文档平均**阈值（历史口径）。
     pdf_min_chars_per_page: int = 40
 
     # ---- 存储栈 ----

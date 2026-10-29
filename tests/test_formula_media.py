@@ -42,10 +42,10 @@ def test_formula_model_decode_with_injected_session():
 
 
 def test_formula_and_figure_items_become_paragraphs():
-    pages = [[
+    pages = [(1, [
         (Box(10, 10, 200, 40, 0.9, "formula", "E=mc^2"), "formula"),
         (Box(10, 60, 300, 120, 0.9, "figure", "【图表 第1页】图内文字：Q1 10"), "figure"),
-    ]]
+    ])]
     notes = []
     doc = MinerUPdfParser._to_document(
         object(), pages, "论文.pdf", notes,
