@@ -27,6 +27,7 @@
 from __future__ import annotations
 
 import argparse
+import base64
 import json
 import os
 import re
@@ -41,8 +42,13 @@ import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
 
+from dotenv import dotenv_values
+
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
+_ENV = dotenv_values(ROOT / ".env")
+GRAFANA_USER = os.environ.get("KEE_GRAFANA_ADMIN_USER") or _ENV.get("KEE_GRAFANA_ADMIN_USER") or "admin"
+GRAFANA_PASSWORD = os.environ.get("KEE_GRAFANA_ADMIN_PASSWORD") or _ENV.get("KEE_GRAFANA_ADMIN_PASSWORD") or ""
 sys.path.insert(0, str(ROOT / "scripts"))
 
 ART = ROOT / "var" / "gate0"
@@ -624,7 +630,7 @@ def main() -> int:
 
     print("== 8. Grafana 侧 ==")
     g: dict = {}
-    auth = "Basic " + __import__("base64").b64encode(b"admin:待填_KEE_GRAFANA_ADMIN_PASSWORD").decode()
+    auth = "Basic " + base64.b64encode(f"{GRAFANA_USER}:{GRAFANA_PASSWORD}".encode()).decode()
     try:
         g["health"] = json.loads(http(f"{args.grafana}/api/health")[1])
         g["datasource"] = json.loads(http(f"{args.grafana}/api/datasources/uid/kee",

@@ -22,7 +22,26 @@ def run(cmd: list[str]) -> None:
     subprocess.check_call(cmd, cwd=ROOT)
 
 
+def sync_compose_env() -> int:
+    """Compose 只读与 compose 文件同目录的 .env；根 .env 是唯一真源。"""
+    src = ROOT / ".env"
+    dst = ROOT / "infra" / ".env"
+    if not src.exists():
+        print("未找到 .env；先 cp .env.example .env 并填好所有 `待填_` 口令", file=sys.stderr)
+        return 2
+    text = src.read_text(encoding="utf-8")
+    if "待填_" in text:
+        print("警告：.env 仍有 `待填_` 项，Compose 起栈前先填掉", file=sys.stderr)
+    dst.write_text(text, encoding="utf-8")
+    print(f"已同步 {src} -> {dst}")
+    return 0
+
+
 def main() -> int:
+    rc = sync_compose_env()
+    if rc != 0:
+        return rc
+
     if not VENV.exists():
         run(["uv", "venv", "--python", PYTHON_VERSION, str(VENV)])
 

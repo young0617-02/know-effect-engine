@@ -465,7 +465,7 @@ def main() -> int:
           "接企业统一身份（OIDC / LDAP / 网关 JWT）时 `app_user` 的迁移方式**尚未设计**（用户裁「留」），"
           "届时要替换的是这套口令体系本身，不是配置一个开关",
           "- **数据库权限面（换环境部署时是必经步骤，不是可选项）**：应用连 `kee_app`（非超级用户），"
-          "`KEE_POSTGRES_DSN` 默认指向它；存储栈起好后必须先跑一次 `scripts/harden_audit_store.py`"
+          "`.env` 的 `KEE_POSTGRES_DSN` 指向它；存储栈起好后必须先跑一次 `scripts/harden_audit_store.py`"
           "（建 `kee_app` + `kee_admin` + NOLOGIN 的 `postgres`，把 `audit_log` 与其触发器函数的属主交给后者）。"
           "没跑的话 `kee_app` 不存在、API 连不上库；`kee_admin` 的口令只落 `var/pg_admin_credentials.json`（不入库）。"
           "⚠ 别指望 `ALTER ROLE kee NOSUPERUSER`：`kee` 是 compose `POSTGRES_USER` 走 initdb 造的 bootstrap 超级用户，"

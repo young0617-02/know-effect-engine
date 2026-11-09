@@ -45,11 +45,12 @@ class Settings(BaseSettings):
     milvus_uri: str = "http://127.0.0.1:39530"
     milvus_db: str = "default"
     milvus_collection: str = "kb_chunks"
-    # 应用角色 `kee_app`（LOGIN，非超级用户）。口令与 `待填_KEE_PG_SUPERUSER_PASSWORD` 同性质：本机开发的公开值。
+    # 应用角色 `kee_app`（LOGIN，非超级用户）。DSN 必填，由 `.env` 的 `KEE_POSTGRES_DSN` 提供；
+    # 代码里不留默认口令（模板见 `.env.example`）。
     # 不用 `kee` 是因为它是 initdb 引导出来的 bootstrap 超级用户——PG 明文禁止摘它的 SUPERUSER，
     # 而超级用户让表级 REVOKE 全部失效（含 `audit_log` 的防篡改触发器）。
     # 新库起好后必须跑一次 `scripts/harden_audit_store.py`，否则 `kee_app` 根本不存在。
-    postgres_dsn: str = "postgresql://kee_app:待填_KEE_PG_APP_PASSWORD@127.0.0.1:35432/kee"
+    postgres_dsn: str = ""
     redis_url: str = "redis://127.0.0.1:36379/0"
     search_cache_ttl_sec: int = 300
 

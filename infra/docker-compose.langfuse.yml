@@ -14,15 +14,14 @@
 #     数据卷走 bind mount 落 `D:\project\var\observability\langfuse-pg`（**不是 C 盘**，
 #     原先那句「落 C 盘 WSL2 虚拟盘」只对镜像层成立）。
 #
-# 六个密钥/口令一律占位（`grep -n 待填_ infra/docker-compose.langfuse.yml`）：**故意不入库**，
-# 含 `POSTGRES_PASSWORD` 与 `DATABASE_URL` 里那一段——上一版这里写的是**当前正在跑的栈的真口令**，
-# 入库等于把它公布出去；这个文件后来被实跑过一轮，正好把这条照出来了。
-# 本机实跑时由脚本生成随机值、渲染一份可跑副本到 `var/`（在 .gitignore 的 `var/*` 之内），
-# 凭据落 `var/langfuse_credentials.json`。生成方式：
+# 密钥/口令一律不入库：PG 口令、SALT、NEXTAUTH_SECRET、ENCRYPTION_KEY、界面口令留 `待填_` 占位，
+# Langfuse 的 public/secret key 从 `.env` 注入。本机实跑时由脚本生成随机值、渲染一份可跑副本到 `var/`
+# （在 .gitignore 的 `var/*` 之内），凭据落 `var/langfuse_credentials.json`。生成方式：
 #     ./.venv/Scripts/python.exe -c "import secrets;print(secrets.token_hex(32))"   # ENCRYPTION_KEY 要 32 字节 hex
 #     ./.venv/Scripts/python.exe -c "import secrets;print(secrets.token_urlsafe(12))"  # PG 口令
-# 注：主存储栈的 `待填_KEE_PG_APP_PASSWORD` 仍写在 `.env.example` 与若干脚本里（同一个「本机开发值」口径），
-# 要不要按这条一起收紧是另一个决定，不在本次改动内。
+# 主存储栈的 PG/MinIO/Grafana 口令同样从 `.env` 注入（见 `infra/docker-compose.gate0.yml` 与
+# `infra/docker-compose.observability.yml`）；Compose 读取与 compose 文件同目录的 `infra/.env`，
+# 由 `scripts/bootstrap_env.py` 从根 `.env` 同步。
 #
 # 跑法（裁决之后）：
 #     docker compose -f infra/docker-compose.langfuse.yml --profile langfuse up -d
@@ -59,9 +58,9 @@ services:
       - LANGFUSE_INIT_ORG_ID=kee
       - LANGFUSE_INIT_PROJECT_ID=kee-qa
       - LANGFUSE_INIT_PROJECT_NAME=KEE 在线链路
-      - LANGFUSE_INIT_PROJECT_PUBLIC_KEY=待填_KEE_LANGFUSE_PUBLIC_KEY
-      # secret key 与界面口令留占位：`sk-lf-*` 长成一副真凭据的样子，写进入库文件迟早被人当成泄露去查
-      - LANGFUSE_INIT_PROJECT_SECRET_KEY=待填_LANGFUSE_PROJECT_SECRET_KEY
+      - LANGFUSE_INIT_PROJECT_PUBLIC_KEY=${KEE_LANGFUSE_PUBLIC_KEY:?set KEE_LANGFUSE_PUBLIC_KEY in .env}
+      # secret key 同样从 .env 注入，不在入库文件里留 `sk-lf-*` 形状的字面量
+      - LANGFUSE_INIT_PROJECT_SECRET_KEY=${KEE_LANGFUSE_SECRET_KEY:?set KEE_LANGFUSE_SECRET_KEY in .env}
       - LANGFUSE_INIT_USER_EMAIL=admin@kee.local
       - LANGFUSE_INIT_USER_NAME=KEE
       - LANGFUSE_INIT_USER_PASSWORD=待填_LANGFUSE_UI_PASSWORD

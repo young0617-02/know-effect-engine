@@ -34,8 +34,8 @@ tests/                    纯逻辑单测（指标、RBAC、分块、准入）
 uv 建 venv，但**大件（CUDA 版 torch）复用本机既有环境**，不重复下载 GB 级轮子：
 
 ```bash
-cp .env.example .env                 # 端口/权重路径按需覆盖
-python scripts/bootstrap_env.py      # 建 .venv + 挂 CUDA torch + 装轻依赖
+cp .env.example .env                 # 先填掉所有 `待填_` 口令；其余端口/权重路径按需覆盖
+python scripts/bootstrap_env.py      # 建 .venv + 挂 CUDA torch + 装轻依赖；同时把 .env 同步到 infra/.env
 .venv/Scripts/python.exe scripts/check_stack.py
 ```
 
@@ -243,7 +243,7 @@ p50 695.4 / p95 859.2ms ⇒ 达标；**信封首字符（`{`，324ms）不得当
 | `src/kee/obs/langfuse.py` | Langfuse 上报（官方 `/api/public/ingestion` 批量接口，不引 SDK）：**默认关闭**、后台线程、队列满就丢并计数、**目标地址必须回环/私网** |
 | `GET /metrics` | Prometheus 文本。免鉴权的前提是三条同时成立：只绑回环 + Nginx 不反代该路径 + 标签无业务内容。`KEE_METRICS_ENABLED=false` 则 404 |
 | `GET /api/v1/observability/status` | 观测面开关与 Langfuse 状态（含被关闭的原因原文），限治理角色 |
-| `infra/docker-compose.observability.yml` | Prometheus + Grafana，**复用本机已有镜像（零下载）**，只绑 127.0.0.1：`http://127.0.0.1:39090` / `http://127.0.0.1:33000/d/kee-rag`（admin / 待填_KEE_GRAFANA_ADMIN_PASSWORD） |
+| `infra/docker-compose.observability.yml` | Prometheus + Grafana，**复用本机已有镜像（零下载）**，只绑 127.0.0.1：`http://127.0.0.1:39090` / `http://127.0.0.1:33000/d/kee-rag`（admin / 口令见 `.env` 的 `KEE_GRAFANA_ADMIN_PASSWORD`） |
 | `infra/prometheus/` | `prometheus.yml`（目标走 `file_sd`）+ `alerts.yml`（9 条）+ `targets/kee.json`（由脚本生成） |
 | `infra/grafana/` | 数据源与看板 provisioning + `dashboards/kee-rag.json`（15 面板，UI 不可改，改面板就改这个文件） |
 | `scripts/obs_targets.py` | 宿主 API 换端口后重跑一条即可，Prometheus 20s 内自刷、**不用重启容器** |

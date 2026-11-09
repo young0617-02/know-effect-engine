@@ -37,6 +37,7 @@ import json
 import secrets
 import sys
 from pathlib import Path
+from urllib.parse import unquote, urlsplit
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
@@ -49,10 +50,12 @@ CREDS = ROOT / "var" / "pg_admin_credentials.json"
 
 # 收紧后应用角色对审计表应剩下的权限——多一项就是没堵住
 APP_GRANTS = {"INSERT", "SELECT"}
-# 应用角色。口令与仓库里既有的 `待填_KEE_PG_SUPERUSER_PASSWORD` 同性质——本机开发用的公开值，不是秘密；
-# `kee_admin` 那个随机口令才是要紧的，它只落 var/（不入库）。
+# 应用角色。口令从 `KEE_POSTGRES_DSN` 解析（.env），代码里不留默认值；
+# `kee_admin` 那个随机口令只落 var/（不入库）。
 APP_ROLE = "kee_app"
-APP_PASSWORD = "待填_KEE_PG_APP_PASSWORD"
+APP_PASSWORD = unquote(urlsplit(get_settings().postgres_dsn).password or "")
+if not APP_PASSWORD:
+    raise SystemExit("KEE_POSTGRES_DSN 未配置口令；先按 .env.example 填好 .env")
 
 
 def _app_tables(conn) -> list[str]:

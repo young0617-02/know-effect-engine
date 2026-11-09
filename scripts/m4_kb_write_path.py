@@ -18,6 +18,9 @@ import subprocess
 import sys
 from datetime import datetime
 from pathlib import Path
+from urllib.parse import urlsplit, urlunsplit
+
+from dotenv import dotenv_values
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
@@ -27,8 +30,12 @@ SCRATCH_DB = "kee_writepath"
 SCRATCH_COLL = "kb_chunks_writepath"
 OUT = ROOT / "var" / "gate0" / "m4_kb_write_path.json"
 
-# 必须在 import kee.config 之前盖掉，否则 Settings 会把生产 DSN 缓存住
-os.environ["KEE_POSTGRES_DSN"] = f"postgresql://kee_app:待填_KEE_PG_APP_PASSWORD@127.0.0.1:35432/{SCRATCH_DB}"
+# 必须在 import kee.config 之前盖掉，否则 Settings 会把生产 DSN 缓存住。
+# 口令从 .env 的 KEE_POSTGRES_DSN 取，不在脚本里写默认值。
+_BASE_DSN = os.environ.get("KEE_POSTGRES_DSN") or dotenv_values(ROOT / ".env").get("KEE_POSTGRES_DSN", "")
+if not _BASE_DSN:
+    raise SystemExit("KEE_POSTGRES_DSN 未配置；先按 .env.example 填好 .env")
+os.environ["KEE_POSTGRES_DSN"] = urlunsplit(urlsplit(_BASE_DSN)._replace(path=f"/{SCRATCH_DB}"))
 os.environ["KEE_MILVUS_COLLECTION"] = SCRATCH_COLL
 
 # 身份走登录令牌：`KEE_ALLOW_HEADER_IDENTITY` 的默认已于 2026-10-15 翻成 False（用户裁「交付物默认 false、脚本显式带令牌」），

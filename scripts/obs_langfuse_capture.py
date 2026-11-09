@@ -12,7 +12,7 @@
     # 2) 让宿主 API 把上报指到它（同批设 pk/sk，值随便，采集器只回显不校验）
     KEE_API_PORT=28000 KEE_LANGFUSE_ENABLED=true \
     KEE_LANGFUSE_HOST=http://127.0.0.1:30099 \
-    KEE_LANGFUSE_PUBLIC_KEY=待填_KEE_LANGFUSE_PUBLIC_KEY KEE_LANGFUSE_SECRET_KEY=待填_KEE_LANGFUSE_SECRET_KEY \
+    KEE_LANGFUSE_PUBLIC_KEY="$KEE_LANGFUSE_PUBLIC_KEY" KEE_LANGFUSE_SECRET_KEY="$KEE_LANGFUSE_SECRET_KEY" \
     uv run python scripts/serve_api.py
     # 3) 走真实 HTTP 问一轮，然后回来看落盘文件
     uv run python scripts/obs_langfuse_capture.py --print var/observability/langfuse_capture.json

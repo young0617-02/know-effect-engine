@@ -22,6 +22,9 @@ import sys
 import time
 from datetime import datetime
 from pathlib import Path
+from urllib.parse import urlsplit, urlunsplit
+
+from dotenv import dotenv_values
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
@@ -87,7 +90,11 @@ def main() -> int:
     print(f"生产侧跑前：chunks={pre_counts[0]} docs={pre_counts[1]}（本脚本不该改动它）")
 
     env = dict(os.environ)
-    env["KEE_POSTGRES_DSN"] = f"postgresql://kee_app:待填_KEE_PG_APP_PASSWORD@127.0.0.1:35432/{DB}"
+    base_dsn = os.environ.get("KEE_POSTGRES_DSN") or dotenv_values(ROOT / ".env").get("KEE_POSTGRES_DSN", "")
+    if not base_dsn:
+        print("[拒绝开始] KEE_POSTGRES_DSN 未配置；先按 .env.example 填好 .env")
+        return 2
+    env["KEE_POSTGRES_DSN"] = urlunsplit(urlsplit(base_dsn)._replace(path=f"/{DB}"))
     env["KEE_MILVUS_COLLECTION"] = COLL
     env["KEE_API_PORT"] = str(PORT)
 

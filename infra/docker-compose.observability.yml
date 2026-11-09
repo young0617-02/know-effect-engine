@@ -15,7 +15,7 @@
 #   uv run python scripts/obs_targets.py --port 28000     # 告诉 Prometheus API 在哪个端口
 #   docker compose -f infra/docker-compose.observability.yml up -d
 #   Prometheus  http://127.0.0.1:39090/targets
-#   Grafana     http://127.0.0.1:33000/d/kee-rag  （admin / 待填_KEE_GRAFANA_ADMIN_PASSWORD，仅本机看板）
+#   Grafana     http://127.0.0.1:33000/d/kee-rag  （admin / 口令见 .env 的 KEE_GRAFANA_ADMIN_PASSWORD）
 #
 # 数据落在 `var/observability/`（已 gitignore，且在 D 盘），时序默认留 15 天。
 
@@ -54,8 +54,8 @@ services:
       - "127.0.0.1:33000:3000"
     environment:
       - GF_SECURITY_ADMIN_USER=admin
-      # 只绑 127.0.0.1 的本机看板口令，不是生产凭据；要对外提供服务前必须换掉
-      - GF_SECURITY_ADMIN_PASSWORD=待填_KEE_GRAFANA_ADMIN_PASSWORD
+      # 只绑 127.0.0.1 的本机看板口令，从 .env 注入；要对外提供服务前必须换掉
+      - GF_SECURITY_ADMIN_PASSWORD=${KEE_GRAFANA_ADMIN_PASSWORD:?set KEE_GRAFANA_ADMIN_PASSWORD in .env}
       - GF_USERS_ALLOW_SIGN_UP=false
       - GF_AUTH_ANONYMOUS_ENABLED=false
       # 这两条是为了「数据不出域」这件事不需要口头承诺：不检查更新、不上报使用统计

@@ -18,11 +18,13 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlsplit, urlunsplit
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 sys.path.insert(0, str(ROOT / "scripts"))
 
+from kee.config import get_settings  # noqa: E402
 from kee.db.pg import AuthoritativeStore  # noqa: E402
 from kee.eval.build_eval import build_eval_set  # noqa: E402
 from kee.ingest.admission import admit  # noqa: E402
@@ -128,6 +130,13 @@ def build_scratch(pg: AuthoritativeStore, kb: KbStore, embedder, strategy: str) 
     }
 
 
+def _scratch_dsn(db: str) -> str:
+    base = get_settings().postgres_dsn
+    if not base:
+        raise SystemExit("KEE_POSTGRES_DSN 未配置；先按 .env.example 填好 .env")
+    return urlunsplit(urlsplit(base)._replace(path=f"/{db}"))
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", default="var/gate0/block_v1_ab.json")
@@ -144,7 +153,7 @@ def main() -> int:
     try:
         for strategy, (db, coll) in SCRATCH.items():
             create_db(db)
-            pg = AuthoritativeStore(dsn=f"postgresql://kee_app:待填_KEE_PG_APP_PASSWORD@127.0.0.1:35432/{db}")
+            pg = AuthoritativeStore(dsn=_scratch_dsn(db))
             kb = KbStore(coll, "jieba")
             t0 = time.perf_counter()
             built = build_scratch(pg, kb, sched.embedder, strategy)

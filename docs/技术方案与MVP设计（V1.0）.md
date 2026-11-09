@@ -1184,7 +1184,8 @@ prompt 均值 +1219.6 tok、escalate 1→3；A1b Δ −0.0597 超地板、escala
 
 **顺带**：`infra/docker-compose.langfuse.yml` 里当作示例的 PG 口令是**当前在跑那套栈的真口令**，
 已改回 `待填_` 占位（真值只在 gitignore 的 `var/observability/langfuse.runnable.yml`）；
-主存储栈的 `待填_KEE_PG_APP_PASSWORD` 仍写在 `.env.example` 与若干脚本里，同口径要不要一起收紧另裁。
+主存储栈的 PG/MinIO/Grafana 口令也已改为 `.env` 注入（Compose 读 `infra/.env`，由
+`scripts/bootstrap_env.py` 从根 `.env` 同步），代码与入库文件不再保留默认口令。
 
 ### V1.0.41（2026-10-19，RAGAS 四条齐了：一条「不过」经查是量纲，护栏从五道加到七道）
 

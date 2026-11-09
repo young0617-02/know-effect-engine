@@ -52,7 +52,7 @@ services:
     restart: unless-stopped
     environment:
       - MINIO_ROOT_USER=keeadmin
-      - MINIO_ROOT_PASSWORD=待填_KEE_MINIO_ROOT_PASSWORD
+      - MINIO_ROOT_PASSWORD=${KEE_MINIO_ROOT_PASSWORD:?set KEE_MINIO_ROOT_PASSWORD in .env}
     command: minio server /minio_data --console-address ":9001"
     volumes:
       - kee-minio-data:/minio_data
@@ -106,7 +106,7 @@ services:
     restart: unless-stopped
     environment:
       - POSTGRES_USER=kee
-      - POSTGRES_PASSWORD=待填_KEE_PG_SUPERUSER_PASSWORD
+      - POSTGRES_PASSWORD=${KEE_PG_SUPERUSER_PASSWORD:?set KEE_PG_SUPERUSER_PASSWORD in .env}
       - POSTGRES_DB=kee
     volumes:
       # PG18 镜像要求挂载点为 /var/lib/postgresql（非 /var/lib/postgresql/data）
